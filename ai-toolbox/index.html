@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Toolbox for E-commerce Sellers</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNncmFkaWVudDApIi8+CjxwYXRoIGQ9Ik04IDEySDI0TDIwIDIwSDEyTDggMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ0OTBFMiIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2QzVDRTciLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
@@ -19,12 +20,25 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: visible;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1);
             border-color: #4a90e2;
+        }
+        
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-footer {
+            margin-top: auto;
         }
         
         .jays-pick {
@@ -185,7 +199,7 @@
             <!-- Compact Header -->
             <div class="text-center mb-6">
                 <h1 class="clickable-title text-5xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 bg-clip-text text-transparent" onclick="resetToAllTools()">
-                    🤖 AI Toolbox
+                    ⚡ AI Toolbox
                 </h1>
                 <h2 class="text-2xl text-gray-300 mb-3">For E-commerce Sellers</h2>
                 
@@ -211,7 +225,17 @@
             <!-- Search and Filters -->
             <div class="mb-6">
                 <div class="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
-                    <input type="text" id="searchInput" placeholder="Search tools..." class="search-input px-4 py-2 rounded-lg w-full md:w-80 focus:outline-none">
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <input type="text" id="searchInput" placeholder="Search tools..." class="search-input px-4 py-2 rounded-lg w-full md:w-80 focus:outline-none">
+                        <select id="sortSelect" class="search-input px-4 py-2 rounded-lg focus:outline-none">
+                            <option value="">Sort by...</option>
+                            <option value="name">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="price">Price (Free first)</option>
+                            <option value="category">Category</option>
+                            <option value="favorites">Jay's Picks first</option>
+                        </select>
+                    </div>
                     <div class="text-gray-300">
                         <span id="toolCount">115</span> tools available
                     </div>
@@ -254,257 +278,301 @@
 
     <script>
         // Google Sheets Configuration
-    const SHEET_ID = '1E7FcuY57x0PMt4qRVEbX8mVbQMxbH34xcGOxny0E8J4';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-    
-    let tools = [];
-    let filteredTools = [];
-    let currentCategory = 'all';
+        const SHEET_ID = '1E7FcuY57x0PMt4qRVEbX8mVbQMxbH34xcGOxny0E8J4';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+        
+        let tools = [];
+        let filteredTools = [];
+        let currentCategory = 'all';
 
-    // Category colors mapping
-    const categoryColors = {
-        'Audio & Music': 'cat-audio-music',
-        'Audio & Voice': 'cat-audio-voice',
-        'Automation': 'cat-automation',
-        'Centralized Platforms': 'cat-centralized',
-        'Design & Graphics': 'cat-design',
-        'E-commerce & Business': 'cat-ecommerce',
-        'Image Editing': 'cat-image-editing',
-        'Image Enhancement': 'cat-image-enhancement',
-        'Image Generation': 'cat-image-generation',
-        'Language Models': 'cat-language',
-        'Marketing': 'cat-marketing',
-        'No-Code Development': 'cat-nocode',
-        'Productivity': 'cat-productivity',
-        'AI Agents': 'cat-ai-agents',
-        'Video Editing': 'cat-video-editing',
-        'Video Generation': 'cat-video-generation',
-        'Avatars': 'cat-avatars',
-        'Writing': 'cat-writing',
-        'Social Media Tools': 'cat-social',
-        'Legal & Business': 'cat-legal',
-        'Presentation & Design': 'cat-presentation',
-        'Travel & Planning': 'cat-travel',
-        'Web Development': 'cat-web'
-    };
+        // Category colors mapping
+        const categoryColors = {
+            'Audio & Music': 'cat-audio-music',
+            'Audio & Voice': 'cat-audio-voice',
+            'Automation': 'cat-automation',
+            'Centralized Platforms': 'cat-centralized',
+            'Design & Graphics': 'cat-design',
+            'E-commerce & Business': 'cat-ecommerce',
+            'Image Editing': 'cat-image-editing',
+            'Image Enhancement': 'cat-image-enhancement',
+            'Image Generation': 'cat-image-generation',
+            'Language Models': 'cat-language',
+            'Marketing': 'cat-marketing',
+            'No-Code Development': 'cat-nocode',
+            'Productivity': 'cat-productivity',
+            'AI Agents': 'cat-ai-agents',
+            'Video Editing': 'cat-video-editing',
+            'Video Generation': 'cat-video-generation',
+            'Avatars': 'cat-avatars',
+            'Writing': 'cat-writing',
+            'Social Media Tools': 'cat-social',
+            'Legal & Business': 'cat-legal',
+            'Presentation & Design': 'cat-presentation',
+            'Travel & Planning': 'cat-travel',
+            'Web Development': 'cat-web'
+        };
 
-    // Custom logos for specific tools
-    const customLogos = {
-        'Minimax': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFGMjAyOCIvPgo8cGF0aCBkPSJNMTAgMTBIMTVWMzBIMTBWMTBaIiBmaWxsPSIjRjc5MDA5Ii8+CjxwYXRoIGQ9Ik0xOCAxMEgyM1YyMkgxOFYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPHA+YXRoIGQ9Ik0yNiAxMEgzMVYxOEgyNlYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPC9zdmc+Cg==',
-        'Minimax Hailuo': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFGMjAyOCIvPgo8cGF0aCBkPSJNMTAgMTBIMTVWMzBIMTBWMTBaIiBmaWxsPSIjRjc5MDA5Ii8+CjxwYXRoIGQ9Ik0xOCAxMEgyM1YyMkgxOFYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPHA+YXRoIGQ9Ik0yNiAxMEgzMVYxOEgyNlYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPC9zdmc+Cg=='
-    };
+        // Custom logos for specific tools
+        const customLogos = {
+            'Minimax': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFGMjAyOCIvPgo8cGF0aCBkPSJNMTAgMTBIMTVWMzBIMTBWMTBaIiBmaWxsPSIjRjc5MDA5Ii8+CjxwYXRoIGQ9Ik0xOCAxMEgyM1YyMkgxOFYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPHA+YXRoIGQ9Ik0yNiAxMEgzMVYxOEgyNlYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPC9zdmc+Cg==',
+            'Minimax Hailuo': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFGMjAyOCIvPgo8cGF0aCBkPSJNMTAgMTBIMTVWMzBIMTBWMTBaIiBmaWxsPSIjRjc5MDA5Ii8+CjxwYXRoIGQ9Ik0xOCAxMEgyM1YyMkgxOFYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPHA+YXRoIGQ9Ik0yNiAxMEgzMVYxOEgyNlYxMFoiIGZpbGw9IiNGNzkwMDkiLz4KPC9zdmc+Cg=='
+        };
 
-    // Load tools from Google Sheets
-    async function loadToolsFromSheets() {
-        try {
-            const response = await fetch(SHEET_URL);
-            const csvText = await response.text();
-            
-            // Parse CSV
-            const rows = csvText.split('\n');
-            const headers = rows[0].split(',').map(h => h.replace(/"/g, ''));
-            
-            tools = [];
-            
-            for (let i = 1; i < rows.length; i++) {
-                if (rows[i].trim()) {
-                    const values = parseCSVRow(rows[i]);
-                    if (values.length >= 3) {
-                        const tool = {
-                            name: values[0]?.replace(/"/g, '') || '',
-                            category: values[1]?.replace(/"/g, '') || '',
-                            description: values[2] ? values[2].replace(/"/g, '') : 'No description available',
-                            pricing: values[3] ? values[3].replace(/"/g, '') : 'Free + Paid',
-                            detailedPricing: values[4] ? values[4].replace(/"/g, '') : '',
-                            link: values[5] ? values[5].replace(/"/g, '') : '#',
-                            keyFeature: values[6] ? values[6].replace(/"/g, '') : 'AI Tool',
-                            favorite: values[7]?.replace(/"/g, '') === 'TRUE' || values[2]?.replace(/"/g, '') === 'TRUE',
-                            logoUrl: values[8] ? values[8].replace(/"/g, '') : ''
-                        };
-                        
-                        if (tool.name && tool.category) {
-                            tools.push(tool);
+        // Load tools from Google Sheets
+        async function loadToolsFromSheets() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const csvText = await response.text();
+                
+                // Parse CSV
+                const rows = csvText.split('\n');
+                const headers = rows[0].split(',').map(h => h.replace(/"/g, ''));
+                
+                tools = [];
+                
+                for (let i = 1; i < rows.length; i++) {
+                    if (rows[i].trim()) {
+                        const values = parseCSVRow(rows[i]);
+                        if (values.length >= 3) {
+                            const tool = {
+                                name: values[0]?.replace(/"/g, '') || '',
+                                category: values[1]?.replace(/"/g, '') || '',
+                                description: values[2] ? values[2].replace(/"/g, '') : 'No description available',
+                                pricing: values[3] ? values[3].replace(/"/g, '') : 'Free + Paid',
+                                detailedPricing: values[4] ? values[4].replace(/"/g, '') : '',
+                                link: values[5] ? values[5].replace(/"/g, '') : '#',
+                                keyFeature: values[6] ? values[6].replace(/"/g, '') : 'AI Tool',
+                                favorite: values[7]?.replace(/"/g, '') === 'TRUE' || values[2]?.replace(/"/g, '') === 'TRUE',
+                                logoUrl: values[8] ? values[8].replace(/"/g, '') : ''
+                            };
+                            
+                            if (tool.name && tool.category) {
+                                tools.push(tool);
+                            }
                         }
                     }
                 }
+                
+                filteredTools = [...tools];
+                renderFilters();
+                renderTools();
+                
+            } catch (error) {
+                console.error('Error loading tools from Google Sheets:', error);
+                document.getElementById('toolsGrid').innerHTML = '<p class="text-red-500 text-center col-span-full">Unable to load tools. Please try again later.</p>';
+            }
+        }
+
+        // Parse CSV row (handles commas within quotes)
+        function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
             }
             
-            filteredTools = [...tools];
-            renderFilters();
+            result.push(current);
+            return result;
+        }
+
+        // Sort tools function
+        function sortTools(criteria) {
+            if (!criteria) {
+                return;
+            }
+            
+            let sortedTools = [...filteredTools];
+            
+            switch (criteria) {
+                case 'name':
+                    sortedTools.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'name-desc':
+                    sortedTools.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+                case 'price':
+                    sortedTools.sort((a, b) => {
+                        const priceOrder = { 'Free': 0, 'Free + Paid': 1, 'Paid': 2 };
+                        return (priceOrder[a.pricing] || 3) - (priceOrder[b.pricing] || 3);
+                    });
+                    break;
+                case 'category':
+                    sortedTools.sort((a, b) => a.category.localeCompare(b.category));
+                    break;
+                case 'favorites':
+                    sortedTools.sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
+                    break;
+            }
+            
+            filteredTools = sortedTools;
             renderTools();
-            
-        } catch (error) {
-            console.error('Error loading tools from Google Sheets:', error);
-            document.getElementById('toolsGrid').innerHTML = '<p class="text-red-500 text-center col-span-full">Unable to load tools. Please try again later.</p>';
         }
-    }
 
-    // Parse CSV row (handles commas within quotes)
-    function parseCSVRow(row) {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-        
-        for (let i = 0; i < row.length; i++) {
-            const char = row[i];
+        // Reset to All Tools function
+        function resetToAllTools() {
+            currentCategory = 'all';
+            filteredTools = [...tools];
             
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                result.push(current);
-                current = '';
+            // Reset search input
+            document.getElementById('searchInput').value = '';
+            document.getElementById('sortSelect').value = '';
+            
+            // Reset filter buttons
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('[data-category="all"]').classList.add('active');
+            
+            renderTools();
+        }
+
+        function getPricingDisplay(tool) {
+            if (tool.pricing === "Free") {
+                return '<div class="pricing-container"><span class="pricing-type text-green-400">Free</span></div>';
+            } else if (tool.pricing === "Paid") {
+                return `<div class="pricing-container"><span class="pricing-type text-green-400">Paid</span><span class="pricing-details">${tool.detailedPricing}</span></div>`;
+            } else if (tool.pricing === "Free + Paid") {
+                return `<div class="pricing-container"><span class="pricing-type text-green-400">Free / Paid</span><span class="pricing-details">${tool.detailedPricing}</span></div>`;
             } else {
-                current += char;
+                return `<div class="pricing-container"><span class="pricing-type text-green-400">${tool.pricing}</span></div>`;
             }
         }
-        
-        result.push(current);
-        return result;
-    }
 
-    // Reset to All Tools function
-    function resetToAllTools() {
-        currentCategory = 'all';
-        filteredTools = [...tools];
-        
-        // Reset search input
-        document.getElementById('searchInput').value = '';
-        
-        // Reset filter buttons
-        document.querySelectorAll('.category-filter').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector('[data-category="all"]').classList.add('active');
-        
-        renderTools();
-    }
+        function renderFilters() {
+            const categoryCounts = {};
+            tools.forEach(tool => {
+                categoryCounts[tool.category] = (categoryCounts[tool.category] || 0) + 1;
+            });
 
-    function getPricingDisplay(tool) {
-        if (tool.pricing === "Free") {
-            return '<div class="pricing-container"><span class="pricing-type text-green-400">Free</span></div>';
-        } else if (tool.pricing === "Paid") {
-            return `<div class="pricing-container"><span class="pricing-type text-green-400">Paid</span><span class="pricing-details">${tool.detailedPricing}</span></div>`;
-        } else if (tool.pricing === "Free + Paid") {
-            return `<div class="pricing-container"><span class="pricing-type text-green-400">Free / Paid</span><span class="pricing-details">${tool.detailedPricing}</span></div>`;
-        } else {
-            return `<div class="pricing-container"><span class="pricing-type text-green-400">${tool.pricing}</span></div>`;
+            const filtersContainer = document.getElementById('categoryFilters');
+            
+            // Clear existing filters except "All Tools"
+            const allToolsButton = filtersContainer.querySelector('[data-category="all"]');
+            filtersContainer.innerHTML = '';
+            filtersContainer.appendChild(allToolsButton);
+            
+            const categories = Object.keys(categoryCounts).sort();
+            
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'category-filter px-4 py-2 rounded-lg text-sm font-medium';
+                button.textContent = `${category} (${categoryCounts[category]})`;
+                button.dataset.category = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                button.addEventListener('click', () => filterByCategory(category));
+                filtersContainer.appendChild(button);
+            });
         }
-    }
 
-    function renderFilters() {
-        const categoryCounts = {};
-        tools.forEach(tool => {
-            categoryCounts[tool.category] = (categoryCounts[tool.category] || 0) + 1;
-        });
-
-        const filtersContainer = document.getElementById('categoryFilters');
-        
-        // Clear existing filters except "All Tools"
-        const allToolsButton = filtersContainer.querySelector('[data-category="all"]');
-        filtersContainer.innerHTML = '';
-        filtersContainer.appendChild(allToolsButton);
-        
-        const categories = Object.keys(categoryCounts).sort();
-        
-        categories.forEach(category => {
-            const button = document.createElement('button');
-            button.className = 'category-filter px-4 py-2 rounded-lg text-sm font-medium';
-            button.textContent = `${category} (${categoryCounts[category]})`;
-            button.dataset.category = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            button.addEventListener('click', () => filterByCategory(category));
-            filtersContainer.appendChild(button);
-        });
-    }
-
-    function renderTools(toolsToRender = filteredTools) {
-        const grid = document.getElementById('toolsGrid');
-        grid.innerHTML = '';
-        
-        toolsToRender.forEach(tool => {
-            const card = document.createElement('div');
-            card.className = 'card p-6 rounded-xl relative overflow-visible';
+        function renderTools(toolsToRender = filteredTools) {
+            const grid = document.getElementById('toolsGrid');
+            grid.innerHTML = '';
             
-            // Use custom logo if available, otherwise use favicon
-            const logoUrl = customLogos[tool.name] || `https://www.google.com/s2/favicons?domain=${new URL(tool.link).hostname}&sz=64`;
-            
-            card.innerHTML = `
-                ${tool.favorite ? '<div class="jays-pick">⭐ JAY\'S PICK</div>' : ''}
-                <div class="flex items-start gap-4 mb-4">
-                    <img src="${logoUrl}" alt="${tool.name}" class="tool-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%234a90e2%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-size=%2214%22>${tool.name.charAt(0)}</text></svg>'">
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-white mb-2">${tool.name}</h3>
-                        <span class="category-badge ${categoryColors[tool.category] || 'bg-gray-500'} text-white">
-                            ${tool.category}
-                        </span>
+            toolsToRender.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'card p-6 rounded-xl relative overflow-visible';
+                
+                // Use custom logo if available, otherwise use favicon
+                const logoUrl = customLogos[tool.name] || `https://www.google.com/s2/favicons?domain=${new URL(tool.link).hostname}&sz=64`;
+                
+                card.innerHTML = `
+                    ${tool.favorite ? '<div class="jays-pick">⭐ JAY\'S PICK</div>' : ''}
+                    <div class="card-content">
+                        <div class="flex items-start gap-4 mb-4">
+                            <img src="${logoUrl}" alt="${tool.name}" class="tool-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%234a90e2%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-size=%2214%22>${tool.name.charAt(0)}</text></svg>'">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-white mb-2">${tool.name}</h3>
+                                <span class="category-badge ${categoryColors[tool.category] || 'bg-gray-500'} text-white">
+                                    ${tool.category}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-3 leading-relaxed">${tool.description}</p>
                     </div>
-                </div>
-                <p class="text-gray-300 text-sm mb-3 leading-relaxed">${tool.description}</p>
-                <div class="key-feature">
-                    <strong>Key Feature:</strong> ${tool.keyFeature}
-                </div>
-                <div class="flex items-center justify-between">
-                    ${getPricingDisplay(tool)}
-                    <a href="${tool.link}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors">
-                        Visit Tool
-                    </a>
-                </div>
-            `;
+                    <div class="card-footer">
+                        <div class="key-feature">
+                            <strong>Key Feature:</strong> ${tool.keyFeature}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            ${getPricingDisplay(tool)}
+                            <a href="${tool.link}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors">
+                                Visit Tool
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
             
-            grid.appendChild(card);
-        });
-        
-        document.getElementById('toolCount').textContent = toolsToRender.length;
-    }
-
-    function filterByCategory(category) {
-        currentCategory = category;
-        
-        // Update active filter button
-        document.querySelectorAll('.category-filter').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        if (category === 'all') {
-            filteredTools = [...tools];
-            document.querySelector('[data-category="all"]').classList.add('active');
-        } else {
-            filteredTools = tools.filter(tool => tool.category === category);
-            document.querySelector(`[data-category="${category.toLowerCase().replace(/[^a-z0-9]/g, '-')}"]`).classList.add('active');
+            document.getElementById('toolCount').textContent = toolsToRender.length;
         }
-        
-        renderTools(filteredTools);
-    }
 
-    function setupSearch() {
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const baseTools = currentCategory === 'all' ? tools : tools.filter(tool => tool.category === currentCategory);
+        function filterByCategory(category) {
+            currentCategory = category;
             
-            if (query.trim() === '') {
-                filteredTools = baseTools;
+            // Update active filter button
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (category === 'all') {
+                filteredTools = [...tools];
+                document.querySelector('[data-category="all"]').classList.add('active');
             } else {
-                filteredTools = baseTools.filter(tool => 
-                    tool.name.toLowerCase().includes(query) ||
-                    tool.description.toLowerCase().includes(query) ||
-                    tool.keyFeature.toLowerCase().includes(query) ||
-                    tool.category.toLowerCase().includes(query)
-                );
+                filteredTools = tools.filter(tool => tool.category === category);
+                document.querySelector(`[data-category="${category.toLowerCase().replace(/[^a-z0-9]/g, '-')}"]`).classList.add('active');
             }
             
             renderTools(filteredTools);
-        });
-    }
+        }
 
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', () => {
-        loadToolsFromSheets();
-        setupSearch();
-        
-        // Refresh data every 5 minutes
-        setInterval(loadToolsFromSheets, 5 * 60 * 1000);
-    });
-</script>
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const baseTools = currentCategory === 'all' ? tools : tools.filter(tool => tool.category === currentCategory);
+                
+                if (query.trim() === '') {
+                    filteredTools = baseTools;
+                } else {
+                    filteredTools = baseTools.filter(tool => 
+                        tool.name.toLowerCase().includes(query) ||
+                        tool.description.toLowerCase().includes(query) ||
+                        tool.keyFeature.toLowerCase().includes(query) ||
+                        tool.category.toLowerCase().includes(query)
+                    );
+                }
+                
+                renderTools(filteredTools);
+            });
+            
+            sortSelect.addEventListener('change', (e) => {
+                sortTools(e.target.value);
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadToolsFromSheets();
+            setupSearch();
+            
+            // Refresh data every 5 minutes
+            setInterval(loadToolsFromSheets, 5 * 60 * 1000);
+        });
+    </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"9594e890ce31d39e","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
 </body>
 </html>
