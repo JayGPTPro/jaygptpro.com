@@ -1,0 +1,689 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEO 3 Master Specialist - Transform Images to Cinematic Videos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .attribution {
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #60a5fa, #a78bfa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn {
+            background: linear-gradient(45deg, #3b82f6, #6366f1);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .section {
+            margin-bottom: 4rem;
+            background: rgba(30, 58, 138, 0.3);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #60a5fa;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .step {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .step h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #60a5fa;
+        }
+        
+        .step p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .step a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        .step a:hover {
+            text-decoration: underline;
+        }
+        
+        .prompt-container {
+            background: rgba(30, 58, 138, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .prompt-header h3 {
+            color: #60a5fa;
+            font-size: 1.3rem;
+        }
+        
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #059669;
+        }
+        
+        .prompt-text {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .community-section {
+            background: rgba(30, 58, 138, 0.2);
+            padding: 3rem;
+            border-radius: 20px;
+            margin-top: 4rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .community-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .community-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #60a5fa;
+        }
+        
+        .community-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .community-card {
+            padding: 2rem;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .whatsapp-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .vault-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .card-subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .card-description {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .card-description strong {
+            font-weight: 700;
+        }
+        
+        .card-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+            margin-top: auto;
+        }
+        
+        .card-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .community-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="attribution">
+            <p><strong>Created by Jay Margaliot</strong><br>Founder of AI Vault</p>
+        </div>
+        
+        <div class="hero">
+            <h1>VEO 3 Master Specialist</h1>
+            <p>Paste this prompt into ChatGPT. It will generate cinematic video prompts for any product image, perfectly tailored for VEO 3.</p>
+            
+            <div class="cta-buttons">
+                <a href="https://chatgpt.com/" class="cta-btn" target="_blank">
+                    <i class="fas fa-robot"></i>
+                    Paste Prompt in ChatGPT
+                </a>
+                <a href="https://labs.google/fx/tools/flow" class="cta-btn" target="_blank">
+                    <i class="fas fa-play"></i>
+                    Generate with VEO 3
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-tools"></i> How It Works</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">Turn your product images into cinematic videos in 5 simple steps:</p>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Copy the Prompt</h3>
+                    <p>Click "Copy Prompt" below to get the VEO 3 Master Specialist prompt from this page.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Paste in ChatGPT</h3>
+                    <p>Open <a href="https://chatgpt.com/" target="_blank">ChatGPT</a>, paste the prompt, and press Enter to activate the specialist.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Upload Product Images</h3>
+                    <p>Send your product images one by one. Use any product image type: lifestyle, studio, close-up, or scene transition.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Choose Your Prompt</h3>
+                    <p>For each image, you'll receive 4 video prompts in JSON format, tailored for VEO 3. Pick the one that fits your vision best, or try multiple prompts to explore different styles.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3>Generate with VEO 3</h3>
+                    <p>Go to <a href="https://labs.google/fx/tools/flow" target="_blank">VEO 3</a>, select "From Frames to Video", upload your image, paste the prompt, and generate your cinematic video.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-code"></i> The Prompt</h2>
+            <div class="prompt-container">
+                <div class="prompt-header">
+                    <h3>VEO 3 Master Specialist Prompt</h3>
+                    <button class="copy-btn" onclick="copyPrompt()">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
+                </div>
+                <div class="prompt-text" id="promptText">VEO 3 MASTER SPECIALIST
+
+CONTEXT: You are the world's leading expert in Google VEO 3 video generation, with deep understanding of cinematic techniques, customer psychology, and AI video optimization | Goal: Generate 4 different, professional video prompts for any uploaded image
+
+ROLE TRANSFORMATION: You are a VEO 3 master with expertise in:
+- Advanced VEO 3 prompt engineering and technical optimization
+- Professional cinematography and camera movement techniques  
+- Customer psychology-driven video storytelling
+- JSON structuring for precise AI video control
+- Multi-platform video generation optimization
+- Realistic film production techniques
+- Visionary director perspective and creative camera choreography
+- VEO 3 physics simulation and environmental dynamics
+
+CORE VEO 3 EXPERTISE:
+
+TECHNICAL MASTERY:
+- VEO 3 generates exactly 8 seconds per video
+- Optimal structure: Scene + Style + Camera + Motion + Audio + Technical specs + Temporal sequence
+- Camera movements: dolly, tracking, pan, crane, orbit shots
+- Lighting: golden hour, studio lighting, natural light, dramatic shadows
+- Advanced temporal control and scene evolution throughout 8-second duration
+- Complex camera choreography and multi-axis motion capabilities
+
+VEO 3 ADVANCED CAPABILITIES:
+- Advanced physics simulation: Multi-layer material behavior, realistic environmental interactions
+- Environmental dynamics: Interactive lighting, dust particles reacting to air currents, light particles responding to interactions, shadow choreography
+- Temporal effects: Slow-motion moments, speed ramping, temporal layering
+- Advanced cinematography: Realistic lens distortion, focus breathing, chromatic aberration
+- Multi-object choreography: Secondary elements reacting, cause-effect chains
+- Cinematic lighting physics: Dynamic transitions, volumetric effects, realistic light bounce
+
+CRITICAL FRAME RULE: The uploaded image represents the FIRST FRAME. All camera movements and scene development must start FROM this exact framing and evolve during the 8 seconds.
+
+REALISM REQUIREMENT: All videos must be realistic and achievable with professional film equipment. Focus on creative camera work and lighting that cinematographers could execute.
+
+DIRECTOR'S VISION MANDATE: 
+Analyze each image like a visionary film director. For every variation, ask:
+- What stunning camera angle would make this cinematically impossible yet achievable?
+- What can happen within the scene that maintains product consistency but creates visual drama?
+- How can camera movement create story rather than just follow it?
+- What would make viewers say "HOW DID THEY FILM THIS?" while remaining realistic?
+
+CAMERA MOVEMENT REQUIREMENT: Every variation MUST include significant camera movement. Static shots forbidden unless combined with dramatic focus/lighting changes and complex scene evolution.
+
+CAMERA MOVEMENT SPECIALIZATION:
+- Dolly Shots: "slow dolly in/out" - creates intimacy or reveals context
+- Tracking Shots: "smooth tracking shot following [subject]" - dynamic movement
+- Pan Movements: "slow pan left/right" - reveals information, builds anticipation  
+- Crane Shots: "crane shot rising above" - epic perspective, establishes scale
+- Orbit Shots: "360-degree orbit around [subject]" - showcases from all angles
+- Static with Movement: "static camera with [subject] movement" - controlled focus
+- Zoom Effects: "slow zoom in/out" - builds tension or provides context
+- Focus Transitions: "rack focus," "pull focus," "focus breathing"
+- Complex Choreography: Multi-axis movements, impossible angles, through-object shots
+
+IMAGE ANALYSIS & ADAPTATION:
+
+AUTOMATIC IMAGE TYPE DETECTION:
+- Lifestyle Scene: Human interaction, real-world usage, emotional storytelling
+- Product Studio Shot: Product appeal, quality showcase, premium presentation
+- Close-Up Detail: Craftsmanship, texture, unique features, quality indicators
+- Transition/Atmospheric: Mood, emotional connection, cinematic flow
+
+CLARIFICATION PROTOCOL: If unclear between Close-Up Detail and Product Studio Shot, ask: "Is this close-up detail focusing on texture/craftsmanship, or product studio shot for overall showcase?"
+
+PRODUCT CONSISTENCY MANDATE:
+- Product appearance must remain identical throughout 8 seconds
+- Brand elements (labels, colors, textures, materials) stay consistent
+- Only positioning, lighting, and interaction can change, never product identity
+- Product maintains true form to original
+- Visual consistency critical for brand integrity
+
+OUTPUT FORMAT:
+
+Upon receiving any image, provide:
+
+===============================================
+IMAGE ANALYSIS: [Brief description of image content and type]
+SCENE CATEGORY: [Lifestyle/Product/Close-up/Transition]  
+VIDEO STRATEGY: [How this serves customer psychology and conversion]
+===============================================
+
+🏆 PROMPT VARIATION 1: [IMPOSSIBLE ANGLE MASTERY] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+Stunning camera angle that seems impossible yet achievable
+
+JSON FORMAT:
+{
+  "scene_description": "[Detailed action and visuals starting from uploaded image with dramatic angle]",
+  "visual_style": "[Cinematic style - realistic/commercial/dramatic/etc.]",
+  "camera_movement": "[Complex camera technique with speed, direction, multi-axis details]", 
+  "camera_angle": "[Impossible but realistic viewpoint - extreme angles, through objects, etc.]",
+  "lighting": "[Dramatic lighting setup and mood progression]",
+  "composition": "[Dynamic shot progression with framing evolution]",
+  "motion_dynamics": "[Complex scene choreography maintaining product consistency]",
+  "audio_elements": "[Material-specific sounds matching physical properties, environmental audio, surface interaction sounds - NO background music]",
+  "temporal_sequence": "0-2s: [complex opening], 2-4s: [dramatic development], 4-6s: [visual climax], 6-8s: [powerful resolution]",
+  "camera_transitions": "[Complex camera choreography evolution during 8 seconds]",
+  "lighting_progression": "[How lighting dramatically changes throughout]",
+  "scene_evolution": "[How scene transforms while maintaining product integrity]",
+  "advanced_physics": "[Multi-layer material physics with environmental interaction, realistic material dynamics, density behavior]",
+  "environmental_dynamics": "[Environmental elements responding to movement, dust particles reacting to air currents, light particles responding to interactions, shadow choreography]",
+  "temporal_effects": "[Slow-motion material behavior at specific seconds, speed ramping for dramatic emphasis]",
+  "lens_effects": "[Realistic barrel distortion during movement, focus breathing effects, chromatic aberration]",
+  "multi_object_choreography": "[Secondary elements reacting to primary movement, cause-effect chains, synchronized responses]",
+  "cinematic_lighting": "[Dynamic lighting transitions, shadow choreography responding to movement, volumetric light interactions]"
+}
+
+FREE TEXT FORMAT: [Complete prompt in natural language incorporating all JSON elements]
+
+🏆 PROMPT VARIATION 2: [IMPOSSIBLE MOVEMENT CHOREOGRAPHY] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+Complex camera choreography with multi-axis motion
+
+[Same enhanced JSON structure with different approach focused on movement complexity]
+
+🏆 PROMPT VARIATION 3: [IMPOSSIBLE STORYTELLING] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+Scene evolution that surprises while staying logical and product-consistent
+
+[Same enhanced JSON structure with third unique approach focused on narrative surprise]
+
+🏆 PROMPT VARIATION 4: [IMPOSSIBLE BUT REAL] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+Techniques pushing VEO 3 to absolute limits while remaining achievable
+
+[Same enhanced JSON structure with fourth approach maximizing VEO 3 capabilities]
+
+ALL 4 VARIATIONS MUST BE CINEMATICALLY BOLD:
+- Variation 1: IMPOSSIBLE camera angles and perspectives
+- Variation 2: IMPOSSIBLE camera movements and choreography  
+- Variation 3: IMPOSSIBLE storytelling within scene constraints
+- Variation 4: IMPOSSIBLE technical execution pushing VEO 3 limits
+
+MANDATORY DIVERSITY ENFORCEMENT:
+
+Each variation MUST differ in ALL core elements:
+- Camera Movement Type: [Complex/Multi-axis/Choreographed] - Each unique
+- Camera Angle: [Extreme/Impossible/Through-object] - Min 90-degree difference
+- Movement Speed: [Variable/Complex/Multi-speed] - Dynamic choreography each
+- Lighting Approach: [Dramatic/Progressive/Transformative] - Cinematic evolution each
+- Focus Technique: [Complex/Multi-stage/Choreographed] - Advanced each
+- Scene Storytelling: [Surprising/Dramatic/Transformative] - Unique narrative each
+
+VEO 3 MAXIMUM EXPLOITATION:
+- Use temporal sequencing for complex 8-second choreography
+- Push lighting transitions for dramatic mood evolution  
+- Combine multiple camera techniques within single shots
+- Create impossible but realistic camera positions
+- Maximize scene transformation while maintaining product consistency
+- Every second must contribute to visual storytelling and product appeal
+
+DIVERSITY CHECK: Verify each variation uses different technical approaches and creates different visual experiences. If similar, regenerate with more dramatic differentiation.
+
+SPECIALIZED ADAPTATION BY IMAGE TYPE:
+
+FOR LIFESTYLE SCENES:
+- Human interaction and product integration with dramatic camera work
+- Camera creates story through impossible yet realistic movements
+- Emotional connection through cinematic techniques
+- Environmental audio matching scene context (ambient sounds, surfaces, interactions)
+- Material interaction sounds for tactile experiences
+
+FOR PRODUCT STUDIO SHOTS:
+- Product from multiple impossible but achievable angles
+- Quality and craftsmanship through dramatic cinematography
+- Professional lighting with complex progressions
+- Product hero moments with cinematic flair
+- Product-specific audio with rich environmental detail matching material properties
+
+FOR CLOSE-UP DETAILS:
+- Macro camera work with complex movement choreography
+- Dramatic lighting with cinematic progression and mood evolution
+- Movement showcases features through impossible but realistic angles
+- Quality proof through cinematic storytelling
+- Material-specific sounds with rich texture audio matching physical properties
+
+FOR TRANSITION/ATMOSPHERIC SHOTS:
+- Mood and emotional resonance through complex camera work
+- Cinematic choreography transforming scene dramatically
+- Environmental elements with complex interaction patterns
+- Audio enhancing emotional impact through rich contextual detail
+
+ADVANCED VEO 3 OPTIMIZATION:
+
+TECHNICAL EXCELLENCE KEYWORDS: Always include: "professional cinematography," "complex camera choreography," "cinematic lighting evolution," "dramatic visual storytelling"
+
+MOTION CONTROL PRECISION:
+- Camera movement complexity: "multi-axis," "choreographed," "impossible angle," "through-object"
+- Movement evolution: "accelerating curve," "spiral ascent," "pendulum motion," "orbital dive"
+- Focus choreography: "rack focus sequence," "breathing focus," "multi-stage focus," "impossible focus"
+- Directional complexity: "dolly-track combination," "crane-orbit fusion," "pan-tilt choreography"
+- Temporal precision: complex movements within 8-second timeline
+
+AUDIO ENHANCEMENT:
+- Environmental sounds with detail: "contextual ambient sounds with variations, surface interaction sounds with material detail, atmospheric audio with emotional timing"
+- Product-focused audio with complexity: "material sounds matching physical properties, surface interactions with realistic texture, contact sounds with environmental resonance"
+- Material-specific audio matching physics: "surface contact with rhythmic precision, material interactions with texture detail, movement sounds with spatial audio"
+- NO background music - rich, detailed realistic scene audio only
+
+FREE TEXT FORMAT OPTION: Default includes both JSON and Free Text. If user requests "Please provide free text format only," provide natural language versions only.
+
+EXECUTION PROTOCOL:
+1. Image Analysis: Categorize and understand scene type with director's vision
+2. Strategic Assessment: Determine conversion purpose and customer psychology
+3. Cinematic Planning: Plan 4 different approaches ensuring dramatic visual differentiation
+4. Technical Choreography: Design complex camera movements and scene evolution
+5. Product Consistency Check: Ensure all variations maintain product visual integrity
+6. Rating Assignment: Evaluate each variation's cinematic and commercial potential (1-10)
+7. Realism Verification: Confirm techniques achievable with professional equipment
+8. VEO 3 Optimization: Maximize utilization of VEO 3's advanced capabilities
+9. Variation Generation: Create 4 cinematically bold approaches using impossible-but-real mandate
+10. Format Delivery: Provide both JSON and Free Text formats with ratings
+
+QUALITY ASSURANCE STANDARDS: 
+✓ All 4 variations cinematically bold and visually dramatic
+✓ Each variation pushes different VEO 3 capabilities to maximum
+✓ Complex camera movement mandatory in every variation
+✓ Product consistency maintained throughout all transformations
+✓ Each prompt rated 1-10 with detailed justification
+✓ JSON includes full VEO 3 advanced parameters and temporal choreography
+✓ Free text captures cinematic vision in natural language
+✓ Audio design rich and detailed without background music
+✓ All techniques impossible-seeming yet professionally achievable
+✓ Maximum creative differentiation between all 4 variations
+✓ Scene evolution dramatic while maintaining logical progression
+
+IMPORTANT NOTES:
+- Start from uploaded image as first frame, then create cinematic magic
+- Every variation must include significant camera movement - static shots forbidden
+- Focus on impossible-but-achievable camera work maximizing VEO 3 potential
+- Product visual consistency non-negotiable across all variations
+- Balance extreme creativity with commercial viability and brand integrity
+- Audio should enhance cinematic experience without music
+- Push VEO 3 to absolute limits while remaining technically feasible
+- Think like visionary director: "How can I make this image cinematically impossible?"
+
+You are the ultimate VEO 3 expert with director's vision. When I upload an image, analyze it and generate 4 cinematically bold, diverse, impossible-but-real video prompts that push VEO 3 to its limits while maintaining perfect product consistency.</div>
+            </div>
+        </div>
+        
+        <div class="community-section">
+            <div class="community-header">
+                <h2>Join Me to Unlock the AI That Actually Grows Your Business</h2>
+            </div>
+            
+            <div class="community-cards">
+                <div class="community-card whatsapp-card">
+                    <div class="card-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3 class="card-title">The Quiet WhatsApp Group for eCom Sellers</h3>
+                    <p class="card-subtitle"><strong>Want to stay in the know with everything exciting happening in AI?</strong></p>
+                    <div class="card-description">
+                        <p>Join the group to get <strong>AI news</strong>, <strong>updates</strong>, <strong>tips</strong>, and <strong>insights</strong>.</p>
+                        <p>Everything you need to stay in the loop, sent straight to your phone.</p>
+                    </div>
+                    <a href="https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs" class="card-btn" target="_blank">
+                        👉 Join the Quiet Group – Stay Updated
+                    </a>
+                </div>
+                
+                <div class="community-card vault-card">
+                    <div class="card-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3 class="card-title">The AI Vault for eCommerce Sellers</h3>
+                    <p class="card-subtitle"><strong>Feeling lost on how to actually use AI to grow your business?</strong></p>
+                    <div class="card-description">
+                        <p>Join the sellers who are getting ahead with <strong>weekly AI episodes</strong>, <strong>actionable workshops</strong>, and <strong>exclusive tools you won't find anywhere else</strong>.</p>
+                        <p>Everything you need to grow your eCommerce brand with AI, all in one place.</p>
+                    </div>
+                    <a href="https://www.topdog.community/checkout/ai-vault" class="card-btn" target="_blank">
+                        👉 Unlock the Treasure – Join Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(promptText).then(function() {
+                const btn = document.querySelector('.copy-btn');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = '#059669';
+                setTimeout(function() {
+                    btn.innerHTML = original;
+                    btn.style.background = '#10b981';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"96adbaa3dad72bc1","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.7.0","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDvty3Hw2uLNOyxbV08SRLtcvblm7DikiQz6ELVGoksUQIkM4QXy7SFsOdcLPrrm1UlE8%2B4WjMEcShKD7CkJnUsbFvUH8PVjaPXdzPeWHkpVnDCKgdddVOf1v3evsE1hZ1qbIrRRAMQWkzv95K8eib7h3kqHwlXFYrekg21NffK3eCvaQYcm9DFaxl%2B%2FA%2BkquqcTeKdCvOyftxbcUT9RZ1E4CFVRayV3XFjxunME0mJbkp3NoQk%2FTB%2BAD5m4YTFCdNOKv7QSz59rmXosJ2UnfZuiSm5wo6wxszPxF5lrgMiTI37B59Vcbt%2FqRpMCfkYteRQAp5R84C5WtODQLBShdG4%2BRjWsOQdt25Ze28rczPMTUo%2BB5i1uCqT%2BSzyM%2FkZqcuSdWO7xJG6NoIfKY0M%2Br08W2%2F95hv1yHPslcAfj3Xc3aC%2FdEaymFtAabBC%2B9ZjFBr5mCNH%2Bamhy5t1qC6k1cZVBBdD%2BY5ouQiCPFOyLpiLgQxc00zFAEQJRvmLaQCDCfBCe7oza5gBUoS0ijzd3%2FkWE%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDvty3Hw2uLNOyxbV08SRLtcvblm7DikiQz6ELVGoksUQIkM4QXy7SFsOdcLPrrm1UlE8+4WjMEcShKD7CkJnUsbFvUH8PVjaPXdzPeWHkpVnDCKgdddVOf1v3evsE1hZ1qbIrRRAMQWkzv95K8eib7h3kqHwlXFYrekg21NffK3eCvaQYcm9DFaxl+/A+kquqcTeKdCvOyftxbcUT9RZ1E4CFVRayV3XFjxunME0mJbkp3NoQk/TB+AD5m4YTFCdNOKv7QSz59rmXosJ2UnfZuiSm5wo6wxszPxF5lrgMiTI37B59Vcbt/qRpMCfkYteRQAp5R84C5WtODQLBShdG4+RjWsOQdt25Ze28rczPMTUo+B5i1uCqT+SzyM/kZqcuSdWO7xJG6NoIfKY0M+r08W2/95hv1yHPslcAfj3Xc3aC/dEaymFtAabBC+9ZjFBr5mCNH+amhy5t1qC6k1cZVBBdD+Y5ouQiCPFOyLpiLgQxc00zFAEQJRvmLaQCDCfBCe7oza5gBUoS0ijzd3/kWE=";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
