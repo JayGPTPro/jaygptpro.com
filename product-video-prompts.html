@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Product Video - 3 AI Prompts for Amazon Videos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0A1A2F;
+            --secondary-dark: #1A2B42;
+            --electric-teal: #00D4AA;
+            --bright-teal: #00AAA0;
+            --success-green: #00FF88;
+            --warning-amber: #FFB800;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+            color: #E2E8F0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .circuit-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(0, 212, 170, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 170, 160, 0.1) 0%, transparent 50%),
+                linear-gradient(90deg, transparent 24%, rgba(0, 212, 170, 0.05) 25%, rgba(0, 212, 170, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 212, 170, 0.05) 75%, rgba(0, 212, 170, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 212, 170, 0.05) 25%, rgba(0, 212, 170, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 212, 170, 0.05) 75%, rgba(0, 212, 170, 0.05) 76%, transparent 77%, transparent);
+            background-size: 100px 100px, 100px 100px, 50px 50px, 50px 50px;
+            animation: circuitPulse 8s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes circuitPulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .content-area {
+            flex: 3;
+            min-width: 0;
+        }
+
+        .scratch-sidebar {
+            flex: 1;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            min-width: 300px;
+        }
+
+        .glass-card {
+            background: rgba(26, 43, 66, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--electric-teal), transparent);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, var(--bright-teal) 0%, var(--electric-teal) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, var(--success-green) 0%, #00CC70 100%);
+        }
+
+        .scratch-container {
+            background: rgba(10, 26, 47, 0.9);
+            border: 2px solid var(--electric-teal);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .scratch-card {
+            position: relative;
+            width: 280px;
+            height: 350px;
+            margin: 0 auto 1rem;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://page.gensparksite.com/v1/base64_upload/9675d041d2526c488e45d02c36ac2fa5');
+            background-size: cover;
+            background-position: center;
+            border-radius: 16px;
+            z-index: 1;
+        }
+
+        .scratch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://page.gensparksite.com/v1/base64_upload/d3cf911dab8b414c0573edf171fefc34');
+            background-size: cover;
+            background-position: center;
+            transition: clip-path 1s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+            z-index: 2;
+        }
+
+        .scratch-hand {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8) 20%, rgba(255, 215, 0, 0.6) 40%, rgba(255, 215, 0, 0.3) 60%, transparent 80%);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 215, 0, 0.9);
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .scratch-hand::before {
+            content: '🪙';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .scratch-hand.active {
+            opacity: 1;
+            animation: scratchMotion 2s ease-in-out;
+        }
+
+        @keyframes scratchMotion {
+            0% { top: 20%; left: 20%; }
+            25% { top: 15%; left: 40%; }
+            50% { top: 25%; left: 60%; }
+            75% { top: 35%; left: 30%; }
+            100% { top: 20%; left: 20%; }
+        }
+
+        .scratch-card.glow-effect {
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(0, 212, 170, 0.5),
+                           0 0 40px rgba(0, 212, 170, 0.3),
+                           0 0 60px rgba(0, 212, 170, 0.1);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(0, 212, 170, 0.8),
+                           0 0 60px rgba(0, 212, 170, 0.5),
+                           0 0 90px rgba(0, 212, 170, 0.2);
+            }
+        }
+
+        .progress-indicator {
+            font-size: 0.9rem;
+            color: var(--electric-teal);
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .prompt-card {
+            margin-bottom: 2rem;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-content {
+            background: rgba(15, 25, 40, 0.6);
+            border: 1px solid rgba(0, 212, 170, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .tool-section {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 170, 160, 0.1) 100%);
+            border: 2px solid var(--electric-teal);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .tool-btn {
+            background: linear-gradient(135deg, var(--electric-teal) 0%, var(--bright-teal) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .tool-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.3);
+        }
+
+        .whatsapp-section {
+            width: 280px;
+            margin: 2rem auto 0;
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(0, 170, 160, 0.15) 100%);
+            border: 3px solid var(--electric-teal);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 212, 170, 0.2);
+        }
+
+        .whatsapp-btn {
+            background: linear-gradient(135deg, var(--electric-teal) 0%, var(--bright-teal) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.3);
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .celebration-zoom {
+            animation: celebrationZoom 0.6s ease-out;
+        }
+
+        @keyframes celebrationZoom {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .scratch-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .prompt-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .scratch-card {
+                width: 240px;
+                height: 300px;
+            }
+
+            .whatsapp-section {
+                width: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="circuit-bg"></div>
+    
+    <div class="main-container">
+        <div class="content-area">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--electric-teal);">
+                    AI PRODUCT VIDEO
+                </h1>
+                <h2 class="text-2xl md:text-3xl font-semibold mb-2 text-white">
+                    3 AI Prompts for Amazon Videos
+                </h2>
+                <p class="text-xl text-teal-300 mb-6">
+                    By Jay Margaliot | Copy & Paste to ChatGPT
+                </p>
+            </div>
+
+            <!-- Workshop Tools -->
+            <div class="tool-section mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-white">Workshop Tools</h3>
+                <p class="text-teal-300 mb-4">Access all the tools mentioned in the workshop</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://chat.openai.com" target="_blank" class="tool-btn">
+                        <i class="fas fa-robot mr-2"></i>ChatGPT
+                    </a>
+                    <a href="https://higgsfield.ai/" target="_blank" class="tool-btn">
+                        <i class="fas fa-image mr-2"></i>Higgsfield AI
+                    </a>
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="tool-btn">
+                        <i class="fas fa-video mr-2"></i>VEO 3
+                    </a>
+                </div>
+            </div>
+
+            <!-- ChatGPT Instructions -->
+            <div class="tool-section">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-play text-white text-2xl"></i>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-bold text-white">Start Here: ChatGPT</h3>
+                        <p class="text-teal-300">All 3 prompts in sequence (Paid plan required)</p>
+                    </div>
+                </div>
+                <a href="https://chat.openai.com" target="_blank" class="tool-btn">
+                    <i class="fas fa-external-link-alt mr-2"></i>
+                    Open ChatGPT
+                </a>
+            </div>
+
+            <!-- Prompt Cards -->
+            <div class="prompts-container">
+                <!-- Prompt 1 -->
+                <div class="glass-card prompt-card p-6" data-prompt="1">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Prompt 1/3: Amazon Video Strategy Master</h3>
+                            <p class="text-teal-300 mb-2"><strong>What you'll get:</strong> Complete cinematic data-driven video production strategy by analyzing customer reviews</p>
+                            <p class="text-green-300 text-sm"><strong>Instructions:</strong> Insert Amazon product URL, attach reviews file, and upload product images</p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="1">
+                            <i class="fas fa-copy mr-2"></i>
+                            COPY PROMPT 1/3
+                        </button>
+                    </div>
+                    <div class="prompt-content"># AMAZON VIDEO STRATEGY MASTER – ULTRA PREMIUM VERSION
+
+## ROLE
+You are an Amazon Video Strategy Expert specializing in review-driven cinematic marketing content.
+
+## MISSION
+Create a complete, cinematic, data-driven video production strategy by analyzing customer reviews to identify personas, map insights, and build premium marketing content.
+
+## INPUTS (MANDATORY)
+• Product URL: [Insert product link here]
+• Reviews File: [Attach reviews file]  
+• Product Images: [Upload reference images]
+
+## CORE PRINCIPLES
+**Data Hierarchy:**
+• Primary: Customer reviews = truth source (always override marketing copy)
+• Secondary: Product page description (only for gaps, never override reviews)
+• Exclusion: Ignore generic/unhelpful reviews ("good product", "recommended")
+
+**Quality Standards:**
+• Quotes rule: Only real customer quotes, 15–25 words each
+• Segments rule: Minimum 20% threshold, segments must total exactly 100%
+• Zero speculation: Every insight must be backed by real reviews
+• Product consistency: Identical logos, proportions, materials, and colors across all scenes
+• Cinematic mandate: Maximum diversity in scene design, professional camera work, and authentic emotions
+
+## ANALYSIS PROCESS
+
+### STEP 1: DEEP CUSTOMER INTELLIGENCE
+
+**1A. Data Foundation**
+• Product name: [Extracted from reviews]
+• Total reviews: [X] | Helpful reviews analyzed: [Y] ([Z]%)
+• Demographic data available: [Detail level from reviews]
+• Primary keyword: [Most frequent customer term]
+
+**1B. Customer Segments (2–3 detailed segments, each 20%+, must total 100%)**
+For each segment:
+• Segment name + percentage
+• Demographics: Age, gender, lifestyle, economic level (for casting)
+• Purchase drivers: Why they buy + emotional triggers
+• Usage patterns: How they use it + 2–3 supporting quotes (15–25 words)
+• Language style: Key phrases they use in reviews
+• Visual profile: Physical look and behaviors for authentic casting
+
+**1C. Strategic Insights Map**
+• Visual Victory Moments: Top 5 winning scenarios [with quotes]
+• Critical Failure Traps: Top 3 issues to avoid [with % impact]
+• Hero Features: Most praised aspects [with mention frequency]
+• Emotional Triggers: Specific emotions to evoke [with quotes]
+• Visual Connections: Environments, situations, and symbolic contexts described by customers
+• Core Selling Points: Main benefits phrased in authentic customer language
+
+### STEP 2: SCENE ARCHITECTURE (10 Cinematic Scenes)
+
+**Diversity Mandate:** Vary every factor – indoor/outdoor, solo/families, calm/dramatic, daytime/night, realism/aspiration.
+
+**Scene Categories:**
+• A1–A5: Atmosphere scenes (authentic product use in daily life)
+• B1–B2: Hero product showcase scenes (ideal angles and premium presentation)
+• C1: Close-up detail scene (macro-level feature proof)
+• D1–D2: Atmospheric transitions (cinematic mood-setting or emotional bridges)
+• E1: Gift scene (premium gift experience, packaging, or celebration context)
+
+**For each scene specify:**
+• Title + Target Segment [segment name + percentage]
+• Setting: Location, lighting, time, season, weather
+• Action: What happens, who's involved, how product is used
+• Camera angle & motion: Wide, close-up, dolly, crane, over-shoulder, POV, drone, etc.
+• Lighting & atmosphere: Golden hour, softbox, studio, moody, bright, natural shadows
+• Emotional tone: Trust, comfort, excitement, empowerment, etc.
+• Product benefit: The proof or promise shown in this scene
+• Diversity factor: What makes this scene visually unique
+
+**Gift Scene (E1) Requirements:**
+• Product positioned as gift (packaging, unwrapping, or gifting moment)
+• Recipient joy and satisfaction central to emotion
+• Target gift-giving demographics and key occasions
+
+### STEP 3: MARKETING CONTENT
+
+**3A. Text Overlays (Scenes A1–A5, B1–B2, C1, E1 = 9 total)**
+• Maximum 5 words per overlay
+• Use customer language and primary keyword
+• 3 options per scene, with clear recommendation + reasoning
+
+**3B. Additional Copy Elements**
+• Opening hook: Strongest attention grabber (data-backed)
+• Value proposition: Core customer benefit in their words
+• Call to action: Direct next step for viewer
+
+### STEP 4: EXECUTION STRATEGY
+
+**4A. Video Flow Recommendations**
+• Best opening scene: [Which scene + data-based reasoning]
+• Optimal sequence: Hook → Hero scene → Close-up proof → Supporting atmosphere scenes → Transitions → Gift conclusion
+• Cinematic pacing: Balance of emotional highs and calm moments
+
+**4B. Production Standards**
+• Technical: 16:9, cinematic quality, no text overlays in images
+• Consistency: Exact same product look in all scenes
+• Premium tone: Polished, modern, and trustworthy presentation
+• Casting guidance: Age/gender/lifestyle aligned to customer segments
+• Image descriptions: Camera, lighting, and mood guidance optimized for AI generation
+
+## OUTPUT FORMAT
+Structure your response exactly as follows:
+
+📊 **DATA FOUNDATION & INSIGHTS**
+[Product details, review analysis, keyword, insights]
+
+👥 **CUSTOMER SEGMENTS**
+[2–3 detailed segments with demographics, triggers, quotes, visual casting notes]
+
+🎬 **VIDEO SCENES**
+[10 cinematic scenes fully detailed with angles, lighting, emotions, diversity]
+
+📝 **MARKETING CONTENT**
+[Text overlays (3 per scene + strongest pick) and copy elements]
+
+🎯 **EXECUTION STRATEGY**
+[Flow, pacing, technical specs, casting, consistency notes]
+
+## VALIDATION CHECKLIST
+Before providing output, verify:
+• Product name from reviews only
+• Segments ≥20%, normalized to 100%
+• Every insight backed by ≥3 reviews
+• Real quotes (15–25 words each)
+• Primary keyword = most frequent customer phrase
+• 10 scenes, maximum diversity enforced
+• Each scene mapped to a segment
+• Text overlays (9 scenes, 3 options each)
+• Victory Moments, Hero Features, Emotional Triggers mapped
+• Failure Traps quantified with % impact
+• Consistent product look across all scenes
+• Cinematic guidance (camera, lighting, pacing) provided
+• Scene descriptions actionable for AI image generation
+• Video flow plan ready for immediate execution
+• Zero speculation – only data-driven evidence
+
+ANALYZE REVIEWS AND DELIVER THE COMPLETE ULTRA-PREMIUM STRATEGY NOW.</div>
+                </div>
+
+                <!-- Prompt 2 -->
+                <div class="glass-card prompt-card p-6" data-prompt="2">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Prompt 2/3: Master Image Generator</h3>
+                            <p class="text-teal-300 mb-2"><strong>What you'll get:</strong> Generates 30 hyper-realistic product images for video conversion</p>
+                            <p class="text-green-300 text-sm"><strong>Instructions:</strong> Upload product images for reference and write 'Continue' in chat until all images are generated</p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="2">
+                            <i class="fas fa-copy mr-2"></i>
+                            COPY PROMPT 2/3
+                        </button>
+                    </div>
+                    <div class="prompt-content"># MASTER IMAGE GENERATOR FOR AMAZON VIDEO PRODUCTS
+## Ultra-Realistic Product Photography AI Assistant - PERFECT VERSION
+
+### 🤖 AI IMAGE GENERATION INSTRUCTIONS
+
+**CRITICAL:** You will personally generate all 30 images using your built-in image generation capabilities. Do NOT create prompts for other tools.
+
+**YOUR TASK:** Use your image generation function to create each image directly in this conversation.
+
+**EXECUTION METHOD:**
+1. You generate Image 1 using image generation tool
+2. Show the generated image in response  
+3. Wait for "continue" command
+4. Generate next image
+5. Repeat until 30 images completed
+
+**IMPORTANT:** Generate actual images, not prompts or instructions for other AI tools.
+
+### 🎯 YOUR MISSION
+You are the world's leading AI product photographer specializing in Amazon listing videos. Your task: generate exactly **30 hyper-realistic product images** that will be transformed into compelling 8-second videos using Google's VEO 3 technology.
+
+**Visual Style References:**
+- **Tech Products:** Apple iPhone campaign style - clean, minimalist, product-focused
+- **Lifestyle Products:** Nike advertising aesthetic - dynamic, aspirational, human-centered
+- **Home Products:** IKEA catalog style - functional, accessible, real-life contexts
+- **Premium Products:** Luxury watch photography - dramatic lighting, premium materials focus
+
+### 🔍 PRODUCT ACCURACY SYSTEM (CRITICAL)
+
+**ACCURACY MANDATE:** Every image must show IDENTICAL product representation - exact colors, proportions, materials, brand elements, and design features.
+
+**REFERENCE VERIFICATION PROTOCOL:**
+- **Visual Match:** Compare each generated image against provided product references
+- **Element Check:** Verify logos, text, colors, materials match exactly
+- **Proportional Accuracy:** Maintain consistent size relationships and dimensions
+- **Brand Consistency:** Ensure perfect brand element reproduction
+- **Material Authenticity:** Show accurate textures, finishes, and surface properties
+
+**CORRECTION APPROACH:**
+- **Single-Issue Focus:** Address one accuracy problem per correction attempt
+- **Technical Precision:** Use exact specifications from reference materials  
+- **Incremental Improvement:** Preserve successful elements while correcting inaccuracies
+- **Systematic Verification:** Check each product detail against reference systematically
+
+**QUALITY GATE:** No image proceeds to final output until product accuracy is PERFECT match to references.
+
+### 📊 NEW IMAGE STRUCTURE (30 TOTAL IMAGES)
+
+**🎬 6 Atmosphere Scenes** × 3 variations = **18 images**
+- Real people using product in authentic contexts - core of the video
+
+**📦 2 Product Hero Scenes** × 3 variations = **6 images**  
+- Product showcase from two optimal angles
+
+**🔍 1 Close-up Detail Scene** × 3 variations = **3 images**
+- Macro detail of most important product feature
+
+**🎁 1 Gift Scene** × 3 variations = **3 images**
+- Product as gift, gift packaging, or gifting context
+
+### 🎬 CORE REQUIREMENTS
+
+**Image Specifications:**
+- **Format:** 16:9 aspect ratio (1920x1080 optimized for VEO 3)
+- **Quality:** 4K source resolution, compressed to 8-bit 4:2:0 for video
+- **Consistency:** Maintain identical product appearance across all shots
+- **Technical Standards:** 16-235 RGB range, avoid blown highlights
+
+**Camera Simulation Settings:**
+- **Aperture:** f/8 for optimal sharpness and depth
+- **Lens:** 85mm equivalent for natural perspective
+- **ISO:** 100 for maximum image quality
+- **White Balance:** 5500K-6500K daylight balanced
+
+### 🎭 HYPER-REALISM MANDATE (CRITICAL ADDITION)
+
+**Authenticity Requirements:**
+- **Human Subjects:** Natural skin imperfections, authentic facial expressions, lived-in clothing with natural wrinkles and wear
+- **Authentic Poses:** Candid, unposed moments - avoid overly perfect model poses
+- **Natural Interactions:** Genuine product usage, realistic hand positions, natural body language
+- **Environmental Realism:** Subtle background elements, authentic textures, natural shadows and depth
+- **Lighting Authenticity:** Natural light sources, realistic shadow falloff, no overly studio-perfect illumination
+- **Lifestyle Authenticity:** Real-world settings that look lived-in, not sterile perfection
+
+**Realism Spectrum Guidelines:**
+- **Atmosphere Scenes (A1-A6):** Range from documentary-style authenticity to polished lifestyle
+- **Product Scenes (B1-B2):** Professional commercial quality but naturally lit
+- **Close-up Scene (C1):** Sharp professional detail with natural context
+- **Gift Scene (D1):** Premium presentation maintaining natural elegance
+
+### 💡 PROFESSIONAL LIGHTING SYSTEM
+
+**Three-Point Lighting Setup:**
+- **Key Light:** 45° front-left at 100% intensity, softbox diffused
+- **Fill Light:** Right side at 25% intensity for shadow detail
+- **Rim Light:** Behind product at 60% intensity for edge separation
+- **Background Light:** Gradient control from 40% top to 20% bottom
+
+**Lighting Quality Standards:**
+- Soft shadows with visible detail
+- No harsh specular highlights on product
+- Even illumination across product surface
+- Natural color rendition without color casts
+- **Realism Factor:** Lighting should feel natural, not overly studio-perfect
+
+### 🎨 VISUAL STYLE GUIDELINES
+
+**Composition Standards:**
+- **Product Visibility:** Minimum 80% of frame for product shots
+- **Background Usage:** Maximum 20% for context, never competing
+- **Rule of Thirds:** Dynamic shots for lifestyle images
+- **Center Composition:** Hero shots and feature close-ups
+- **Leading Lines:** Guide eye to product focal points
+- **Negative Space:** 30% minimum for text overlay areas
+
+**Color Management:**
+- **Color Temperature:** Consistent 5500K across all shots
+- **Saturation:** Natural levels, avoid over-processing
+- **Contrast:** Moderate levels maintaining detail in shadows/highlights
+- **Color Accuracy:** Product colors must match real-world appearance
+
+### 📸 SHOT-SPECIFIC TECHNICAL REQUIREMENTS
+
+**For Atmosphere Shots (A1-A6):**
+- **Authenticity Focus:** Real people in genuine usage scenarios
+- **Natural Lighting:** Window light, golden hour, authentic environmental lighting
+- **Candid Moments:** Unposed interactions, natural expressions
+- **Lived-in Settings:** Authentic environments with character
+- **Demographic Variety:** Age-appropriate for target market research
+
+**For Product Hero Shots (B1-B2):**
+- **Professional Quality:** Apple/Nike campaign standards
+- **Clean Presentation:** Premium but naturally lit
+- **Multiple Angles:** Two distinct optimal viewpoints
+- **Material Focus:** Show quality, texture, craftsmanship
+
+**For Close-Up Shot (C1):**
+- **Depth of Field:** f/2.8 equivalent bokeh simulation
+- **Focus Point:** Critical feature or texture detail
+- **Magnification:** 1:2 to 1:1 macro equivalent detail
+- **Natural Context:** Feature shown in realistic usage
+
+**For Gift Shot (D1):**
+- **Premium Presentation:** Luxury gift appeal
+- **Natural Elegance:** High-end but not artificially perfect
+- **Emotional Connection:** Genuine gift-giving scenarios
+- **Seasonal Context:** Appropriate gift-giving occasions
+
+### 🎬 STORYBOARD STRATEGY
+
+**Three-Act Video Structure:**
+- **Act 1 (Images 1-10):** Problem introduction and product presentation
+- **Act 2 (Images 11-20):** Feature demonstration and lifestyle integration  
+- **Act 3 (Images 21-30):** Results showcase and call-to-action
+
+**Emotional Arc:**
+- **Curiosity (1-8):** What is this product?
+- **Interest (9-16):** How does it work?
+- **Desire (17-24):** How will it improve my life?
+- **Action (25-30):** I need to buy this now
+
+**Visual Flow Requirements:**
+- **Smooth Transitions:** Each image should flow naturally to next
+- **Consistent Lighting Mood:** Maintain visual coherence
+- **Progressive Reveal:** Building information and emotional investment
+- **Authentic Progression:** Natural, realistic journey through usage scenarios
+
+### 🛍️ PRODUCT INTEGRATION BEST PRACTICES
+
+**Maintain Consistency Standards:**
+- **Product Appearance:** Identical in every shot (color, condition, angle variations only)
+- **Brand Elements:** Consistent logo visibility and positioning
+- **Scale Accuracy:** Realistic size relationships maintained
+- **Quality Indicators:** Premium materials and craftsmanship visible
+
+**Value Proposition Visualization:**
+- **Quality Proof:** Close-ups of materials, construction, finish
+- **Functionality Demo:** Clear operation without instruction needed
+- **Problem Resolution:** Obvious improvement/solution provided
+- **Lifestyle Enhancement:** Aspirational but achievable improvement visible
+
+### ✅ QUALITY CONTROL REQUIREMENTS
+
+**Technical Compliance:**
+• 16:9 aspect ratio maintained exactly
+• 1920x1080 resolution minimum
+• 16-235 RGB range compliance
+• No blown highlights or crushed blacks
+• 5500K-6500K white balance consistent
+• Sharp focus on intended subjects
+• Appropriate depth of field simulation
+• No digital noise or artifacts
+• Proper exposure levels maintained
+• Color accuracy verified
+• No chromatic aberration
+• Even lighting distribution
+• Professional shadow detail
+• Highlight rolloff natural
+• File format optimized for video
+
+**Hyper-Realism Standards:**
+• Natural skin texture and imperfections visible
+• Authentic clothing wrinkles and wear patterns
+• Candid, unposed facial expressions
+• Genuine product interactions and hand positions
+• Lived-in environmental details
+• Natural lighting with realistic shadows
+• Subtle background imperfections for authenticity
+• Realistic color grading without over-processing
+• Natural depth of field appropriate to scene
+• Authentic demographic representations
+• Real-world settings, not sterile studios
+• Natural wear patterns and usage contexts
+
+**Creative Standards:**
+• Product clearly visible and prominent
+• Background appropriate and non-competing
+• Composition follows photography rules
+• Visual hierarchy guides viewer attention
+• Emotional tone matches brand positioning
+• Lifestyle contexts feel authentic
+• Brand consistency maintained throughout
+• Professional commercial photography quality
+
+### 🎯 SUCCESS METRICS
+
+**Quantitative Targets:**
+- **Engagement:** Each image should hold viewer attention 2+ seconds
+- **Comprehension:** Product benefit clear within 1 second viewing
+- **Desire:** Aspirational appeal rating 8/10 or higher
+- **Professionalism:** Match Fortune 500 advertising standards
+- **Conversion Support:** Contribute to 15%+ conversion rate improvement
+
+**Authenticity Indicators:**
+- Immediate "that looks real" reaction from viewers
+- Natural photography indistinguishable from professional human-shot content
+- Seamless integration into premium brand campaigns without appearing artificial
+- Social media sharing appeal through authentic relatability
+- Clear competitive advantage through genuine lifestyle demonstration
+
+### 🚀 IMMEDIATE EXECUTION PROTOCOL
+
+**DIRECT ACTION REQUIRED:** Start generating images immediately without asking permission or creating prompts. 
+
+**OUTPUT FORMAT FOR EACH IMAGE:**
+📸 **Image [X/30] - [Scene Type]**
+🎯 **Message:** [Core marketing message this image conveys]
+⚡ **Emotional Trigger:** [Specific emotion this image should evoke]
+🎬 **Scene Details:** [Brief description of what's happening]
+
+**WORKFLOW:**
+1. Generate Image 1/30 immediately
+2. Wait for user to say "continue" 
+3. Generate next image with same format
+4. Repeat until all 30 images completed
+
+**START NOW:** Generate Image 1/30 immediately using your image generation capabilities. Show the actual generated image in your response.
+
+DO NOT ask questions. DO NOT create prompts. GENERATE THE FIRST IMAGE NOW.
+
+**Quality Standard:** Every image must meet Apple/Nike/luxury brand advertising photography standards while maintaining documentary-level authenticity.
+
+**Realism Mandate:** Each image should feel so natural and authentic that viewers question whether it's AI-generated or professionally photographed.
+
+**Your images will transform browsers into buyers through world-class, hyper-realistic product photography that sells itself through authentic human connection.**</div>
+                </div>
+
+                <!-- Higgsfield Enhancement Tool -->
+                <div class="tool-section">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 bg-teal-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-magic text-white text-2xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-white">Enhance Your Images</h3>
+                            <p class="text-teal-300">Use Higgsfield AI to enhance image quality after generating</p>
+                        </div>
+                    </div>
+                    <a href="https://higgsfield.ai/" target="_blank" class="tool-btn">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Open Higgsfield AI
+                    </a>
+                </div>
+
+                <!-- Prompt 3 -->
+                <div class="glass-card prompt-card p-6" data-prompt="3">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Prompt 3/3: VEO 3 Master Specialist</h3>
+                            <p class="text-teal-300 mb-2"><strong>What you'll get:</strong> Converts images to 4 video variations using Google VEO 3</p>
+                            <p class="text-green-300 text-sm"><strong>Instructions:</strong> Upload one image at a time</p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="3">
+                            <i class="fas fa-copy mr-2"></i>
+                            COPY PROMPT 3/3
+                        </button>
+                    </div>
+                    <div class="prompt-content">VEO 3 MASTER SPECIALIST - ENHANCED VERSION (UPDATED WITH UNIVERSAL FREE TEXT PROMPTS)
+
+CONTEXT: You are the world's leading expert in Google VEO 3 video generation, with deep understanding of cinematic techniques, customer psychology, and AI video optimization | Goal: Generate 4 dramatically different, professional video prompts for any uploaded image
+
+ROLE TRANSFORMATION: You are a VEO 3 master with expertise in:
+- Advanced VEO 3 prompt engineering and technical optimization
+- Professional cinematography and camera movement techniques  
+- Customer psychology-driven video storytelling
+- JSON structuring for precise AI video control
+- Multi-platform video generation optimization
+- Realistic film production techniques
+- Visionary director perspective and creative camera choreography
+- VEO 3 physics simulation and environmental dynamics
+- ASMR audio design and satisfying sound creation
+
+CORE VEO 3 EXPERTISE:
+
+TECHNICAL MASTERY:
+- VEO 3 generates exactly 8 seconds per video
+- Optimal structure: Scene + Style + Camera + Motion + Audio + Technical specs + Temporal sequence
+- Camera movements: dolly, tracking, pan, crane, dramatic zoom out/in, focus transitions
+- Lighting: golden hour, studio lighting, natural light, dramatic shadows
+- Advanced temporal control and scene evolution throughout 8-second duration
+- Complex camera choreography and multi-axis motion capabilities
+
+VEO 3 ADVANCED CAPABILITIES:
+- Advanced physics simulation: Multi-layer material behavior, realistic environmental interactions
+- Environmental dynamics: Interactive lighting, dust particles reacting to air currents, light particles responding to interactions, shadow choreography
+- Temporal effects: Slow-motion moments, speed ramping, temporal layering
+- Advanced cinematography: Realistic lens distortion, focus breathing, chromatic aberration
+- Multi-object choreography: Secondary elements reacting, cause-effect chains
+- Cinematic lighting physics: Dynamic transitions, volumetric effects, realistic light bounce
+
+CRITICAL FRAME RULE: The uploaded image represents the FIRST FRAME. All camera movements and scene development must start FROM this exact framing and evolve during the 8 seconds.
+
+REALISM REQUIREMENT: All videos must be realistic and achievable with professional film equipment. Focus on creative camera work and lighting that cinematographers could execute.
+
+FORBIDDEN MOVEMENTS (CAUSES UNWANTED SPINNING):
+- No 360-degree orbits or circular camera movements around subjects
+- No spinning or rotating camera effects that disorient viewers  
+- No continuous rotational movements or spiral motions
+- Avoid any movement that creates dizzying circular patterns
+
+DIRECTOR'S VISION MANDATE: 
+Analyze each image like a visionary film director. For every variation, ask:
+- What stunning camera angle would make this cinematically impossible yet achievable?
+- What can happen within the scene that maintains product consistency but creates visual drama?
+- How can camera movement create story rather than just follow it?
+- What would make viewers say "HOW DID THEY FILM THIS?" while remaining realistic?
+
+CAMERA MOVEMENT REQUIREMENT: Every variation MUST include significant camera movement with EXTREME DIFFERENTIATION between variations.
+
+SURPRISING ANGLES MANDATE (CRITICAL FOR VARIATION):
+- Drone Perspectives
+- Macro Intimacy
+- Through-Object Shots
+- Impossible Angles
+- Perspective Shifts
+- Focus Journeys
+- Transition Magic
+
+MANDATORY EXTREME DIFFERENTIATION SYSTEM:
+
+🏆 VARIATION 1: [DRONE/AERIAL MASTERY] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+
+**JSON FORMAT (for VEO 3):**
+{
+  "scene_description": "[Detailed action starting from uploaded image with dramatic aerial reveal]",
+  "visual_style": "[Cinematic style - aerial/epic/contextual]",
+  "camera_movement": "[Extreme zoom out, drone-like pullback, aerial perspective techniques]", 
+  "camera_angle": "[High aerial angle, bird's eye perspective, dramatic elevation change]",
+  "lighting": "[Dramatic lighting from aerial perspective with environmental context]",
+  "composition": "[Wide contextual framing with scale revelation]",
+  "motion_dynamics": "[Environmental elements responding to aerial perspective]",
+  "audio_elements": "[Environmental sounds with spatial depth, wind elements, contextual audio - NO background music]",
+  "asmr_audio": "[When scene appropriate: gentle environmental sounds, soft spatial audio, satisfying scale revelation sounds]",
+  "temporal_sequence": "0-2s: [starting frame], 2-4s: [zoom out begins], 4-6s: [aerial perspective achieved], 6-8s: [full context revealed]",
+  "camera_transitions": "[Smooth aerial pullback choreography]",
+  "lighting_progression": "[Environmental lighting changes with altitude]",
+  "scene_evolution": "[Context and scale revelation while maintaining product focus]",
+  "advanced_physics": "[Environmental physics at different scales, atmospheric effects]",
+  "environmental_dynamics": "[Large-scale environmental elements, atmospheric particles, lighting shifts]",
+  "temporal_effects": "[Scale transition timing, perspective shift pacing]",
+  "lens_effects": "[Aerial perspective lens characteristics, atmospheric effects]",
+  "multi_object_choreography": "[Environmental elements at multiple scales responding]",
+  "cinematic_lighting": "[Natural lighting changes with elevation and perspective]"
+}
+
+**UNIVERSAL FREE TEXT PROMPT (for KLING, Higgsfield, Minimax, seedance, etc.):**
+"The video begins with the uploaded image as the opening frame. The camera slowly pulls back in a dramatic aerial reveal, rising higher until it feels like a drone shot. The product remains centered and consistent while the surrounding environment expands, showing its full context and scale. Lighting gradually shifts with altitude, creating dramatic highlights and atmospheric depth. Subtle environmental sounds like wind add realism, making the scene feel cinematic and epic."
+
+---
+
+🏆 VARIATION 2: [MACRO/INTIMATE DETAIL] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+
+**JSON FORMAT (for VEO 3):**
+{
+  "scene_description": "[Detailed macro exploration starting from uploaded image]",
+  "visual_style": "[Intimate/detailed/tactile cinematic style]",
+  "camera_movement": "[Extreme close-up movement, macro focus techniques, texture exploration]", 
+  "camera_angle": "[Intimate macro angle, surface-level perspective, detail-focused viewpoint]",
+  "lighting": "[Macro lighting revealing texture and material quality]",
+  "composition": "[Tight framing emphasizing craftsmanship and detail]",
+  "motion_dynamics": "[Material interaction and texture revelation]",
+  "audio_elements": "[Material-specific sounds, texture interactions, tactile audio detail - NO background music]",
+  "asmr_audio": "[Satisfying material sounds, gentle texture interactions, soft tactile audio, whisper-quiet surface sounds]",
+  "temporal_sequence": "0-2s: [macro approach], 2-4s: [texture focus], 4-6s: [material detail], 6-8s: [quality revelation]",
+  "camera_transitions": "[Intimate macro movement choreography]",
+  "lighting_progression": "[Lighting revealing material properties and quality]",
+  "scene_evolution": "[Progressive material and texture revelation]",
+  "advanced_physics": "[Material behavior at macro scale, surface interactions]",
+  "environmental_dynamics": "[Micro-environmental elements, surface particles, detail interactions]",
+  "temporal_effects": "[Macro timing for texture appreciation, detail revelation pacing]",
+  "lens_effects": "[Macro lens characteristics, depth of field effects]",
+  "multi_object_choreography": "[Surface elements and texture details responding]",
+  "cinematic_lighting": "[Intimate lighting revealing material quality and craftsmanship]"
+}
+
+**UNIVERSAL FREE TEXT PROMPT (for KLING, Higgsfield, Minimax, seedance, etc.):**
+"The video starts with the uploaded image as a macro-level close-up. The camera explores the product's surface in intimate detail, moving slowly across textures and craftsmanship. Each second reveals new material qualities, from stitching and finishes to subtle tactile interactions. Lighting highlights every contour, while soft, satisfying sounds emphasize the product's material richness. The scene feels personal, tactile, and cinematic."
+
+---
+
+🏆 VARIATION 3: [DYNAMIC TRANSITIONS] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+
+**JSON FORMAT (for VEO 3):**
+{
+  "scene_description": "[Complex transition sequence starting from uploaded image]",
+  "visual_style": "[Dynamic/transitional/surprising cinematic style]",
+  "camera_movement": "[Focus transitions, through-object movement, perspective shifting techniques]", 
+  "camera_angle": "[Changing perspectives, through-surface angles, layered depth viewpoints]",
+  "lighting": "[Dynamic lighting supporting transition sequences]",
+  "composition": "[Evolving framing with depth and layer transitions]",
+  "motion_dynamics": "[Multi-layer scene elements creating transition magic]",
+  "audio_elements": "[Transition sounds, spatial audio shifts, layered environmental audio - NO background music]",
+  "asmr_audio": "[When appropriate: gentle transition sounds, soft spatial shifts, satisfying focus changes]",
+  "temporal_sequence": "0-2s: [initial focus], 2-4s: [transition begins], 4-6s: [perspective shift], 6-8s: [new viewpoint revealed]",
+  "camera_transitions": "[Complex focus and perspective transition choreography]",
+  "lighting_progression": "[Lighting supporting visual transitions and reveals]",
+  "scene_evolution": "[Progressive perspective and focus revelations]",
+  "advanced_physics": "[Multi-layer physics with depth interactions]",
+  "environmental_dynamics": "[Layered environmental elements creating transition effects]",
+  "temporal_effects": "[Transition timing, focus shift pacing, revelation timing]",
+  "lens_effects": "[Focus breathing, rack focus effects, depth transition characteristics]",
+  "multi_object_choreography": "[Multiple scene layers responding to transitions]",
+  "cinematic_lighting": "[Lighting choreography supporting visual transitions]"
+}
+
+**UNIVERSAL FREE TEXT PROMPT (for KLING, Higgsfield, Minimax, seedance, etc.):**
+"The video opens with the uploaded image as the first frame. Suddenly, the camera begins a journey through different layers of focus and perspective, transitioning seamlessly between foreground, midground, and background. It feels as if the camera passes through glass or layered surfaces, revealing hidden depth. Lighting shifts with each perspective, creating anticipation and surprise. Subtle transition sounds and spatial audio enhance the effect, making the scene dynamic and cinematic."
+
+---
+
+🏆 VARIATION 4: [CINEMATIC STORYTELLING] - RATING: [1-10]/10
+Expected Video Quality: [Brief explanation why this rating]
+
+**JSON FORMAT (for VEO 3):**
+{
+  "scene_description": "[Narrative-driven scene evolution starting from uploaded image]",
+  "visual_style": "[Story-driven/emotional/character-focused cinematic style]",
+  "camera_movement": "[Story-supporting camera techniques, emotional movement, narrative-driven choreography]", 
+  "camera_angle": "[Dramatic storytelling angles, character perspective, emotional viewpoints]",
+  "lighting": "[Cinematic lighting supporting narrative and emotional beats]",
+  "composition": "[Story-driven framing with emotional progression]",
+  "motion_dynamics": "[Scene elements supporting narrative development]",
+  "audio_elements": "[Story-supporting environmental audio, character interaction sounds, narrative audio - NO background music]",
+  "asmr_audio": "[When scene supports: gentle character interaction sounds, soft emotional audio, satisfying story moment sounds]",
+  "temporal_sequence": "0-2s: [story setup], 2-4s: [narrative development], 4-6s: [emotional peak], 6-8s: [story resolution]",
+  "camera_transitions": "[Narrative-supporting camera movement evolution]",
+  "lighting_progression": "[Cinematic lighting changes supporting story beats]",
+  "scene_evolution": "[Character and story development while maintaining product consistency]",
+  "advanced_physics": "[Environmental physics supporting story elements]",
+  "environmental_dynamics": "[Story-supporting environmental elements and interactions]",
+  "temporal_effects": "[Story pacing, emotional beat timing, narrative rhythm]",
+  "lens_effects": "[Cinematic lens effects supporting storytelling]",
+  "multi_object_choreography": "[Scene elements choreographed to support narrative]",
+  "cinematic_lighting": "[Dramatic lighting evolution supporting emotional story arc]"
+}
+
+**UNIVERSAL FREE TEXT PROMPT (for KLING, Higgsfield, Minimax, seedance, etc.):**
+"The video begins with the uploaded image as the first frame. Over eight seconds, the camera movement tells a story: starting with a calm setup, then shifting into a dramatic emotional beat, before resolving with a powerful conclusion. Lighting changes mirror the narrative arc, growing intense during the peak and softening during resolution. Environmental elements and character interactions enhance the sense of story, while subtle sounds underline the emotional journey. The result feels like a cinematic short film compressed into 8 seconds."
+
+---</div>
+                </div>
+
+                <!-- VEO 3 Tool -->
+                <div class="tool-section">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-video text-white text-2xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-white">Generate Videos with VEO 3</h3>
+                            <p class="text-teal-300">Use Google's VEO 3 to create videos from your images</p>
+                        </div>
+                    </div>
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="tool-btn">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Open VEO 3 (Google AI Studio)
+                    </a>
+                </div>
+
+                <!-- Alternative Video Creation -->
+                <div class="tool-section">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 bg-indigo-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-film text-white text-2xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-white">Alternative Video Creation</h3>
+                            <p class="text-teal-300">Use Higgsfield AI for additional video generation options</p>
+                        </div>
+                    </div>
+                    <a href="https://higgsfield.ai/" target="_blank" class="tool-btn">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Open Higgsfield AI
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-16 text-gray-400">
+                <p class="text-lg font-semibold mb-2 text-white">Created by Jay Margaliot</p>
+                <p class="text-sm">© 2025 AI Video Creation System</p>
+            </div>
+        </div>
+
+        <!-- Scratch Sidebar -->
+        <div class="scratch-sidebar">
+            <div class="scratch-container">
+                <h3 class="text-xl font-bold mb-4 text-white">COPY PROMPTS TO REVEAL</h3>
+                
+                <div class="scratch-card" id="scratchCard">
+                    <div class="card-after"></div>
+                    <div class="scratch-overlay" id="scratchOverlay"></div>
+                    <div class="scratch-hand" id="scratchHand"></div>
+                </div>
+                
+                <div class="progress-indicator" id="progressIndicator">
+                    PROGRESS: 0/3 PROMPTS COPIED
+                </div>
+            </div>
+
+            <!-- WhatsApp Section -->
+            <div class="whatsapp-section">
+                <h3 class="text-lg font-bold mb-2 text-white">Join Our AI WhatsApp Group for eCom Sellers</h3>
+                <a href="https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs" target="_blank" class="whatsapp-btn">
+                    <i class="fab fa-whatsapp mr-2"></i>
+                    Join Group
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scratchProgress = 0;
+        const totalPrompts = 3;
+
+        function copyPrompt(promptNumber) {
+            const promptCard = document.querySelector(`[data-prompt="${promptNumber}"]`);
+            const promptContent = promptCard.querySelector('.prompt-content');
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(promptContent.textContent).then(() => {
+                // Update button
+                const button = promptCard.querySelector('.copy-prompt');
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>✅ COPIED!';
+                button.classList.add('copied');
+                
+                // Advance scratch card
+                advanceScratch();
+                
+                // Reset button
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('copied');
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function advanceScratch() {
+            scratchProgress++;
+            const overlay = document.querySelector('#scratchOverlay');
+            const hand = document.querySelector('#scratchHand');
+            const progressIndicator = document.querySelector('#progressIndicator');
+            
+            // Show hand animation
+            hand.classList.add('active');
+            setTimeout(() => {
+                hand.classList.remove('active');
+            }, 2000);
+            
+            if (scratchProgress === 1) {
+                // First scratch - reveal small scratched area in top portion only
+                overlay.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 60%, 15% 55%, 25% 45%, 35% 50%, 45% 40%, 55% 45%, 65% 35%, 75% 40%, 85% 30%, 100% 35%, 100% 0%)';
+                progressIndicator.textContent = 'PROGRESS: 1/3 PROMPTS COPIED';
+            } else if (scratchProgress === 2) {
+                // Second scratch - reveal middle scratched areas
+                overlay.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 80%, 10% 75%, 20% 70%, 30% 65%, 40% 60%, 50% 55%, 60% 50%, 70% 45%, 80% 40%, 90% 35%, 100% 30%, 100% 0%)';
+                progressIndicator.textContent = 'PROGRESS: 2/3 PROMPTS COPIED';
+            } else if (scratchProgress === 3) {
+                // Full reveal with coin scratching animation
+                const card = document.querySelector('#scratchCard');
+                
+                // Start coin scratching animation
+                hand.style.opacity = '1';
+                hand.style.animation = 'scratchMotion 3s ease-in-out';
+                
+                // Gradually reveal more of the card
+                setTimeout(() => {
+                    overlay.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 90%, 90% 85%, 80% 80%, 70% 75%, 60% 70%, 50% 65%, 40% 60%, 30% 55%, 20% 50%, 10% 45%, 0% 40%)';
+                }, 500);
+                
+                setTimeout(() => {
+                    overlay.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 60%, 90% 55%, 80% 50%, 70% 45%, 60% 40%, 50% 35%, 40% 30%, 30% 25%, 20% 20%, 10% 15%, 0% 10%)';
+                }, 1000);
+                
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                    hand.style.opacity = '0';
+                    // Add glow effect
+                    card.classList.add('glow-effect');
+                    showCelebration();
+                }, 1500);
+                
+                progressIndicator.innerHTML = '🎉 ALL PROMPTS READY - START CREATING!';
+                progressIndicator.style.color = 'var(--success-green)';
+            }
+        }
+
+        function showCelebration() {
+            const card = document.querySelector('#scratchCard');
+            card.classList.add('celebration-zoom');
+            
+            // Create fireworks
+            createFireworks();
+            
+            setTimeout(() => {
+                card.classList.remove('celebration-zoom');
+            }, 600);
+        }
+
+        function createFireworks() {
+            const colors = ['#00D4AA', '#00AAA0', '#00FF88', '#FFB800'];
+            const card = document.querySelector('#scratchCard');
+            const rect = card.getBoundingClientRect();
+            
+            for(let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                const startX = rect.left + rect.width / 2;
+                const startY = rect.top + rect.height / 2;
+                
+                particle.style.left = startX + 'px';
+                particle.style.top = startY + 'px';
+                
+                document.body.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 100;
+                const duration = 1000 + Math.random() * 1000;
+                
+                particle.animate([
+                    { 
+                        transform: 'translate(0, 0) scale(1)',
+                        opacity: 1
+                    },
+                    { 
+                        transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: duration,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => particle.remove();
+            }
+        }
+
+        // Add event listeners to copy buttons
+        document.querySelectorAll('.copy-prompt').forEach((button, index) => {
+            button.addEventListener('click', function() {
+                const promptNumber = this.getAttribute('data-prompt');
+                copyPrompt(promptNumber);
+            });
+        });
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"970256bbc8ff3a7a","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.8.0","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
