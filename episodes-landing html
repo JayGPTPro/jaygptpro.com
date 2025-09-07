@@ -65,39 +65,24 @@
         }
         
         .loading-overlay {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            display: none;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
         }
         
         .loading-content {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 2rem;
             border-radius: 1rem;
             text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
         }
         
         @media (max-width: 768px) {
@@ -114,9 +99,9 @@
 <body class="bg-vault min-h-screen flex items-center justify-center p-4">
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
-            <div class="spinner"></div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Your Request...</h3>
-            <p class="text-gray-600">You'll be redirected to your episodes shortly!</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Success!</h3>
+            <p class="text-gray-600">Redirecting you to access your episodes...</p>
         </div>
     </div>
 
@@ -172,7 +157,7 @@
                         Enter your details below to unlock your episodes
                     </p>
                     
-                    <form id="signupForm" action="https://1a82576b.sibforms.com/serve/MUIFANY7TeHAIfhYW271iYwTz_4XvlEEbrMXq08sYqxG_7V_E8IYQ4XMdYOZzHykA-NnRmR_GXuKrVkq7R5g_-9nj15UF7qwrr7miVi2i8wYm5cIE9CO2fepmYmWmjs9PVpA1RpcIljinNX-c84PU1mPl4WhKmNVq7ulyFW5Ua-RRuzrEhS_4U1sBSbd2ly2x5D-AlyElJSQRI" method="POST" class="space-y-4">
+                    <form id="signupForm" class="space-y-4">
                         <!-- First Name -->
                         <div>
                             <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
@@ -181,11 +166,12 @@
                             <input 
                                 type="text" 
                                 id="firstName" 
-                                name="FIRSTNAME"
+                                name="firstName"
                                 required 
                                 class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
                                 placeholder="Enter your first name"
                             />
+                            <div class="error-message text-red-500 text-sm mt-1 hidden" id="firstNameError">Please enter your first name</div>
                         </div>
                         
                         <!-- Last Name -->
@@ -196,7 +182,7 @@
                             <input 
                                 type="text" 
                                 id="lastName" 
-                                name="LASTNAME"
+                                name="lastName"
                                 class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
                                 placeholder="Enter your last name"
                             />
@@ -210,7 +196,7 @@
                             <input 
                                 type="tel" 
                                 id="phone" 
-                                name="SMS"
+                                name="phone"
                                 class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
                                 placeholder="Enter your phone number"
                             />
@@ -224,11 +210,12 @@
                             <input 
                                 type="email" 
                                 id="email" 
-                                name="EMAIL"
+                                name="email"
                                 required 
                                 class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
                                 placeholder="Enter your email address"
                             />
+                            <div class="error-message text-red-500 text-sm mt-1 hidden" id="emailError">Please enter a valid email address</div>
                         </div>
                         
                         <!-- Consent Checkbox -->
@@ -250,6 +237,7 @@
                         <button 
                             type="submit" 
                             class="btn-gradient w-full py-4 px-6 rounded-lg text-white font-bold text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
+                            id="submitBtn"
                         >
                             <i class="fas fa-play-circle mr-2"></i>
                             Claim My Free Episodes
@@ -269,47 +257,82 @@
     
     <script>
         document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear previous error messages
+            document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+            
+            // Get form values
             const firstName = document.getElementById('firstName').value.trim();
             const email = document.getElementById('email').value.trim();
             
+            let hasErrors = false;
+            
+            // Validate first name
             if (!firstName) {
-                e.preventDefault();
-                alert('Please enter your first name.');
+                document.getElementById('firstNameError').classList.remove('hidden');
                 document.getElementById('firstName').focus();
-                return;
+                hasErrors = true;
             }
             
+            // Validate email
             if (!email) {
-                e.preventDefault();
-                alert('Please enter your email address.');
-                document.getElementById('email').focus();
-                return;
+                document.getElementById('emailError').textContent = 'Please enter your email address';
+                document.getElementById('emailError').classList.remove('hidden');
+                if (!hasErrors) document.getElementById('email').focus();
+                hasErrors = true;
+            } else if (!isValidEmail(email)) {
+                document.getElementById('emailError').textContent = 'Please enter a valid email address';
+                document.getElementById('emailError').classList.remove('hidden');
+                if (!hasErrors) document.getElementById('email').focus();
+                hasErrors = true;
             }
             
-            if (!email.includes('@')) {
-                e.preventDefault();
-                alert('Please enter a valid email address.');
-                document.getElementById('email').focus();
-                return;
-            }
+            if (hasErrors) return;
             
             // Show loading overlay
             document.getElementById('loadingOverlay').style.display = 'flex';
             
-            // Allow form to submit to Brevo, then redirect after delay
+            // Collect form data (for future Brevo integration)
+            const formData = {
+                firstName: firstName,
+                lastName: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: email,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Store data in localStorage for now (can be sent to Brevo later)
+            localStorage.setItem('ai_vault_signup', JSON.stringify(formData));
+            
+            // Redirect after 2 seconds
             setTimeout(function() {
                 window.location.href = 'https://jaygptpro.com/episode-thank-you.html';
-            }, 2500);
+            }, 2000);
         });
         
-        // Add some interactive effects
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Add interactive effects
         document.querySelectorAll('.form-input').forEach(input => {
             input.addEventListener('focus', function() {
                 this.parentElement.style.transform = 'translateY(-2px)';
+                this.parentElement.style.transition = 'transform 0.3s ease';
             });
             
             input.addEventListener('blur', function() {
                 this.parentElement.style.transform = 'translateY(0)';
+            });
+            
+            // Clear error message when user starts typing
+            input.addEventListener('input', function() {
+                const errorElement = document.getElementById(this.name + 'Error');
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                }
             });
         });
     </script>
