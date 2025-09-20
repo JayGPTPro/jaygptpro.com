@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Vault - Get Your Episodes Access</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .bg-vault {
+            background-image: url('https://page.gensparksite.com/v1/base64_upload/0c50f60a436c9f78044e0930b3ceaf7a');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .bullet-point {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .bullet-point::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            background: rgba(255, 255, 255, 1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .left-content, .right-form {
+                width: 100% !important;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-vault min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-7xl mx-auto">
+        <div class="split-layout flex min-h-screen md:min-h-[600px] rounded-2xl overflow-hidden shadow-2xl">
+            <!-- Left Side - Content -->
+            <div class="left-content w-full md:w-1/2 glass-card p-8 md:p-12 flex flex-col justify-center">
+                <div class="text-center md:text-left">
+                    <!-- AI Vault Branding -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
+                            <i class="fas fa-vault-alt text-blue-400 mr-3"></i>AI VAULT
+                        </h1>
+                        <p class="text-blue-200 text-lg">for eCom sellers</p>
+                    </div>
+                    
+                    <!-- Headline -->
+                    <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight">
+                        🔓 Access Unlocked:<br>
+                        <span class="text-blue-300">4 Exclusive AI Episodes</span>
+                    </h2>
+                    
+                    <!-- Subtitle -->
+                    <p class="text-white text-lg mb-8 opacity-90">
+                        Use these exclusive episodes to:
+                    </p>
+                    
+                    <!-- Bullet Points -->
+                    <div class="space-y-4 text-left">
+                        <div class="bullet-point text-white text-base md:text-lg">
+                            Discover Google's most advanced AI image editor to create product photos in seconds
+                        </div>
+                        <div class="bullet-point text-white text-base md:text-lg">
+                            Double your Sponsored Brand Video results with simple AI workflows
+                        </div>
+                        <div class="bullet-point text-white text-base md:text-lg">
+                            Master GenSpark to automate slides, data, and content creation
+                        </div>
+                        <div class="bullet-point text-white text-base md:text-lg">
+                            Build Custom GPTs that save hours every week in your eCom business
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Form -->
+            <div class="right-form w-full md:w-1/2 form-glass p-8 md:p-12 flex flex-col justify-center">
+                <div class="max-w-md mx-auto w-full">
+                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center">
+                        Get Instant Access
+                    </h3>
+                    <p class="text-gray-600 text-center mb-8">
+                        Enter your details below to unlock your episodes
+                    </p>
+                    
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Success! Redirecting to your episodes...
+                    </div>
+                    
+                    <form id="signupForm" class="space-y-4">
+                        <!-- First Name -->
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+                                First Name <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName"
+                                required 
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                                placeholder="Enter your first name"
+                            />
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+                                Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                                placeholder="Enter your last name"
+                            />
+                        </div>
+                        
+                        <!-- Phone -->
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                Phone
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                                placeholder="Enter your phone number"
+                            />
+                        </div>
+                        
+                        <!-- Email -->
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email"
+                                required 
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                                placeholder="Enter your email address"
+                            />
+                        </div>
+                        
+                        <!-- Consent Checkbox -->
+                        <div class="flex items-start space-x-3 py-2">
+                            <input 
+                                type="checkbox" 
+                                id="consent" 
+                                name="consent"
+                                checked 
+                                disabled
+                                class="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
+                            />
+                            <label for="consent" class="text-sm text-gray-600 leading-relaxed">
+                                I agree to receive updates from Jay Margaliot via email
+                            </label>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button 
+                            type="submit" 
+                            class="btn-gradient w-full py-4 px-6 rounded-lg text-white font-bold text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
+                        >
+                            <i class="fas fa-play-circle mr-2"></i>
+                            Claim My Free Episodes
+                        </button>
+                    </form>
+                    
+                    <!-- Footer -->
+                    <div class="text-center mt-8">
+                        <p class="text-xs text-gray-500">
+                            © 2025 Jay Margaliot. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const firstName = document.getElementById('firstName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            
+            // Validate required fields
+            if (!firstName) {
+                alert('Please enter your first name.');
+                document.getElementById('firstName').focus();
+                return;
+            }
+            
+            if (!email) {
+                alert('Please enter your email address.');
+                document.getElementById('email').focus();
+                return;
+            }
+            
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address.');
+                document.getElementById('email').focus();
+                return;
+            }
+            
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Disable form to prevent multiple submissions
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Redirecting...';
+            
+            // Redirect after 2 seconds
+            setTimeout(function() {
+                window.location.href = 'https://jaygptpro.com/episode-thank-you.html';
+            }, 2000);
+        });
+        
+        // Add interactive effects
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
