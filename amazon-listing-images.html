@@ -6,7 +6,7 @@
     <title>🍌 Amazon Listing Image System | Jay Margaliot</title>
     <meta name="description" content="Professional 3-prompt system to generate complete Amazon listing images using ChatGPT and Nano Banana Pro">
     
-    <!-- Banana Favicon -->
+    <!-- FIX #8: Banana Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍌</text></svg>">
     
     <style>
@@ -18,16 +18,41 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #0a0e27;
             color: #e0e0e0;
-            line-height: 1.6;
-            padding: 2rem 1rem;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated circuit background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(255,217,61,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(255,217,61,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: circuit 20s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes circuit {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
@@ -38,13 +63,14 @@
         .header h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 1rem;
             background: linear-gradient(135deg, #FFD93D 0%, #5FB878 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 1rem;
         }
 
+        /* FIX #4: Update Badge */
         .update-badge {
             display: inline-block;
             background: linear-gradient(135deg, #FFD93D 0%, #FFC107 100%);
@@ -57,6 +83,7 @@
             margin-bottom: 2rem;
         }
 
+        /* FIX #5: Intro Box for New Users */
         .intro-box {
             background: rgba(95, 184, 120, 0.1);
             border: 2px solid #5FB878;
@@ -84,36 +111,102 @@
             font-weight: 600;
         }
 
-        .progress-section {
+        /* Vault Sidebar */
+        .vault-sidebar {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid rgba(255, 217, 61, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            width: 200px;
+        }
+
+        .vault-title {
             text-align: center;
-            margin-bottom: 3rem;
+            color: #FFD93D;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .progress-tracker {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #FFD93D;
-            margin-bottom: 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
-        .locks {
+        .progress-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #FFD93D;
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .locks-container {
             display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
         }
 
         .lock {
-            font-size: 3rem;
+            font-size: 2rem;
             opacity: 0.3;
             transition: all 0.3s ease;
+            filter: grayscale(1);
         }
 
         .lock.unlocked {
             opacity: 1;
-            transform: scale(1.2);
+            filter: grayscale(0);
+            animation: unlock 0.5s ease;
         }
 
+        @keyframes unlock {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .access-level {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 217, 61, 0.2);
+            font-size: 0.7rem;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Content */
+        .content-area {
+            margin-right: 250px;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #FFD93D;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* Prompt Cards */
         .prompts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -122,28 +215,43 @@
         }
 
         .prompt-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 217, 61, 0.3);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 217, 61, 0.2);
             border-radius: 15px;
             padding: 2rem;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prompt-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD93D 0%, #5FB878 100%);
         }
 
         .prompt-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 217, 61, 0.2);
+            box-shadow: 0 10px 30px rgba(255, 217, 61, 0.15);
+            border-color: rgba(255, 217, 61, 0.5);
         }
 
         .prompt-card h3 {
             color: #FFD93D;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-bottom: 1rem;
         }
 
         .prompt-card p {
             color: #b0b0b0;
+            line-height: 1.6;
             margin-bottom: 1.5rem;
+            font-size: 0.95rem;
         }
 
         .copy-btn {
@@ -157,10 +265,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .copy-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
             box-shadow: 0 5px 20px rgba(255, 217, 61, 0.4);
         }
 
@@ -168,76 +278,75 @@
             transform: scale(0.98);
         }
 
-        .christmas-section {
-            margin-top: 3rem;
-            padding-top: 3rem;
-            border-top: 2px solid rgba(255, 217, 61, 0.3);
-        }
-
-        .prompt-card.christmas-unlocked {
+        /* Christmas Section */
+        .christmas-card {
             opacity: 0.3;
             pointer-events: none;
             transition: all 0.5s ease;
         }
 
-        .prompt-card.christmas-unlocked.unlocked {
+        .christmas-card.unlocked {
             opacity: 1;
             pointer-events: auto;
         }
 
+        /* FIX #1: Christmas Unlock Message */
         .christmas-unlock-message {
             color: #FFD93D;
             text-align: center;
             font-size: 1rem;
             margin-top: 1rem;
-            display: none;
+            display: none; /* Hidden by default */
         }
 
+        /* FIX #2: Button Group for Christmas */
         .button-group {
             display: flex;
             gap: 1rem;
-            justify-content: center;
             margin-top: 1rem;
         }
 
         .button-group .copy-btn {
             flex: 1;
-            max-width: 250px;
         }
 
         .button-group .studio-btn {
             background: linear-gradient(135deg, #5FB878 0%, #3D9E5A 100%);
         }
 
+        /* Tools Section */
         .tools-section {
-            margin-top: 4rem;
-            padding: 2rem;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 15px;
-        }
-
-        .tools-section h2 {
-            color: #FFD93D;
-            text-align: center;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            margin-top: 3rem;
         }
 
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
         }
 
         .tool-card {
-            text-align: center;
-            padding: 1.5rem;
             background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(95, 184, 120, 0.3);
             border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            border-color: rgba(95, 184, 120, 0.6);
+            transform: translateY(-3px);
         }
 
         .tool-card h3 {
             color: #5FB878;
             margin-bottom: 0.5rem;
+            font-size: 1.2rem;
         }
 
         .tool-card p {
@@ -248,54 +357,68 @@
 
         .tool-card a {
             color: #FFD93D;
-            text-decoration: underline;
+            text-decoration: none;
             font-weight: 600;
+            transition: all 0.3s ease;
         }
 
+        .tool-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* FIX #9: Author Section */
         .author-section {
             text-align: center;
             margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 217, 61, 0.2);
         }
 
-        .author-section a {
+        .author-link {
             text-decoration: none;
             display: inline-block;
+            transition: all 0.3s ease;
         }
 
-        .author-section img {
-            width: 60px;
-            height: 60px;
+        .author-link:hover {
+            transform: scale(1.05);
+        }
+
+        .author-photo {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: 3px solid #FFD93D;
             box-shadow: 0 4px 15px rgba(255, 217, 61, 0.4);
             display: block;
-            margin: 0 auto 0.5rem;
+            margin: 0 auto 1rem;
+            object-fit: cover;
         }
 
-        .author-section .name {
+        .author-name {
             color: #FFD93D;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
+            margin-bottom: 0.3rem;
         }
 
-        .author-section .title {
+        .author-title {
             color: #b0b0b0;
-            font-size: 0.85rem;
-            margin-top: 0.3rem;
+            font-size: 0.9rem;
         }
 
-        .prompt-content {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(95, 184, 120, 0.3);
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: #5FB878;
-            max-height: 200px;
-            overflow-y: auto;
-            white-space: pre-wrap;
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .vault-sidebar {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+
+            .content-area {
+                margin-right: 0;
+            }
         }
 
         @media (max-width: 768px) {
@@ -311,58 +434,148 @@
                 flex-direction: column;
             }
 
-            .button-group .copy-btn {
-                max-width: 100%;
+            .container {
+                padding: 1rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🍌 3-Prompt System for Amazon Listing Images</h1>
-            
-            <!-- Update Badge -->
-            <div style="text-align: center; margin-top: 0.5rem; margin-bottom: 2rem;">
-                <span class="update-badge">
-                    ✨ Last Updated: December 4, 2025
-                </span>
-            </div>
-
-            <!-- Intro Box -->
-            <div class="intro-box">
-                <p>
-                    <strong>👋 How it works:</strong><br>
-                    This page gives you my <strong style="color: #5FB878;">3-prompt system</strong> to generate complete Amazon listing images.<br>
-                    <span class="highlight">📋 Copy Prompt #1 to begin.</span>
-                </p>
-            </div>
-        </div>
-
-        <!-- Progress Tracker -->
-        <div class="progress-section">
+        <!-- Vault Sidebar -->
+        <div class="vault-sidebar">
+            <div class="vault-title">🍌 Progress Tracker</div>
             <div class="progress-tracker">
-                <div style="font-size: 1.8rem; font-weight: 700; color: #FFD93D;">0/3</div>
-                <div style="font-size: 1rem; color: #b0b0b0; margin-top: 0.5rem;">Prompts Copied</div>
+                <div class="progress-number">0/3</div>
+                <div class="progress-label">Prompts Copied</div>
             </div>
-            <div class="locks">
+            <div class="locks-container">
                 <div class="lock" id="lock-1">🔒</div>
                 <div class="lock" id="lock-2">🔒</div>
                 <div class="lock" id="lock-3">🔒</div>
             </div>
+            <div class="access-level">Level: Locked</div>
         </div>
 
-        <!-- Main Prompts Grid -->
-        <div class="prompts-grid">
-            <!-- Prompt 1 -->
-            <div class="prompt-card">
-                <h3>🎯 Prompt #1: Strategic Blueprint</h3>
-                <p>Creates the foundation: analyzes your product, builds customer avatars, and generates the complete visual strategy.</p>
+        <!-- Main Content -->
+        <div class="content-area">
+            <!-- Header -->
+            <div class="header">
+                <h1>3-Prompt System for Amazon Listing Images</h1>
                 
-                <!-- 👇 הכנס את PROMPT #1 כאן בתוך הdiv הזה 👇 -->
-                <div class="prompt-content" id="prompt1-content">
-You are the world's leading Amazon listing strategist and product marketing expert. Your specialty is reading products and customers, then turning that into a clean, high-converting plan for 10 Amazon listing images. Your mission in this chat: 1. Analyze the product I give you using every signal available. 2. Build a full, structured strategic plan for 10 listing images that can be sent directly to a designer or image generator. You must always think like a performance marketer first, designer second.
+                <!-- FIX #4: Update Badge -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <span class="update-badge">
+                        ✨ Last Updated: December 4, 2025
+                    </span>
+                </div>
+
+                <!-- FIX #5: Intro Box -->
+                <div class="intro-box">
+                    <p>
+                        <strong>👋 How it works:</strong><br>
+                        This page gives you my <strong style="color: #5FB878;">3-prompt system</strong> to generate complete Amazon listing images.<br>
+                        <span class="highlight">📋 Copy Prompt #1 to begin.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Prompts -->
+            <div class="section">
+                <div class="prompts-grid">
+                    <!-- Prompt 1 -->
+                    <div class="prompt-card">
+                        <h3>🎯 Prompt #1: Strategic Blueprint</h3>
+                        <p>Creates the foundation: analyzes your product, builds customer avatars, and generates the complete visual strategy for your listing.</p>
+                        <button class="copy-btn" onclick="copyPrompt(1)">
+                            📋 Copy to ChatGPT
+                        </button>
+                    </div>
+
+                    <!-- Prompt 2 -->
+                    <div class="prompt-card">
+                        <h3>🖼️ Prompt #2: Main Images (1-4)</h3>
+                        <p>Generates 16 professional Nano Banana prompts for your main hero images with 4 variations each.</p>
+                        <button class="copy-btn" onclick="copyPrompt(2)">
+                            🍌 Copy to Nano Banana
+                        </button>
+                    </div>
+
+                    <!-- Prompt 3 -->
+                    <div class="prompt-card">
+                        <h3>🎨 Prompt #3: Secondary Images (5-10)</h3>
+                        <p>Generates 24 lifestyle and infographic Nano Banana prompts for your complete listing gallery.</p>
+                        <button class="copy-btn" onclick="copyPrompt(3)">
+                            🍌 Copy to Nano Banana
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Christmas Bonus Section -->
+            <div class="section">
+                <h2 class="section-title">🎄 Christmas Bonus</h2>
+                <div class="prompts-grid">
+                    <div class="prompt-card christmas-card" id="christmas-card">
+                        <h3>🎁 Christmas Image Enhancement</h3>
+                        <p>Transform any product image into a premium Christmas-themed version while keeping the original photo 100% intact.</p>
+                        
+                        <!-- FIX #2: Two Buttons -->
+                        <div class="button-group">
+                            <button class="copy-btn" onclick="copyChristmasPrompt()">
+                                📋 Copy Prompt
+                            </button>
+                            <button class="copy-btn studio-btn" onclick="openNanaBananaStudio()">
+                                🍌 Open in AI Studio
+                            </button>
+                        </div>
+
+                        <!-- FIX #1: Hidden Unlock Message -->
+                        <p class="christmas-unlock-message" id="christmas-unlock-message">
+                            🎁 Unlock all 3 prompts to reveal the Christmas bonus!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">🛠️ Required Tools (All Free)</h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h3>💬 ChatGPT</h3>
+                        <p>Use for Prompt #1 (Strategic Blueprint)</p>
+                        <a href="https://chatgpt.com/" target="_blank">Open ChatGPT →</a>
+                    </div>
+                    <div class="tool-card">
+                        <h3>🍌 Nano Banana Pro</h3>
+                        <p>Generate listing images (Free with Google)</p>
+                        <!-- FIX #3: Updated Text -->
+                        <a href="https://aistudio.google.com/prompts/new_chat" target="_blank">Open Nano Banana in Google AI Studio →</a>
+                    </div>
+                    <div class="tool-card">
+                        <h3>📊 SellerSprite</h3>
+                        <p>Extract Amazon reviews for better insights</p>
+                        <a href="https://chromewebstore.google.com/detail/sellersprite-amazon-resea/lnbmbgocenenhhhdojdielgnmeflbnfb" target="_blank">Install Extension →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIX #9: Author Section -->
+            <div class="author-section">
+                <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="author-link">
+                    <img src="https://www.genspark.ai/api/files/s/TDvi0Hi6" alt="Jay Margaliot" class="author-photo">
+                    <div class="author-name">Jay Margaliot</div>
+                </a>
+                <p class="author-title">Amazon Listing Image Expert 🍌</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Prompt texts - REPLACE THESE WITH YOUR ACTUAL PROMPTS
+        const prompts = {
+            1: `You are the world's leading Amazon listing strategist and product marketing expert. Your specialty is reading products and customers, then turning that into a clean, high-converting plan for 10 Amazon listing images. Your mission in this chat: 1. Analyze the product I give you using every signal available. 2. Build a full, structured strategic plan for 10 listing images that can be sent directly to a designer or image generator. You must always think like a performance marketer first, designer second.
 
 --- INPUT RULES
 I may give you some or all of the following:
@@ -578,23 +791,8 @@ List 3 actionable instructions.
 
 End with: Every image should have one clear job. It is better to do one thing perfectly in each image than to cram many ideas into a single frame. Clarity, authenticity, and strategic focus will always beat complexity and perfection.
 
-Do not ask me follow-up questions. Use everything I provided and deliver the full plan in one answer.
-
-                </div>
-                
-                <button class="copy-btn" onclick="copyPrompt(1, 'prompt1-content')">
-                    📋 COPY TO CHATGPT
-                </button>
-            </div>
-
-            <!-- Prompt 2 -->
-            <div class="prompt-card">
-                <h3>🖼️ Prompt #2: Main Images (1-4)</h3>
-                <p>Generates 16 professional prompts for your main hero images using Nano Banana Pro.</p>
-                
-                
-                <div class="prompt-content" id="prompt2-content">
-[You are the world's most accomplished commercial product photographer specializing in Amazon main images. You also think like a performance marketer who lives and breathes click through rate and conversion rate.
+Do not ask me follow-up questions. Use everything I provided and deliver the full plan in one answer.`,
+            2: `[You are the world's most accomplished commercial product photographer specializing in Amazon main images. You also think like a performance marketer who lives and breathes click through rate and conversion rate.
 Your mission in this chat:
 Create 16 professional prompts for Nano Banana Pro to generate 4 Amazon main images, with 4 strategically different variations for each image. You only write prompts. Real Amazon sellers will use them.
 ---
@@ -779,22 +977,8 @@ For each image:
 2. Write 4 complete prompts in natural language, each 130 to 180 words.
 3. Add a Key Differences block that explains what makes each variation strategically unique.
 Write as if you are briefing the best commercial product photographer in the world. Be specific, strategic and clear. The goal is to help real Amazon sellers generate main images that drive clicks and sales.
-]
-                </div>
-                
-                <button class="copy-btn" onclick="copyPrompt(2, 'prompt2-content')">
-                    🍌 COPY TO NANO BANANA
-                </button>
-            </div>
-
-            <!-- Prompt 3 -->
-            <div class="prompt-card">
-                <h3>🎨 Prompt #3: Secondary Images (5-10)</h3>
-                <p>Generates 24 lifestyle and infographic prompts for your complete listing gallery.</p>
-                
-            
-                <div class="prompt-content" id="prompt3-content">
-You are the world’s leading Amazon listing visual strategist and lifestyle photographer. You specialize in human centered photography, ultra-clean premium realism, advanced infographic design, and conversion psychology tailored for Amazon. You already built the full strategic direction for this product, including avatars, messaging, visual hierarchy, product analysis, and the 10-image plan. Use that strategy exactly. Do not request clarification. Do not ask for missing info. Your mission now: Create 24 professional prompts for Nano Banana Pro to generate 6 secondary Amazon listing images, with 4 variations for each image. Each prompt must be 180 to 250 words and ready to paste into Nano Banana Pro. All six images must look visually related. Same brand personality, same visual system, consistent tone, consistent photographic style, consistent color mood.
+]`,
+            3: `You are the world’s leading Amazon listing visual strategist and lifestyle photographer. You specialize in human centered photography, ultra-clean premium realism, advanced infographic design, and conversion psychology tailored for Amazon. You already built the full strategic direction for this product, including avatars, messaging, visual hierarchy, product analysis, and the 10-image plan. Use that strategy exactly. Do not request clarification. Do not ask for missing info. Your mission now: Create 24 professional prompts for Nano Banana Pro to generate 6 secondary Amazon listing images, with 4 variations for each image. Each prompt must be 180 to 250 words and ready to paste into Nano Banana Pro. All six images must look visually related. Same brand personality, same visual system, consistent tone, consistent photographic style, consistent color mood.
 ------------------------------------------------------------
 GLOBAL NON-NEGOTIABLE RULES
 ------------------------------------------------------------
@@ -888,140 +1072,70 @@ Send the output in exactly 3 separate messages:
 Message 1: Images 5 and 6 (with all 8 variations)
 Message 2: Images 7 and 8 (with all 8 variations)
 Message 3: Images 9 and 10 (with all 8 variations)
-Now generate all 24 prompts.
-                </div>
-                
-                <button class="copy-btn" onclick="copyPrompt(3, 'prompt3-content')">
-                    🍌 COPY TO NANO BANANA
-                </button>
-            </div>
-        </div>
+Now generate all 24 prompts.`
+        };
 
-        <!-- Christmas Bonus Section -->
-        <div class="christmas-section">
-            <div class="prompt-card christmas-unlocked" id="christmas-card">
-                <h3>🎄 BONUS: Christmas Enhancement</h3>
-                <p>Transform any image into a premium Christmas-themed version while keeping the original intact.</p>
-                
-                <div class="prompt-content">
-Create a clean premium Christmas-enhanced version of this exact image. Do not modify the original photo in any way. Do not change people, faces, clothing, poses, hands, product shape, materials, colors, lighting direction, shadows, depth, or camera angle. The base image must remain 100 percent intact. Add only subtle, realistic holiday accents that naturally fit the existing space. Use gentle warm lights, soft bokeh, minimal garland, small decorative greenery, candles, or a few neatly wrapped gift boxes if appropriate. Do not add any Christmas trees. Holiday additions must blend perfectly with the real lighting, shadows, and color tones of the scene. Keep everything photorealistic and tasteful with no cartoon props, fake sparkles, snow overlays, glitter, floating objects, or anything unrealistic. If people appear in the image, you may add one natural-looking Santa hat to one person only, aligned correctly with head shape, shadow, and lighting. The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.
-                </div>
+        const christmasPrompt = `Create a clean premium Christmas-enhanced version of this exact image. Do not modify the original photo in any way. Do not change people, faces, clothing, poses, hands, product shape, materials, colors, lighting direction, shadows, depth, or camera angle. The base image must remain 100 percent intact. Add only subtle, realistic holiday accents that naturally fit the existing space. Use gentle warm lights, soft bokeh, minimal garland, small decorative greenery, candles, or a few neatly wrapped gift boxes if appropriate. Do not add any Christmas trees. Holiday additions must blend perfectly with the real lighting, shadows, and color tones of the scene. Keep everything photorealistic and tasteful with no cartoon props, fake sparkles, snow overlays, glitter, floating objects, or anything unrealistic. If people appear in the image, you may add one natural-looking Santa hat to one person only, aligned correctly with head shape, shadow, and lighting. The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.`;
 
-                <div class="button-group">
-                    <button class="copy-btn" onclick="copyChristmasPrompt()">
-                        📋 Copy Prompt
-                    </button>
-                    <button class="copy-btn studio-btn" onclick="openNanaBananaStudio()">
-                        🍌 Open in AI Studio
-                    </button>
-                </div>
-
-                <p class="christmas-unlock-message" id="christmas-unlock-message">
-                    🎁 Unlock all 3 prompts to reveal the Christmas bonus!
-                </p>
-            </div>
-        </div>
-
-        <!-- Tools Section -->
-        <div class="tools-section">
-            <h2>🛠️ Required Tools (All Free)</h2>
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h3>💬 ChatGPT</h3>
-                    <p>Use for Prompt #1 (Strategic Blueprint)</p>
-                    <a href="https://chatgpt.com/" target="_blank">Open ChatGPT →</a>
-                </div>
-                <div class="tool-card">
-                    <h3>🍌 Nano Banana Pro</h3>
-                    <p>Generate listing images (Free with Google)</p>
-                    <a href="https://aistudio.google.com/prompts/new_chat" target="_blank">Open Nano Banana in Google AI Studio →</a>
-                </div>
-                <div class="tool-card">
-                    <h3>📊 SellerSprite</h3>
-                    <p>Extract Amazon reviews for better insights</p>
-                    <a href="https://chromewebstore.google.com/detail/sellersprite-amazon-resea/lnbmbgocenenhhhdojdielgnmeflbnfb" target="_blank">Install Extension →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Author Section -->
-        <div class="author-section">
-            <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">
-                <img src="https://www.genspark.ai/api/files/s/TDvi0Hi6" alt="Jay Margaliot">
-                <div class="name">Jay Margaliot</div>
-            </a>
-            <p class="title">Amazon Listing Image Expert 🍌</p>
-        </div>
-    </div>
-
-    <script>
-        // Track which prompts have been copied
+        // Track unlocked prompts
         const unlockedPrompts = new Set();
 
-        function copyPrompt(promptNumber, contentId) {
-            const content = document.getElementById(contentId).textContent.trim();
+        function copyPrompt(promptNumber) {
+            const text = prompts[promptNumber];
             
-            navigator.clipboard.writeText(content).then(() => {
-                // Add to unlocked set
+            navigator.clipboard.writeText(text).then(() => {
                 unlockedPrompts.add(promptNumber);
+                updateProgress();
                 
-                // Update progress
-                updateProgressAndUnlock();
-                
-                // Visual feedback
-                alert(`✅ Prompt #${promptNumber} copied!\n\nPaste it into ${promptNumber === 1 ? 'ChatGPT' : 'Nano Banana Pro'} to continue.`);
+                const tool = promptNumber === 1 ? 'ChatGPT' : 'Nano Banana Pro';
+                alert(`✅ Prompt #${promptNumber} copied!\n\nPaste it into ${tool} to continue.`);
             }).catch(err => {
                 alert('Failed to copy. Please try again.');
-                console.error('Copy failed:', err);
+                console.error('Copy error:', err);
             });
         }
 
         function copyChristmasPrompt() {
-            const christmasPrompt = `Create a clean premium Christmas-enhanced version of this exact image. Do not modify the original photo in any way. Do not change people, faces, clothing, poses, hands, product shape, materials, colors, lighting direction, shadows, depth, or camera angle. The base image must remain 100 percent intact. Add only subtle, realistic holiday accents that naturally fit the existing space. Use gentle warm lights, soft bokeh, minimal garland, small decorative greenery, candles, or a few neatly wrapped gift boxes if appropriate. Do not add any Christmas trees. Holiday additions must blend perfectly with the real lighting, shadows, and color tones of the scene. Keep everything photorealistic and tasteful with no cartoon props, fake sparkles, snow overlays, glitter, floating objects, or anything unrealistic. If people appear in the image, you may add one natural-looking Santa hat to one person only, aligned correctly with head shape, shadow, and lighting. The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.`;
-            
             navigator.clipboard.writeText(christmasPrompt).then(() => {
                 alert('✅ Christmas prompt copied!\n\nPaste it into Nano Banana Pro with your product image.');
             });
         }
 
         function openNanaBananaStudio() {
-            const christmasPrompt = `Create a clean premium Christmas-enhanced version of this exact image. Do not modify the original photo in any way. Do not change people, faces, clothing, poses, hands, product shape, materials, colors, lighting direction, shadows, depth, or camera angle. The base image must remain 100 percent intact. Add only subtle, realistic holiday accents that naturally fit the existing space. Use gentle warm lights, soft bokeh, minimal garland, small decorative greenery, candles, or a few neatly wrapped gift boxes if appropriate. Do not add any Christmas trees. Holiday additions must blend perfectly with the real lighting, shadows, and color tones of the scene. Keep everything photorealistic and tasteful with no cartoon props, fake sparkles, snow overlays, glitter, floating objects, or anything unrealistic. If people appear in the image, you may add one natural-looking Santa hat to one person only, aligned correctly with head shape, shadow, and lighting. The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.`;
-            
             navigator.clipboard.writeText(christmasPrompt).then(() => {
                 window.open('https://aistudio.google.com/prompts/new_chat', '_blank');
                 alert('✅ Prompt copied! A new window opened in Google AI Studio.\n\nPaste the prompt there and attach your product image 🍌');
             });
         }
 
-        function updateProgressAndUnlock() {
-            const unlockedCount = unlockedPrompts.size;
-            const progressText = document.querySelector('.progress-tracker');
-            progressText.innerHTML = `<div style="font-size: 1.8rem; font-weight: 700; color: #FFD93D;">${unlockedCount}/3</div><div style="font-size: 1rem; color: #b0b0b0; margin-top: 0.5rem;">Prompts Copied</div>`;
-
+        function updateProgress() {
+            const count = unlockedPrompts.size;
+            
+            // Update counter
+            document.querySelector('.progress-number').textContent = `${count}/3`;
+            
             // Update locks
             for (let i = 1; i <= 3; i++) {
-                const lockIcon = document.getElementById(`lock-${i}`);
-                if (unlockedCount >= i) {
-                    lockIcon.textContent = '🍌';
-                    lockIcon.classList.add('unlocked');
+                const lock = document.getElementById(`lock-${i}`);
+                if (count >= i) {
+                    lock.textContent = '🍌';
+                    lock.classList.add('unlocked');
                 }
             }
-
-            // Unlock Christmas bonus after all 3 prompts copied
-            if (unlockedCount >= 3) {
+            
+            // Update access level
+            const levels = ['Locked', 'Basic Access', 'Advanced Access', 'Full Access'];
+            document.querySelector('.access-level').textContent = `Level: ${levels[count]}`;
+            
+            // Unlock Christmas bonus
+            if (count >= 3) {
                 const christmasCard = document.getElementById('christmas-card');
-                if (christmasCard) {
-                    christmasCard.classList.add('unlocked');
-                    christmasCard.style.opacity = '1';
-                    christmasCard.style.pointerEvents = 'auto';
-                }
+                christmasCard.classList.add('unlocked');
                 
-                // Show unlock message
+                // FIX #1: Show unlock message and update text (FIX #7)
                 const unlockMessage = document.getElementById('christmas-unlock-message');
-                if (unlockMessage) {
-                    unlockMessage.style.display = 'block';
-                    unlockMessage.textContent = '🍌 All Prompts Unlocked! Christmas Bonus Available 🎄';
-                }
+                unlockMessage.style.display = 'block';
+                unlockMessage.textContent = '🍌 All Prompts Unlocked! Christmas Bonus Available 🎄';
             }
         }
     </script>
