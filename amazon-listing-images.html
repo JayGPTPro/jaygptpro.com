@@ -224,6 +224,12 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            /* FIX #3: Hidden by default */
+            display: none;
+        }
+
+        .christmas-section.unlocked {
+            display: block;
         }
 
         .christmas-section::before {
@@ -311,11 +317,36 @@
             font-weight: 600;
         }
 
-        /* FIX #1: Christmas Unlock Message (hidden by default) */
-        .christmas-unlock-message {
-            display: none;
-            margin-top: 1rem;
-            color: var(--banana-yellow);
+        /* FIX #6: Author Section - Move to Top */
+        .author-section-top {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .author-link {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .author-link:hover {
+            transform: scale(1.05);
+        }
+
+        .author-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--banana-yellow);
+            box-shadow: 0 4px 15px rgba(255, 217, 61, 0.4);
+            object-fit: cover;
+        }
+
+        .author-name {
+            color: var(--text-light);
+            font-size: 1rem;
             font-weight: 600;
         }
 
@@ -335,47 +366,6 @@
         .button-group .studio-btn {
             background: linear-gradient(135deg, var(--leaf-green) 0%, #3D9E5A 100%);
             color: white;
-        }
-
-        /* FIX #9: Author Section */
-        .author-section {
-            text-align: center;
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 217, 61, 0.2);
-        }
-
-        .author-link {
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-
-        .author-link:hover {
-            transform: scale(1.05);
-        }
-
-        .author-photo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--banana-yellow);
-            box-shadow: 0 4px 15px rgba(255, 217, 61, 0.4);
-            display: block;
-            margin: 0 auto 0.8rem;
-            object-fit: cover;
-        }
-
-        .author-name {
-            color: var(--banana-yellow);
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
-
-        .author-title {
-            color: #b0b0b0;
-            font-size: 0.9rem;
         }
 
         @media (max-width: 1024px) {
@@ -418,6 +408,11 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+
+            .author-link {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -439,12 +434,19 @@
                     </span>
                 </div>
 
-                <!-- FIX #5: Intro Box -->
+                <!-- FIX #6: Author Section Moved to Top -->
+                <div class="author-section-top">
+                    <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="author-link">
+                        <img src="https://i.imgur.com/nPPlG3p.jpeg" alt="Jay Margaliot" class="author-photo">
+                        <span class="author-name">Made by Jay Margaliot</span>
+                    </a>
+                </div>
+
+                <!-- FIX #5: Intro Box (FIX #1: Removed "Copy Prompt #1 to begin") -->
                 <div class="intro-box">
                     <p>
                         <strong>👋 How it works:</strong><br>
-                        This page gives you my <strong style="color: var(--leaf-green);">3-prompt system</strong> to generate complete Amazon listing images.<br>
-                        <span class="highlight">📋 Copy Prompt #1 to begin.</span>
+                        This page gives you my <strong style="color: var(--leaf-green);">3-prompt system</strong> to generate complete Amazon listing images.
                     </p>
                 </div>
 
@@ -452,7 +454,7 @@
                     Create Full Listing Images with Nano Banana Pro
                 </h2>
                 <p class="text-xl mb-6" style="color: var(--text-light);">
-                    By Jay Margaliot | 3 AI Prompts + 1 Bonus
+                    3 AI Prompts + 1 Bonus
                 </p>
             </div>
 
@@ -476,10 +478,10 @@
                         </div>
                         <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">Nano Banana Pro</h3>
                         <p class="text-sm mb-3" style="color: var(--text-light);">Generate listing images (Free with Google)</p>
-                        <!-- FIX #3: Updated Link Text -->
+                        <!-- FIX #2: Shortened Text -->
                         <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" class="copy-btn text-sm">
                             <i class="fas fa-external-link-alt mr-2"></i>
-                            Open Nano Banana in Google AI Studio
+                            Open in Google AI Studio
                         </a>
                     </div>
                     <div class="text-center">
@@ -1135,8 +1137,8 @@ Now generate all 24 prompts.</div>
                 </div>
             </div>
 
-            <!-- 🎄 Christmas Bonus Section -->
-            <div class="christmas-section">
+            <!-- 🎄 Christmas Bonus Section (FIX #3: Hidden by default) -->
+            <div class="christmas-section" id="christmasSection">
                 <h3 class="christmas-title">
                     🎄 BONUS: Christmas Transform 🎅
                 </h3>
@@ -1187,11 +1189,6 @@ If people appear in the image, you may add one natural-looking Santa hat to one 
 The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.</div>
                 </div>
                 
-                <!-- FIX #1: Hidden Unlock Message -->
-                <p class="christmas-unlock-message" id="christmasUnlockMessage">
-                    🎁 Unlock all 3 prompts to reveal the Christmas bonus!
-                </p>
-                
                 <div class="mt-4 p-3 rounded" style="background: rgba(255, 215, 0, 0.1); border: 1px solid #FFD700;">
                     <p class="text-center font-semibold" style="color: #FFD700;">
                         🎁 Pro Tip: Generate Christmas versions of all your lifestyle and gift scene images to create a full holiday listing set!
@@ -1199,14 +1196,9 @@ The final result should feel as if the original scene was realistically decorate
                 </div>
             </div>
 
-            <!-- FIX #9: Author Section -->
-            <div class="author-section">
-                <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="author-link">
-                    <img src="https://www.genspark.ai/api/files/s/TDvi0Hi6" alt="Jay Margaliot" class="author-photo">
-                    <div class="author-name">Jay Margaliot</div>
-                </a>
-                <p class="author-title">Amazon Listing Image Expert 🍌</p>
-                <p class="text-sm mt-2" style="color: #A89080;">© 2025 Nano Banana Listing System <span class="banana-emoji">🍌</span></p>
+            <!-- Footer -->
+            <div class="text-center mt-16" style="color: #A89080;">
+                <p class="text-sm">© 2025 Nano Banana Listing System <span class="banana-emoji">🍌</span></p>
             </div>
         </div>
 
@@ -1218,9 +1210,9 @@ The final result should feel as if the original scene was realistically decorate
                 </h3>
                 
                 <div class="vault-door" id="vaultDoor">
-                    <div class="lock" id="lock1"></div>
-                    <div class="lock" id="lock2"></div>
-                    <div class="lock" id="lock3"></div>
+                    <div class="lock" id="lock1">🔒</div>
+                    <div class="lock" id="lock2">🔒</div>
+                    <div class="lock" id="lock3">🔒</div>
                     
                     <div class="text-center" style="color: var(--text-light);">
                         <i class="fas fa-lock text-4xl mb-2" style="color: var(--banana-yellow);"></i>
@@ -1270,13 +1262,11 @@ The final result should feel as if the original scene was realistically decorate
             let textToCopy;
             
             if (promptNumber === 'christmas') {
-                // Christmas prompt - get from the visible content
                 textToCopy = document.querySelector('.christmas-section .prompt-content').innerText;
             } else {
                 textToCopy = promptContent ? promptContent.innerText : '';
             }
             
-            // Create temporary textarea
             const textArea = document.createElement('textarea');
             textArea.value = textToCopy;
             document.body.appendChild(textArea);
@@ -1284,7 +1274,6 @@ The final result should feel as if the original scene was realistically decorate
             document.execCommand('copy');
             document.body.removeChild(textArea);
             
-            // Update button
             const button = promptCard ? promptCard.querySelector('.copy-prompt') : document.querySelector(`[data-prompt="${promptNumber}"]`);
             if (!button) return;
             
@@ -1298,7 +1287,6 @@ The final result should feel as if the original scene was realistically decorate
             
             button.classList.add('copied');
             
-            // Unlock vault (only for main prompts, not Christmas)
             if (promptNumber !== 'christmas') {
                 unlockVault(promptNumber);
             }
@@ -1311,32 +1299,29 @@ The final result should feel as if the original scene was realistically decorate
 
         function unlockVault(promptNumber) {
             if (document.getElementById(`lock${promptNumber}`).classList.contains('unlocked')) {
-                return; // Already unlocked
+                return;
             }
             
             unlockedCount++;
             
-            // Unlock the specific lock
+            // FIX #4: Change lock to banana emoji
             const lock = document.getElementById(`lock${promptNumber}`);
+            lock.textContent = '🍌';
             lock.classList.add('unlocked');
             lock.classList.add('unlock-animation');
             
-            // Update level status
             const levelStatus = document.getElementById(`level${promptNumber}`);
             levelStatus.textContent = '🔓 UNLOCKED';
             levelStatus.style.color = 'var(--leaf-green)';
             
-            // Update progress
             const progressIndicator = document.getElementById('progressIndicator');
             progressIndicator.textContent = `SECURITY CLEARANCE: ${unlockedCount}/3 PROMPTS COPIED`;
             
-            // Update vault door
             const vaultDoor = document.getElementById('vaultDoor');
             if (unlockedCount >= 2) {
                 vaultDoor.classList.add('opening');
             }
             
-            // Check if all prompts are unlocked
             if (unlockedCount === totalPrompts) {
                 setTimeout(() => {
                     vaultDoor.classList.add('fully-open');
@@ -1348,26 +1333,22 @@ The final result should feel as if the original scene was realistically decorate
                         </div>
                     `;
                     
-                    // FIX #7: Update message text
                     progressIndicator.textContent = '🍌 All Prompts Unlocked! Christmas Bonus Available 🎄';
                     progressIndicator.style.color = 'var(--leaf-green)';
                     
-                    // FIX #1: Show Christmas unlock message
-                    const christmasMessage = document.getElementById('christmasUnlockMessage');
-                    if (christmasMessage) {
-                        christmasMessage.style.display = 'block';
-                        christmasMessage.textContent = '🍌 All Prompts Unlocked! Christmas Bonus Available 🎄';
+                    // FIX #3: Show Christmas section
+                    const christmasSection = document.getElementById('christmasSection');
+                    if (christmasSection) {
+                        christmasSection.classList.add('unlocked');
                     }
                 }, 1000);
             }
             
-            // Remove animation class
             setTimeout(() => {
                 lock.classList.remove('unlock-animation');
             }, 600);
         }
 
-        // Add event listeners to copy buttons
         document.querySelectorAll('.copy-prompt').forEach(button => {
             button.addEventListener('click', function() {
                 const promptNumber = this.getAttribute('data-prompt');
@@ -1375,11 +1356,9 @@ The final result should feel as if the original scene was realistically decorate
             });
         });
 
-        // FIX #2: Open AI Studio button
         document.getElementById('openStudioBtn').addEventListener('click', function() {
             const christmasPrompt = document.querySelector('.christmas-section .prompt-content').innerText;
             
-            // Copy to clipboard
             const textArea = document.createElement('textarea');
             textArea.value = christmasPrompt;
             document.body.appendChild(textArea);
@@ -1387,10 +1366,8 @@ The final result should feel as if the original scene was realistically decorate
             document.execCommand('copy');
             document.body.removeChild(textArea);
             
-            // Open AI Studio
             window.open('https://aistudio.google.com/prompts/new_chat', '_blank');
             
-            // Update button
             const originalContent = this.innerHTML;
             this.innerHTML = '<i class="fas fa-check mr-2"></i>✅ Copied & Opened!';
             this.classList.add('copied');
@@ -1401,7 +1378,6 @@ The final result should feel as if the original scene was realistically decorate
             }, 3000);
         });
 
-        // Smooth scroll for internal links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
