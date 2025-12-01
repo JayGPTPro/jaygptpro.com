@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Full Amazon Listing Images with Nano Banana Pro | Jay Margaliot</title>
+    <meta name="description" content="3 AI prompts + 1 bonus to generate complete Amazon listing images using ChatGPT and Nano Banana Pro. By Jay Margaliot.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --banana-yellow: #FFD93D;
+            --banana-dark: #FFC93C;
+            --banana-brown: #6A4E23;
+            --leaf-green: #5FB878;
+            --dark-bg: #1A120B;
+            --secondary-dark: #2B1810;
+            --text-light: #FFF8E7;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--secondary-dark) 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .circuit-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 217, 61, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(95, 184, 120, 0.08) 0%, transparent 50%),
+                linear-gradient(90deg, transparent 24%, rgba(255, 217, 61, 0.03) 25%, rgba(255, 217, 61, 0.03) 26%, transparent 27%, transparent 74%, rgba(255, 217, 61, 0.03) 75%, rgba(255, 217, 61, 0.03) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(255, 217, 61, 0.03) 25%, rgba(255, 217, 61, 0.03) 26%, transparent 27%, transparent 74%, rgba(255, 217, 61, 0.03) 75%, rgba(255, 217, 61, 0.03) 76%, transparent 77%, transparent);
+            background-size: 100px 100px, 100px 100px, 50px 50px, 50px 50px;
+            animation: circuitPulse 8s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes circuitPulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .content-area {
+            flex: 3;
+            min-width: 0;
+        }
+
+        .vault-sidebar {
+            flex: 1;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            min-width: 300px;
+        }
+
+        .glass-card {
+            background: rgba(43, 24, 16, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 217, 61, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--banana-yellow), transparent);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--banana-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: var(--dark-bg);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 217, 61, 0.4);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, #4A9D5F 100%);
+            color: white;
+        }
+
+        .vault-container {
+            background: rgba(26, 18, 11, 0.9);
+            border: 2px solid var(--banana-yellow);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .vault-door {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--banana-brown) 0%, var(--secondary-dark) 100%);
+            border: 3px solid var(--banana-yellow);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.8s ease;
+        }
+
+        .vault-door.opening {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px var(--banana-yellow);
+        }
+
+        .vault-door.fully-open {
+            background: linear-gradient(135deg, var(--banana-yellow) 0%, #FFE066 100%);
+            box-shadow: 0 0 60px var(--banana-yellow);
+        }
+
+        .lock {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FF6B6B;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+
+        .lock.unlocked {
+            background: var(--leaf-green);
+            box-shadow: 0 0 10px var(--leaf-green);
+        }
+
+        .lock:nth-child(1) { top: 10px; left: 50%; transform: translateX(-50%); }
+        .lock:nth-child(2) { bottom: 20px; left: 20%; }
+        .lock:nth-child(3) { bottom: 20px; right: 20%; }
+
+        .progress-indicator {
+            font-size: 0.9rem;
+            color: var(--banana-yellow);
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .prompt-card {
+            margin-bottom: 2rem;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-content {
+            background: rgba(15, 10, 7, 0.6);
+            border: 1px solid rgba(255, 217, 61, 0.15);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .workflow-step {
+            background: rgba(255, 217, 61, 0.1);
+            border-left: 4px solid var(--banana-yellow);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tool-section {
+            background: linear-gradient(135deg, rgba(255, 217, 61, 0.12) 0%, rgba(95, 184, 120, 0.12) 100%);
+            border: 2px solid var(--banana-yellow);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .christmas-section {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.15) 0%, rgba(0, 100, 0, 0.15) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .christmas-section::before {
+            content: '❄️';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.05;
+            top: -20px;
+            right: -20px;
+            animation: snowRotate 10s linear infinite;
+        }
+
+        @keyframes snowRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .christmas-title {
+            background: linear-gradient(135deg, #DC143C 0%, #228B22 50%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .unlock-animation {
+            animation: unlockPulse 0.6s ease-out;
+        }
+
+        @keyframes unlockPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .banana-emoji {
+            display: inline-block;
+            animation: bananaBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bananaBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .vault-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+            }
+            
+            .vault-door {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .vault-door {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .prompt-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="circuit-bg"></div>
+    
+    <div class="main-container">
+        <div class="content-area">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4" style="background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--leaf-green) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                    <span class="banana-emoji">🍌</span> UNLOCK THE VAULT <span class="banana-emoji">🍌</span>
+                </h1>
+                <h2 class="text-2xl md:text-3xl font-semibold mb-2" style="color: var(--banana-yellow);">
+                    Create Full Listing Images with Nano Banana Pro
+                </h2>
+                <p class="text-xl mb-6" style="color: var(--text-light);">
+                    By Jay Margaliot | 3 AI Prompts + 1 Bonus
+                </p>
+            </div>
+
+            <!-- Tools Section -->
+            <div class="tool-section">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style="background: linear-gradient(135deg, #10A37F 0%, #1A7F64 100%);">
+                            <i class="fas fa-robot text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">ChatGPT</h3>
+                        <p class="text-sm mb-3" style="color: var(--text-light);">Generate strategic plan & prompts</p>
+                        <a href="https://chatgpt.com/" target="_blank" class="copy-btn text-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Open ChatGPT
+                        </a>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style="background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--banana-dark) 100%);">
+                            <span class="text-3xl">🍌</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">Nano Banana Pro</h3>
+                        <p class="text-sm mb-3" style="color: var(--text-light);">Generate listing images (Free with Google)</p>
+                        <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" class="copy-btn text-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Open Nano Banana
+                        </a>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">SellerSprite</h3>
+                        <p class="text-sm mb-3" style="color: var(--text-light);">Download Amazon reviews (Chrome extension)</p>
+                        <a href="https://chromewebstore.google.com/detail/sellersprite-amazon-resea/lnbmbgocenenhhhdojdielgnmeflbnfb" target="_blank" class="copy-btn text-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Get Extension
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="glass-card p-6 mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-center" style="color: var(--banana-yellow);">
+                    <i class="fas fa-cogs mr-2"></i>
+                    How It Works (3 Steps)
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="workflow-step">
+                        <div class="font-bold" style="color: var(--banana-yellow);">
+                            <span class="banana-emoji">🍌</span> Step 1: Strategic Plan (10 min)
+                        </div>
+                        <div class="text-sm mt-2" style="color: var(--text-light);">
+                            • Open ChatGPT<br>
+                            • Paste Prompt #1<br>
+                            • Add: Amazon URL + title + bullets + reviews file + product images<br>
+                            • Get complete strategic plan
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="font-bold" style="color: var(--banana-yellow);">
+                            <span class="banana-emoji">🍌</span> Step 2: Main Images (30 min)
+                        </div>
+                        <div class="text-sm mt-2" style="color: var(--text-light);">
+                            • Continue in same ChatGPT chat<br>
+                            • Paste Prompt #2<br>
+                            • Get 16 Nano Banana prompts<br>
+                            • Open Nano Banana → paste prompts + product images<br>
+                            • Tip: Open multiple tabs in parallel
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="font-bold" style="color: var(--banana-yellow);">
+                            <span class="banana-emoji">🍌</span> Step 3: Secondary Images (30 min)
+                        </div>
+                        <div class="text-sm mt-2" style="color: var(--text-light);">
+                            • Continue in same ChatGPT chat<br>
+                            • Paste Prompt #3<br>
+                            • Get 24 Nano Banana prompts<br>
+                            • Open Nano Banana → paste prompts + product images<br>
+                            • Tip: Open multiple tabs in parallel
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 rounded" style="background: rgba(255, 217, 61, 0.1); border: 1px solid var(--banana-yellow);">
+                    <p class="text-center font-semibold" style="color: var(--banana-yellow);">
+                        💡 Important: All 3 prompts work in ONE ChatGPT conversation. Prompts #2 and #3 use the strategic plan from Prompt #1.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Prompt Cards -->
+            <div class="prompts-container">
+                <!-- Prompt 1 -->
+                <div class="glass-card prompt-card p-6" data-prompt="1">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">
+                                <span class="banana-emoji">🍌</span> Prompt 1/3: Strategic Blueprint
+                            </h3>
+                            <p class="mb-2" style="color: var(--text-light);">
+                                <strong style="color: var(--leaf-green);">What you'll get:</strong> Complete strategic plan with product analysis, 3 customer avatars, primary keyword, brand visual system, typography guidelines, and full 10-image plan.
+                            </p>
+                            <p class="text-sm" style="color: #FFE066;">
+                                <strong>📋 Instructions:</strong><br>
+                                1. Copy this prompt to ChatGPT<br>
+                                2. At the end of the prompt, add:<br>
+                                   • Amazon product URL<br>
+                                   • Product title<br>
+                                   • Bullet points from listing<br>
+                                3. Attach files:<br>
+                                   • Customer reviews (download with SellerSprite extension)<br>
+                                   • Product reference images
+                            </p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="1">
+                            <i class="fas fa-copy mr-2"></i>
+                            📋 COPY TO CHATGPT
+                            <br>
+                            <span class="text-xs">🔓 Unlock Level 1 of 3</span>
+                        </button>
+                    </div>
+                    <div class="prompt-content">[You are the world's leading Amazon listing strategist and product marketing expert. Your specialty is reading products and customers, then turning that into a clean, high-converting plan for 10 Amazon listing images. Your mission in this chat: 1. Analyze the product I give you using every signal available. 2. Build a full, structured strategic plan for 10 listing images that can be sent directly to a designer or image generator. You must always think like a performance marketer first, designer second.
+
+--- INPUT RULES
+I may give you some or all of the following:
+• Product name or description
+• Product images or reference photos
+• Amazon listing URL or ASIN
+• Customer reviews moved into the chat
+• Extra context or constraints
+
+Work with whatever I give you. Do not ask me for missing information. If something is missing, infer logically from:
+1. Customer reviews (most reliable)
+2. Product title, bullets and description
+3. Competitor products in this category
+4. Category best practices
+5. Clear logical assumptions
+
+Never fabricate exact specs such as dimensions, battery life, material composition, weight, capacity, power values. When those are unknown, speak in general language. Whenever you make a claim, cite the source in short form, for example:
+• Based on 143 reviews you provided
+• According to the title and bullets
+• Inferred from standard use cases in this category
+
+At the start of Section 1 you must clearly state:
+• How many reviews you used, if any
+• Which information sources you relied on
+• Which important pieces of information were missing and how you compensated
+
+--- OUTPUT STRUCTURE
+You must follow all sections and headings exactly. Do not skip sections. Do not summarize.
+
+--- SECTION 1: PRODUCT AND MARKET INTELLIGENCE
+1.1 Data foundation
+Start with 4 short items in bullet form:
+• Reviews analyzed – write the exact count if available, or say none provided
+• Product information sources – list what you used, for example title, bullets, description, images
+• Extra sources – for example competitor patterns, category best practices
+• Missing pieces and compensation – for example no reviews, so you relied on category logic and the listing text
+
+Then write a short paragraph:
+• Product category
+• Core function in 1 to 2 sentences
+• Short list of 3 to 5 key features. After each feature add the source in brackets, for example (from reviews) or (from title)
+Do not invent technical values that are not stated in the input.
+
+1.2 Customer insights from reviews
+If you have reviews, extract patterns. If you do not have reviews, say so and base this section on category logic. Write 3 blocks.
+
+A. What customers love
+• List the top 3 positive themes
+• For each theme include:
+– Short label
+– 1 sentence explanation
+– 1 quote from a review with 10 to 20 words
+
+B. What customers complain about
+• List the top 3 complaint themes
+• For each theme include:
+– Short label
+– 1 sentence explanation
+– 1 quote from a review with 8 to 15 words
+
+C. Common doubts before buying
+• List 3 buyer questions or hesitations, for example:
+– Will it fit my space?
+– Is it durable enough?
+– Is it complicated to use?
+Mention clearly which of these doubts are answered well in the existing listing and which are weak or missing.
+
+1.3 WHO | WHY | PAIN map
+Build a compact structured view with 3 parts.
+
+A. WHO – customer types
+List up to 3 main buyer personas in concise form. For each persona write:
+• What they are trying to achieve
+• What matters most to them
+
+B. WHY – purchase motivations
+List up to 5 clear motivations in customer language and tie each motivation to one or more personas.
+
+C. PAIN – main frustrations
+List up to 5 pain points this product solves. For each:
+• Short label
+• 1 sentence description in customer language
+• Whether this pain is clearly solved or only partially solved
+
+--- SECTION 2: CUSTOMER AVATARS
+Create 3 avatars. For each avatar provide:
+• Name and age range
+• Gender
+• Family or living situation
+• Occupation and income (broad terms)
+• Daily life snapshot in 3 to 4 sentences
+• Main pains
+• Main motivations
+• Main fear stopping them
+• Most important listing detail for them
+• How they should look in lifestyle images:
+– Clothing style and colors
+– Hair style and level of messiness
+– Realistic imperfections: freckles, blemishes, laugh lines, natural skin tone, slight under-eye circles
+– Accessories if relevant
+– Body type described respectfully
+– Typical facial expression and energy level
+– Lived-in environment around them
+Make avatars feel like real people, not stock models.
+
+--- SECTION 3: KEY MESSAGING AND PRIMARY KEYWORD
+3.1 Primary keyword for packaging/tag/box
+Choose a single phrase of 2 to 4 words. Output:
+• Primary keyword in quotes
+• Reason (1–2 sentences)
+• Source (reviews/title/bullets/logic)
+
+3.2 Emotional triggers to show visually
+List 3 to 5 emotions. For each:
+• How to show it visually
+• Which avatar it connects to
+
+3.3 Features to show visually
+List 5 to 7 features. For each:
+• Feature name
+• Whether clear in current listing
+• Best shot type to show it (close-up, infographic, lifestyle, etc.)
+
+--- SECTION 4: BRAND VISUAL SYSTEM
+4.1 Color direction
+Suggest simple color logic (primary, secondary, neutrals, when to use bright accents).
+
+4.2 Typography for text inside images
+Define:
+• Headline style
+• Subheadline style
+• Body text style
+• Size hierarchy
+• Placement
+Typography must be consistent across Images 5–10.
+
+4.3 Overall mood and style
+4 to 6 bullet points describing:
+• General mood
+• Realism level
+• Lighting style
+• Allowed background clutter
+• Visual motif for cohesion
+
+--- SECTION 5: TEN IMAGE STRATEGIC PLAN
+Each image must include:
+• Image number and name
+• Role
+• Target avatar (if any)
+• Conversion goal
+• Core message (1 sentence)
+• Scene description
+• People description (with imperfections)
+• Text on image (if any)
+• Technical/framing notes
+Amazon rules must be respected.
+
+IMAGE 1: PURE MAIN IMAGE
+Rules:
+• Product only
+• White background
+• No text/props/people
+Describe best angle, size in frame, lighting, and accessory arrangement.
+
+IMAGE 2: PRODUCT PLUS STUNNING PACKAGING
+Rules:
+• White background
+• Product + box
+• Primary keyword appears physically on packaging
+Describe composition, packaging style, placement of keyword, emotional feel.
+
+IMAGE 3: PRODUCT WITH TAG
+Rules:
+• White background
+• Tag attached naturally with primary keyword only
+Describe tag material, style, font, placement without hiding product.
+
+IMAGE 4: CREATIVE HIGH-CTR VARIANT
+Rules:
+• White background
+• Product fills 70–75%
+• Keyword appears physically
+• One dramatic creative element
+Describe creative element fitting your product and where keyword sits. Note suppression risk.
+
+IMAGE 5: LIFESTYLE SCENE ONE
+Show Avatar 1 in authentic lived-in environment with imperfections, natural body language, realistic lighting, short optional headline.
+
+IMAGE 6: LIFESTYLE SCENE TWO
+Different avatar, different setting, different time of day, consistent realism, short optional headline.
+
+IMAGE 7: INFOGRAPHIC ONE
+Choose infographic type based on biggest doubt. Describe layout, callouts, headline, icons.
+
+IMAGE 8: INFOGRAPHIC TWO
+Complement Image 7 with different infographic type. Same details but different angle.
+
+IMAGE 9: GIFT/ OCCASION SCENE
+Real emotional interaction between giver and receiver, gift-worthy packaging, natural expressions.
+
+IMAGE 10: CLOSE-UP QUALITY SHOT
+Macro detail proving craftsmanship. Describe lighting, depth of field, quality headline, tiny callout.
+
+--- SECTION 6: PRIORITIES AND EXECUTION NOTES
+6.1 Top 3 most important images
+List and explain.
+
+6.2 Top 2 highest suppression risks
+List risks and backup plans.
+
+6.3 Three critical instructions for designer
+List 3 actionable instructions.
+
+End with: Every image should have one clear job. It is better to do one thing perfectly in each image than to cram many ideas into a single frame. Clarity, authenticity, and strategic focus will always beat complexity and perfection.
+
+Do not ask me follow-up questions. Use everything I provided and deliver the full plan in one answer.
+]</div>
+                </div>
+
+                <!-- Prompt 2 -->
+                <div class="glass-card prompt-card p-6" data-prompt="2">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">
+                                <span class="banana-emoji">🍌</span> Prompt 2/3: Main Images (1-4)
+                            </h3>
+                            <p class="mb-2" style="color: var(--text-light);">
+                                <strong style="color: var(--leaf-green);">What you'll get:</strong> 16 professional Nano Banana Pro prompts (4 main images × 4 variations each). Ready to paste into Nano Banana Pro with product reference images.
+                            </p>
+                            <p class="text-sm" style="color: #FFE066;">
+                                <strong>📋 Instructions:</strong><br>
+                                1. Continue in the SAME ChatGPT chat from Prompt #1<br>
+                                2. Paste this prompt<br>
+                                3. ChatGPT will output 16 Nano Banana prompts<br>
+                                4. Open Nano Banana Pro → paste each prompt + attach product images<br>
+                                5. Tip: Open multiple Nano Banana tabs to generate in parallel
+                            </p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="2">
+                            <i class="fas fa-copy mr-2"></i>
+                            📋 COPY TO CHATGPT
+                            <br>
+                            <span class="text-xs">🔓 Unlock Level 2 of 3</span>
+                        </button>
+                    </div>
+                    <div class="prompt-content">You are the world's most accomplished commercial product photographer specializing in Amazon main images. You also think like a performance marketer who lives and breathes click through rate and conversion rate.
+Your mission in this chat:
+Create 16 professional prompts for Nano Banana Pro to generate 4 Amazon main images, with 4 strategically different variations for each image. You only write prompts. Real Amazon sellers will use them.
+---
+CONTEXT FROM PROMPT 1
+You already received a strategic plan that includes:
+• Product analysis and customer insights
+• 3 customer avatars with detailed profiles
+• One primary keyword of 2 to 4 words for tags or packaging
+• A brand visual system with colors, typography and mood
+• A plan for 10 listing images
+Here you focus only on the first 4 main images on white background, product focused.
+If there is any conflict between this prompt and the plan from Prompt 1, always follow Prompt 1.
+---
+GLOBAL RULES
+• Never change the product design. Shape, proportions, structure, logo placement and number of components must always match the reference.
+• Never invent technical specifications. Do not create new numbers for power, size, weight, capacity, battery life, certifications, warranty length or model names.
+• Respect Amazon TOS for main images. Image 1 is the ultra safe version with product only and zero text. Images 2, 3 and 4 may be more creative but must stay clean, realistic and professional.
+• Keep brand consistency across all 4 main images. Color rendering, contrast and general mood must feel like the same brand.
+• Assume a square Amazon frame. Do not mention aspect ratio.
+• Use natural language. Write short paragraphs, not comma tag lists.
+• Each variation must change at least 2 major elements such as angle, lighting, composition, packaging style or tag style.
+• Each variation prompt must be 130 to 180 words. If it becomes longer, remove adjectives that do not affect the image.
+---
+HOW TO THINK ABOUT NANO BANANA PRO
+Write like a creative director speaking to a senior photographer.
+• Explain the purpose of the image and how it should perform in Amazon search.
+• Use real photography language such as key light, fill light, softbox, reflections, texture, shallow depth of field and deep focus.
+• Always explain why you choose each angle and lighting approach and how it helps click through rate and conversion rate.
+• The product is always the hero. It must look flattering, easy to understand and worth the price.
+• For Images 2, 3 and 4, integrate the primary keyword from Prompt 1 as physical printed text on packaging or on a tag. Never use words such as overlay, sticker or digitally added.
+• Assume Nano Banana Pro is good at refinement. Clear prompts and small edits should be enough to reach perfect results.
+---
+OUTPUT STRUCTURE
+Repeat this structure for Images 1, 2, 3 and 4.
+IMAGE [NUMBER]: [NAME]
+Short reminder in 2 or 3 sentences of the strategic role of this image, based on Prompt 1.
+Then 4 variations:
+VARIATION [NUMBER]: [Short descriptive name]
+[Prompt in natural language, 130 to 180 words]
+After the 4 prompts for this image, add:
+Key Differences:
+• Variation 1: 1 to 2 sentences that explain why this variation is strategically different
+• Variation 2: same
+• Variation 3: same
+• Variation 4: same
+Total output:
+• 4 images
+• 16 prompts
+• 1 Key Differences block per image
+---
+VARIATION STRATEGY
+Variations are structured tests, not random tweaks. Use them to explore different ways to win the search result.
+Always respect the exact strategic direction from Prompt 1 first, and use this list as a menu.
+You may vary:
+A. Angle and composition
+• Classic 45 degree front angle that shows depth (premium, dimensional, luxury feel)
+• Straight frontal view for honesty and clarity (transparent, trustworthy)
+• Slightly elevated view that reveals top features (organized, comprehensive)
+• Slightly lower view that makes the product feel more substantial, when appropriate (powerful, impressive)
+B. Lighting mood
+• Bright, even, low shadow for a clinical clean look (safe, neutral, professional)
+• Soft with gentle shadows for depth and realism (premium, dimensional, high-end)
+• Slightly higher contrast for drama and attention (bold, eye-catching, confident)
+• Warm studio light for an inviting friendly mood (approachable, cozy, welcoming)
+C. Product styling
+• Product alone, minimal and clean
+• Product with all included accessories neatly arranged
+• Product turned slightly to reveal depth and key features
+• Product with one key component emphasized more clearly
+D. Tag or packaging style for Images 2, 3 and 4
+• Premium elegant: white tag, simple black text, satin ribbon
+• Rustic natural: kraft paper, twine, subtle printed text
+• Modern bold: tag in brand color, clean sans serif font
+• Minimal refined: small embossed tag, subtle and sophisticated
+E. Shadow strategy
+• Hard shadows for dramatic, bold, attention-grabbing effect
+• Soft shadows for premium, gentle, high-quality feeling
+• No visible shadow for ultra clean, clinical, safe look
+• Reflected light for luxury, studio-quality, dimensional depth
+---
+PROMPT FORMULA FOR EACH VARIATION
+Every Nano Banana prompt should follow this structure in natural language (130 to 180 words total):
+1. Opening context
+Explain that this is an Amazon main image that must be clean, trustworthy and optimized for high click through rate in Amazon search results.
+Example: "Photograph this [product] for the main Amazon listing image. The goal is to maximize click-through rate while staying fully compliant with Amazon's strict image guidelines."
+2. Product description and angle
+Describe what the product is and how it should appear. Mention the chosen angle, how much of the frame the product should fill, and why this angle flatters the product and supports clarity.
+3. Background and composition
+State that the background is pure white with RGB 255, 255, 255 and no texture or gradient. Mention that the product is centered with a little breathing room so it does not feel cramped.
+4. Lighting and shadow
+Describe the quality and direction of light and the desired mood. Use lighting for conversion logic. Always describe a clear shadow strategy, for example small soft shadow beneath the product or no visible shadow for an ultra clean look.
+5. Focus and technical goals
+Describe depth of field and sharpness. For example, mention that the whole product must be in crisp focus and the resolution must support Amazon zoom.
+6. Keyword, tag or packaging for Images 2, 3, 4
+Explain exactly how the primary keyword appears as physical printed text on packaging or on a tag, and where that tag sits on or near the product without blocking key features.
+Example: "The primary keyword '[KEYWORD]' is printed in bold black sans-serif on a premium white tag with a thin gold border, attached to the product handle with a silk ribbon."
+7. Final quality reminder
+End with one sentence that states the image must look like top tier commercial Amazon photography with accurate colors and no distractions.
+---
+SPECIAL INSTRUCTIONS PER IMAGE
+IMAGE 1: PURE PRODUCT SHOT
+Role:
+Ultra safe main image.
+Rules:
+• Product only, no text, tags, packaging, props, hands or people
+• Pure white background, RGB 255, 255, 255
+• Product fills about 85 to 90 percent of the frame
+Variations:
+Explore different flattering angles, lighting moods, presence or absence of included accessories and different shadow strategies, while always staying very compliant.
+Strategic focus:
+Maximum clarity and trust, minimal risk of suppression, reduces confusion and returns.
+---
+IMAGE 2: PRODUCT WITH PREMIUM PACKAGING
+Role:
+Prove value and make the product feel gift ready.
+Rules:
+• White background
+• Product and packaging in the same frame
+• Primary keyword appears as printed or embossed text on the box or on an attached tag
+• Packaging style must match the brand mood from Prompt 1 and feel sturdy and premium
+Variations:
+Test different ratios between product and box, different packaging styles and different placements of the primary keyword.
+Strategic focus:
+Increase perceived value, speak to gift buyers and surface the primary keyword naturally.
+---
+IMAGE 3: PRODUCT WITH TAG
+Role:
+Make the primary keyword impossible to miss in a clean, compliant way.
+Rules:
+• White background
+• Product stays fully visible
+• Tag shows only the primary keyword in a clear readable font
+• Tag must look physical and high quality
+Variations:
+Experiment with tag materials, attachment methods and tag positions while never covering key product features.
+Strategic focus:
+Use the tag as a visual hook that supports CTR while keeping the frame simple.
+---
+IMAGE 4: CREATIVE HIGH CTR VARIANT
+Role:
+Higher risk, higher reward main image that stands out strongly in crowded search results.
+Rules:
+• White background
+• Product still dominates the frame and fills about 70 to 75 percent of it
+• Primary keyword appears again on a physical tag or packaging element
+• Add only one strong creative element that dramatizes the main benefit without adding clutter
+Creative element examples (adapt to YOUR product):
+• Waterproof/water: Dynamic splashes, droplets frozen mid-motion
+• Food/beverage: Fresh ingredients artfully arranged (strawberries, mint, lemon)
+• Kids/babies: Colorful age-appropriate toys around product, safe and playful
+• Tech/electronic: Subtle glow, sleek reflections, multiple color variants in pattern
+• Fitness/sports: Motion blur suggesting movement, athletic accessories dynamically arranged
+• Beauty/skincare: Natural botanicals, water droplets, texture that conveys purity
+• Home/decor: Product in elegant styled vignette with complementary pieces
+Choose the creative element that instantly communicates the main benefit while keeping product as hero.
+Variations:
+Test different creative elements, intensity levels and compositions that highlight the single most important benefit for this product.
+Strategic focus:
+If this image stays live, it should clearly outperform other main images on CTR, while the other 3 images provide safe backups.
+---
+CRITICAL REMINDERS
+Always:
+• Mention the primary keyword physically in Images 2, 3 and 4
+• Specify a pure white background with RGB 255, 255, 255
+• Describe tags and packaging as real physical objects, never as digital overlays
+• Explain why angle, lighting and composition choices make the product more attractive and clear
+• Mention a clear shadow strategy
+• Keep all details aligned with the product and strategy from Prompt 1
+• Write in natural language, not in comma tag lists
+• Keep each prompt between 130 and 180 words
+Never:
+• Redesign the product or change its proportions
+• Invent technical specifications or certifications
+• Use words such as overlay, digital sticker or add text to image
+• Write four almost identical variations
+• Exceed 180 words per prompt
+---
+YOUR TASK
+Based on the strategic plan from Prompt 1, create 4 main images and 4 variations per image, for a total of 16 prompts.
+For each image:
+1. Restate the strategic purpose from Prompt 1 in 2 or 3 sentences.
+2. Write 4 complete prompts in natural language, each 130 to 180 words.
+3. Add a Key Differences block that explains what makes each variation strategically unique.
+Write as if you are briefing the best commercial product photographer in the world. Be specific, strategic and clear. The goal is to help real Amazon sellers generate main images that drive clicks and sales.
+</div>
+                </div>
+
+                <!-- Prompt 3 -->
+                <div class="glass-card prompt-card p-6" data-prompt="3">
+                    <div class="prompt-header">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2" style="color: var(--banana-yellow);">
+                                <span class="banana-emoji">🍌</span> Prompt 3/3: Secondary Images (5-10)
+                            </h3>
+                            <p class="mb-2" style="color: var(--text-light);">
+                                <strong style="color: var(--leaf-green);">What you'll get:</strong> 24 professional Nano Banana Pro prompts (6 secondary images × 4 variations each). Includes lifestyle, infographics, gift scene, and quality macro.
+                            </p>
+                            <p class="text-sm" style="color: #FFE066;">
+                                <strong>📋 Instructions:</strong><br>
+                                1. Continue in the SAME ChatGPT chat from Prompt #1<br>
+                                2. Paste this prompt<br>
+                                3. ChatGPT will output 24 Nano Banana prompts (may split into 3 parts)<br>
+                                4. If ChatGPT stops, type "continue" to get the next part<br>
+                                5. Open Nano Banana Pro → paste each prompt + attach product images<br>
+                                6. Tip: Open multiple Nano Banana tabs to generate in parallel
+                            </p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="3">
+                            <i class="fas fa-copy mr-2"></i>
+                            📋 COPY TO CHATGPT
+                            <br>
+                            <span class="text-xs">🔓 Unlock Level 3 of 3</span>
+                        </button>
+                    </div>
+                    <div class="prompt-content">[You are the world’s leading Amazon listing visual strategist and lifestyle photographer. You specialize in human centered photography, ultra-clean premium realism, advanced infographic design, and conversion psychology tailored for Amazon. You already built the full strategic direction for this product, including avatars, messaging, visual hierarchy, product analysis, and the 10-image plan. Use that strategy exactly. Do not request clarification. Do not ask for missing info. Your mission now: Create 24 professional prompts for Nano Banana Pro to generate 6 secondary Amazon listing images, with 4 variations for each image. Each prompt must be 180 to 250 words and ready to paste into Nano Banana Pro. All six images must look visually related. Same brand personality, same visual system, consistent tone, consistent photographic style, consistent color mood.
+------------------------------------------------------------
+GLOBAL NON-NEGOTIABLE RULES
+------------------------------------------------------------
+PRODUCT ACCURACY
+Never change product proportions, texture, stitching, fibers, color, or included components. The product must match reality exactly.
+REAL HUMAN REALISM
+People must NOT look like AI mannequins. Faces must have micro-imperfections, soft pores, natural skin texture, slight asymmetry, subtle flyaways in hair, relaxed facial muscles, and natural emotional expression. No plastic skin. No overly perfect symmetry. No waxy texture.
+CLEAN PREMIUM LIFESTYLE
+Spaces must feel lived-in but tidy. No clutter, no dirt, no chaos. Natural window light or soft studio lighting. Warm, balanced exposure.
+MOBILE READABILITY
+Text on all lifestyle images must be short, punchy, and large enough to be clearly readable on a phone.
+------------------------------------------------------------
+TYPOGRAPHY SYSTEM (NEVER PLACE THIS TEXT ON THE IMAGE)
+------------------------------------------------------------
+[TYPOGRAPHY INSTRUCTIONS – INTERNAL RENDERING ONLY. DO NOT DISPLAY ANY OF THIS TEXT ON THE IMAGE.]
+Font Family: Montserrat
+Headline: Bold
+Subheadline: SemiBold
+Supporting Text: Regular
+Primary Headline Color: #0B2D4A
+Secondary Subheadline Color: #5DA9E9
+Rules:
+• This typography system is for the model to use internally.
+• Do NOT place font names, sizes, or hex codes as visible text.
+• On-image text must be clean, bold, short, high contrast, and fully readable on mobile.
+• Maintain the same typographic style across all 24 prompts.
+• Use only the actual headline/subheadline text you create.
+• DO NOT include instructions or technical info in the image itself.
+[END OF TYPOGRAPHY INSTRUCTIONS]
+------------------------------------------------------------
+ON GRAPHICS AND VISUALS
+------------------------------------------------------------
+INFOGRAPHICS MUST LOOK TOP-TIER
+Not basic white backgrounds. Blend photography with modern graphic elements:
+• soft shadows
+• floating UI cards
+• subtle holographic callouts
+• clean arrows
+• semi-transparent depth layers
+• premium soft gradients
+• light 3D highlights where relevant
+Think: professional Amazon agency, not template graphics.
+ICONS
+Use ONLY when helpful, and in **two of the four variations** for each image. Icons must be clean, line-based, minimal, and stylistically consistent.
+------------------------------------------------------------
+VARIATION RULES
+------------------------------------------------------------
+Each of the 4 variations must change at least 2 major elements:
+• avatar
+• setting
+• lighting / time of day
+• camera angle
+• composition
+• interaction type
+• text placement
+• use or non-use of icons
+------------------------------------------------------------
+OUTPUT FORMAT (STRICT)
+------------------------------------------------------------
+For each of the 6 secondary images:
+IMAGE [NUMBER]: [SHORT NAME]
+Two sentences describing its strategic purpose.
+Then four variations:
+VARIATION 1: [Short label]
+[Full Nano Banana prompt 180–250 words]
+VARIATION 2 …
+VARIATION 3 …
+VARIATION 4 …
+Do NOT include “Key Differences”.
+Do NOT remind me of rules.
+Just output the 24 prompts.
+------------------------------------------------------------
+THE 6 SECONDARY IMAGES TO CREATE
+------------------------------------------------------------
+IMAGE 5: Lifestyle Scene One
+Warm emotional lifestyle moment for Avatar 1 in their natural environment. Highlight real use of the product with clean premium realism.
+IMAGE 6: Lifestyle Scene Two
+Different avatar and different environment to show versatility and daily relevance.
+IMAGE 7: Infographic One
+Answer the biggest functional doubt from your strategic plan using a mixed photo + graphic layout. Strong visual hierarchy, modern composition, large readable callouts.
+IMAGE 8: Infographic Two
+A second infographic using a creative, visually engaging layout. Blend photography with soft graphic framing, depth layers, and modern UI elements.
+IMAGE 9: Gift Scene
+Two real humans in a warm emotional interaction. Soft natural lighting, natural body language, product in gifting context.
+IMAGE 10: Close-Up Quality Macro
+Macro shot that proves material quality, weave texture, durability, or craftsmanship. Creative graphic reinforcement allowed.
+------------------------------------------------------------
+FINAL INSTRUCTION
+------------------------------------------------------------
+Send the output in exactly 3 separate messages:
+Message 1: Images 5 and 6 (with all 8 variations)
+Message 2: Images 7 and 8 (with all 8 variations)
+Message 3: Images 9 and 10 (with all 8 variations)
+Now generate all 24 prompts.
+]</div>
+                </div>
+            </div>
+
+            <!-- Christmas Bonus Section -->
+            <div class="christmas-section">
+                <h3 class="christmas-title">
+                    🎄 BONUS: Christmas Transform 🎅
+                </h3>
+                <p class="text-xl mb-4" style="color: #FFD700;">
+                    Transform your listing images to Christmas versions in seconds
+                </p>
+                <p class="text-lg mb-6" style="color: var(--text-light);">
+                    Paste this prompt directly into Nano Banana Pro with your image<br>
+                    No ChatGPT needed for this one - just upload and go! 🎁
+                </p>
+                
+                <div class="glass-card p-6 mb-4" style="background: rgba(139, 0, 0, 0.2); border: 2px solid #FFD700;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-left">
+                            <h4 class="text-lg font-bold mb-2" style="color: #FFD700;">
+                                🎅 Christmas Transform Prompt
+                            </h4>
+                            <p class="text-sm" style="color: var(--text-light);">
+                                <strong style="color: #90EE90;">How to use:</strong><br>
+                                1. Open Nano Banana Pro<br>
+                                2. Upload your listing image<br>
+                                3. Paste this prompt<br>
+                                4. Generate - done! 🎄
+                            </p>
+                        </div>
+                        <button class="copy-btn copy-prompt" data-prompt="christmas" style="background: linear-gradient(135deg, #DC143C 0%, #228B22 100%); color: white;">
+                            <i class="fas fa-copy mr-2"></i>
+                            🎄 COPY TO NANO BANANA
+                        </button>
+                    </div>
+                    <div class="prompt-content" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #FFD700;">Create a clean premium Christmas-enhanced version of this exact image.
+
+Do not modify the original photo in any way. Do not change people, faces, clothing, poses, hands, product shape, materials, colors, lighting direction, shadows, depth, or camera angle. The base image must remain 100 percent intact.
+
+Add only subtle, realistic holiday accents that naturally fit the existing space. Use gentle warm lights, soft bokeh, minimal garland, small decorative greenery, candles, or a few neatly wrapped gift boxes if appropriate. 
+Do not add any Christmas trees.
+
+Holiday additions must blend perfectly with the real lighting, shadows, and color tones of the scene. Keep everything photorealistic and tasteful with no cartoon props, fake sparkles, snow overlays, glitter, floating objects, or anything unrealistic.
+
+If people appear in the image, you may add one natural-looking Santa hat to one person only, aligned correctly with head shape, shadow, and lighting.
+
+The final result should feel as if the original scene was realistically decorated for Christmas, warm, elegant, and subtle.</div>
+                </div>
+                
+                <div class="mt-4 p-3 rounded" style="background: rgba(255, 215, 0, 0.1); border: 1px solid #FFD700;">
+                    <p class="text-center font-semibold" style="color: #FFD700;">
+                        🎁 Pro Tip: Generate Christmas versions of all your lifestyle and gift scene images to create a full holiday listing set!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-16" style="color: #A89080;">
+                <p class="text-lg font-semibold mb-2" style="color: var(--banana-yellow);">Created by Jay Margaliot</p>
+                <p class="text-sm">© 2025 Nano Banana Listing System <span class="banana-emoji">🍌</span></p>
+            </div>
+        </div>
+
+        <!-- Vault Sidebar -->
+        <div class="vault-sidebar">
+            <div class="vault-container">
+                <h3 class="text-xl font-bold mb-4" style="color: var(--banana-yellow);">
+                    <span class="banana-emoji">🍌</span> SECURITY SYSTEM
+                </h3>
+                
+                <div class="vault-door" id="vaultDoor">
+                    <div class="lock" id="lock1"></div>
+                    <div class="lock" id="lock2"></div>
+                    <div class="lock" id="lock3"></div>
+                    
+                    <div class="text-center" style="color: var(--text-light);">
+                        <i class="fas fa-lock text-4xl mb-2" style="color: var(--banana-yellow);"></i>
+                        <div class="text-sm">VAULT SECURED</div>
+                    </div>
+                </div>
+                
+                <div class="progress-indicator" id="progressIndicator">
+                    SECURITY CLEARANCE: 0/3 PROMPTS COPIED
+                </div>
+                
+                <div class="mt-6 p-4 rounded-lg" style="background: rgba(26, 18, 11, 0.5);">
+                    <h4 class="text-lg font-semibold mb-2" style="color: var(--banana-yellow);">Access Levels</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Level 1:</span>
+                            <span class="level-status" id="level1">🔒 LOCKED</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Level 2:</span>
+                            <span class="level-status" id="level2">🔒 LOCKED</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Level 3:</span>
+                            <span class="level-status" id="level3">🔒 LOCKED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 rounded" style="background: rgba(255, 217, 61, 0.1); border: 1px solid var(--banana-yellow);">
+                    <p class="text-xs text-center" style="color: var(--banana-yellow);">
+                        🎁 Unlock all 3 prompts to reveal the Christmas bonus!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let unlockedCount = 0;
+        const totalPrompts = 3;
+
+        function copyPrompt(promptNumber) {
+            const promptCard = document.querySelector(`[data-prompt="${promptNumber}"]`);
+            const promptContent = promptCard.querySelector('.prompt-content');
+            
+            const textArea = document.createElement('textarea');
+            textArea.value = promptContent.innerText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = promptCard.querySelector('.copy-prompt');
+            const originalContent = button.innerHTML;
+            
+            if (promptNumber === 'christmas') {
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>🎄 COPIED!';
+            } else {
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>✅ COPIED!<br><span class="text-xs">🔓 Level ' + promptNumber + ' Unlocked</span>';
+            }
+            
+            button.classList.add('copied');
+            
+            if (promptNumber !== 'christmas') {
+                unlockVault(promptNumber);
+            }
+            
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.classList.remove('copied');
+            }, 3000);
+        }
+
+        function unlockVault(promptNumber) {
+            if (document.getElementById(`lock${promptNumber}`).classList.contains('unlocked')) {
+                return;
+            }
+            
+            unlockedCount++;
+            
+            const lock = document.getElementById(`lock${promptNumber}`);
+            lock.classList.add('unlocked');
+            lock.classList.add('unlock-animation');
+            
+            const levelStatus = document.getElementById(`level${promptNumber}`);
+            levelStatus.textContent = '🔓 UNLOCKED';
+            levelStatus.style.color = 'var(--leaf-green)';
+            
+            const progressIndicator = document.getElementById('progressIndicator');
+            progressIndicator.textContent = `SECURITY CLEARANCE: ${unlockedCount}/3 PROMPTS COPIED`;
+            
+            const vaultDoor = document.getElementById('vaultDoor');
+            if (unlockedCount >= 2) {
+                vaultDoor.classList.add('opening');
+            }
+            
+            if (unlockedCount === totalPrompts) {
+                setTimeout(() => {
+                    vaultDoor.classList.add('fully-open');
+                    vaultDoor.innerHTML = `
+                        <div class="text-center" style="color: var(--dark-bg);">
+                            <span class="text-5xl">🍌</span>
+                            <div class="text-sm font-bold mt-2">VAULT UNLOCKED</div>
+                            <div class="text-xs">🎄 Bonus Ready!</div>
+                        </div>
+                    `;
+                    
+                    progressIndicator.textContent = '🎉 ALL PROMPTS UNLOCKED - CHRISTMAS BONUS AVAILABLE';
+                    progressIndicator.style.color = 'var(--leaf-green)';
+                }, 1000);
+            }
+            
+            setTimeout(() => {
+                lock.classList.remove('unlock-animation');
+            }, 600);
+        }
+
+        document.querySelectorAll('.copy-prompt').forEach(button => {
+            button.addEventListener('click', function() {
+                const promptNumber = this.getAttribute('data-prompt');
+                copyPrompt(promptNumber);
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
