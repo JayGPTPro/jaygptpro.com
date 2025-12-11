@@ -117,7 +117,7 @@
             line-height: 1.4;
         }
 
-        /* Override Brevo styles to match our design */
+        /* Override Brevo styles */
         #sib-container {
             background-color: transparent !important;
             border: none !important;
@@ -181,12 +181,6 @@
         .sib-form-block__button:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 20px rgba(255, 217, 61, 0.4) !important;
-        }
-
-        /* Hide Brevo error/success messages (we'll use our own) */
-        #error-message,
-        #success-message {
-            display: none !important;
         }
 
         .author-section {
@@ -291,11 +285,7 @@
             color: var(--text-dark);
         }
 
-        .info-box strong {
-            color: var(--text-dark);
-        }
-
-        /* SMS field styling */
+        /* SMS field */
         .sib-sms-input-wrapper {
             display: flex;
             gap: 0.35rem;
@@ -306,7 +296,7 @@
             font-size: 0.85rem !important;
         }
 
-        /* Checkbox styling */
+        /* Checkbox */
         .sib-optin label {
             display: flex !important;
             align-items: flex-start !important;
@@ -315,13 +305,8 @@
             font-size: 0.8rem !important;
         }
 
-        .checkbox {
-            margin-top: 0.15rem !important;
-        }
-
-        /* Reduce padding on form sections */
-        .sib-form > div[style*="padding"] {
-            padding: 4px 0 !important;
+        .input--hidden {
+            display: none !important;
         }
 
         @media (max-width: 640px) {
@@ -331,10 +316,6 @@
 
             h1 {
                 font-size: 1.35rem;
-            }
-
-            .subtitle {
-                font-size: 0.85rem;
             }
 
             .banana-emoji {
@@ -359,29 +340,38 @@
                 </p>
 
                 <!-- Brevo Form -->
-                <div class="sib-form" style="text-align: center;">
+                <div class="sib-form">
                     <div id="sib-form-container" class="sib-form-container">
+                        <div id="error-message" class="sib-form-message-panel" style="font-size:14px; text-align:center; font-family:Helvetica, sans-serif; color:#661d1d; background-color:#ffeded; border-radius:10px; border:2px solid #ff4949; padding:10px; margin-bottom:10px; display:none;">
+                            <span class="sib-form-message-panel__inner-text">Oops! Something went wrong. Please try again.</span>
+                        </div>
+                        
+                        <div id="success-message" class="sib-form-message-panel" style="font-size:14px; text-align:center; font-family:Helvetica, sans-serif; color:#085229; background-color:#e7faf0; border-radius:10px; border:2px solid #13ce66; padding:10px; margin-bottom:10px; display:none;">
+                            <span class="sib-form-message-panel__inner-text">Thank you! Check your email.</span>
+                        </div>
+
                         <div id="sib-container" class="sib-container--large sib-container--vertical">
                             <form id="sib-form" method="POST" action="https://1a82576b.sibforms.com/serve/MUIFAECb6mTB2Xh17q8sAO2dpPr8GgUlWa3qM0qYlzcUrvRyiTwz6RY7QqyYaSTR5AIvOTCMh9Wx_0OHZi68lvSfz-9Wm1G1zYDjPQQvjh-TbO9l66Sq6MTBYLql8iT6C7ezUrs1_ZDyReLWLu88Czo4ehuY_mGIfrd_LCS4i3vsTm2NiXoDDkWaAKMvVbYG0FsihYlSGJQyiOYM" data-type="subscription">
                                 
                                 <!-- First Name -->
-                                <div>
+                                <div style="padding: 4px 0;">
                                     <div class="sib-input sib-form-block">
                                         <div class="form__entry entry_block">
                                             <div class="form__label-row">
-                                                <label class="entry__label" for="FIRSTNAME">
+                                                <label class="entry__label" for="FIRSTNAME" data-required="*">
                                                     First Name <span style="color: #EF4444;">*</span>
                                                 </label>
                                                 <div class="entry__field">
-                                                    <input class="input" maxlength="200" type="text" id="FIRSTNAME" name="FIRSTNAME" placeholder="First name" required />
+                                                    <input class="input" maxlength="200" type="text" id="FIRSTNAME" name="FIRSTNAME" autocomplete="off" placeholder="First name" data-required="true" required />
                                                 </div>
                                             </div>
+                                            <label class="entry__error entry__error--primary" style="font-size:12px; color:#661d1d;"></label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Last Name -->
-                                <div>
+                                <div style="padding: 4px 0;">
                                     <div class="sib-input sib-form-block">
                                         <div class="form__entry entry_block">
                                             <div class="form__label-row">
@@ -389,31 +379,33 @@
                                                     Last Name <span style="color: #9CA3AF; font-weight: 400;">(optional)</span>
                                                 </label>
                                                 <div class="entry__field">
-                                                    <input class="input" maxlength="200" type="text" id="LASTNAME" name="LASTNAME" placeholder="Last name" />
+                                                    <input class="input" maxlength="200" type="text" id="LASTNAME" name="LASTNAME" autocomplete="off" placeholder="Last name" />
                                                 </div>
                                             </div>
+                                            <label class="entry__error entry__error--primary" style="font-size:12px; color:#661d1d;"></label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Email -->
-                                <div>
+                                <div style="padding: 4px 0;">
                                     <div class="sib-input sib-form-block">
                                         <div class="form__entry entry_block">
                                             <div class="form__label-row">
-                                                <label class="entry__label" for="EMAIL">
+                                                <label class="entry__label" for="EMAIL" data-required="*">
                                                     Email <span style="color: #EF4444;">*</span>
                                                 </label>
                                                 <div class="entry__field">
-                                                    <input class="input" type="email" id="EMAIL" name="EMAIL" placeholder="your@email.com" required />
+                                                    <input class="input" type="text" id="EMAIL" name="EMAIL" autocomplete="off" placeholder="your@email.com" data-required="true" required />
                                                 </div>
                                             </div>
+                                            <label class="entry__error entry__error--primary" style="font-size:12px; color:#661d1d;"></label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Phone -->
-                                <div>
+                                <div style="padding: 4px 0;">
                                     <div class="sib-sms-field sib-form-block">
                                         <div class="form__entry entry_block">
                                             <div class="form__label-row">
@@ -421,27 +413,28 @@
                                                     Phone <span style="color: #9CA3AF; font-weight: 400;">(optional)</span>
                                                 </label>
                                                 <div class="sib-sms-input-wrapper" style="direction:ltr">
-                                                    <div class="sib-sms-input" data-country-code="US">
+                                                    <div class="sib-sms-input" data-placeholder="SMS" data-required="" data-country-code="US" data-whatsapp-country-code="US" data-value="" data-whatsappvalue="" data-attributename="SMS">
                                                         <div class="entry__field">
                                                             <select class="input" name="SMS__COUNTRY_CODE">
-                                                                <option value="+1">+1</option>
-                                                                <option value="+44">+44</option>
-                                                                <option value="+972">+972</option>
+                                                                <option value="+1">+1 US</option>
+                                                                <option value="+44">+44 UK</option>
+                                                                <option value="+972">+972 IL</option>
                                                             </select>
                                                         </div>
                                                         <div class="entry__field" style="width: 100%">
-                                                            <input type="tel" class="input" id="SMS" name="SMS" placeholder="Phone" />
+                                                            <input type="tel" class="input" id="SMS" name="SMS" autocomplete="off" placeholder="Phone" />
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <label class="entry__error entry__error--primary" style="font-size:12px; color:#661d1d;"></label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Opt-in Checkbox -->
-                                <div>
-                                    <div class="sib-optin sib-form-block">
+                                <!-- Opt-in -->
+                                <div style="padding: 4px 0;">
+                                    <div class="sib-optin sib-form-block" data-required="true">
                                         <div class="form__entry entry_mcq">
                                             <div class="form__label-row">
                                                 <div class="entry__choice">
@@ -452,14 +445,18 @@
                                                     </label>
                                                 </div>
                                             </div>
+                                            <label class="entry__error entry__error--primary" style="font-size:12px; color:#661d1d;"></label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Submit Button -->
-                                <div style="margin-top: 0.5rem;">
+                                <!-- Submit -->
+                                <div style="padding: 8px 0;">
                                     <div class="sib-form-block">
-                                        <button class="sib-form-block__button" type="submit">
+                                        <button class="sib-form-block__button sib-form-block__button-with-loader" form="sib-form" type="submit">
+                                            <svg class="icon clickable__icon progress-indicator__icon sib-hide-loader-icon" viewBox="0 0 512 512">
+                                                <path d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 50.864 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" />
+                                            </svg>
                                             <i class="fas fa-paper-plane"></i> Send Me The Prompts!
                                         </button>
                                     </div>
@@ -507,9 +504,17 @@
     <script>
         window.REQUIRED_CODE_ERROR_MESSAGE = 'Please choose a country code';
         window.LOCALE = 'en';
-        window.EMAIL_INVALID_MESSAGE = "Invalid email format";
-        window.REQUIRED_ERROR_MESSAGE = "This field is required";
-        window.GENERIC_INVALID_MESSAGE = "Invalid information";
+        window.EMAIL_INVALID_MESSAGE = window.SMS_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
+        window.REQUIRED_ERROR_MESSAGE = "This field is required.";
+        window.GENERIC_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
+        window.translation = {
+            common: {
+                selectedList: '{quantity} list selected',
+                selectedLists: '{quantity} lists selected',
+                selectedOption: '{quantity} selected',
+                selectedOptions: '{quantity} selected',
+            }
+        };
         var AUTOHIDE = Boolean(0);
     </script>
 
@@ -519,15 +524,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('sib-form');
             
+            // Override form submission to show our success screen
             form.addEventListener('submit', function(e) {
-                localStorage.setItem('formSubmitted', 'true');
+                // Let Brevo handle the submission
+                // Store flag for success
+                setTimeout(function() {
+                    const successMsg = document.getElementById('success-message');
+                    if (successMsg && successMsg.style.display !== 'none') {
+                        // Brevo showed success
+                        document.getElementById('formSection').style.display = 'none';
+                        document.getElementById('successScreen').classList.add('show');
+                    }
+                }, 1000);
             });
-
-            if (localStorage.getItem('formSubmitted') === 'true') {
-                localStorage.removeItem('formSubmitted');
-                document.getElementById('formSection').style.display = 'none';
-                document.getElementById('successScreen').classList.add('show');
-            }
         });
     </script>
 </body>
