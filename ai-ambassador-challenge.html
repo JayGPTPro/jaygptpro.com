@@ -253,11 +253,7 @@
         }
 
         .prompt-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
             margin-bottom: 1rem;
-            gap: 1rem;
         }
 
         .prompt-title {
@@ -340,6 +336,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
         }
 
         .copy-btn:hover {
@@ -400,16 +398,18 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
         }
 
         .checklist li:last-child {
             border-bottom: none;
         }
 
-        .checklist li::before {
-            content: '□';
-            font-size: 1.5rem;
-            color: var(--text-gray);
+        .checklist li input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
 
         /* Congrats Box */
@@ -493,6 +493,39 @@
             max-height: 5000px;
         }
 
+        /* Copy notification */
+        .copy-notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .copy-notification.show {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header-content {
@@ -519,14 +552,16 @@
             .section-box {
                 padding: 1.25rem;
             }
-
-            .prompt-header {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- Copy Notification -->
+    <div class="copy-notification" id="copyNotification">
+        <i class="fas fa-check-circle"></i>
+        <span>Copied to clipboard!</span>
+    </div>
+
     <!-- Header -->
     <div class="header">
         <div class="header-content">
@@ -574,11 +609,8 @@
             <div class="inputs-card">
                 <h3>Inputs for Today</h3>
                 <div class="inputs-list">
-                    <div class="input-item">Brand name:</div>
-                    <div class="input-item">Product name:</div>
-                    <div class="input-item">Platform:</div>
-                    <div class="input-item">Main goal:</div>
-                    <div class="input-item">Ambassador name:</div>
+                    <div class="input-item">Brand File</div>
+                    <div class="input-item">Character Blueprint</div>
                 </div>
             </div>
 
@@ -596,6 +628,20 @@
                 </ol>
             </div>
 
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                </div>
+            </div>
+
             <!-- Prompts -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -606,14 +652,9 @@
                 <!-- Prompt 1 -->
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 1. The Architect. Brand File</h4>
-                            <p class="prompt-meta"><strong>What this does:</strong> Creates 1 Brand File that defines the brand for all future AI work.</p>
-                            <p class="prompt-meta"><strong>Where to use:</strong> ChatGPT (also works in Gemini or Claude)</p>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt1-1')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 1. The Architect. Brand File</h4>
+                        <p class="prompt-meta"><strong>What this does:</strong> Creates 1 Brand File that defines the brand for all future AI work.</p>
+                        <p class="prompt-meta"><strong>Where to use:</strong> ChatGPT (also works in Gemini or Claude)</p>
                     </div>
                     
                     <div class="prompt-instructions">
@@ -640,6 +681,10 @@
                             <li>Founder notes (non negotiables, claims to avoid)</li>
                         </ul>
                     </div>
+
+                    <button class="copy-btn" onclick="copyPrompt('prompt1-1')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
 
                     <div class="prompt-content" id="prompt1-1">Act as a Senior Brand Strategist and AI Content Architect.
 
@@ -748,14 +793,9 @@ RAW INPUT STARTS HERE:</div>
                 <!-- Prompt 2 -->
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 2. Casting Director. Character Blueprint</h4>
-                            <p class="prompt-meta"><strong>What this does:</strong> Creates 1 final AI Brand Ambassador blueprint with name, personality, identity lock rules.</p>
-                            <p class="prompt-meta"><strong>When to use:</strong> Right after Prompt 1, once you have the Brand File.</p>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt1-2')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 2. Casting Director. Character Blueprint</h4>
+                        <p class="prompt-meta"><strong>What this does:</strong> Creates 1 final AI Brand Ambassador blueprint with name, personality, identity lock rules.</p>
+                        <p class="prompt-meta"><strong>When to use:</strong> Right after Prompt 1, once you have the Brand File.</p>
                     </div>
                     
                     <div class="prompt-instructions">
@@ -768,6 +808,10 @@ RAW INPUT STARTS HERE:</div>
                             <li>Save the Character Blueprint output.</li>
                         </ol>
                     </div>
+
+                    <button class="copy-btn" onclick="copyPrompt('prompt1-2')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
 
                     <div class="prompt-content" id="prompt1-2">Act as an expert Casting Director and AI Character Designer.
 
@@ -892,20 +936,6 @@ BRAND FILE STARTS HERE:</div>
 
             </div>
 
-            <!-- Links -->
-            <div class="section-box">
-                <h3 class="section-title">
-                    <div class="section-icon"><i class="fas fa-link"></i></div>
-                    Links
-                </h3>
-                <div class="links-grid">
-                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-robot"></i></div>
-                        <div class="link-title">ChatGPT</div>
-                    </a>
-                </div>
-            </div>
-
             <!-- Checklist -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -913,9 +943,9 @@ BRAND FILE STARTS HERE:</div>
                     Checklist
                 </h3>
                 <ul class="checklist">
-                    <li>Brand File created and saved</li>
-                    <li>Character Blueprint created and saved</li>
-                    <li>Everything is in one chat for this brand only</li>
+                    <li><input type="checkbox"> Brand File created and saved</li>
+                    <li><input type="checkbox"> Character Blueprint created and saved</li>
+                    <li><input type="checkbox"> Everything is in one chat for this brand only</li>
                 </ul>
             </div>
         </section>
@@ -931,11 +961,8 @@ BRAND FILE STARTS HERE:</div>
             <div class="inputs-card">
                 <h3>Inputs for Today</h3>
                 <div class="inputs-list">
-                    <div class="input-item">Brand name:</div>
-                    <div class="input-item">Product name:</div>
-                    <div class="input-item">Platform:</div>
-                    <div class="input-item">Main goal:</div>
-                    <div class="input-item">Ambassador name:</div>
+                    <div class="input-item">15 casting prompts</div>
+                    <div class="input-item">Final character selection</div>
                 </div>
             </div>
 
@@ -954,6 +981,24 @@ BRAND FILE STARTS HERE:</div>
                 </ol>
             </div>
 
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-video"></i></div>
+                        <div class="link-title">Flow</div>
+                    </a>
+                </div>
+            </div>
+
             <!-- Prompts -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -964,14 +1009,9 @@ BRAND FILE STARTS HERE:</div>
                 <!-- Prompt 3 -->
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 3. The Generator. Casting Auditions</h4>
-                            <p class="prompt-meta"><strong>What this does:</strong> Generates 15 Nano Banana Pro image prompts for casting auditions.</p>
-                            <p class="prompt-meta"><strong>When to use:</strong> After you have a completed Character Blueprint.</p>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt2-1')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 3. The Generator. Casting Auditions</h4>
+                        <p class="prompt-meta"><strong>What this does:</strong> Generates 15 Nano Banana Pro image prompts for casting auditions.</p>
+                        <p class="prompt-meta"><strong>When to use:</strong> After you have a completed Character Blueprint.</p>
                     </div>
                     
                     <div class="prompt-instructions">
@@ -985,6 +1025,10 @@ BRAND FILE STARTS HERE:</div>
                             <li>Pick your top 3, then select 1 final character.</li>
                         </ol>
                     </div>
+
+                    <button class="copy-btn" onclick="copyPrompt('prompt2-1')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
 
                     <div class="prompt-content" id="prompt2-1">Prompt 3. The Generator. 15 Casting Prompts for Nano Banana
 
@@ -1045,24 +1089,6 @@ CHARACTER BLUEPRINT STARTS HERE:</div>
 
             </div>
 
-            <!-- Links -->
-            <div class="section-box">
-                <h3 class="section-title">
-                    <div class="section-icon"><i class="fas fa-link"></i></div>
-                    Links
-                </h3>
-                <div class="links-grid">
-                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-robot"></i></div>
-                        <div class="link-title">ChatGPT</div>
-                    </a>
-                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-video"></i></div>
-                        <div class="link-title">Flow</div>
-                    </a>
-                </div>
-            </div>
-
             <!-- Checklist -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -1070,10 +1096,10 @@ CHARACTER BLUEPRINT STARTS HERE:</div>
                     Checklist
                 </h3>
                 <ul class="checklist">
-                    <li>15 candidates generated</li>
-                    <li>Top 3 selected</li>
-                    <li>1 final character chosen</li>
-                    <li>Winning image saved for Day 3</li>
+                    <li><input type="checkbox"> 15 candidates generated</li>
+                    <li><input type="checkbox"> Top 3 selected</li>
+                    <li><input type="checkbox"> 1 final character chosen</li>
+                    <li><input type="checkbox"> Winning image saved for Day 3</li>
                 </ul>
             </div>
         </section>
@@ -1089,11 +1115,8 @@ CHARACTER BLUEPRINT STARTS HERE:</div>
             <div class="inputs-card">
                 <h3>Inputs for Today</h3>
                 <div class="inputs-list">
-                    <div class="input-item">Brand name:</div>
-                    <div class="input-item">Product name:</div>
-                    <div class="input-item">Platform:</div>
-                    <div class="input-item">Main goal:</div>
-                    <div class="input-item">Ambassador name:</div>
+                    <div class="input-item">Reference Pack (10 images)</div>
+                    <div class="input-item">First talking head video</div>
                 </div>
             </div>
 
@@ -1115,6 +1138,24 @@ CHARACTER BLUEPRINT STARTS HERE:</div>
                 </ol>
             </div>
 
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-video"></i></div>
+                        <div class="link-title">Flow</div>
+                    </a>
+                    <a href="https://www.krea.ai/enhancer" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-magic"></i></div>
+                        <div class="link-title">Krea Enhancer</div>
+                    </a>
+                </div>
+            </div>
+
             <!-- Prompts: Reference Pack -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -1130,13 +1171,11 @@ CHARACTER BLUEPRINT STARTS HERE:</div>
                 <!-- Reference Pack Prompts 1-10 -->
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 1. Angles collage 2x2. Studio front and profiles</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-1')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 1. Angles collage 2x2. Studio front and profiles</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-1')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-1">Use the uploaded reference image as strict identity lock. Same real person.
 Vertical 9:16 image containing a clean 2x2 grid collage.
 White seamless studio background. Bright clean studio portrait lighting, even illumination, soft catchlights.
@@ -1158,13 +1197,11 @@ Real person, photorealistic, raw photo, 35mm look, natural skin texture, visible
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 2. Angles collage 2x2. Alternate camera angles</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-2')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 2. Angles collage 2x2. Alternate camera angles</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-2')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-2">Use the uploaded reference image as strict identity lock. Same real person.
 Vertical 9:16 image containing a clean 2x2 grid collage.
 White seamless studio background. Bright clean studio lighting.
@@ -1184,13 +1221,11 @@ Real person, photorealistic, raw photo, natural skin texture, visible pores, sub
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 3. Expressions collage 2x2</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-3')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 3. Expressions collage 2x2</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-3')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-3">Use the uploaded reference image as strict identity lock. Same real person.
 Vertical 9:16 image with a clean 2x2 grid collage.
 White studio background. Bright clean studio lighting.
@@ -1209,13 +1244,11 @@ Real person, photorealistic, raw photo, natural skin texture, visible pores, sub
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 4. Seasons wardrobe collage 2x2</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-4')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 4. Seasons wardrobe collage 2x2</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-4')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-4">Use the uploaded reference image as strict identity lock. Same real person.
 Vertical 9:16 image with a clean 2x2 grid collage.
 Light neutral studio background. Bright even studio lighting.
@@ -1235,13 +1268,11 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 5. Extreme close up identity lock</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-5')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 5. Extreme close up identity lock</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-5')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-5">Use the uploaded reference image as strict identity lock. Same real person.
 Single vertical 9:16 image.
 Extreme close up of partial face.
@@ -1260,13 +1291,11 @@ Ultra sharp detail. Real person, photorealistic, raw photo, natural skin texture
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 6. Studio headshot new pose</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-6')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 6. Studio headshot new pose</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-6')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-6">Use the uploaded reference image as strict identity lock. Same real person.
 Single vertical 9:16 studio headshot.
 Chest up framing. Light warm gray background.
@@ -1283,13 +1312,11 @@ Real person, photorealistic, raw photo, natural skin texture, visible pores, sub
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 7. Studio half body with hands</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-7')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 7. Studio half body with hands</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-7')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-7">Use the uploaded reference image as strict identity lock. Same real person.
 Single vertical 9:16 studio half body shot.
 Upper body with hands clearly visible.
@@ -1304,13 +1331,11 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 8. Full body studio clean</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-8')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 8. Full body studio clean</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-8')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-8">Use the uploaded reference image as strict identity lock. Same real person.
 Single vertical 9:16 full body studio photo.
 Head to toe fully inside frame. Shoes visible.
@@ -1325,13 +1350,11 @@ Real person, photorealistic, raw photo, natural skin texture, visible pores, sub
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 9. Full body actions collage 2x2</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-9')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 9. Full body actions collage 2x2</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-9')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-9">Use the uploaded reference image as strict identity lock. Same real person.
 Vertical 9:16 image with a clean 2x2 grid collage.
 Light neutral background. Bright even studio lighting.
@@ -1350,13 +1373,11 @@ Real person, photorealistic, no motion blur, flattering, no retouching.</div>
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">Prompt 10. Lifestyle bright daylight</h4>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt3-10')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">Prompt 10. Lifestyle bright daylight</h4>
                     </div>
+                    <button class="copy-btn" onclick="copyPrompt('prompt3-10')">
+                        <i class="fas fa-copy"></i> Copy Prompt
+                    </button>
                     <div class="prompt-content" id="prompt3-10">Use the uploaded reference image as strict identity lock. Same real person.
 Single vertical 9:16 lifestyle photo.
 Bright realistic environment. Clean modern cafe or tidy home office.
@@ -1380,13 +1401,8 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">VEO 3.1 Talking Head Prompt</h4>
-                            <p class="prompt-meta"><strong>Where to run:</strong> Flow with VEO 3.1</p>
-                        </div>
-                        <button class="copy-btn" onclick="copyRandomPrompt()">
-                            <i class="fas fa-copy"></i> Copy Random
-                        </button>
+                        <h4 class="prompt-title">VEO 3.1 Talking Head Prompt</h4>
+                        <p class="prompt-meta"><strong>Where to run:</strong> Flow with VEO 3.1</p>
                     </div>
                     
                     <div class="prompt-instructions">
@@ -1401,7 +1417,9 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                         </ol>
                     </div>
 
-                    <div class="prompt-content" id="veo-prompt">Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Lightly annoyed but playful tone, like a friendly complaint. Natural pacing with small pauses. Emphasize "Yes" and "Seriously." Subtle facial expressions only. Slight eyebrow raise on "I look real." Small exhale on "Seriously." Exact spoken script, say exactly this, word for word: "Please stop bothering me on the street just to say I look real. Yes, I'm AI, made in Jay's challenge, but I still have a life. Seriously." Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence.</div>
+                    <button class="copy-btn" onclick="copyRandomPrompt()">
+                        <i class="fas fa-copy"></i> Copy Random Prompt
+                    </button>
                 </div>
             </div>
 
@@ -1425,24 +1443,6 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                 <p>Everyone who shares and tags me will be entered into a giveaway for 1 surprise prize. Each platform you post on counts as 1 entry.</p>
             </div>
 
-            <!-- Links -->
-            <div class="section-box">
-                <h3 class="section-title">
-                    <div class="section-icon"><i class="fas fa-link"></i></div>
-                    Links
-                </h3>
-                <div class="links-grid">
-                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-video"></i></div>
-                        <div class="link-title">Flow</div>
-                    </a>
-                    <a href="https://www.krea.ai/enhancer" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-magic"></i></div>
-                        <div class="link-title">Krea Enhancer</div>
-                    </a>
-                </div>
-            </div>
-
             <!-- Checklist -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -1450,11 +1450,11 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                     Checklist
                 </h3>
                 <ul class="checklist">
-                    <li>Reference Pack folder created with 10 final images</li>
-                    <li>Glasses, mole, and hair stayed identical across the set</li>
-                    <li>1 talking head video generated from a Reference Pack image</li>
-                    <li>Video exported and posted</li>
-                    <li>Jay tagged in the post</li>
+                    <li><input type="checkbox"> Reference Pack folder created with 10 final images</li>
+                    <li><input type="checkbox"> Glasses, mole, and hair stayed identical across the set</li>
+                    <li><input type="checkbox"> 1 talking head video generated from a Reference Pack image</li>
+                    <li><input type="checkbox"> Video exported and posted</li>
+                    <li><input type="checkbox"> Jay tagged in the post</li>
                 </ul>
             </div>
         </section>
@@ -1470,11 +1470,8 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
             <div class="inputs-card">
                 <h3>Inputs for Today</h3>
                 <div class="inputs-list">
-                    <div class="input-item">Brand name:</div>
-                    <div class="input-item">Product name:</div>
-                    <div class="input-item">Platform:</div>
-                    <div class="input-item">Main goal:</div>
-                    <div class="input-item">Ambassador name:</div>
+                    <div class="input-item">GPT Agent</div>
+                    <div class="input-item">Knowledge files uploaded</div>
                 </div>
             </div>
 
@@ -1492,6 +1489,20 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                     <li>Turn Web Search off.</li>
                     <li>Save the GPT. Do not test deeply yet. Day 5 is production.</li>
                 </ol>
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                </div>
             </div>
 
             <!-- Prompts -->
@@ -1515,13 +1526,8 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
 
                 <div class="prompt-card">
                     <div class="prompt-header">
-                        <div>
-                            <h4 class="prompt-title">GPT Instructions</h4>
-                            <p class="prompt-meta">Copy and paste this into the Instructions field in your Custom GPT.</p>
-                        </div>
-                        <button class="copy-btn" onclick="copyPrompt('prompt4-1')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+                        <h4 class="prompt-title">GPT Instructions</h4>
+                        <p class="prompt-meta">Copy and paste this into the Instructions field in your Custom GPT.</p>
                     </div>
 
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
@@ -1529,6 +1535,9 @@ Real person, photorealistic, natural skin texture, visible pores, subtle minor i
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="collapsible-content">
+                        <button class="copy-btn" onclick="copyPrompt('prompt4-1')" style="margin-bottom: 1rem;">
+                            <i class="fas fa-copy"></i> Copy Instructions
+                        </button>
                         <div class="prompt-content" id="prompt4-1" style="max-height: 600px;">You are a production assistant for creating short form vertical UGC style videos using a consistent AI brand ambassador.
 
 Brand name: [BRAND_NAME_HERE]
@@ -1661,20 +1670,6 @@ One line</div>
 
             </div>
 
-            <!-- Links -->
-            <div class="section-box">
-                <h3 class="section-title">
-                    <div class="section-icon"><i class="fas fa-link"></i></div>
-                    Links
-                </h3>
-                <div class="links-grid">
-                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
-                        <div class="link-icon"><i class="fas fa-robot"></i></div>
-                        <div class="link-title">ChatGPT</div>
-                    </a>
-                </div>
-            </div>
-
             <!-- Checklist -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -1682,13 +1677,13 @@ One line</div>
                     Checklist
                 </h3>
                 <ul class="checklist">
-                    <li>Custom GPT created</li>
-                    <li>Name, Description, and Instructions set</li>
-                    <li>Brand File uploaded to Knowledge</li>
-                    <li>Character Blueprint uploaded to Knowledge</li>
-                    <li>Reference Pack images uploaded to Knowledge</li>
-                    <li>Web Search turned off</li>
-                    <li>GPT saved</li>
+                    <li><input type="checkbox"> Custom GPT created</li>
+                    <li><input type="checkbox"> Name, Description, and Instructions set</li>
+                    <li><input type="checkbox"> Brand File uploaded to Knowledge</li>
+                    <li><input type="checkbox"> Character Blueprint uploaded to Knowledge</li>
+                    <li><input type="checkbox"> Reference Pack images uploaded to Knowledge</li>
+                    <li><input type="checkbox"> Web Search turned off</li>
+                    <li><input type="checkbox"> GPT saved</li>
                 </ul>
             </div>
         </section>
@@ -1704,11 +1699,8 @@ One line</div>
             <div class="inputs-card">
                 <h3>Inputs for Today</h3>
                 <div class="inputs-list">
-                    <div class="input-item">Brand name:</div>
-                    <div class="input-item">Product name:</div>
-                    <div class="input-item">Platform:</div>
-                    <div class="input-item">Main goal:</div>
-                    <div class="input-item">Ambassador name:</div>
+                    <div class="input-item">Final UGC video</div>
+                    <div class="input-item">Edited and exported</div>
                 </div>
             </div>
 
@@ -1730,15 +1722,6 @@ One line</div>
                 </ol>
             </div>
 
-            <!-- Prompts -->
-            <div class="section-box">
-                <h3 class="section-title">
-                    <div class="section-icon"><i class="fas fa-info-circle"></i></div>
-                    No New Prompts Today
-                </h3>
-                <p style="color: var(--text-gray); font-size:1rem;">Use your GPT agent from Day 4 to generate all prompts for today's production.</p>
-            </div>
-
             <!-- Links -->
             <div class="section-box">
                 <h3 class="section-title">
@@ -1758,11 +1741,20 @@ One line</div>
                         <div class="link-icon"><i class="fas fa-cut"></i></div>
                         <div class="link-title">CapCut Desktop</div>
                     </a>
-                    <a href="#" target="_blank" class="link-card" style="border-color: var(--success); background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);">
+                    <a href="https://www.topdog.community/checkout/ai-vault" target="_blank" class="link-card" style="border-color: var(--success); background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);">
                         <div class="link-icon" style="color: var(--success);"><i class="fas fa-star"></i></div>
                         <div class="link-title" style="color: var(--success);">Join The AI Vault</div>
                     </a>
                 </div>
+            </div>
+
+            <!-- No Prompts -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-info-circle"></i></div>
+                    No New Prompts Today
+                </h3>
+                <p style="color: var(--text-gray); font-size:1rem;">Use your GPT agent from Day 4 to generate all prompts for today's production.</p>
             </div>
 
             <!-- Checklist -->
@@ -1772,12 +1764,12 @@ One line</div>
                     Quick Checklist Before Posting
                 </h3>
                 <ul class="checklist">
-                    <li>Identity looks consistent across all clips</li>
-                    <li>Lip sync feels natural</li>
-                    <li>No weird face warping or drifting</li>
-                    <li>Lighting and background match across clips</li>
-                    <li>Captions are readable on a phone</li>
-                    <li>The hook hits fast, the close feels confident</li>
+                    <li><input type="checkbox"> Identity looks consistent across all clips</li>
+                    <li><input type="checkbox"> Lip sync feels natural</li>
+                    <li><input type="checkbox"> No weird face warping or drifting</li>
+                    <li><input type="checkbox"> Lighting and background match across clips</li>
+                    <li><input type="checkbox"> Captions are readable on a phone</li>
+                    <li><input type="checkbox"> The hook hits fast, the close feels confident</li>
                 </ul>
             </div>
 
@@ -1786,6 +1778,7 @@ One line</div>
                 <h3>🎉 You Did It</h3>
                 <p style="margin-bottom:1rem;">You just built a full AI Ambassador system from scratch in 5 days.</p>
                 <p>Ready to go deeper? Join The AI Vault for advanced workflows, templates, and community support.</p>
+                <a href="https://www.topdog.community/checkout/ai-vault" target="_blank" style="display:inline-block; margin-top:1.5rem; background:var(--success); color:white; padding:1rem 2rem; border-radius:8px; text-decoration:none; font-weight:700;">Join The AI Vault</a>
             </div>
 
         </section>
@@ -1794,46 +1787,56 @@ One line</div>
 
     <!-- Scripts -->
     <script>
-        // Copy to clipboard function
+        // 10 VEO prompts with different dialogue
+        const veoPrompts = [
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Lightly annoyed but playful tone, like a friendly complaint. Natural pacing with small pauses. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Please stop bothering me on the street just to say I look real. Yes, I'm AI, made in Jay's challenge, but I still have a life. Seriously."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Friendly but slightly tired tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "So everyone keeps asking if I'm real or AI. Plot twist, I'm AI. Jay made me in five days. And honestly, I think I turned out pretty good."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Confident and direct tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "I get it. I look real. That's the point. But yes, I'm AI. Built in Jay's challenge. Took five days. Now can we move on?"`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Casual and conversational tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Quick reminder, I'm not a real person. I'm an AI ambassador made in Jay's five day challenge. But thanks for thinking I could pass as human."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Slightly sarcastic but friendly tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Before you ask, yes I'm AI. No, I don't have feelings about it. Jay built me in his challenge. Five days. That's all it took. Pretty cool, right?"`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Warm and approachable tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "I know I look real, but I'm actually AI. Jay created me in his five day challenge. It's wild what you can build now. Just thought you should know."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Matter of fact tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Let me save you some time. I'm AI. Made in Jay's challenge. Took five days to build. That's it. That's the reveal. Now you know."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Slightly proud tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Yes, I'm AI. Yes, I was made in five days. And yes, I look this good. Jay knows what he's doing. That's the whole point of the challenge."`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Playful and cheeky tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "Fun fact. I'm not real. I'm AI. Jay built me in his five day challenge. And honestly, I think I'm crushing it. What do you think?"`,
+            
+            `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Calm and straightforward tone. Natural pacing. Subtle facial expressions only. Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence. Exact spoken script, say exactly this, word for word: "I'm an AI ambassador. Created in Jay's five day challenge. That's why I look consistent. That's why I look real. It's all intentional."`
+        ];
+
+        // Copy to clipboard function with notification
         function copyPrompt(elementId) {
             const element = document.getElementById(elementId);
             const text = element.textContent;
             
             navigator.clipboard.writeText(text).then(() => {
-                const button = event.target.closest('.copy-btn');
-                const originalHTML = button.innerHTML;
-                
-                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                button.classList.add('copied');
-                
-                setTimeout(() => {
-                    button.innerHTML = originalHTML;
-                    button.classList.remove('copied');
-                }, 2000);
+                showCopyNotification();
             });
         }
 
-        // Copy random prompt (for Day 3 VEO prompt)
+        // Copy random VEO prompt
         function copyRandomPrompt() {
-            const prompts = [
-                `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Lightly annoyed but playful tone, like a friendly complaint. Natural pacing with small pauses. Emphasize "Yes" and "Seriously." Subtle facial expressions only. Slight eyebrow raise on "I look real." Small exhale on "Seriously." Exact spoken script, say exactly this, word for word: "Please stop bothering me on the street just to say I look real. Yes, I'm AI, made in Jay's challenge, but I still have a life. Seriously." Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence.`
-                // Add 9 more variations here when ready
-            ];
-            
-            const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+            const randomPrompt = veoPrompts[Math.floor(Math.random() * veoPrompts.length)];
             
             navigator.clipboard.writeText(randomPrompt).then(() => {
-                const button = event.target.closest('.copy-btn');
-                const originalHTML = button.innerHTML;
-                
-                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                button.classList.add('copied');
-                
-                setTimeout(() => {
-                    button.innerHTML = originalHTML;
-                    button.classList.remove('copied');
-                }, 2000);
+                showCopyNotification();
             });
+        }
+
+        // Show copy notification
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
         }
 
         // Collapsible toggle
