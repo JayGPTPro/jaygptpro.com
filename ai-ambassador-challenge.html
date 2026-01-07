@@ -76,33 +76,33 @@
         
         .progress-bar {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            height: 8px;
-            border-radius: 4px;
+            height: 6px;
+            border-radius: 3px;
             transition: width 0.3s ease;
         }
         
-        .day-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-secondary);
-            transition: all 0.3s;
+        /* Compact Sticky Navigation */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--bg-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
         
-        .day-circle.active {
+        .day-btn-compact {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .day-btn-compact:hover {
             border-color: var(--accent-color);
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .day-circle.completed {
-            border-color: var(--success-color);
-            background: var(--success-color);
-            color: white;
+            transform: translateY(-2px);
         }
         
         .achievement-badge {
@@ -178,6 +178,21 @@
             accent-color: var(--accent-color);
         }
         
+        .share-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            animation: fadeInScale 0.5s ease;
+        }
+        
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
         html {
             scroll-behavior: smooth;
         }
@@ -190,52 +205,65 @@
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </div>
 
-    <!-- Progress Indicator -->
-    <div class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md" style="background-color: var(--bg-primary);">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium" style="color: var(--text-secondary);">Overall Progress</span>
-                <span class="text-sm font-bold" style="color: var(--accent-color);" id="progressPercent">0%</span>
+    <!-- Sticky Navigation (Compact) -->
+    <div class="sticky-nav">
+        <!-- Progress Bar -->
+        <div class="px-4 pt-3 pb-2">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium" style="color: var(--text-secondary);">Overall Progress</span>
+                <span class="text-xs font-bold" style="color: var(--accent-color);" id="progressPercent">0%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2" style="background-color: var(--border-color);">
+            <div class="w-full bg-gray-200 rounded-full h-1.5" style="background-color: var(--border-color);">
                 <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
             </div>
-            <div class="flex justify-between mt-3 desktop-nav">
-                <div class="text-center" id="day1-indicator">
-                    <div class="day-circle mx-auto"><span class="text-xs font-bold">1</span></div>
-                    <p class="text-xs mt-1" style="color: var(--text-secondary);">DNA</p>
-                </div>
-                <div class="text-center" id="day2-indicator">
-                    <div class="day-circle mx-auto"><span class="text-xs font-bold">2</span></div>
-                    <p class="text-xs mt-1" style="color: var(--text-secondary);">Casting</p>
-                </div>
-                <div class="text-center" id="day3-indicator">
-                    <div class="day-circle mx-auto"><span class="text-xs font-bold">3</span></div>
-                    <p class="text-xs mt-1" style="color: var(--text-secondary);">Identity</p>
-                </div>
-                <div class="text-center" id="day4-indicator">
-                    <div class="day-circle mx-auto"><span class="text-xs font-bold">4</span></div>
-                    <p class="text-xs mt-1" style="color: var(--text-secondary);">Agent</p>
-                </div>
-                <div class="text-center" id="day5-indicator">
-                    <div class="day-circle mx-auto"><span class="text-xs font-bold">5</span></div>
-                    <p class="text-xs mt-1" style="color: var(--text-secondary);">Production</p>
-                </div>
-            </div>
+        </div>
+        
+        <!-- Compact Day Navigation -->
+        <div class="flex justify-center items-center gap-2 px-4 pb-3 desktop-nav">
+            <a href="#day1" class="day-btn-compact" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 1
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day2" class="day-btn-compact" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 2
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day3" class="day-btn-compact" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 3
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day4" class="day-btn-compact" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 4
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day5" class="day-btn-compact" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 5
+            </a>
         </div>
     </div>
 
-    <!-- Header Section (CENTERED) -->
+    <!-- Header Section (CENTERED, NOT STICKY) -->
     <div class="container mx-auto px-4 py-8 text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--text-primary);">
             Build Your AI Ambassador in 5 Days
         </h1>
-        <p class="text-lg md:text-xl mb-6" style="color: var(--text-secondary);">
-            A hands-on workshop to create a consistent AI Brand Ambassador using real-time prompts and tools.
+        <p class="text-lg md:text-xl mb-4" style="color: var(--text-secondary);">
+            A hands-on Challenge to create a consistent AI Brand Ambassador using real-time prompts and tools.
         </p>
         
+        <!-- Creator Credit (NOT STICKY) -->
+        <div class="flex items-center justify-center mb-6">
+            <img src="https://jaygptpro.com/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="w-10 h-10 rounded-full mr-2 border-2" style="border-color: var(--accent-color);">
+            <span class="text-sm font-medium" style="color: var(--text-secondary);">Created by Jay Margaliot</span>
+        </div>
+        
+        <!-- Tools Header -->
+        <h3 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">
+            ✨ All You Need: 4 Simple Tools
+        </h3>
+        
         <!-- Tools Bar (CENTERED) -->
-        <div class="flex flex-wrap justify-center gap-3 mb-6">
+        <div class="flex flex-wrap justify-center gap-3 mb-8">
             <a href="https://chatgpt.com/" target="_blank" class="btn-tool text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg">
                 <i class="fas fa-robot mr-2"></i>ChatGPT
             </a>
@@ -247,25 +275,6 @@
             </a>
             <a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="btn-tool text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg">
                 <i class="fas fa-film mr-2"></i>CapCut Desktop
-            </a>
-        </div>
-        
-        <!-- Day Navigation (CENTERED) -->
-        <div class="flex flex-wrap justify-center gap-3 desktop-nav">
-            <a href="#day1" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-                Day 1. DNA
-            </a>
-            <a href="#day2" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-                Day 2. Casting
-            </a>
-            <a href="#day3" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-                Day 3. Identity Lock
-            </a>
-            <a href="#day4" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-                Day 4. Agent
-            </a>
-            <a href="#day5" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-                Day 5. Production
             </a>
         </div>
     </div>
@@ -629,10 +638,35 @@ Output format:
                     <div class="mt-6 p-4 section-card rounded-lg">
                         <h4 class="font-bold text-lg mb-3" style="color: var(--text-primary);">🎬 First Talking Head Video (VEO 3.1 Prompt)</h4>
                         <p class="text-sm mb-3" style="color: var(--text-secondary);">Upload your best headshot to VEO 3.1 in Google Flow, then use this prompt structure. Click button for random variation.</p>
-                        <button onclick="copyRandomVeoPrompt()" class="copy-btn text-white px-4 py-2 rounded text-sm font-semibold mb-3">
-                            <i class="fas fa-random mr-1"></i>Copy Random VEO Prompt (1 of 10)
+                        <button onclick="copyRandomVeoPromptAndShowShare()" class="copy-btn text-white px-4 py-2 rounded text-sm font-semibold mb-3">
+                            <i class="fas fa-random mr-1"></i>Copy Random VEO Prompt
                         </button>
                         <pre id="veoPromptRandom" class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto" style="color: var(--text-primary);">Close-up video of a person speaking directly to camera. The person says: "Hey, welcome to our brand! I'm so excited to share this with you." Natural facial expressions, slight head movements, authentic smile. 8 seconds, 16:9, realistic lighting.</pre>
+                    </div>
+                    
+                    <!-- Share Card (Hidden by default) -->
+                    <div id="shareCard" class="share-card" style="display: none;">
+                        <h3 class="text-2xl font-bold mb-3">🎉 You just brought your AI Ambassador to life.</h3>
+                        <h4 class="text-xl font-semibold mb-4">Let's make this go viral</h4>
+                        <p class="mb-4">If your first talking head video looks real, post it. Help me spread the challenge and let's flood the feed with AI ambassadors.</p>
+                        
+                        <div class="mb-4">
+                            <h5 class="font-bold mb-2">What to do:</h5>
+                            <ol class="list-decimal list-inside space-y-1">
+                                <li>Upload the video to any platform you want.</li>
+                                <li>Tag me in the post: <strong>@JayMargaliot</strong></li>
+                            </ol>
+                        </div>
+                        
+                        <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                            <h5 class="font-bold mb-2">🎁 Bonus</h5>
+                            <p>Everyone who shares and tags me will be entered into a giveaway for 1 surprise prize.</p>
+                            <p class="text-sm mt-1">Each platform you post on counts as 1 entry.</p>
+                        </div>
+                        
+                        <p class="text-center mt-4 text-sm opacity-90">
+                            LinkedIn • Instagram • TikTok • X (Twitter) • Facebook
+                        </p>
                     </div>
                 </div>
 
@@ -1060,8 +1094,8 @@ Always ask clarifying questions if the request is vague.</pre>
             }, 2000);
         }
 
-        // Copy Random VEO Prompt
-        function copyRandomVeoPrompt() {
+        // Copy Random VEO Prompt AND Show Share Card
+        function copyRandomVeoPromptAndShowShare() {
             const prompts = [
                 'Close-up video of a person speaking directly to camera. The person says: "Hey, welcome to our brand! I\'m so excited to share this with you." Natural facial expressions, slight head movements, authentic smile. 8 seconds, 16:9, realistic lighting.',
                 'Close-up video of a person speaking directly to camera. The person says: "You know what changed everything for me? This." Natural facial expressions, slight head movements, authentic smile. 8 seconds, 16:9, realistic lighting.',
@@ -1080,6 +1114,14 @@ Always ask clarifying questions if the request is vague.</pre>
             
             navigator.clipboard.writeText(randomPrompt).then(() => {
                 showToast('✅ Random VEO prompt copied!');
+                
+                // Show Share Card
+                document.getElementById('shareCard').style.display = 'block';
+                
+                // Smooth scroll to Share Card
+                setTimeout(() => {
+                    document.getElementById('shareCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
             });
         }
 
@@ -1106,22 +1148,13 @@ Always ask clarifying questions if the request is vague.</pre>
             document.getElementById('progressPercent').textContent = percent + '%';
             document.getElementById('progressBar').style.width = percent + '%';
             
-            // Update day indicators
+            // Check for day completion and achievements
             for (let day = 1; day <= 5; day++) {
                 const dayCheckboxes = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]`);
                 const dayChecked = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]:checked`).length;
-                const dayIndicator = document.getElementById(`day${day}-indicator`);
-                const circle = dayIndicator.querySelector('.day-circle');
                 
                 if (dayChecked === dayCheckboxes.length && dayCheckboxes.length > 0) {
-                    circle.classList.add('completed');
-                    circle.classList.remove('active');
                     checkAchievement(day);
-                } else if (dayChecked > 0) {
-                    circle.classList.add('active');
-                    circle.classList.remove('completed');
-                } else {
-                    circle.classList.remove('active', 'completed');
                 }
             }
             
