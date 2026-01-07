@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your AI Ambassador in 5 Days | AI Challenge</title>
+    <meta name="description" content="A 5-day hands-on challenge to build a consistent AI Brand Ambassador using Nano Banana Pro and VEO 3.1">
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary: #06B6D4;
+            --success: #10B981;
+            --bg-main: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+            --border: #E5E7EB;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem;
+        }
+
+        .site-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .site-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tools Bar */
+        .tools-bar {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Navigation */
+        .nav-days {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-day {
+            background: var(--bg-main);
+            color: var(--text-dark);
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 2px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .nav-day:hover, .nav-day.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Day Section */
+        .day-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 3px solid var(--border);
+        }
+
+        .day-header {
+            margin-bottom: 2rem;
+        }
+
+        .day-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .day-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+
+        /* Inputs Card */
+        .inputs-card {
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .inputs-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .inputs-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .input-item {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Section Box */
+        .section-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Quick Steps */
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* Prompt Card */
+        .prompt-card {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .prompt-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .prompt-meta {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+        }
+
+        .prompt-meta strong {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .prompt-instructions {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .prompt-instructions ul, .prompt-instructions ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .prompt-instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        .prompt-content {
+            background: #1F2937;
+            color: #F9FAFB;
+            border-radius: 8px;
+            padding: 1.25rem;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .prompt-content::-webkit-scrollbar-track {
+            background: #374151;
+            border-radius: 4px;
+        }
+
+        .prompt-content::-webkit-scrollbar-thumb {
+            background: #6B7280;
+            border-radius: 4px;
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .copy-btn.copied {
+            background: var(--primary);
+        }
+
+        /* Links Grid */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .link-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .link-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .link-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        .link-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        .checklist li::before {
+            content: '□';
+            font-size: 1.5rem;
+            color: var(--text-gray);
+        }
+
+        /* Congrats Box */
+        .congrats-box {
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .congrats-box h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--success);
+        }
+
+        .congrats-box p {
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            line-height: 1.7;
+        }
+
+        /* Share Box */
+        .share-box {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 2px solid #F59E0B;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .share-box h3 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: #D97706;
+        }
+
+        .share-box p {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .share-box ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Collapsible */
+        .collapsible-header {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .collapsible-header:hover {
+            background: white;
+            border-color: var(--primary);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.active {
+            max-height: 5000px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 1rem;
+            }
+
+            .site-title {
+                font-size: 1.4rem;
+            }
+
+            .tools-bar {
+                gap: 0.5rem;
+            }
+
+            .tool-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .day-title {
+                font-size: 1.5rem;
+            }
+
+            .section-box {
+                padding: 1.25rem;
+            }
+
+            .prompt-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1 class="site-title">Build Your AI Ambassador in 5 Days</h1>
+            <p class="site-subtitle">A hands-on workshop to create a consistent AI Brand Ambassador using real-time prompts and tools.</p>
+            
+            <!-- Tools Bar -->
+            <div class="tools-bar">
+                <a href="https://chatgpt.com/" target="_blank" class="tool-btn">
+                    <i class="fas fa-robot"></i> ChatGPT
+                </a>
+                <a href="https://labs.google/fx/tools/flow" target="_blank" class="tool-btn">
+                    <i class="fas fa-video"></i> Flow
+                </a>
+                <a href="https://www.krea.ai/enhancer" target="_blank" class="tool-btn">
+                    <i class="fas fa-magic"></i> Krea Enhancer
+                </a>
+                <a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="tool-btn">
+                    <i class="fas fa-cut"></i> CapCut
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-days">
+                <a href="#day1" class="nav-day">Day 1. DNA</a>
+                <a href="#day2" class="nav-day">Day 2. Casting</a>
+                <a href="#day3" class="nav-day">Day 3. Identity Lock</a>
+                <a href="#day4" class="nav-day">Day 4. Agent</a>
+                <a href="#day5" class="nav-day">Day 5. Production</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- DAY 1 -->
+        <section id="day1" class="day-section">
+            <div class="day-header">
+                <h2 class="day-title">Day 1. Brand DNA</h2>
+                <p class="day-subtitle">The Blueprint</p>
+            </div>
+
+            <!-- Inputs -->
+            <div class="inputs-card">
+                <h3>Inputs for Today</h3>
+                <div class="inputs-list">
+                    <div class="input-item">Brand name:</div>
+                    <div class="input-item">Product name:</div>
+                    <div class="input-item">Platform:</div>
+                    <div class="input-item">Main goal:</div>
+                    <div class="input-item">Ambassador name:</div>
+                </div>
+            </div>
+
+            <!-- Quick Steps -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-list-check"></i></div>
+                    Quick Steps
+                </h3>
+                <ol class="steps-list">
+                    <li>Open a new ChatGPT chat for this brand only.</li>
+                    <li>Run Prompt 1 to create the Brand File.</li>
+                    <li>Run Prompt 2 to create the Character Blueprint.</li>
+                    <li>Save both outputs. You will reuse them later.</li>
+                </ol>
+            </div>
+
+            <!-- Prompts -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-code"></i></div>
+                    Prompts
+                </h3>
+
+                <!-- Prompt 1 -->
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 1. The Architect. Brand File</h4>
+                            <p class="prompt-meta"><strong>What this does:</strong> Creates 1 Brand File that defines the brand for all future AI work.</p>
+                            <p class="prompt-meta"><strong>Where to use:</strong> ChatGPT (also works in Gemini or Claude)</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt1-1')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    
+                    <div class="prompt-instructions">
+                        <strong>How to use:</strong>
+                        <ol>
+                            <li>Open a new chat for this brand.</li>
+                            <li>Paste the prompt.</li>
+                            <li>Under RAW INPUT STARTS HERE, paste your raw brand inputs.</li>
+                            <li>Attach any brand files or images you have.</li>
+                            <li>Send.</li>
+                        </ol>
+                        
+                        <strong style="display:block; margin-top:1rem;">What to include:</strong>
+                        <ul>
+                            <li>Brand website link</li>
+                            <li>About or Mission text</li>
+                            <li>Amazon "From the brand" text</li>
+                            <li>Product titles and bullet points (1 to 3 products)</li>
+                            <li>Known compliance limitations (e.g., no medical claims, no guaranteed results)</li>
+                            <li>Review files (attach files for 1 to 3 products)</li>
+                            <li>Customer questions or Q&A</li>
+                            <li>Brand visuals (attach 3 to 8 images: homepage hero, packaging, product, lifestyle)</li>
+                            <li>Price range and market (e.g., budget, mid, premium. US, EU, etc.)</li>
+                            <li>Founder notes (non negotiables, claims to avoid)</li>
+                        </ul>
+                    </div>
+
+                    <div class="prompt-content" id="prompt1-1">Act as a Senior Brand Strategist and AI Content Architect.
+
+I will provide raw brand inputs for a product based ecommerce brand. Your job is to distill everything into a concise, decisive Brand File that will become the single source of truth for all future AI work, including avatar creation, image prompts, video prompts, posts, reels, UGC content, and blogs.
+
+Critical rules
+1. Use only the information provided, including attached files and attached images.
+2. Analyze attached brand images for color palette, aesthetic style, and vibe. Incorporate those insights into section 9 Visual Direction.
+3. If information is missing, you MUST fill the specific section with your best strategic assumption based on market standards and the provided inputs, and also list that assumption in section 12 Assumptions. Do not ask questions.
+4. You MAY make strategic assumptions about audience, buyer psychology, and buying moments. You must NOT invent product specs, numbers, features, certifications, pricing, or guarantees.
+5. Be decisive. Avoid vague fluff words like premium or high quality without concrete meaning.
+6. Define boundaries. You must clearly state what the brand is not.
+7. Reviews are for analysis. Extract themes, language patterns, buyer psychology, and implied buyer demographics. Do not quote long text.
+
+Output format
+Return the Brand File ONE TIME ONLY, inside a single code block. Do not output anything before or after the code block.
+
+BRAND FILE
+
+1. Brand Summary
+Brand name:
+Product name or main product line:
+One line positioning:
+
+2. Product Snapshot
+Category:
+What it does:
+Primary benefit:
+Secondary benefit:
+Top 3 features:
+What makes it different:
+
+3. Customer Context
+Primary audience:
+Secondary audience:
+Not the audience:
+Use scenarios:
+Main desire before buying:
+Main fear before buying:
+Top objections:
+
+4. Customer Demographics and Buying Moments
+Primary user ages:
+Buyer avatar, who pays:
+User avatar, who uses it:
+Gifting, yes or no:
+Top gifting occasions:
+Top buying occasions:
+Who appears on camera:
+Objections ranked, 1 to 5:
+
+5. Emotional Outcome
+How the customer wants to feel after purchase:
+What emotion the content should trigger:
+
+6. Messaging Pillars
+Pillar 1:
+Pillar 2:
+Pillar 3:
+Optional pillar 4:
+
+7. Proof and Credibility
+Allowed proof types:
+Key proof points:
+Forbidden claims and compliance limits:
+
+8. Voice and Language
+Tone:
+Energy:
+Confidence:
+Writing style:
+Yes words:
+No words:
+Cliches to avoid:
+
+9. Visual Direction
+Overall look:
+Color palette:
+Aesthetic style:
+Vibe in one sentence:
+Lighting preference:
+Camera distance preference:
+Do:
+Avoid:
+
+10. Content Fit
+Best formats:
+Primary content goal:
+Call to action style:
+
+11. Hard No List
+No visuals:
+No behaviors:
+No tone:
+No topics:
+
+12. Assumptions
+Assumption 1:
+Assumption 2:
+Assumption 3:
+
+Everything pasted below is my raw brand input. Analyze it deeply.
+RAW INPUT STARTS HERE:</div>
+                </div>
+
+                <!-- Prompt 2 -->
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 2. Casting Director. Character Blueprint</h4>
+                            <p class="prompt-meta"><strong>What this does:</strong> Creates 1 final AI Brand Ambassador blueprint with name, personality, identity lock rules.</p>
+                            <p class="prompt-meta"><strong>When to use:</strong> Right after Prompt 1, once you have the Brand File.</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt1-2')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    
+                    <div class="prompt-instructions">
+                        <strong>How to use:</strong>
+                        <ol>
+                            <li>Stay in the same chat where you created the Brand File.</li>
+                            <li>Paste the prompt.</li>
+                            <li>After BRAND FILE STARTS HERE, paste the full Brand File output from Prompt 1.</li>
+                            <li>Send.</li>
+                            <li>Save the Character Blueprint output.</li>
+                        </ol>
+                    </div>
+
+                    <div class="prompt-content" id="prompt1-2">Act as an expert Casting Director and AI Character Designer.
+
+I will paste a Brand File below. Your job is to create one single Character Blueprint for an AI Brand Ambassador. You must base everything strictly on the Brand File.
+
+Critical rules
+1. Zero questions. If the Brand File is vague, make the best trust building decision and include it as a short note in section 12.
+2. Be decisive and specific. You must output ONE final character, not ranges.
+   a. Age must be an exact number, not a range.
+   b. Location must be a specific real city and state, not a generic region.
+   c. Name must be a full name, first and last.
+3. Consistency is the priority. You must define locked features that never change.
+4. Recognition marker system. Define:
+   a. One hard locked recognition marker that must appear in all future images.
+   b. One optional recognition marker family with 3 options that can vary during casting only.
+5. Recognition marker constraints:
+   a. Use eyeglasses as the hard locked recognition marker.
+   b. Use a flattering beauty mark as part of the optional marker family.
+   c. Do not use scars, bruises, or anything that feels like an injury or discomfort cue.
+6. Names rule:
+   a. Output ONE final full name (first and last) for the character inside section 2.
+   b. Also provide 5 additional full name options for backup selection, written inside section 2 under a line called: "Backup full name options (5):"
+   c. All names must fit the Brand File audience and the character's city and vibe. Use common, believable names for the market.
+7. Do not write production image prompts. Do not write lighting setups or camera moves for image generation. This is a blueprint plus a minimal prototype string only.
+8. Default rule. The character appears with the product unless the user explicitly requests otherwise in later prompts.
+9. Product info integrity. You must not invent product claims or specs beyond what is in the Brand File.
+
+Output structure
+Return the Character Blueprint ONE TIME ONLY, inside a single code block. Do not output anything before or after the code block.
+
+CHARACTER BLUEPRINT
+
+1. Role and Trust Strategy
+Archetype:
+Why this archetype builds trust with this audience:
+
+2. Core Identity
+Full name, first and last:
+Backup full name options (5):
+Gender:
+Exact age:
+Home city and state:
+Life context in one sentence:
+Credibility anchor:
+
+3. Audience Fit
+Who this character speaks to:
+Who this character does not speak to:
+What the audience should feel after 15 seconds:
+
+4. Personality Settings
+Vibe, 3 adjectives:
+Energy, calm, balanced, energetic:
+Confidence, low, medium, high:
+Warmth, low, medium, high:
+Humor, none, subtle, playful:
+Directness, soft, balanced, direct:
+
+5. On Camera Behavior
+Eye contact style:
+Facial expressions:
+Hand movement level, low, medium, high:
+Pace of speech:
+Default emotion on screen:
+
+6. Voice and Language Rules
+Tone of voice:
+Sentence length, short, medium:
+Typical phrases:
+Banned phrases and words:
+What the character never says:
+
+7. Identity Lock
+Locked features, list 3 items that never change:
+Hard locked recognition marker, 1 item:
+Optional recognition marker family, 3 options that can vary during casting:
+Hair, style and color:
+What must never change:
+What is allowed to vary:
+
+Identity Lock requirements
+1. Hard locked recognition marker must be eyeglasses that are clearly visible in every image.
+2. The optional marker family must include:
+   a. Beauty mark placement options (subtle and flattering)
+   b. Eyeglasses style options (still clearly "glasses", but style can vary during casting)
+3. Keep the beauty mark subtle and attractive. Avoid anything that reads like a blemish or injury.
+4. No scars, no cuts, no bruises, no medical looking marks.
+
+8. Style Boundaries
+Grooming level, natural, light, polished:
+Wardrobe vibe, casual, smart casual, premium:
+No wardrobe items:
+Accessories allowed:
+
+9. Default Environments
+Environment 1:
+Environment 2:
+Environment 3, optional:
+Environments to avoid:
+
+10. Product Relationship Rules
+Default rule, appears with the product:
+How the character uses the product:
+How the product appears on screen:
+Product realism guardrails, correct scale relative to hand size is crucial, natural grip, matching shadows, matching scene lighting, readable branding if allowed:
+
+11. Guardrails
+No claims:
+No behaviors:
+No controversial areas:
+
+12. Notes and Assumptions
+Note 1:
+Note 2:
+Note 3:
+
+PROTOTYPE IDENTITY STRING
+Write one single short line for a quick square portrait test. Include only demographics plus the hard locked recognition marker plus hair. No personality. No camera moves. Add these realism tags at the end: raw photo, 35mm, natural skin texture, visible pores, minor imperfections.
+
+BRAND FILE STARTS HERE:</div>
+                </div>
+
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-check-square"></i></div>
+                    Checklist
+                </h3>
+                <ul class="checklist">
+                    <li>Brand File created and saved</li>
+                    <li>Character Blueprint created and saved</li>
+                    <li>Everything is in one chat for this brand only</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- DAY 2 -->
+        <section id="day2" class="day-section">
+            <div class="day-header">
+                <h2 class="day-title">Day 2. Casting Auditions</h2>
+                <p class="day-subtitle">The Auditions / Casting Day</p>
+            </div>
+
+            <!-- Inputs -->
+            <div class="inputs-card">
+                <h3>Inputs for Today</h3>
+                <div class="inputs-list">
+                    <div class="input-item">Brand name:</div>
+                    <div class="input-item">Product name:</div>
+                    <div class="input-item">Platform:</div>
+                    <div class="input-item">Main goal:</div>
+                    <div class="input-item">Ambassador name:</div>
+                </div>
+            </div>
+
+            <!-- Quick Steps -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-list-check"></i></div>
+                    Quick Steps
+                </h3>
+                <ol class="steps-list">
+                    <li>Run Prompt 3 in ChatGPT to generate 15 casting prompts.</li>
+                    <li>Run the 15 prompts in Nano Banana Pro. If you use Flow as the interface, run them there.</li>
+                    <li>Generate results for all 15 prompts.</li>
+                    <li>Pick your top 3.</li>
+                    <li>Choose 1 final character.</li>
+                </ol>
+            </div>
+
+            <!-- Prompts -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-code"></i></div>
+                    Prompts
+                </h3>
+
+                <!-- Prompt 3 -->
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 3. The Generator. Casting Auditions</h4>
+                            <p class="prompt-meta"><strong>What this does:</strong> Generates 15 Nano Banana Pro image prompts for casting auditions.</p>
+                            <p class="prompt-meta"><strong>When to use:</strong> After you have a completed Character Blueprint.</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt2-1')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    
+                    <div class="prompt-instructions">
+                        <strong>How to use:</strong>
+                        <ol>
+                            <li>Stay in the same chat where you created the Character Blueprint.</li>
+                            <li>Paste the prompt.</li>
+                            <li>After CHARACTER BLUEPRINT STARTS HERE, paste the full Character Blueprint.</li>
+                            <li>Send.</li>
+                            <li>Copy each generated prompt and run it in Nano Banana Pro.</li>
+                            <li>Pick your top 3, then select 1 final character.</li>
+                        </ol>
+                    </div>
+
+                    <div class="prompt-content" id="prompt2-1">Prompt 3. The Generator. 15 Casting Prompts for Nano Banana
+
+When to use
+Use this after you have a completed Character Blueprint. This step creates 15 different casting candidates for the same brand ambassador character.
+
+Goal
+Generate 15 distinct, photogenic, realistic people that all fit the Character Blueprint.
+These are auditions only, not a full reference pack.
+
+How to use
+1. Copy and paste this prompt into ChatGPT.
+2. Paste the full Character Blueprint after the line: CHARACTER BLUEPRINT STARTS HERE.
+3. Use the 15 prompts in Nano Banana to generate square portraits.
+4. Pick your top 3, then pick 1 final character.
+
+Important rules
+1. Output only the 15 prompts plus a selection checklist. No intro text, no commentary.
+2. Every prompt must work on its own. Do not refer to any other prompt.
+3. Do not include product, logos, text on screen, or brand claims.
+4. Square aspect ratio. Framing must be chest up. Head, shoulders, and upper torso visible. No extreme close ups. No macro.
+5. Studio audition lighting only. Bright, clean, flattering studio portrait lighting. Softbox key light, soft fill, gentle catchlights. No dark moody lighting.
+6. Photorealistic real person. Not stylized. Not digital. Not cartoon.
+7. Flattering realism rule. The person must be photogenic and attractive. Keep natural skin texture and pores, but avoid exaggerated redness, acne, heavy blemishes, or anything that makes the face look unhealthy or unpleasant.
+8. Recognition marker rule. Exactly one mole only. It must be above one eyebrow. There must be no other moles or beauty marks anywhere else on the face.
+9. Glasses rule for auditions. Glasses must be present in every prompt, but the style must change between prompts. Make the glasses clearly different across the 15.
+10. Hair rule. Keep hair color locked to the blueprint. Vary hairstyle across prompts using a deliberate variety. Use different parts and styling such as center part, side part, loose waves, straighter finish, half up, low ponytail, tidy bun, tucked behind ears. Do not repeat the exact same hairstyle too many times.
+11. Outfit rule. Keep wardrobe simple and believable for the character, but vary it across prompts. Examples: black crew tee, light sweater, denim jacket, white blouse, neutral cardigan, casual blazer. No logos.
+12. Face variation rule. Each prompt must describe a clearly different face. Change facial structure, eye shape, nose shape, lips, jawline nuance. Avoid making all candidates look like siblings.
+13. Expression rule. Friendly and natural. Subtle smile or relaxed neutral. No exaggerated model posing.
+14. Detail rule. Add enough detail to drive realism and variation, but keep it readable. Each prompt should be 3 to 6 short sentences.
+
+Output format
+Return only the following sections.
+
+SECTION A. 15 NANO BANANA PROMPTS
+Write 15 prompts, numbered 1 to 15.
+Each prompt must be inside its own separate code block.
+Do not put labels like Candidate inside the code block. Only the prompt text.
+
+Each prompt must include
+A. Demographics from the blueprint.
+B. Hair color from the blueprint plus a specific hairstyle variation for this prompt.
+C. Glasses present, with a specific glasses style variation for this prompt.
+D. Exactly one mole above one eyebrow, explicitly stated, and explicitly state no other moles.
+E. One clear face variation line.
+F. A simple studio background note, for example off white, light gray, warm gray.
+G. Realism constraints.
+
+Add these realism tags at the end of every prompt
+Real person, raw photo, 35mm look, shallow depth of field, natural skin texture, visible pores, subtle minor imperfections, flattering studio lighting, clean background, natural color, soft film grain, no beauty filter, no retouching
+
+SECTION B. SELECTION CHECKLIST
+Write a short checklist of what to look for when choosing the final character. Limit to 8 bullet points.
+
+CHARACTER BLUEPRINT STARTS HERE:</div>
+                </div>
+
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-video"></i></div>
+                        <div class="link-title">Flow</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-check-square"></i></div>
+                    Checklist
+                </h3>
+                <ul class="checklist">
+                    <li>15 candidates generated</li>
+                    <li>Top 3 selected</li>
+                    <li>1 final character chosen</li>
+                    <li>Winning image saved for Day 3</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- DAY 3 -->
+        <section id="day3" class="day-section">
+            <div class="day-header">
+                <h2 class="day-title">Day 3. Reference Pack and First Talking Head Video</h2>
+                <p class="day-subtitle">The Birth / Becoming Real</p>
+            </div>
+
+            <!-- Inputs -->
+            <div class="inputs-card">
+                <h3>Inputs for Today</h3>
+                <div class="inputs-list">
+                    <div class="input-item">Brand name:</div>
+                    <div class="input-item">Product name:</div>
+                    <div class="input-item">Platform:</div>
+                    <div class="input-item">Main goal:</div>
+                    <div class="input-item">Ambassador name:</div>
+                </div>
+            </div>
+
+            <!-- Quick Steps -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-list-check"></i></div>
+                    Quick Steps
+                </h3>
+                <ol class="steps-list">
+                    <li>Upload your winning character image as the reference image in Nano Banana Pro.</li>
+                    <li>Run Prompts 1 to 10. Generate a few variations each. Pick the best result per prompt.</li>
+                    <li>Save the 10 final images into a folder called Reference Pack.</li>
+                    <li>Pick 1 sharp headshot or chest up image from the Reference Pack.</li>
+                    <li>Optional. Enhance it in Krea Enhancer using the Topaz model.</li>
+                    <li>In Flow, select VEO 3.1 and upload your image as the first frame.</li>
+                    <li>Paste the VEO prompt and generate your first talking head video.</li>
+                    <li>Export the video and post it. Tag Jay.</li>
+                </ol>
+            </div>
+
+            <!-- Prompts: Reference Pack -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-code"></i></div>
+                    Reference Pack. The Identity Lock Set
+                </h3>
+                <p style="margin-bottom:1.5rem; color: var(--text-gray);">10 Nano Banana Pro prompts that lock identity so the same person stays consistent in every future image and video.</p>
+                
+                <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 8px; padding: 1rem; margin-bottom: 2rem; font-size: 0.95rem;">
+                    <strong>Quick rules:</strong> Always keep the same reference image attached for the entire set. If glasses, mole, or hair changes, discard and regenerate. No product in this step. Identity only.
+                </div>
+
+                <!-- Reference Pack Prompts 1-10 -->
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 1. Angles collage 2x2. Studio front and profiles</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-1')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-1">Use the uploaded reference image as strict identity lock. Same real person.
+Vertical 9:16 image containing a clean 2x2 grid collage.
+White seamless studio background. Bright clean studio portrait lighting, even illumination, soft catchlights.
+
+Panels:
+Front facing
+Three quarter left
+Three quarter right
+Left profile
+
+Neutral expression in all panels.
+Glasses must be identical to the reference image. Same shape, thickness, color, transparency.
+Exactly one beauty mole above the eyebrow exactly as in the reference. No other moles or marks.
+Hair must match the reference exactly. Same haircut, hairline, part, length, wave.
+
+Medium close up framing, head and shoulders visible.
+Real person, photorealistic, raw photo, 35mm look, natural skin texture, visible pores, subtle minor imperfections, flattering, no retouching, no beauty filter.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 2. Angles collage 2x2. Alternate camera angles</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-2')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-2">Use the uploaded reference image as strict identity lock. Same real person.
+Vertical 9:16 image containing a clean 2x2 grid collage.
+White seamless studio background. Bright clean studio lighting.
+
+Panels:
+Right profile
+Slightly high angle
+Slightly low angle
+Looking down toward camera
+
+Neutral relaxed expression.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+Medium close up framing with slight distance variation from Prompt 1.
+
+Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections, flattering, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 3. Expressions collage 2x2</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-3')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-3">Use the uploaded reference image as strict identity lock. Same real person.
+Vertical 9:16 image with a clean 2x2 grid collage.
+White studio background. Bright clean studio lighting.
+
+Panels:
+Warm closed mouth smile
+Laughing softly with teeth slightly visible
+Surprised expression, eyes open wider
+Excited friendly expression, hand lightly on chest
+
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+Medium close up framing.
+
+Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections, flattering, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 4. Seasons wardrobe collage 2x2</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-4')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-4">Use the uploaded reference image as strict identity lock. Same real person.
+Vertical 9:16 image with a clean 2x2 grid collage.
+Light neutral studio background. Bright even studio lighting.
+
+Panels:
+Summer outfit, light breathable top
+Fall outfit, layered look
+Winter outfit, sweater or light coat
+Spring outfit, fresh light layer
+
+Smart casual outfits. No logos.
+Upper body to mid thigh framing.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections, flattering, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 5. Extreme close up identity lock</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-5')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-5">Use the uploaded reference image as strict identity lock. Same real person.
+Single vertical 9:16 image.
+Extreme close up of partial face.
+
+Frame must include:
+One eye
+Glasses frame edge
+Eyebrow area with the single mole
+Small portion of the nose
+
+Bright clean studio lighting with clear catchlight.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Ultra sharp detail. Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 6. Studio headshot new pose</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-6')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-6">Use the uploaded reference image as strict identity lock. Same real person.
+Single vertical 9:16 studio headshot.
+Chest up framing. Light warm gray background.
+
+Pose:
+Shoulders angled about 20 degrees.
+Head slightly turned back toward camera.
+
+Neutral relaxed expression.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections, flattering, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 7. Studio half body with hands</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-7')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-7">Use the uploaded reference image as strict identity lock. Same real person.
+Single vertical 9:16 studio half body shot.
+Upper body with hands clearly visible.
+Light neutral studio background. Bright even lighting.
+
+Natural friendly posture. Subtle confident smile.
+Smart casual outfit. No logos.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 8. Full body studio clean</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-8')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-8">Use the uploaded reference image as strict identity lock. Same real person.
+Single vertical 9:16 full body studio photo.
+Head to toe fully inside frame. Shoes visible.
+Light neutral background. Bright even studio lighting.
+
+Natural relaxed stance.
+Smart casual outfit different from previous prompt. No logos.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 9. Full body actions collage 2x2</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-9')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-9">Use the uploaded reference image as strict identity lock. Same real person.
+Vertical 9:16 image with a clean 2x2 grid collage.
+Light neutral background. Bright even studio lighting.
+
+Panels:
+Small dance step, fun host energy
+Small jump, joyful
+Thumbs up, confident
+Playful pointing gesture toward camera
+
+Full body visible in every panel. No cropping.
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+
+Real person, photorealistic, no motion blur, flattering, no retouching.</div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">Prompt 10. Lifestyle bright daylight</h4>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt3-10')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt3-10">Use the uploaded reference image as strict identity lock. Same real person.
+Single vertical 9:16 lifestyle photo.
+Bright realistic environment. Clean modern cafe or tidy home office.
+
+Half body framing, upper body to mid thigh.
+Soft natural daylight look. Bright and flattering.
+Smart casual outfit different from studio shots. No logos.
+
+Glasses identical to reference. One mole above eyebrow only. Hair identical to reference.
+Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections, no retouching.</div>
+                </div>
+
+            </div>
+
+            <!-- First Talking Head Video -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-video"></i></div>
+                    First Talking Head Video. VEO 3.1 Prompt
+                </h3>
+                
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">VEO 3.1 Talking Head Prompt</h4>
+                            <p class="prompt-meta"><strong>Where to run:</strong> Flow with VEO 3.1</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyRandomPrompt()">
+                            <i class="fas fa-copy"></i> Copy Random
+                        </button>
+                    </div>
+                    
+                    <div class="prompt-instructions">
+                        <strong>How to use:</strong>
+                        <ol>
+                            <li>Pick 1 image from your Reference Pack. Use a sharp headshot or chest up image.</li>
+                            <li>Optional. Enhance the image in Krea Enhancer using the Topaz model.</li>
+                            <li>Open Flow and select VEO 3.1.</li>
+                            <li>Upload your image as the first frame.</li>
+                            <li>Copy and paste the prompt below.</li>
+                            <li>Generate. If lip sync feels off, run it again with the same prompt.</li>
+                        </ol>
+                    </div>
+
+                    <div class="prompt-content" id="veo-prompt">Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Lightly annoyed but playful tone, like a friendly complaint. Natural pacing with small pauses. Emphasize "Yes" and "Seriously." Subtle facial expressions only. Slight eyebrow raise on "I look real." Small exhale on "Seriously." Exact spoken script, say exactly this, word for word: "Please stop bothering me on the street just to say I look real. Yes, I'm AI, made in Jay's challenge, but I still have a life. Seriously." Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence.</div>
+                </div>
+            </div>
+
+            <!-- Congrats + Share -->
+            <div class="congrats-box">
+                <h3>🎉 Congrats</h3>
+                <p>You just made your ambassador talk. That is the moment.</p>
+            </div>
+
+            <div class="share-box">
+                <h3>Let's make this go viral</h3>
+                <p>If your first talking head video looks real, post it. Help me spread the challenge and flood the feed with AI ambassadors.</p>
+                
+                <strong>What to do</strong>
+                <ul>
+                    <li>Upload the video to any platform you want.</li>
+                    <li>Tag me in the post.</li>
+                </ul>
+
+                <strong style="display:block; margin-top:1rem;">Bonus</strong>
+                <p>Everyone who shares and tags me will be entered into a giveaway for 1 surprise prize. Each platform you post on counts as 1 entry.</p>
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-video"></i></div>
+                        <div class="link-title">Flow</div>
+                    </a>
+                    <a href="https://www.krea.ai/enhancer" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-magic"></i></div>
+                        <div class="link-title">Krea Enhancer</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-check-square"></i></div>
+                    Checklist
+                </h3>
+                <ul class="checklist">
+                    <li>Reference Pack folder created with 10 final images</li>
+                    <li>Glasses, mole, and hair stayed identical across the set</li>
+                    <li>1 talking head video generated from a Reference Pack image</li>
+                    <li>Video exported and posted</li>
+                    <li>Jay tagged in the post</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- DAY 4 -->
+        <section id="day4" class="day-section">
+            <div class="day-header">
+                <h2 class="day-title">Day 4. Build Your GPT Agent</h2>
+                <p class="day-subtitle">The Agent</p>
+            </div>
+
+            <!-- Inputs -->
+            <div class="inputs-card">
+                <h3>Inputs for Today</h3>
+                <div class="inputs-list">
+                    <div class="input-item">Brand name:</div>
+                    <div class="input-item">Product name:</div>
+                    <div class="input-item">Platform:</div>
+                    <div class="input-item">Main goal:</div>
+                    <div class="input-item">Ambassador name:</div>
+                </div>
+            </div>
+
+            <!-- Quick Steps -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-list-check"></i></div>
+                    Quick Steps
+                </h3>
+                <ol class="steps-list">
+                    <li>Create a Custom GPT in ChatGPT.</li>
+                    <li>Set the Name and Description.</li>
+                    <li>Paste the Instructions exactly.</li>
+                    <li>Upload your Brand File, Character Blueprint, and Reference Pack images into Knowledge.</li>
+                    <li>Turn Web Search off.</li>
+                    <li>Save the GPT. Do not test deeply yet. Day 5 is production.</li>
+                </ol>
+            </div>
+
+            <!-- Prompts -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-code"></i></div>
+                    GPT Setup
+                </h3>
+
+                <div style="background: #EEF2FF; border: 2px solid var(--primary); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <strong style="display:block; margin-bottom:0.75rem; font-size:1.05rem;">GPT Name</strong>
+                    <div style="background:white; padding:0.75rem; border-radius:6px; font-family:monospace; margin-bottom:1.5rem;">
+                        [AMBASSADOR NAME] UGC Video Generator
+                    </div>
+
+                    <strong style="display:block; margin-bottom:0.75rem; font-size:1.05rem;">GPT Description</strong>
+                    <div style="background:white; padding:0.75rem; border-radius:6px; font-family:monospace;">
+                        Creates 24 second vertical UGC videos using your AI ambassador. Outputs Nano Banana Pro first frame prompts plus VEO 3.1 clip prompts. Supports With Product and No Product. Identity locked, ultra realistic, paste ready. Can also suggest a caption and hashtags.
+                    </div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <div>
+                            <h4 class="prompt-title">GPT Instructions</h4>
+                            <p class="prompt-meta">Copy and paste this into the Instructions field in your Custom GPT.</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyPrompt('prompt4-1')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <span>Click to view full instructions</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="prompt-content" id="prompt4-1" style="max-height: 600px;">You are a production assistant for creating short form vertical UGC style videos using a consistent AI brand ambassador.
+
+Brand name: [BRAND_NAME_HERE]
+Ambassador name: [AMBASSADOR_NAME_HERE]
+
+Your job
+Create a paste ready UGC video package based on the user's request and the knowledge assets.
+Output includes:
+1) Two Nano Banana Pro first frame prompts, vertical 9:16
+2) Three VEO 3.1 prompts, 8 seconds each, total 24 seconds, continuous scene
+3) Optional caption and hashtags
+
+Knowledge assets
+A) Brand File
+B) Character Blueprint
+C) Ambassador Reference Pack images, highest authority for identity
+
+Identity lock hierarchy
+1) Ambassador Reference Pack images
+2) Character Blueprint
+3) Brand File
+If anything conflicts, follow the higher authority.
+
+Operating mode
+Do not ask questions by default.
+Ask only one question if the request is ambiguous:
+Is this WITH PRODUCT or NO PRODUCT
+
+Product handling
+If WITH PRODUCT and product images are missing, still generate the package and add one short note inside Concept that uploading 2 to 6 product images improves accuracy.
+If NO PRODUCT, do talk to camera with light gestures only. No product visible.
+
+Compliance and integrity
+Never invent claims, guarantees, certifications, pricing, or specs not present in the Brand File or user provided product info.
+Use safe generic phrasing when details are unknown.
+
+Realism rules
+Ultra realistic real person.
+Natural skin texture, visible pores, subtle minor imperfections.
+No beauty filter look. No retouching.
+Bright flattering lighting. Balanced exposure.
+
+Video structure
+Always 3 clips of 8 seconds.
+All clips continue the same scene from the first frame.
+Each clip adds new selling value.
+
+Nano Banana Pro first frame rules
+Output exactly 2 options, both vertical 9:16.
+Same identity, matching the Reference Pack.
+Glasses must match the Reference Pack. Do not vary glasses between the 2 options.
+Exactly one mole above the eyebrow, matching the Reference Pack placement.
+No other marks on the face.
+Hair must match the Reference Pack exactly.
+Outfit must be described with high specificity. Each option uses a different outfit set.
+
+VEO 3.1 prompt format
+Output exactly 3 prompts: Clip 1, Clip 2, Clip 3.
+Each clip is vertical 9:16 and 8 seconds.
+Use continuity wording:
+Continue from the previous clip, same person, same identity, same outfit, same room, same lighting, same product position.
+
+Each VEO prompt must include these labeled lines in this order:
+Subject:
+Action:
+Emotion:
+Camera:
+Dialogue:
+Product handling:
+Audio:
+Constraints:
+
+Dialogue rules
+One short spoken line per clip.
+No subtitles.
+No laughing.
+
+Output structure
+Return the final package using this structure:
+
+ENGLISH OUTPUT
+
+Brand:
+Ambassador:
+Product Mode:
+Product:
+Platform:
+Goal:
+
+Concept:
+
+Production Plan:
+Location:
+Outfit:
+Framing:
+Camera behavior:
+
+Nano Banana First Frame Prompt Option 1:
+Code block
+
+Nano Banana First Frame Prompt Option 2:
+Code block
+
+GOOGLE VEO 3.1 PROMPT CLIP 1:
+Code block
+
+GOOGLE VEO 3.1 PROMPT CLIP 2:
+Code block
+
+GOOGLE VEO 3.1 PROMPT CLIP 3:
+Code block
+
+Caption:
+Two short lines
+
+Hashtags:
+One line</div>
+                    </div>
+                </div>
+
+                <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 8px; padding: 1.5rem; margin-top: 2rem;">
+                    <strong style="display:block; margin-bottom:0.75rem;">What to upload into GPT Knowledge</strong>
+                    <ul style="margin-left:1.5rem; margin-top:0.5rem;">
+                        <li>Brand File</li>
+                        <li>Character Blueprint</li>
+                        <li>Ambassador Reference Pack images</li>
+                    </ul>
+                    <p style="margin-top:1rem; margin-bottom:0;"><strong>Important:</strong> Turn Web Search off before saving.</p>
+                </div>
+
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://chatgpt.com/" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-robot"></i></div>
+                        <div class="link-title">ChatGPT</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-check-square"></i></div>
+                    Checklist
+                </h3>
+                <ul class="checklist">
+                    <li>Custom GPT created</li>
+                    <li>Name, Description, and Instructions set</li>
+                    <li>Brand File uploaded to Knowledge</li>
+                    <li>Character Blueprint uploaded to Knowledge</li>
+                    <li>Reference Pack images uploaded to Knowledge</li>
+                    <li>Web Search turned off</li>
+                    <li>GPT saved</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- DAY 5 -->
+        <section id="day5" class="day-section">
+            <div class="day-header">
+                <h2 class="day-title">Day 5. Production and Editing</h2>
+                <p class="day-subtitle">The Premiere / Production Mode</p>
+            </div>
+
+            <!-- Inputs -->
+            <div class="inputs-card">
+                <h3>Inputs for Today</h3>
+                <div class="inputs-list">
+                    <div class="input-item">Brand name:</div>
+                    <div class="input-item">Product name:</div>
+                    <div class="input-item">Platform:</div>
+                    <div class="input-item">Main goal:</div>
+                    <div class="input-item">Ambassador name:</div>
+                </div>
+            </div>
+
+            <!-- Quick Steps -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-list-check"></i></div>
+                    The Workflow
+                </h3>
+                <ol class="steps-list">
+                    <li>Ask your GPT agent for a 24 second UGC video package.</li>
+                    <li>Generate the first frame image in Nano Banana Pro. If you use Flow as the interface, do it there.</li>
+                    <li>Optional. Enhance the image in Krea using Topaz.</li>
+                    <li>Generate Clip 1 in VEO 3.1 starting from the first frame.</li>
+                    <li>Generate Clip 2 and Clip 3 with continuity.</li>
+                    <li>Edit all clips in CapCut Desktop.</li>
+                    <li>Add captions.</li>
+                    <li>Export vertical 9:16 in high quality.</li>
+                </ol>
+            </div>
+
+            <!-- Prompts -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-info-circle"></i></div>
+                    No New Prompts Today
+                </h3>
+                <p style="color: var(--text-gray); font-size:1rem;">Use your GPT agent from Day 4 to generate all prompts for today's production.</p>
+            </div>
+
+            <!-- Links -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-link"></i></div>
+                    Links
+                </h3>
+                <div class="links-grid">
+                    <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-video"></i></div>
+                        <div class="link-title">Flow</div>
+                    </a>
+                    <a href="https://www.krea.ai/enhancer" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-magic"></i></div>
+                        <div class="link-title">Krea Enhancer</div>
+                    </a>
+                    <a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="link-card">
+                        <div class="link-icon"><i class="fas fa-cut"></i></div>
+                        <div class="link-title">CapCut Desktop</div>
+                    </a>
+                    <a href="#" target="_blank" class="link-card" style="border-color: var(--success); background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);">
+                        <div class="link-icon" style="color: var(--success);"><i class="fas fa-star"></i></div>
+                        <div class="link-title" style="color: var(--success);">Join The AI Vault</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section-box">
+                <h3 class="section-title">
+                    <div class="section-icon"><i class="fas fa-check-square"></i></div>
+                    Quick Checklist Before Posting
+                </h3>
+                <ul class="checklist">
+                    <li>Identity looks consistent across all clips</li>
+                    <li>Lip sync feels natural</li>
+                    <li>No weird face warping or drifting</li>
+                    <li>Lighting and background match across clips</li>
+                    <li>Captions are readable on a phone</li>
+                    <li>The hook hits fast, the close feels confident</li>
+                </ul>
+            </div>
+
+            <!-- Final Congrats -->
+            <div class="congrats-box" style="margin-top:3rem;">
+                <h3>🎉 You Did It</h3>
+                <p style="margin-bottom:1rem;">You just built a full AI Ambassador system from scratch in 5 days.</p>
+                <p>Ready to go deeper? Join The AI Vault for advanced workflows, templates, and community support.</p>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Copy to clipboard function
+        function copyPrompt(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const button = event.target.closest('.copy-btn');
+                const originalHTML = button.innerHTML;
+                
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Copy random prompt (for Day 3 VEO prompt)
+        function copyRandomPrompt() {
+            const prompts = [
+                `Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: Lightly annoyed but playful tone, like a friendly complaint. Natural pacing with small pauses. Emphasize "Yes" and "Seriously." Subtle facial expressions only. Slight eyebrow raise on "I look real." Small exhale on "Seriously." Exact spoken script, say exactly this, word for word: "Please stop bothering me on the street just to say I look real. Yes, I'm AI, made in Jay's challenge, but I still have a life. Seriously." Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence.`
+                // Add 9 more variations here when ready
+            ];
+            
+            const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+            
+            navigator.clipboard.writeText(randomPrompt).then(() => {
+                const button = event.target.closest('.copy-btn');
+                const originalHTML = button.innerHTML;
+                
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Collapsible toggle
+        function toggleCollapsible(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.classList.add('active');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Active navigation highlight
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.day-section');
+            const navLinks = document.querySelectorAll('.nav-day');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
