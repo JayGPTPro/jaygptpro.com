@@ -415,6 +415,35 @@
             transform: translateY(-2px);
         }
         
+        /* Collapsible Prompt Text */
+        .prompt-text-collapsible {
+            max-height: 200px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease;
+        }
+        
+        .prompt-text-collapsible.expanded {
+            max-height: none;
+        }
+        
+        .expand-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .expand-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        
         /* Fix Dark Mode Prompt Text */
         .prompt-text {
             background: rgba(255, 255, 255, 0.95) !important;
@@ -657,7 +686,7 @@
                             </button>
                         </div>
                         <p class="text-sm mb-4" style="color: var(--text-secondary);">Paste into ChatGPT. Fill placeholders with your brand info.</p>
-                        <pre id="prompt1-1" class="prompt-text">Act as a Senior Brand Strategist and AI Content Architect.
+                        <pre id="prompt1-1" class="prompt-text prompt-text-collapsible">Act as a Senior Brand Strategist and AI Content Architect.
 
 I will provide raw brand inputs for a product based ecommerce brand. Your job is to distill everything into a concise, decisive Brand File that will become the single source of truth for all future AI work, including avatar creation, image prompts, video prompts, posts, reels, UGC content, and blogs.
 
@@ -759,6 +788,9 @@ Assumption 3:
 
 Everything pasted below is my raw brand input. Analyze it deeply.
 RAW INPUT STARTS HERE:</pre>
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
                     </div>
 
                     <!-- Prompt 2 -->
@@ -770,7 +802,7 @@ RAW INPUT STARTS HERE:</pre>
                             </button>
                         </div>
                         <p class="text-sm mb-4" style="color: var(--text-secondary);">Paste into ChatGPT after receiving your Brand File.</p>
-                        <pre id="prompt1-2" class="prompt-text">Act as an expert Casting Director and AI Character Designer.
+                        <pre id="prompt1-2" class="prompt-text prompt-text-collapsible">Act as an expert Casting Director and AI Character Designer.
 
 I will paste a Brand File below. Your job is to create one single Character Blueprint for an AI Brand Ambassador. You must base everything strictly on the Brand File.
 
@@ -889,6 +921,9 @@ PROTOTYPE IDENTITY STRING
 Write one single short line for a quick square portrait test. Include only demographics plus the hard locked recognition marker plus hair. No personality. No camera moves. Add these realism tags at the end: raw photo, 35mm, natural skin texture, visible pores, minor imperfections.
 
 BRAND FILE STARTS HERE:</pre>
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
                     </div>
                 </div>
 
@@ -1012,7 +1047,7 @@ BRAND FILE STARTS HERE:</pre>
                             </button>
                         </div>
                         <p class="text-sm mb-4" style="color: var(--text-secondary);">Generate 15 image prompts for auditions. Run in Google Flow or Nano Banana Pro.</p>
-                        <pre id="prompt2-3" class="prompt-text">Act as an expert AI portrait prompt engineer for Nano Banana.
+                        <pre id="prompt2-3" class="prompt-text prompt-text-collapsible">Act as an expert AI portrait prompt engineer for Nano Banana.
 
 I will paste a Character Blueprint below. Your job is to create 15 copy paste ready prompts for generating 15 different candidate people for the AI Brand Ambassador.
 
@@ -1054,6 +1089,9 @@ SECTION B. SELECTION CHECKLIST
 Write a short checklist of what to look for when choosing the final character. Limit to 8 bullet points.
 
 CHARACTER BLUEPRINT STARTS HERE:</pre>
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
                     </div>
                 </div>
 
@@ -2067,6 +2105,20 @@ Give me 3 different UGC concepts for this product.</pre>
                 updateProgress();
                 
                 showToast('✅ All checklists reset!');
+            }
+        }
+
+        // Toggle Expand/Collapse for long prompts
+        function togglePromptExpand(buttonElement) {
+            const promptContainer = buttonElement.previousElementSibling;
+            const isExpanded = promptContainer.classList.contains('expanded');
+            
+            if (isExpanded) {
+                promptContainer.classList.remove('expanded');
+                buttonElement.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>Expand';
+            } else {
+                promptContainer.classList.add('expanded');
+                buttonElement.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>Collapse';
             }
         }
     </script>
