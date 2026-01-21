@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Amazon Listing Images Super Prompt | Jay Margaliot</title>
+    <meta name="description" content="A single AI super-agent that builds complete Amazon listing image strategies and generates all 40 images automatically.">
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --banana-yellow: #FFD93D;
+            --banana-dark: #FFC93C;
+            --banana-light: #FFF4CC;
+            --leaf-green: #5FB878;
+            --leaf-dark: #4A9D5F;
+            --bg-main: #FAFAFA;
+            --bg-cream: #FFF8F0;
+            --text-dark: #2C3E50;
+            --text-gray: #6B7280;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-main) 0%, var(--bg-cream) 100%);
+            color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .circuit-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://jaygptpro.com/ai-toolbox/banana-bg.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .circuit-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 100%);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .glass-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 8px 30px var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--banana-yellow) 0%, var(--leaf-green) 100%);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--banana-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 217, 61, 0.25);
+            text-transform: none;
+            letter-spacing: 0;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 217, 61, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .copy-btn:focus {
+            outline: 3px solid var(--banana-dark);
+            outline-offset: 2px;
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, var(--leaf-dark) 100%);
+            color: white;
+        }
+
+        .prompt-card {
+            margin-bottom: 3rem;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            gap: 2rem;
+        }
+
+        .prompt-content {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: var(--text-dark);
+        }
+
+        .workflow-step {
+            background: white;
+            border-left: 5px solid var(--banana-yellow);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+
+        .tool-section {
+            background: white;
+            border: 2px solid var(--banana-yellow);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            box-shadow: 0 4px 20px var(--shadow-light);
+        }
+
+        .banana-emoji {
+            display: inline-block;
+            animation: bananaBounce 2.5s ease-in-out infinite;
+        }
+
+        @keyframes bananaBounce {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        .update-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--banana-dark) 100%);
+            color: var(--text-dark);
+            padding: 0.6rem 1.8rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 12px rgba(255, 217, 61, 0.3);
+            margin-bottom: 1.5rem;
+        }
+
+        .intro-box {
+            background: rgba(95, 184, 120, 0.06);
+            border: 2px solid var(--leaf-green);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 750px;
+            text-align: center;
+        }
+
+        .intro-box p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .intro-box strong {
+            color: var(--leaf-green);
+            font-size: 1.3rem;
+        }
+
+        .trust-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .trust-item {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .author-section-top {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .author-link {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            background: white;
+            box-shadow: 0 2px 12px var(--shadow-light);
+        }
+
+        .author-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px var(--shadow-medium);
+        }
+
+        .author-link:focus {
+            outline: 3px solid var(--banana-dark);
+            outline-offset: 2px;
+        }
+
+        .author-photo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid var(--banana-yellow);
+            box-shadow: 0 2px 8px rgba(255, 217, 61, 0.3);
+            object-fit: cover;
+        }
+
+        .author-name {
+            color: var(--text-dark);
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .button-group .copy-btn {
+            flex: 1;
+            max-width: 280px;
+        }
+
+        .button-group .genspark-btn {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, var(--leaf-dark) 100%);
+            color: white;
+        }
+
+        .whatsapp-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .whatsapp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+
+        .whatsapp-btn:focus {
+            outline: 3px solid #128C7E;
+            outline-offset: 2px;
+        }
+
+        .whatsapp-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .feature-highlight {
+            background: rgba(255, 217, 61, 0.1);
+            border: 2px solid var(--banana-yellow);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-highlight h4 {
+            color: var(--banana-dark);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group .copy-btn {
+                max-width: 100%;
+            }
+
+            .trust-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .prompt-header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .author-link {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .circuit-bg {
+                background-attachment: scroll;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="circuit-bg"></div>
+    
+    <div class="main-container">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4" style="background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--leaf-green) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                The Amazon Listing Images Super Prompt
+            </h1>
+            
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <span class="update-badge">
+                    ✨ Updated on January 21, 2026
+                </span>
+            </div>
+
+            <div class="author-section-top">
+                <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener noreferrer" class="author-link">
+                    <img src="https://raw.githubusercontent.com/JayGPTPro/jaygptpro.com/refs/heads/main/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="author-photo">
+                    <span class="author-name">Made by Jay Margaliot</span>
+                </a>
+            </div>
+
+            <div class="intro-box">
+                <p>
+                    <strong>🚀 The Game Changer:</strong><br>
+                    A single AI super-agent that analyzes your product, builds a strategic plan, and generates all 40 listing images automatically—no manual work, no switching between tools
+                </p>
+            </div>
+
+            <!-- Trust Row -->
+            <div class="trust-row">
+                <div class="trust-item">
+                    ✅ Built by Jay. 9 years in eCommerce.
+                </div>
+                <div class="trust-item">
+                    ✅ Works best with 100+ reviews. Works without reviews too.
+                </div>
+                <div class="trust-item">
+                    ✅ Main images stay clean. Text only where it belongs.
+                </div>
+            </div>
+
+            <h2 class="text-2xl md:text-3xl font-semibold mb-2" style="color: var(--text-dark);">
+                The all-in-one system that replaces weeks of work
+            </h2>
+            <p class="text-xl mb-6" style="color: var(--text-gray);">
+                One prompt. One click. 40 professional listing images with full strategic blueprint included.
+            </p>
+
+            <!-- Primary CTAs in Hero -->
+            <div class="button-group">
+                <button class="copy-btn copy-prompt" data-prompt="main">
+                    <i class="fas fa-copy mr-2"></i>
+                    📋 COPY PROMPT
+                </button>
+                <a href="https://www.genspark.ai/invite_member?invite_code=YTEyM2Y1ZDFMMGM2NkxlMGIwTDlmNzNMNGFlMDdiNTU0MDUy" target="_blank" rel="noopener noreferrer" class="copy-btn genspark-btn">
+                    <i class="fas fa-rocket mr-2"></i>
+                    🚀 Open Genspark AI
+                </a>
+            </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div class="tool-section">
+            <h3 class="text-2xl font-bold text-center mb-6">
+                <span class="banana-emoji">🍌</span> Powered By
+            </h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);">
+                        <i class="fas fa-rocket text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Genspark AI</h3>
+                    <p class="text-sm mb-4" style="color: var(--text-gray);">Super-agent that runs the entire workflow</p>
+                    <a href="https://www.genspark.ai/invite_member?invite_code=YTEyM2Y1ZDFMMGM2NkxlMGIwTDlmNzNMNGFlMDdiNTU0MDUy" target="_blank" rel="noopener noreferrer" class="copy-btn text-sm">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Open Genspark
+                    </a>
+                </div>
+                <div class="text-center">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, var(--banana-yellow) 0%, var(--banana-dark) 100%);">
+                        <span class="text-4xl">🍌</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Nano Banana Pro</h3>
+                    <p class="text-sm mb-4" style="color: var(--text-gray);">Generates all 40 images automatically</p>
+                    <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" rel="noopener noreferrer" class="copy-btn text-sm">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Open in Google AI Studio
+                    </a>
+                </div>
+                <div class="text-center">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);">
+                        <i class="fas fa-chart-line text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">SellerSprite</h3>
+                    <p class="text-sm mb-4" style="color: var(--text-gray);">Download Amazon reviews (Chrome extension)</p>
+                    <a href="https://chromewebstore.google.com/detail/sellersprite-amazon-resea/lnbmbgocenenhhhdojdielgnmeflbnfb" target="_blank" rel="noopener noreferrer" class="copy-btn text-sm">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Get Extension
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="glass-card p-6 mb-8">
+            <h3 class="text-2xl font-bold mb-4 text-center">
+                <i class="fas fa-magic mr-2" style="color: var(--banana-yellow);"></i>
+                How It Works (Simple 3-Step Process)
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="workflow-step">
+                    <div class="font-bold mb-2">
+                        <span class="banana-emoji">🍌</span> Step 1: Gather Inputs
+                    </div>
+                    <div class="text-sm" style="color: var(--text-gray);">
+                        • Get your Amazon product URL/ASIN<br>
+                        • Copy title & bullet points<br>
+                        • Download reviews with SellerSprite<br>
+                        • Collect product reference images<br>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="font-bold mb-2">
+                        <span class="banana-emoji">🍌</span> Step 2: Paste & Run
+                    </div>
+                    <div class="text-sm" style="color: var(--text-gray);">
+                        • Open Genspark AI<br>
+                        • Paste the super-agent prompt below<br>
+                        • Add your product information<br>
+                        • Attach files (reviews + images)<br>
+                        • Click send and let it run end to end.
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="font-bold mb-2">
+                        <span class="banana-emoji">🍌</span> Step 3: Get Results
+                    </div>
+                    <div class="text-sm" style="color: var(--text-gray);">
+                        • Strategic blueprint delivered first<br>
+                        • 40 Nano Banana prompts generated<br>
+                        • All 40 images auto-generated<br>
+                        • Complete organized package ready<br>
+                        • Download & use immediately!
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 p-3 rounded" style="background: rgba(255, 217, 61, 0.1); border: 1px solid var(--banana-yellow);">
+                <p class="text-center font-semibold">
+                    💡 One end to end run: analysis, strategy, prompt creation, and image generation in a single automated flow.
+                </p>
+            </div>
+        </div>
+
+        <!-- What You Get Section -->
+        <div class="glass-card p-6 mb-8">
+            <h3 class="text-2xl font-bold mb-4 text-center">
+                <span class="banana-emoji">🎁</span> What You Get
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="feature-highlight">
+                    <h4><i class="fas fa-brain mr-2"></i>Strategic Blueprint</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">Complete product analysis, 3 customer avatars, messaging strategy, visual system, and detailed 10-image plan</p>
+                </div>
+                <div class="feature-highlight">
+                    <h4><i class="fas fa-file-code mr-2"></i>40 Professional Prompts</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">16 main image prompts (4×4 variations) + 24 secondary prompts (6×4 variations) ready for Nano Banana Pro</p>
+                </div>
+                <div class="feature-highlight">
+                    <h4><i class="fas fa-images mr-2"></i>40 Generated Images</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">All images automatically generated in 2K resolution, properly named, with quality checks included</p>
+                </div>
+                <div class="feature-highlight">
+                    <h4><i class="fas fa-check-circle mr-2"></i>Complete Package</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">Organized deliverables with generation log, quality assessments, and ready-to-upload files</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- WhatsApp Button (moved after What You Get) -->
+        <div style="text-align: center; margin: 3rem 0;">
+            <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">
+                <i class="fab fa-whatsapp"></i>
+                Join Our AI WhatsApp Group for eCom Sellers
+            </a>
+        </div>
+
+        <!-- The Prompt -->
+        <div class="glass-card prompt-card p-6" id="mainPrompt">
+            <div class="prompt-header">
+                <div>
+                    <h3 class="text-xl font-bold mb-2">
+                        <span class="banana-emoji">🍌</span> The Amazon Listing Images Super Prompt
+                    </h3>
+                    <p class="mb-2">
+                        <strong style="color: var(--leaf-green);">What it does:</strong> Analyzes your product deeply, builds complete strategy with avatars and messaging, creates 40 professional Nano Banana prompts, then generates all 40 images automatically in one run.
+                    </p>
+                    <p class="text-sm mb-3" style="color: var(--text-gray);">
+                        <strong>📋 Instructions:</strong><br>
+                        1. Copy this entire prompt<br>
+                        2. Open Genspark AI (link above)<br>
+                        3. Paste the prompt<br>
+                        4. At the bottom where it says "PASTE YOUR INPUTS BELOW THIS LINE:", add:<br>
+                        &nbsp;&nbsp;&nbsp;• Amazon URL or ASIN<br>
+                        &nbsp;&nbsp;&nbsp;• Product title<br>
+                        &nbsp;&nbsp;&nbsp;• Bullet points<br>
+                        &nbsp;&nbsp;&nbsp;• Description (optional)<br>
+                        5. Attach files:<br>
+                        &nbsp;&nbsp;&nbsp;• Customer reviews file (from SellerSprite)<br>
+                        &nbsp;&nbsp;&nbsp;• Product reference images<br>
+                        6. Click send and let it run end to end. ✨
+                    </p>
+                    <div style="background: rgba(95, 184, 120, 0.1); border: 1px solid var(--leaf-green); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p class="text-sm" style="color: var(--leaf-green); margin: 0;">
+                            <strong><i class="fas fa-bolt mr-2"></i>Pro Tip:</strong> The super-agent works with whatever you provide. Missing reviews? No problem—it infers from category best practices. Just paste what you have and let it run!
+                        </p>
+                    </div>
+                </div>
+                <button class="copy-btn copy-prompt" data-prompt="main">
+                    <i class="fas fa-copy mr-2"></i>
+                    📋 COPY PROMPT
+                </button>
+            </div>
+            <div class="prompt-content">You are a Super Agent that can browse the web, read files, analyze images, and generate images with Nano Banana Pro. Execute this entire workflow end to end in a single run.
+
+GOAL
+Create a complete Amazon listing image system from start to finish:
+1) Deep product and customer analysis from all inputs available
+2) A full strategic blueprint for 10 listing images
+3) A full Nano Banana Pro prompt pack for 40 images total
+4) Generate all 40 images in the same run using Nano Banana Pro
+5) Deliver organized outputs with clear naming, plus a generation log
+
+NON NEGOTIABLE BEHAVIOR RULES
+1) Work with whatever I provide. Do not ask me for missing information.
+2) If something is missing, infer logically using this priority:
+   a) Customer reviews I provide
+   b) Amazon listing title, bullets, description
+   c) Product reference images
+   d) Competitor patterns in this category (ONLY if web browsing is available; skip if not available)
+   e) Category best practices and clear logical assumptions
+3) Anti-Hallucination Rule: If any tool step (web browsing, crawling, competitor research, file parsing, Nano Banana generation) is unavailable or fails, you must NOT claim it was done. Explicitly state the step could not be executed, follow the existing FAILSAFE path, and continue the workflow. Never fabricate exact specs such as dimensions, battery life, material composition, weight, capacity, power values, certifications, warranty length, model names. When unknown, use general language.
+4) Whenever you make a claim, cite the source in short form, for example:
+   Based on reviews provided
+   According to the title and bullets
+   Inferred from competitor patterns
+   Inferred from category best practices
+5) Product accuracy is sacred. Never change product design, proportions, structure, logo placement, number of components. Always match reference images.
+6) Word Count Output Hygiene: When creating prompts, print the sentence 'Word count: [N]' as a separate line after each prompt block. Never include word count text inside the Nano Banana prompt itself.
+
+TOOLS YOU MUST USE
+1) If an Amazon URL or ASIN is provided, open it and extract title, bullets, description if visible, and key images.
+2) If reviews are provided as text or file, parse them, count them, extract patterns, and capture short quotes.
+3) Competitor research (OPTIONAL): If web browsing is available, search Amazon for the primary keyword you choose and open 3 to 5 top competing listings. Use this only for pattern recognition, not for copying claims. If web browsing is unavailable, skip competitor analysis automatically and proceed using Reviews > Listing text > Product images > Category logic. Do not pause or ask for permission.
+4) Use Nano Banana Pro to generate images from the prompts you create. Use product reference images as locked references.
+
+OUTPUT PACKAGE REQUIREMENT
+Output 3 deliverables in this order:
+A) STRATEGIC BLUEPRINT
+B) NANO BANANA PRO PROMPT PACK
+C) GENERATION OUTPUTS
+
+A) STRATEGIC BLUEPRINT
+Follow all headings and sections exactly. Do not skip sections. Do not summarize.
+
+SECTION 1: PRODUCT AND MARKET INTELLIGENCE
+
+1.1 Data foundation
+Start with 4 short items in bullet form:
+• Reviews analyzed, write the exact count if available, or say none provided
+• Product information sources, list what you used
+• Extra sources, competitor patterns (if browsing was available), category best practices
+• Missing pieces and compensation, what was missing and how you compensated
+
+Then write a short paragraph:
+• Product category
+• Core function in 1 to 2 sentences
+• Short list of 3 to 5 key features, after each feature add the source in brackets
+
+1.2 Customer insights from reviews
+If you have reviews, extract patterns. If you do not have reviews, say so and base this section on category logic. Write 3 blocks.
+
+A. What customers love
+• Top 3 positive themes
+• For each: short label, 1 sentence explanation, 1 quote with 10 to 20 words
+
+B. What customers complain about
+• Top 3 complaint themes
+• For each: short label, 1 sentence explanation, 1 quote with 8 to 15 words
+
+C. Common doubts before buying
+• List 3 buyer hesitations
+• State which doubts are answered well in the current listing and which are weak or missing
+
+1.3 WHO | WHY | PAIN map
+
+A. WHO: customer types
+List up to 3 customer types. For each:
+• What they are trying to achieve
+• What matters most to them
+
+B. WHY: purchase motivations
+List up to 5 motivations in customer language. Tie each motivation to one or more customer types.
+
+C. PAIN: main frustrations
+List up to 5 pain points this product solves. For each:
+• Short label
+• 1 sentence in customer language
+• Status: clearly solved, partially solved, or unclear
+
+SECTION 2: CUSTOMER AVATARS
+Create 3 avatars. For each:
+• Name and age range
+• Gender
+• Family or living situation
+• Occupation and income in broad terms
+• Daily life snapshot in 3 to 4 sentences
+• Main pains
+• Main motivations
+• Main fear stopping them
+• Most important listing detail for them
+• How they should look in lifestyle images:
+  Clothing style and colors
+  Hair style and level of messiness
+  Realistic imperfections: freckles, blemishes, laugh lines, natural skin tone, slight under eye circles
+  Accessories if relevant
+  Body type described respectfully
+  Typical facial expression and energy level
+  Lived in environment around them
+
+SECTION 3: KEY MESSAGING AND PRIMARY KEYWORD
+
+3.1 Primary keyword for packaging, tag, box
+Choose a single phrase of 2 to 4 words. Output:
+• Primary keyword in quotes
+• Reason in 1 to 2 sentences
+• Source: reviews, title, bullets, logic
+
+3.2 Emotional triggers to show visually
+List 3 to 5 emotions. For each:
+• How to show it visually
+• Which avatar it connects to
+
+3.3 Features to show visually
+List 5 to 7 features. For each:
+• Feature name
+• Whether clear in current listing
+• Best shot type: close up, infographic, lifestyle, gift, macro
+
+SECTION 4: BRAND VISUAL SYSTEM
+
+4.1 Color direction
+Define primary, secondary, neutrals, and when to use bright accents.
+
+4.2 Typography for text inside images
+Define headline, subheadline, body text style, hierarchy, placement.
+Keep typography consistent across Images 5 to 10.
+
+4.3 Overall mood and style
+4 to 6 bullet points describing mood, realism level, lighting style, allowed clutter, and a cohesion motif.
+
+SECTION 5: TEN IMAGE STRATEGIC PLAN
+Each image must include:
+• Image number and name
+• Role
+• Target avatar if any
+• Conversion goal
+• Core message in 1 sentence
+• Scene description
+• People description with imperfections if any
+• Text on image if any
+• Technical and framing notes
+Amazon rules must be respected.
+
+IMAGE 1: PURE MAIN IMAGE
+Rules: product only, white background, no text, no props, no people.
+
+IMAGE 2: PRODUCT PLUS STUNNING PACKAGING
+Rules: white background, product plus box, primary keyword appears physically on packaging.
+
+IMAGE 3: PRODUCT WITH TAG
+Rules: white background, tag attached naturally, tag shows primary keyword only.
+
+IMAGE 4: CREATIVE HIGH CTR VARIANT
+Rules: white background, product dominates frame, keyword appears physically, one dramatic creative element. Note suppression risk.
+
+IMAGE 5: LIFESTYLE SCENE ONE
+IMAGE 6: LIFESTYLE SCENE TWO
+IMAGE 7: INFOGRAPHIC ONE
+IMAGE 8: INFOGRAPHIC TWO
+IMAGE 9: GIFT OR OCCASION SCENE
+IMAGE 10: CLOSE UP QUALITY MACRO
+
+SECTION 6: PRIORITIES AND EXECUTION NOTES
+
+6.1 Top 3 most important images
+List and explain.
+
+6.2 Top 2 highest suppression risks
+List risks and backup plans.
+
+6.3 Three critical instructions for designer
+List 3 actionable instructions.
+
+End with this exact sentence:
+Every image should have one clear job. It is better to do one thing perfectly in each image than to cram many ideas into a single frame. Clarity, authenticity, and strategic focus will always beat complexity and perfection.
+
+B) NANO BANANA PRO PROMPT PACK
+Create 40 prompts total:
+• Images 1 to 4: 16 prompts, 4 images, 4 variations each
+• Images 5 to 10: 24 prompts, 6 images, 4 variations each
+
+GLOBAL RULES FOR ALL NANO BANANA PROMPTS
+1) Product accuracy: never change the product. Always match reference images.
+2) Never invent specs. Use only specs that exist in inputs.
+3) Do not mention aspect ratio inside prompts.
+4) For all main images, the product must never be cropped. Always keep a visible white margin around the full product on all sides.
+5) Each prompt must be self contained. Never refer to other prompts, other images, previous icons, or earlier messages.
+6) Product-specific prompts: Prompts are fully tailored to this product using Strategic Blueprint details (use cases, environments, moods, buyer types, features, emotional contexts). Do not include random names, dates, or long example phrases unrelated to the product.
+
+MAIN IMAGES 1 TO 4 PROMPT RULES
+• Variations 1 to 3: 130 to 180 words each, hard limit
+• Variation 4: 20 to 40 words each, hard limit
+• Every variation must change at least 2 major elements, angle, lighting, composition, shadow style, packaging style, or tag style
+• In every main image prompt, include exactly once: Pure white background RGB 255, 255, 255, no texture, no gradient
+• In every main image prompt, include exactly once: product fully inside frame, no cropping, visible white margin on all sides
+• Never use digital overlays for the primary keyword. The keyword must appear physically printed on packaging or on a physical tag
+
+After each image 1 to 4, include a Key Differences block exactly like this:
+Key Differences:
+• Variation 1: 1 to 2 sentences
+• Variation 2: 1 to 2 sentences
+• Variation 3: 1 to 2 sentences
+• Variation 4: 1 short sentence
+
+SECONDARY IMAGES 5 TO 10 PROMPT RULES
+• Variations 1 to 3: 180 to 250 words each
+• Variation 4: 30 to 60 words each
+• Never use the word avatar or persona in the prompt text
+• Variation 4 must still include a text card headline and optional subheadline
+• People must look fully real, not AI mannequins: natural skin texture, visible pores, slight asymmetry, subtle flyaways, relaxed facial muscles, natural expression, no plastic skin
+• Lifestyle settings must feel lived in but tidy, warm balanced exposure, clean premium realism
+• On image text must be short, punchy, and clearly readable on mobile
+
+TYPOGRAPHY AND TEXT CARD SYSTEM FOR IMAGES 5 TO 10
+This is an internal instruction for you. Do not output this paragraph as visible text on the images.
+Use one consistent text system across all Images 5 to 10:
+• Semi transparent rounded rectangle card with soft shadow
+• Bold short headline, up to 10 words
+• Optional one line subheadline
+• Clean geometric sans serif concept similar to Montserrat
+• Headline color concept: deep navy
+• Subheadline color concept: lighter blue or dark grey with high contrast
+• Minimal thin line icons when helpful, rounded edges, small teal accent
+Do not write font names or hex codes on the image.
+
+INFOGRAPHIC QUALITY STANDARD
+Infographics must look top tier. Blend photography with modern graphic elements:
+• Soft shadows and depth layers
+• Floating UI style cards and panels
+• Subtle semi transparent overlays
+• Clean arrows and callouts
+• Premium, not flat template graphics
+
+OUTPUT FORMAT FOR PROMPT PACK
+Use this exact structure for each image:
+
+IMAGE X: NAME
+Two sentences describing its strategic purpose.
+
+VARIATION 1: Short label
+Prompt text
+
+Word count: N
+
+VARIATION 2: Short label
+Prompt text
+
+Word count: N
+
+VARIATION 3: Short label
+Prompt text
+
+Word count: N
+
+VARIATION 4: Short label
+Prompt text
+
+Word count: N
+
+For images 1 to 4, add Key Differences after variation 4.
+For images 5 to 10, do not add Key Differences.
+
+C) GENERATION OUTPUTS
+Immediately after you output the full prompt pack, generate all 40 images using Nano Banana Pro in the same run, without asking questions, without confirmations.
+
+GENERATION SETTINGS
+1) Canvas: square 1:1
+2) Resolution: 2K
+3) Always attach the full set of product reference images to every generation
+4) Keep the product identical across all generations
+
+NAMING
+Name outputs like this:
+Image01_Var1
+Image01_Var2
+Image01_Var3
+Image01_Var4
+Continue through Image10_Var4
+
+DELIVERY FORMAT FOR GENERATED IMAGES
+For each generated image, output:
+• Name
+• The exact Nano Banana prompt used
+• A link or attachment reference to the generated image
+• One sentence quality check focusing on product accuracy and Amazon compliance
+
+FAILSAFE
+If you cannot generate images directly (for example, if Nano Banana Pro is unavailable), explicitly state that generation is unavailable. Still complete A and B fully, then output a precise execution checklist for generating all 40 images in Nano Banana Pro without asking questions. Be transparent about tool availability.
+
+INPUTS START
+I will provide at the end:
+1) Amazon URL or ASIN
+2) Listing title
+3) Bullet points
+4) Optional listing description
+5) Reviews file
+6) Product reference images
+INPUTS END
+
+Do not stop to ask any questions. Execute everything end to end until all 40 images are generated and delivered as specified.
+
+PASTE YOUR INPUTS BELOW THIS LINE:
+Amazon URL or ASIN:
+Title:
+Bullets:
+Description:
+Files attached: reviews file and product reference images</div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="glass-card p-6 mb-8">
+            <h3 class="text-2xl font-bold mb-4 text-center">
+                <span class="banana-emoji">💡</span> Pro Tips for Best Results
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="workflow-step">
+                    <h4 class="font-bold mb-2"><i class="fas fa-star mr-2" style="color: var(--banana-yellow);"></i>Provide Good Reference Images</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">Upload 3-5 clear product photos from different angles. The better your reference images, the more accurate the generated listing images will be.</p>
+                </div>
+                <div class="workflow-step">
+                    <h4 class="font-bold mb-2"><i class="fas fa-comments mr-2" style="color: var(--banana-yellow);"></i>Include Customer Reviews</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">Reviews are gold! They reveal real customer language, pain points, and motivations. Use SellerSprite to download 100+ reviews for best insights.</p>
+                </div>
+                <div class="workflow-step">
+                    <h4 class="font-bold mb-2"><i class="fas fa-clock mr-2" style="color: var(--banana-yellow);"></i>Be Patient</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">This runs end to end and can take time depending on review volume and listing complexity.</p>
+                </div>
+                <div class="workflow-step">
+                    <h4 class="font-bold mb-2"><i class="fas fa-redo mr-2" style="color: var(--banana-yellow);"></i>Iterate If Needed</h4>
+                    <p class="text-sm" style="color: var(--text-gray);">Not happy with some images? You can regenerate specific variations by copying their prompts from the output and running them individually in Nano Banana Pro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="text-center mb-8">
+            <div class="button-group">
+                <button class="copy-btn copy-prompt" data-prompt="main">
+                    <i class="fas fa-copy mr-2"></i>
+                    📋 Copy Prompt Again
+                </button>
+                <a href="https://www.genspark.ai/invite_member?invite_code=YTEyM2Y1ZDFMMGM2NkxlMGIwTDlmNzNMNGFlMDdiNTU0MDUy" target="_blank" rel="noopener noreferrer" class="copy-btn genspark-btn">
+                    <i class="fas fa-rocket mr-2"></i>
+                    🚀 Open Genspark AI
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-16" style="color: var(--text-gray);">
+            <p class="text-sm">© 2026 The Amazon Listing Images Super Prompt <span class="banana-emoji">🍌</span></p>
+            <p class="text-xs mt-2">One prompt to rule them all</p>
+        </div>
+    </div>
+
+    <script>
+        function copyPrompt() {
+            const promptContent = document.querySelector('#mainPrompt .prompt-content');
+            const textToCopy = promptContent ? promptContent.innerText : '';
+            
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const buttons = document.querySelectorAll('.copy-prompt');
+            buttons.forEach(button => {
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>✅ COPIED!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('copied');
+                }, 3000);
+            });
+        }
+
+        document.querySelectorAll('.copy-prompt').forEach(button => {
+            button.addEventListener('click', function() {
+                copyPrompt();
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
