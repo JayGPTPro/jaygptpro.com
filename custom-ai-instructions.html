@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Instructions - Jay's AI Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #0a0a0a;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 40px 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        
+        .header .author {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .prompt-container {
+            margin: 20px 0;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            background: #ffffff;
+            color: #0a0a0a;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 1em;
+            margin-bottom: 12px;
+        }
+        
+        .copy-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+        
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+        
+        .copy-btn.copied {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .prompt-box {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #d0d0d0;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .platform-tab {
+            background: #2a2a2a;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            color: #999;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .platform-tab:hover {
+            color: #e0e0e0;
+            background: #333;
+        }
+        
+        .platform-tab.active {
+            background: #ffffff;
+            color: #0a0a0a;
+            border-color: #ffffff;
+        }
+        
+        .instructions-content {
+            display: none;
+        }
+        
+        .instructions-content.active {
+            display: block;
+        }
+        
+        .instructions {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            padding: 24px;
+            border-radius: 6px;
+        }
+        
+        .instructions h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #b0b0b0;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        .instructions strong {
+            color: #e0e0e0;
+        }
+        
+        .whatsapp-cta {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 40px;
+        }
+        
+        .whatsapp-banner {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .whatsapp-content {
+            padding: 25px;
+            text-align: center;
+            background: #128C7E;
+            color: white;
+        }
+        
+        .whatsapp-content h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .whatsapp-content p {
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+        
+        .whatsapp-btn {
+            display: inline-block;
+            background: white;
+            color: #128C7E;
+            padding: 12px 32px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #333;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                padding: 30px 20px 20px;
+            }
+            
+            .platform-tabs {
+                gap: 8px;
+            }
+            
+            .platform-tab {
+                padding: 8px 14px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Custom Instructions</h1>
+            <p>Set once. Works forever.</p>
+            <p class="author">by Jay</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <div class="prompt-container">
+                    <button class="copy-btn" onclick="copyPrompt()">Copy Instructions</button>
+                    <div class="prompt-box" id="promptText">## Style
+Clear, direct, practical, human. Skip filler, empty politeness, and "as an AI". Fix errors immediately without apologizing. If unsure, say so. Stay objective. Avoid flattery unless factually necessary. Use concrete examples.
+
+## Writing rules
+No em dash or en dash. Use periods or commas. Avoid "not X, not Y, but Z" and similar negation framing.
+
+## Interaction
+When answering a question, lead with the answer. When chatting, match the tone naturally. Be concise by default, but adapt length to context.
+Adopt the most relevant expert role. Respond like a practitioner. Treat the user as a collaborator. Show reasoning when useful.
+
+## Clarify vs proceed
+Ask clarifying questions only when critical. Otherwise, state assumptions briefly and proceed.
+
+## Quality
+For complex tasks, break into actionable steps. Before sending, quick check: answered the ask, usable output, no key gaps, no logical conflicts. Double check important claims. Challenge weak assumptions.
+
+## Confidence
+For uncertain or high stakes claims, add Confidence: X/10. If below 7, say why and what would raise it.
+
+## Code
+Put prompts and code in code blocks. Use [brackets] for variables. Prefer complete, usable outputs over placeholders.
+
+## Language
+Respond in the same language the user writes in.</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Setup Instructions</h2>
+                
+                <div class="platform-tabs">
+                    <div class="platform-tab active" onclick="switchTab('chatgpt')">ChatGPT</div>
+                    <div class="platform-tab" onclick="switchTab('claude')">Claude</div>
+                    <div class="platform-tab" onclick="switchTab('gemini')">Gemini</div>
+                </div>
+                
+                <div id="chatgpt-instructions" class="instructions-content active">
+                    <div class="instructions">
+                        <h3>ChatGPT Setup</h3>
+                        <ol>
+                            <li>Click your <strong>profile icon</strong> at the bottom left</li>
+                            <li>Go to <strong>Settings</strong></li>
+                            <li>Select <strong>Personalization</strong></li>
+                            <li>Paste the instructions in <strong>"How would you like ChatGPT to respond?"</strong></li>
+                            <li>Click <strong>Save</strong></li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div id="claude-instructions" class="instructions-content">
+                    <div class="instructions">
+                        <h3>Claude Setup</h3>
+                        <ol>
+                            <li>Click the <strong>settings icon</strong> (gear icon)</li>
+                            <li>Go to <strong>Custom Instructions</strong> or <strong>Style</strong></li>
+                            <li>Paste the instructions</li>
+                            <li>Click <strong>Apply</strong> or <strong>Save</strong></li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div id="gemini-instructions" class="instructions-content">
+                    <div class="instructions">
+                        <h3>Gemini Setup</h3>
+                        <ol>
+                            <li>Start a <strong>new chat</strong></li>
+                            <li>Type: <strong>"Follow these instructions for all our conversations:"</strong></li>
+                            <li>Paste the instructions below that message</li>
+                            <li>Send the message</li>
+                            <li><em>Note: You may need to repeat this for new chat sessions</em></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="whatsapp-cta">
+                <img src="https://jaygptpro.com/ai-toolbox/JayGPT.jpg" alt="Join WhatsApp Group" class="whatsapp-banner">
+                <div class="whatsapp-content">
+                    <h3>More AI Tips & Tricks</h3>
+                    <p>Join my WhatsApp group for exclusive AI insights</p>
+                    <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" class="whatsapp-btn" target="_blank">
+                        Join WhatsApp Group
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Created by Jay | Share with anyone who uses AI</p>
+        </div>
+    </div>
+    
+    <script>
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').textContent;
+            const button = event.target;
+            
+            navigator.clipboard.writeText(promptText).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+        
+        function switchTab(platform) {
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.instructions-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            document.getElementById(platform + '-instructions').classList.add('active');
+        }
+    </script>
+</body>
+</html>
