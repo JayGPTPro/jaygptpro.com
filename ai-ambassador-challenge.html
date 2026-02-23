@@ -1,722 +1,775 @@
- 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Build Your AI Ambassador in 5 Days</title>
-	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<script data-goatcounter="https://ambassador.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your AI Ambassador in 5 Days</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script data-goatcounter="https://ambassador.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     <style>
-    	:root {
-        	--bg-primary: #ffffff;
-        	--bg-secondary: #f9fafb;
-        	--text-primary: #1f2937;
-        	--text-secondary: #6b7280;
-        	--border-color: #e5e7eb;
-        	--accent-color: #3b82f6;
-     	   --success-color: #10b981;
-           
-        	--day1-color: #3b82f6;
-        	--day2-color: #8b5cf6;
-        	--day3-color: #ef4444;
-        	--day4-color: #10b981;
-        	--day5-color: #ec4899;
-    	}
-       
-    	[data-theme="dark"] {
-        	--bg-primary: #1f2937;
-        	--bg-secondary: #111827;
-        	--text-primary: #f9fafb;
-        	--text-secondary: #9ca3af;
-        	--border-color: #374151;
-        	--accent-color: #60a5fa;
-        	--success-color: #34d399;
-    	}
-       
-    	body {
-        	background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-        	color: var(--text-primary);
-      	  transition: background 0.5s ease, color 0.3s ease;
-    	}
-       
-    	.section-card {
-        	background-color: var(--bg-secondary);
-        	border: 1px solid var(--border-color);
-        	box-shadow: 0 4px 20px rgba(0,0,0,0.08);
- 	       transition: all 0.3s ease;
-        	border-radius: 20px;
-    	}
-       
-    	.section-card:hover {
-        	box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        	transform: translateY(-2px);
-    	}
-       
-    	/* Gradient Text for Day Titles */
-    	.gradient-text-day1 {
-        	background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        	-webkit-background-clip: text;
-        	-webkit-text-fill-color: transparent;
-        	background-clip: text;
-    	}
-       
-    	.gradient-text-day2 {
-        	background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        	-webkit-background-clip: text;
-	        -webkit-text-fill-color: transparent;
-        	background-clip: text;
-    	}
-       
-    	.gradient-text-day3 {
-        	background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        	-webkit-background-clip: text;
-    	    -webkit-text-fill-color: transparent;
-        	background-clip: text;
-    	}
-       
-    	.gradient-text-day4 {
-        	background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        	-webkit-background-clip: text;
-        	-webkit-text-fill-color: transparent;
-        	background-clip: text;
-    	}
-       
-    	.gradient-text-day5 {
-        	background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
-        	-webkit-background-clip: text;
-        	-webkit-text-fill-color: transparent;
-        	background-clip: text;
-    	}
-       
-    	/* Hero Section - Gradient Text */
-    	.hero-gradient-text {
-        	background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        	-webkit-background-clip: text;
-        	-webkit-text-fill-color: transparent;
-        	background-clip: text;
-        	animation: gradientShift 5s ease infinite;
-        	background-size: 200% 200%;
-    	}
-       
-    	@keyframes gradientShift {
-        	0% { background-position: 0% 50%; }
-        	50% { background-position: 100% 50%; }
-        	100% { background-position: 0% 50%; }
-    	}
-       
-    	/* Particles Background */
-    	.particles-bg {
-        	position: absolute;
-        	width: 100%;
-        	height: 100%;
-        	overflow: hidden;
-        	z-index: 0;
-    	}
-       
-    	.particle {
-        	position: absolute;
-        	width: 4px;
-        	height: 4px;
-        	background: var(--accent-color);
-        	border-radius: 50%;
-        	opacity: 0.3;
-        	animation: float 6s ease-in-out infinite;
-    	}
-       
-    	@keyframes float {
-        	0%, 100% { transform: translateY(0px); }
-        	50% { transform: translateY(-20px); }
-    	}
-       
-    	.btn-tool {
-        	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-       	 transition: all 0.3s ease;
-        	box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    	}
-    	.btn-tool:hover {
-        	transform: translateY(-3px);
-        	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    	}
-       
-    	.copy-btn {
-        	background: var(--accent-color);
-        	transition: all 0.3s ease;
-        	box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
-        	position: relative;
-        	overflow: hidden;
-    	}
-       
-    	.copy-btn:hover {
-        	transform: scale(1.05);
-        	box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    	}
-       
-    	.copy-btn:active {
-        	transform: scale(0.95);
-    	}
-       
-    	.copy-btn.copied {
-  	      background: var(--success-color);
-        	animation: successPulse 0.6s ease;
-    	}
-       
-    	@keyframes successPulse {
-        	0%, 100% { transform: scale(1); }
-        	50% { transform: scale(1.1); }
-    	}
-       
-    	.toast {
-        	position: fixed;
-        	top: 20px;
-        	right: 20px;
-        	background: var(--success-color);
-        	color: white;
-        	padding: 1rem 1.5rem;
-        	border-radius: 12px;
-        	box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-        	z-index: 9999;
-        	animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    	}
-       
-    	@keyframes slideIn {
-        	from { transform: translateX(400px); opacity: 0; }
-        	to { transform: translateX(0); opacity: 1; }
-    	}
-       
-    	.progress-bar {
-        	background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        	height: 6px;
-  	      border-radius: 3px;
-        	transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-    	}
-       
-    	/* Compact Sticky Navigation */
-    	.sticky-nav {
-        	position: sticky;
-        	top: 0;
-        	z-index: 50;
-   	     background-color: var(--bg-primary);
-        	box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-        	transition: all 0.3s ease;
-        	backdrop-filter: blur(10px);
-    	}
-       
-    	.day-btn-compact {
-        	padding: 0.5rem 1rem;
-        	font-size: 0.875rem;
-        	font-weight: 600;
-        	border-radius: 8px;
-        	transition: all 0.3s ease;
-        	border: 2px solid transparent;
-        	position: relative;
-    	}
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            
+            --day1-color: #3b82f6;
+            --day2-color: #8b5cf6;
+            --day3-color: #ef4444;
+            --day4-color: #10b981;
+            --day5-color: #ec4899;
+        }
         
-    	.day-btn-compact:hover {
-        	border-color: var(--accent-color);
-        	transform: translateY(-2px);
-        	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    	}
-       
-    	.day-btn-compact.completed::after {
-  	      content: '✓';
-        	position: absolute;
-        	top: -6px;
-        	right: -6px;
-        	background: var(--success-color);
-        	color: white;
-        	width: 20px;
-        	height: 20px;
-        	border-radius: 50%;
-        	display: flex;
-        	align-items: center;
-        	justify-content: center;
-        	font-size: 12px;
-        	font-weight: bold;
-        	box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
-    	}
-       
-    	.achievement-badge {
-        	position: fixed;
-        	top: 50%;
-        	left: 50%;
-        	transform: translate(-50%, -50%) scale(0);
-        	background: white;
-        	padding: 2rem;
-        	border-radius: 20px;
-        	box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        	z-index: 10000;
-        	animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-    	}
-       
-    	@keyframes badgePop {
-        	0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
-        	50% { transform: translate(-50%, -50%) scale(1.1) rotate(10deg); }
-        	100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-    	}
-       
-    	.badge-overlay {
-        	position: fixed;
-        	top: 0;
-        	left: 0;
-        	right: 0;
-        	bottom: 0;
-        	background: rgba(0,0,0,0.6);
-        	z-index: 9999;
-        	backdrop-filter: blur(4px);
-        	animation: fadeIn 0.3s ease;
-    	}
-       
-    	@keyframes fadeIn {
-        	from { opacity: 0; }
-        	to { opacity: 1; }
-    	}
-       
-    	.bottom-nav {
-        	position: fixed;
-        	bottom: 0;
-        	left: 0;
-        	right: 0;
-        	background: var(--bg-secondary);
-        	border-top: 1px solid var(--border-color);
-        	display: none;
-        	z-index: 100;
-	        box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
-    	}
-       
-    	@media (max-width: 768px) {
-        	.bottom-nav { display: flex; }
-        	.desktop-nav { display: none !important; }
-    	}
-       
-    	.dark-mode-toggle {
-        	position: fixed;
-        	top: 20px;
-        	right: 20px;
-        	z-index: 1000;
-        	background: var(--bg-secondary);
-        	border: 1px solid var(--border-color);
-        	width: 50px;
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --accent-color: #60a5fa;
+            --success-color: #34d399;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            transition: background 0.5s ease, color 0.3s ease;
+        }
+        
+        .section-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+        
+        .section-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        /* Gradient Text for Day Titles */
+        .gradient-text-day1 {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-day2 {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-day3 {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-day4 {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-day5 {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Hero Section - Gradient Text */
+        .hero-gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 5s ease infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Particles Background */
+        .particles-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .btn-tool {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-tool:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .copy-btn {
+            background: var(--accent-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .copy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .copy-btn.copied {
+            background: var(--success-color);
+            animation: successPulse 0.6s ease;
+        }
+        
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+            z-index: 9999;
+            animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 6px;
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        
+        /* Compact Sticky Navigation */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--bg-primary);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .day-btn-compact {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .day-btn-compact:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        
+        .day-btn-compact.completed::after {
+            content: '✓';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--success-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Locked Day Styling */
+        .day-locked {
+            position: relative;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .day-locked::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            border-radius: 20px;
+        }
+
+        .day-locked::after {
+            content: '🔒 Coming soon! Check back at the scheduled time'';
+            white-space: pre;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 11;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            line-height: 1.6;
+        }
+
+        /* Locked Navigation Button */
+        .day-btn-compact.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .day-btn-compact.locked::before {
+            content: '🔒 ';
+        }
+
+        [data-theme="dark"] .day-locked::before {
+            background: rgba(0, 0, 0, 0.85);
+        }
+        
+        .achievement-badge {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+        
+        @keyframes badgePop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
+            50% { transform: translate(-50%, -50%) scale(1.1) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+        
+        .badge-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: none;
+            z-index: 100;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav { display: flex; }
+            .desktop-nav { display: none !important; }
+        }
+        
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            width: 50px;
             height: 50px;
-        	border-radius: 50%;
-        	display: flex;
-        	align-items: center;
-        	justify-content: center;
-        	cursor: pointer;
-        	transition: all 0.3s ease;
-        	box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    	}
-       
-    	.dark-mode-toggle:hover {
-        	transform: scale(1.1) rotate(15deg);
-        	box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    	}
-       
-    	/* Custom Checkbox */
-    	.checkbox-wrapper {
-    	    position: relative;
-        	cursor: pointer;
-    	}
-       
-    	.checkbox-custom {
-        	appearance: none;
-        	width: 24px;
-        	height: 24px;
-        	border: 2px solid var(--border-color);
-        	border-radius: 6px;
-        	cursor: pointer;
-        	transition: all 0.3s ease;
-        	position: relative;
-    	}
-       
-    	.checkbox-custom:checked {
-        	background: var(--success-color);
-        	border-color: var(--success-color);
-        	animation: checkBounce 0.4s ease;
-    	}
-       
-    	.checkbox-custom:checked::after {
-        	content: '✓';
-        	position: absolute;
-        	top: 50%;
-        	left: 50%;
-        	transform: translate(-50%, -50%);
-        	color: white;
-        	font-size: 14px;
-        	font-weight: bold;
-    	}
-       
-    	@keyframes checkBounce {
-        	0%, 100% { transform: scale(1); }
-        	50% { transform: scale(1.2); }
-    	}
-       
-    	.share-card {
-        	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        	color: white;
-        	padding: 2.5rem;
-        	border-radius: 20px;
-        	margin-top: 2rem;
-        	box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
-        	animation: fadeInScale 0.5s ease;
-    	}
-       
-    	@keyframes fadeInScale {
-        	0% { opacity: 0; transform: scale(0.95); }
-        	100% { opacity: 1; transform: scale(1); }
-    	}
-       
-    	/* Social Icons */
-    	.social-icon {
-        	display: inline-flex;
-        	align-items: center;
-        	justify-content: center;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .dark-mode-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        
+        /* Custom Checkbox */
+        .checkbox-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .checkbox-custom {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .checkbox-custom:checked {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            animation: checkBounce 0.4s ease;
+        }
+        
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        @keyframes checkBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .share-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            margin-top: 2rem;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            animation: fadeInScale 0.5s ease;
+        }
+        
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Social Icons */
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 40px;
-        	height: 40px;
-        	border-radius: 50%;
-        	background: rgba(255,255,255,0.2);
-        	color: white;
-        	transition: all 0.3s ease;
-        	text-decoration: none;
-    	}
-       
-    	.social-icon:hover {
-        	background: rgba(255,255,255,0.3);
-        	transform: translateY(-3px);
-        	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    	}
-       
-    	/* Numbered Steps */
-    	.step-number {
-        	display: inline-flex;
-        	align-items: center;
-        	justify-content: center;
-        	width: 32px;
-        	height: 32px;
-        	border-radius: 50%;
-        	background: linear-gradient(135deg, var(--accent-color) 0%, var(--success-color) 100%);
-        	color: white;
-        	font-weight: bold;
-        	margin-right: 0.75rem;
-        	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-    	}
-       
-    	/* Prompt Card Enhanced */
-    	.prompt-card {
-        	background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
-        	border: 1px solid var(--border-color);
-        	border-radius: 16px;
-        	padding: 1.5rem;
-        	transition: all 0.3s ease;
-    	}
-       
-    	.prompt-card:hover {
-        	box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
-        	transform: translateY(-2px);
-  	  }
-       
-    	/* Collapsible Prompt Text */
-    	.prompt-text-collapsible {
-        	max-height: 200px;
-        	overflow-y: auto;
-        	transition: max-height 0.3s ease;
-    	}
-       
-    	.prompt-text-collapsible.expanded {
-        	max-height: none;
-    	}
-       
-    	.expand-btn {
-        	background: rgba(59, 130, 246, 0.1);
-        	color: var(--accent-color);
-        	border: 1px solid var(--accent-color);
-        	padding: 0.5rem 1rem;
-       	 border-radius: 8px;
-        	font-size: 0.875rem;
-        	font-weight: 600;
-        	cursor: pointer;
-        	transition: all 0.3s ease;
-        	margin-top: 0.5rem;
-    	}
-       
-    	.expand-btn:hover {
-        	background: var(--accent-color);
-        	color: white;
-    	}
-       
-    	/* Fix Dark Mode Prompt Text */
-    	.prompt-text {
-        	background: rgba(255, 255, 255, 0.95) !important;
-        	color: #1f2937 !important;
-        	padding: 1rem;
-        	border-radius: 8px;
-        	font-family: 'Courier New', monospace;
-        	font-size: 0.875rem;
-        	overflow-x: auto;
-        	border: 1px solid #e5e7eb;
-    	}
-       
-    	[data-theme="dark"] .prompt-text {
-        	background: rgba(255, 255, 255, 0.95) !important;
-        	color: #1f2937 !important;
-        	border: 1px solid #d1d5db;
-    	}
-       
-    	/* Smooth Scroll */
-    	html {
-        	scroll-behavior: smooth;
-    	}
-       
-    	/* Fade In Animation */
-    	.fade-in {
-        	animation: fadeInUp 0.6s ease;
-    	}
-       
-    	@keyframes fadeInUp {
-        	from {
-            	opacity: 0;
-            	transform: translateY(20px);
-        	}
-        	to {
-            	opacity: 1;
-            	transform: translateY(0);
-        	}
-    	}
-       
-    	/* CTA Button */
-    	.cta-button {
-        	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        	color: white;
-        	padding: 1rem 2.5rem;
-        	border-radius: 50px;
-        	font-size: 1.125rem;
-        	font-weight: 700;
-        	box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        	transition: all 0.3s ease;
-        	display: inline-block;
-        	text-decoration: none;
-    	}
-       
-    	.cta-button:hover {
-        	transform: translateY(-4px);
-        	box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
-    	}
-       
-    	/* Day Divider */
-    	.day-divider {
-        	height: 3px;
-        	background: linear-gradient(90deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
-        	margin: 3rem 0;
-        	border-radius: 2px;
-    	}
-       
-    	/* Prompt Label */
-    	.prompt-label {
-        	display: inline-block;
-        	background: rgba(59, 130, 246, 0.1);
-        	color: var(--accent-color);
-        	padding: 0.25rem 0.75rem;
-        	border-radius: 6px;
-        	font-size: 0.75rem;
-        	font-weight: 600;
-        	margin-left: 0.5rem;
-    	}
-	</style>
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .social-icon:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Numbered Steps */
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--success-color) 100%);
+            color: white;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Prompt Card Enhanced */
+        .prompt-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .prompt-card:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Collapsible Prompt Text */
+        .prompt-text-collapsible {
+            max-height: 200px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease;
+        }
+        
+        .prompt-text-collapsible.expanded {
+            max-height: none;
+        }
+        
+        .expand-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .expand-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        /* Fix Dark Mode Prompt Text */
+        .prompt-text {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #1f2937 !important;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+        }
+        
+        [data-theme="dark"] .prompt-text {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db;
+        }
+        
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Fade In Animation */
+        .fade-in {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* CTA Button */
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* Day Divider */
+        .day-divider {
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
+            margin: 3rem 0;
+            border-radius: 2px;
+        }
+        
+        /* Prompt Label */
+        .prompt-label {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+    </style>
 </head>
 <body>
- 
-	<!-- Dark Mode Toggle -->
-	<div class="dark-mode-toggle" onclick="toggleDarkMode()">
-    	<i class="fas fa-moon" id="darkModeIcon"></i>
-	</div>
- 
-	<!-- Sticky Navigation (Compact) -->
-	<div class="sticky-nav">
-    	<!-- Progress Bar -->
-    	<div class="px-4 pt-3 pb-2">
-        	<div class="flex items-center justify-between mb-1">
-            	<span class="text-xs font-medium" style="color: var(--text-secondary);">Overall Progress</span>
-            	<span class="text-xs font-bold" style="color: var(--accent-color);" id="progressPercent">0%</span>
-        	</div>
-        	<div class="w-full bg-gray-200 rounded-full h-1.5" style="background-color: var(--border-color);">
-            	<div class="progress-bar" id="progressBar" style="width: 0%;"></div>
-        	</div>
-    	</div>
-       
-    	<!-- Compact Day Navigation -->
-    	<div class="flex justify-center items-center gap-2 px-4 pb-3 desktop-nav">
-        	<a href="#day1" class="day-btn-compact" id="navDay1" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-            	Day 1
-        	</a>
-        	<span style="color: var(--text-secondary);">|</span>
-        	<a href="#day2" class="day-btn-compact" id="navDay2" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-            	Day 2
-        	</a>
-        	<span style="color: var(--text-secondary);">|</span>
-        	<a href="#day3" class="day-btn-compact" id="navDay3" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-            	Day 3
-        	</a>
-        	<span style="color: var(--text-secondary);">|</span>
-       	 <a href="#day4" class="day-btn-compact" id="navDay4" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-            	Day 4
-        	</a>
-        	<span style="color: var(--text-secondary);">|</span>
-        	<a href="#day5" class="day-btn-compact" id="navDay5" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-            	Day 5
-        	</a>
-    	</div>
-	</div>
- 
-	<!-- Hero Section (Enhanced) -->
-	<div class="container mx-auto px-4 py-12 text-center relative fade-in">
-    	<!-- Particles Background -->
-    	<div class="particles-bg">
-        	<div class="particle" style="left: 10%; animation-delay: 0s;"></div>
-        	<div class="particle" style="left: 20%; animation-delay: 1s;"></div>
-        	<div class="particle" style="left: 30%; animation-delay: 2s;"></div>
-        	<div class="particle" style="left: 40%; animation-delay: 0.5s;"></div>
-        	<div class="particle" style="left: 50%; animation-delay: 1.5s;"></div>
-        	<div class="particle" style="left: 60%; animation-delay: 2.5s;"></div>
-        	<div class="particle" style="left: 70%; animation-delay: 0.8s;"></div>
-        	<div class="particle" style="left: 80%; animation-delay: 1.8s;"></div>
-        	<div class="particle" style="left: 90%; animation-delay: 2.8s;"></div>
-    	</div>
-       
-    	<h1 class="text-5xl md:text-6xl font-extrabold mb-6 hero-gradient-text relative z-10">
-        	Build Your AI Ambassador<br>in 5 Days
-    	</h1>
-    	<p class="text-xl md:text-2xl mb-6 relative z-10" style="color: var(--text-secondary);">
-        	A hands-on Challenge to create a consistent AI Brand Ambassador using real-time prompts and tools.
-    	</p>
-       
-    	<!-- Creator Credit (NOT STICKY) -->
-    	<div class="flex items-center justify-center mb-8 relative z-10">
-	        <img src="https://jaygptpro.com/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="w-12 h-12 rounded-full mr-3 border-3" style="border-color: var(--accent-color); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-        	<span class="text-base font-semibold" style="color: var(--text-secondary);">Created by Jay Margaliot</span>
-    	</div>
-       
-    	<!-- CTA Button -->
-    	<a href="#day1" class="cta-button relative z-10">
-        	<i class="fas fa-rocket mr-2"></i>Start Day 1 Now
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <i class="fas fa-moon" id="darkModeIcon"></i>
+    </div>
+
+    <!-- Sticky Navigation (Compact) -->
+    <div class="sticky-nav">
+        <!-- Progress Bar -->
+        <div class="px-4 pt-3 pb-2">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium" style="color: var(--text-secondary);">Overall Progress</span>
+                <span class="text-xs font-bold" style="color: var(--accent-color);" id="progressPercent">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5" style="background-color: var(--border-color);">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+        
+        <!-- Compact Day Navigation -->
+        <div class="flex justify-center items-center gap-2 px-4 pb-3 desktop-nav">
+            <a href="#day1" class="day-btn-compact" id="navDay1" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 1
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day2" class="day-btn-compact" locked" id="navDay2" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 2
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day3" class="day-btn-compact locked" id="navDay3" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 3
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day4" class="day-btn-compact locked" id="navDay4" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 4
+            </a>
+            <span style="color: var(--text-secondary);">|</span>
+            <a href="#day5" class="day-btn-compact locked" id="navDay5" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                Day 5
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero Section (Enhanced) -->
+    <div class="container mx-auto px-4 py-12 text-center relative fade-in">
+        <!-- Particles Background -->
+        <div class="particles-bg">
+            <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+            <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+            <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+            <div class="particle" style="left: 40%; animation-delay: 0.5s;"></div>
+            <div class="particle" style="left: 50%; animation-delay: 1.5s;"></div>
+            <div class="particle" style="left: 60%; animation-delay: 2.5s;"></div>
+            <div class="particle" style="left: 70%; animation-delay: 0.8s;"></div>
+            <div class="particle" style="left: 80%; animation-delay: 1.8s;"></div>
+            <div class="particle" style="left: 90%; animation-delay: 2.8s;"></div>
+        </div>
+        
+        <h1 class="text-5xl md:text-6xl font-extrabold mb-6 hero-gradient-text relative z-10">
+            Build Your AI Ambassador<br>in 5 Days
+        </h1>
+        <p class="text-xl md:text-2xl mb-6 relative z-10" style="color: var(--text-secondary);">
+            A hands-on Challenge to create a consistent AI Brand Ambassador using real-time prompts and tools.
+        </p>
+        
+        <!-- Creator Credit (NOT STICKY) -->
+        <div class="flex items-center justify-center mb-8 relative z-10">
+            <img src="https://jaygptpro.com/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="w-12 h-12 rounded-full mr-3 border-3" style="border-color: var(--accent-color); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+            <span class="text-base font-semibold" style="color: var(--text-secondary);">Created by Jay Margaliot</span>
+        </div>
+        
+        <!-- CTA Button -->
+        <a href="#day1" class="cta-button relative z-10">
+            <i class="fas fa-rocket mr-2"></i>Start Day 1 Now
         </a>
-       
-    	<!-- Tools Header -->
-    	<h3 class="text-2xl font-bold mt-12 mb-4 relative z-10" style="color: var(--text-primary);">
-        	✨ All You Need: 4 Simple Tools
-    	</h3>
-       
-    	<!-- Tools Bar (CENTERED) -->
-    	<div class="flex flex-wrap justify-center gap-4 mb-8 relative z-10">
-        	<a href="https://chatgpt.com/" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
-            	<i class="fas fa-robot mr-2"></i>ChatGPT
-        	</a>
-        	<a href="https://labs.google/fx/tools/flow" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
-            	<i class="fas fa-water mr-2"></i>Google Flow
-        	</a>
-        	<a href="https://www.krea.ai/enhancer" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
-            	<i class="fas fa-magic mr-2"></i>Krea Enhancer
-        	</a>
-        	<a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
-            	<i class="fas fa-film mr-2"></i>CapCut Desktop
-  	      </a>
-    	</div>
-	</div>
- 
-	<!-- Main Content -->
-	<div class="container mx-auto px-4 pb-24">
- 
-    	<!-- DAY 1: DNA -->
-    	<section id="day1" class="mb-16 fade-in">
-        	<div class="section-card p-8 md:p-10">
-           	 <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day1">
-                	<i class="fas fa-dna mr-3"></i>Day 1: Brand DNA & Character Blueprint
-            	</h2>
-               
-            	<!-- Outputs for Today -->
-      	      <div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
-                	<h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
-                	<ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
-                    	<li>Brand File - Complete brand analysis and strategy document</li>
-                    	<li>Character Blueprint - Detailed AI ambassador character profile</li>
-                	</ul>
-            	</div>
- 
-            	<!-- Quick Steps -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
-                	<ol class="space-y-3" style="color: var(--text-secondary);">
-                    	<li class="flex items-start">
-                        	<span class="step-number">1</span>
-                        	<span>Create Brand File (Prompt 1 in ChatGPT)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">2</span>
-         	               <span>Create Character Blueprint (Prompt 2 in ChatGPT)</span>
-                    	</li>
-                	</ol>
-            	</div>
- 
-            	<!-- Links -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
-                	<div class="flex flex-wrap gap-3">
-                    	<a href="https://chatgpt.com/" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-robot mr-2"></i>ChatGPT
-                    	</a>
-                	</div>
-            	</div>
- 
-            	<!-- Prompts -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Prompts</h3>
-                   
-                	<!-- Prompt 1 -->
-                	<div class="mb-6 prompt-card">
-                    	<h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 1: The Architect (Brand File)</h4>
-                       
-                    	<!-- Instructions Box -->
-          	          <div class="mb-6 p-6 bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-xl border-l-4 border-blue-400">
-                        	<h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">📘 When to use</h5>
-                  	      <p class="mb-4 text-blue-700 dark:text-blue-400">Use this first, before any avatar work or content creation. Use it whenever you need a single source of truth that explains the brand to any AI tool.</p>
-                           
-              	          <h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">🎯 Goal</h5>
-                        	<p class="mb-4 text-blue-700 dark:text-blue-400">Turn raw brand materials into 1 decisive Brand File that guides avatar design, image prompts, video prompts, posts, reels, UGC content, and blogs.</p>
-                           
-                        	<h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">⚙️ How to use</h5>
-                        	<ol class="list-decimal list-inside space-y-2 mb-4 text-blue-700 dark:text-blue-400">
-                            	<li>Attach files and images as attachments in the chat</li>
-                            	<li>Copy and paste the prompt below</li>
-                      	      <li>Paste all raw text inputs after the line that says <strong>RAW INPUT STARTS HERE</strong></li>
-                            	<li>You do not need all inputs. Use whatever you have</li>
-                            	<li>Remove personal customer data from reviews or tickets. No names, addresses, order numbers</li>
-                        	</ol>
-                           
-                        	<h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">📋 What to provide</h5>
+        
+        <!-- Tools Header -->
+        <h3 class="text-2xl font-bold mt-12 mb-4 relative z-10" style="color: var(--text-primary);">
+            ✨ All You Need: 4 Simple Tools
+        </h3>
+        
+        <!-- Tools Bar (CENTERED) -->
+        <div class="flex flex-wrap justify-center gap-4 mb-8 relative z-10">
+            <a href="https://chatgpt.com/" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
+                <i class="fas fa-robot mr-2"></i>ChatGPT
+            </a>
+            <a href="https://labs.google/fx/tools/flow" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
+                <i class="fas fa-water mr-2"></i>Google Flow
+            </a>
+            <a href="https://www.krea.ai/enhancer" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
+                <i class="fas fa-magic mr-2"></i>Krea Enhancer
+            </a>
+            <a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="btn-tool text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg">
+                <i class="fas fa-film mr-2"></i>CapCut Desktop
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-24">
+
+        <!-- DAY 1: DNA -->
+        <section id="day1" class="mb-16 fade-in">
+            <div class="section-card p-8 md:p-10">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day1">
+                    <i class="fas fa-dna mr-3"></i>Day 1: Brand DNA & Character Blueprint
+                </h2>
+                
+                <!-- Outputs for Today -->
+                <div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
+                    <h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
+                    <ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
+                        <li>Brand File - Complete brand analysis and strategy document</li>
+                        <li>Character Blueprint - Detailed AI ambassador character profile</li>
+                    </ul>
+                </div>
+
+                <!-- Quick Steps -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
+                    <ol class="space-y-3" style="color: var(--text-secondary);">
+                        <li class="flex items-start">
+                            <span class="step-number">1</span>
+                            <span>Create Brand File (Prompt 1 in ChatGPT)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">2</span>
+                            <span>Create Character Blueprint (Prompt 2 in ChatGPT)</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Links -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://chatgpt.com/" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                            <i class="fas fa-robot mr-2"></i>ChatGPT
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Prompts -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Prompts</h3>
+                    
+                    <!-- Prompt 1 -->
+                    <div class="mb-6 prompt-card">
+                        <h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 1: The Architect (Brand File)</h4>
+                        
+                        <!-- Instructions Box -->
+                        <div class="mb-6 p-6 bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-xl border-l-4 border-blue-400">
+                            <h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">📘 When to use</h5>
+                            <p class="mb-4 text-blue-700 dark:text-blue-400">Use this first, before any avatar work or content creation. Use it whenever you need a single source of truth that explains the brand to any AI tool.</p>
+                            
+                            <h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">🎯 Goal</h5>
+                            <p class="mb-4 text-blue-700 dark:text-blue-400">Turn raw brand materials into 1 decisive Brand File that guides avatar design, image prompts, video prompts, posts, reels, UGC content, and blogs.</p>
+                            
+                            <h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">⚙️ How to use</h5>
+                            <ol class="list-decimal list-inside space-y-2 mb-4 text-blue-700 dark:text-blue-400">
+                                <li>Attach files and images as attachments in the chat</li>
+                                <li>Copy and paste the prompt below</li>
+                                <li>Paste all raw text inputs after the line that says <strong>RAW INPUT STARTS HERE</strong></li>
+                                <li>You do not need all inputs. Use whatever you have</li>
+                                <li>Remove personal customer data from reviews or tickets. No names, addresses, order numbers</li>
+                            </ol>
+                            
+                            <h5 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">📋 What to provide</h5>
                             <p class="mb-2 text-blue-700 dark:text-blue-400">Add whatever you can from this list. More inputs improve accuracy:</p>
-                        	<ul class="list-disc list-inside space-y-1 text-sm text-blue-700 dark:text-blue-400">
-                            	<li><strong>Brand website link</strong> - Paste</li>
-                            	<li><strong>About or Mission text</strong> - Paste</li>
-                            	<li><strong>Amazon "From the brand" text</strong> - Paste</li>
-                            	<li><strong>Titles and bullet points for 1-3 products</strong> - Paste</li>
-                            	<li><strong>Known compliance limitations</strong> - Paste (Examples: no medical claims, no weight loss claims, no guaranteed results)</li>
-                            	<li><strong>Review files for 1-3 products</strong> - Attach files</li>
-                            	<li><strong>Customer questions or Q&A</strong> - Paste if available</li>
-                            	<li><strong>Brand visuals</strong> - Attach 3-8 images (Homepage hero, packaging, product hero, lifestyle image)</li>
-                            	<li><strong>Price range and tier + main market</strong> - Paste (Examples: budget/mid/premium, US/EU, etc.)</li>
-                            	<li><strong>Founder notes</strong> - Paste anything important you know (Include non-negotiables and claims to avoid)</li>
-                        	</ul>
-                    	</div>
-                       
-                    	<div class="flex justify-end mb-3">
-       	                 <button onclick="copyPrompt('prompt1-1', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy Prompt
-                        	</button>
- 	                   </div>
-                    	<pre id="prompt1-1" class="prompt-text prompt-text-collapsible">Act as a Senior Brand Strategist and AI Content Architect.
- 
+                            <ul class="list-disc list-inside space-y-1 text-sm text-blue-700 dark:text-blue-400">
+                                <li><strong>Brand website link</strong> - Paste</li>
+                                <li><strong>About or Mission text</strong> - Paste</li>
+                                <li><strong>Amazon "From the brand" text</strong> - Paste</li>
+                                <li><strong>Titles and bullet points for 1-3 products</strong> - Paste</li>
+                                <li><strong>Known compliance limitations</strong> - Paste (Examples: no medical claims, no weight loss claims, no guaranteed results)</li>
+                                <li><strong>Review files for 1-3 products</strong> - Attach files</li>
+                                <li><strong>Customer questions or Q&A</strong> - Paste if available</li>
+                                <li><strong>Brand visuals</strong> - Attach 3-8 images (Homepage hero, packaging, product hero, lifestyle image)</li>
+                                <li><strong>Price range and tier + main market</strong> - Paste (Examples: budget/mid/premium, US/EU, etc.)</li>
+                                <li><strong>Founder notes</strong> - Paste anything important you know (Include non-negotiables and claims to avoid)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="flex justify-end mb-3">
+                            <button onclick="copyPrompt('prompt1-1', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
+                                <i class="fas fa-copy mr-2"></i>Copy Prompt
+                            </button>
+                        </div>
+                        <pre id="prompt1-1" class="prompt-text prompt-text-collapsible">Act as a Senior Brand Strategist and AI Content Architect.
+
 I will provide raw brand inputs for a product based ecommerce brand. Your job is to distill everything into a concise, decisive Brand File that will become the single source of truth for all future AI work, including avatar creation, image prompts, video prompts, posts, reels, UGC content, and blogs.
- 
+
 Critical rules
 1. Use only the information provided, including attached files and attached images.
 2. Analyze attached brand images for color palette, aesthetic style, and vibe. Incorporate those insights into section 9 Visual Direction.
@@ -725,17 +778,17 @@ Critical rules
 5. Be decisive. Avoid vague fluff words like premium or high quality without concrete meaning.
 6. Define boundaries. You must clearly state what the brand is not.
 7. Reviews are for analysis. Extract themes, language patterns, buyer psychology, and implied buyer demographics. Do not quote long text.
- 
+
 Output format
 Return the Brand File ONE TIME ONLY, inside a single code block. Do not output anything before or after the code block.
- 
+
 BRAND FILE
- 
+
 1. Brand Summary
 Brand name:
 Product name or main product line:
 One line positioning:
- 
+
 2. Product Snapshot
 Category:
 What it does:
@@ -743,7 +796,7 @@ Primary benefit:
 Secondary benefit:
 Top 3 features:
 What makes it different:
- 
+
 3. Customer Context
 Primary audience:
 Secondary audience:
@@ -752,7 +805,7 @@ Use scenarios:
 Main desire before buying:
 Main fear before buying:
 Top objections:
- 
+
 4. Customer Demographics and Buying Moments
 Primary user ages:
 Buyer avatar, who pays:
@@ -762,22 +815,22 @@ Top gifting occasions:
 Top buying occasions:
 Who appears on camera:
 Objections ranked, 1 to 5:
- 
+
 5. Emotional Outcome
 How the customer wants to feel after purchase:
 What emotion the content should trigger:
- 
+
 6. Messaging Pillars
 Pillar 1:
 Pillar 2:
 Pillar 3:
 Optional pillar 4:
- 
+
 7. Proof and Credibility
 Allowed proof types:
 Key proof points:
 Forbidden claims and compliance limits:
- 
+
 8. Voice and Language
 Tone:
 Energy:
@@ -786,7 +839,7 @@ Writing style:
 Yes words:
 No words:
 Cliches to avoid:
- 
+
 9. Visual Direction
 Overall look:
 Color palette:
@@ -796,50 +849,50 @@ Lighting preference:
 Camera distance preference:
 Do:
 Avoid:
- 
+
 10. Content Fit
 Best formats:
 Primary content goal:
 Call to action style:
- 
+
 11. Hard No List
 No visuals:
 No behaviors:
 No tone:
 No topics:
- 
+
 12. Assumptions
 Assumption 1:
 Assumption 2:
 Assumption 3:
- 
+
 Everything pasted below is my raw brand input. Analyze it deeply.
 RAW INPUT STARTS HERE:</pre>
-                    	<button onclick="togglePromptExpand(this)" class="expand-btn">
-                        	<i class="fas fa-chevron-down mr-2"></i>Expand
-                    	</button>
-                	</div>
- 
-                	<!-- Prompt 2 -->
-                	<div class="mb-6 prompt-card">
-                    	<h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 2: The Casting Director (Character Blueprint)</h4>
-                       
-                 	   <!-- Instructions Box -->
-                    	<div class="mb-4 p-4 bg-purple-50 dark:bg-purple-900 dark:bg-opacity-20 rounded-xl border-l-4 border-purple-400">
-                        	<p class="text-sm mb-2 text-purple-700 dark:text-purple-400"><strong>When to use:</strong> After Prompt 1, once you have a completed Brand File.</p>
-                        	<p class="text-sm mb-2 text-purple-700 dark:text-purple-400"><strong>How to use:</strong> Copy the full Brand File from Prompt 1 → Paste the prompt below → Paste Brand File after BRAND FILE STARTS HERE</p>
-                        	<p class="text-sm text-purple-700 dark:text-purple-400"><strong>Optional:</strong> Use the prototype string to generate 1 quick square portrait for a sanity check.</p>
-                    	</div>
-                       
-                    	<div class="flex justify-end mb-3">
-                        	<button onclick="copyPrompt('prompt1-2', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy Prompt
-                        	</button>
-                    	</div>
-                    	<pre id="prompt1-2" class="prompt-text prompt-text-collapsible">Act as an expert Casting Director and AI Character Designer.
- 
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
+                    </div>
+
+                    <!-- Prompt 2 -->
+                    <div class="mb-6 prompt-card">
+                        <h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 2: The Casting Director (Character Blueprint)</h4>
+                        
+                        <!-- Instructions Box -->
+                        <div class="mb-4 p-4 bg-purple-50 dark:bg-purple-900 dark:bg-opacity-20 rounded-xl border-l-4 border-purple-400">
+                            <p class="text-sm mb-2 text-purple-700 dark:text-purple-400"><strong>When to use:</strong> After Prompt 1, once you have a completed Brand File.</p>
+                            <p class="text-sm mb-2 text-purple-700 dark:text-purple-400"><strong>How to use:</strong> Copy the full Brand File from Prompt 1 → Paste the prompt below → Paste Brand File after BRAND FILE STARTS HERE</p>
+                            <p class="text-sm text-purple-700 dark:text-purple-400"><strong>Optional:</strong> Use the prototype string to generate 1 quick square portrait for a sanity check.</p>
+                        </div>
+                        
+                        <div class="flex justify-end mb-3">
+                            <button onclick="copyPrompt('prompt1-2', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
+                                <i class="fas fa-copy mr-2"></i>Copy Prompt
+                            </button>
+                        </div>
+                        <pre id="prompt1-2" class="prompt-text prompt-text-collapsible">Act as an expert Casting Director and AI Character Designer.
+
 I will paste a Brand File below. Your job is to create one single Character Blueprint for an AI Brand Ambassador. You must base everything strictly on the Brand File.
- 
+
 Critical rules
 1. Zero questions. If the Brand File is vague, make the best trust building decision and include it as a short note in section 12.
 2. Be decisive and specific. You must output ONE final character, not ranges.
@@ -861,16 +914,16 @@ Critical rules
 7. Do not write production image prompts. Do not write lighting setups or camera moves for image generation. This is a blueprint plus a minimal prototype string only.
 8. Default rule. The character appears with the product unless the user explicitly requests otherwise in later prompts.
 9. Product info integrity. You must not invent product claims or specs beyond what is in the Brand File.
- 
+
 Output structure
 Return the Character Blueprint ONE TIME ONLY, inside a single code block. Do not output anything before or after the code block.
- 
+
 CHARACTER BLUEPRINT
- 
+
 1. Role and Trust Strategy
 Archetype:
 Why this archetype builds trust with this audience:
- 
+
 2. Core Identity
 Full name, first and last:
 Backup full name options (5):
@@ -879,12 +932,12 @@ Exact age:
 Home city and state:
 Life context in one sentence:
 Credibility anchor:
- 
+
 3. Audience Fit
 Who this character speaks to:
 Who this character does not speak to:
 What the audience should feel after 15 seconds:
- 
+
 4. Personality Settings
 Vibe, 3 adjectives:
 Energy, calm, balanced, energetic:
@@ -892,21 +945,21 @@ Confidence, low, medium, high:
 Warmth, low, medium, high:
 Humor, none, subtle, playful:
 Directness, soft, balanced, direct:
- 
+
 5. On Camera Behavior
 Eye contact style:
 Facial expressions:
 Hand movement level, low, medium, high:
 Pace of speech:
 Default emotion on screen:
- 
+
 6. Voice and Language Rules
 Tone of voice:
 Sentence length, short, medium:
 Typical phrases:
 Banned phrases and words:
 What the character never says:
- 
+
 7. Identity Lock
 Locked features, list 3 items that never change:
 Hard locked recognition marker, 1 item:
@@ -914,7 +967,7 @@ Optional recognition marker family, 3 options that can vary during casting:
 Hair, style and color:
 What must never change:
 What is allowed to vary:
- 
+
 Identity Lock requirements
 1. Hard locked recognition marker must be eyeglasses that are clearly visible in every image.
 2. The optional marker family must include:
@@ -922,172 +975,172 @@ Identity Lock requirements
    b. Eyeglasses style options (still clearly "glasses", but style can vary during casting)
 3. Keep the beauty mark subtle and attractive. Avoid anything that reads like a blemish or injury.
 4. No scars, no cuts, no bruises, no medical looking marks.
- 
+
 8. Style Boundaries
 Grooming level, natural, light, polished:
 Wardrobe vibe, casual, smart casual, premium:
 No wardrobe items:
 Accessories allowed:
- 
+
 9. Default Environments
 Environment 1:
 Environment 2:
 Environment 3, optional:
 Environments to avoid:
- 
+
 10. Product Relationship Rules
 Default rule, appears with the product:
 How the character uses the product:
 How the product appears on screen:
 Product realism guardrails, correct scale relative to hand size is crucial, natural grip, matching shadows, matching scene lighting, readable branding if allowed:
- 
+
 11. Guardrails
 No claims:
 No behaviors:
 No controversial areas:
- 
+
 12. Notes and Assumptions
 Note 1:
 Note 2:
 Note 3:
- 
+
 PROTOTYPE IDENTITY STRING
 Write one single short line for a quick square portrait test. Include only demographics plus the hard locked recognition marker plus hair. No personality. No camera moves. Add these realism tags at the end: raw photo, 35mm, natural skin texture, visible pores, minor imperfections.
- 
+
 BRAND FILE STARTS HERE:</pre>
-                    	<button onclick="togglePromptExpand(this)" class="expand-btn">
-                        	<i class="fas fa-chevron-down mr-2"></i>Expand
-                    	</button>
-                	</div>
-            	</div>
- 
-            	<!-- Checklist -->
-            	<div class="mb-6">
-                	<div class="flex justify-between items-center mb-4">
-                    	<h3 class="text-2xl font-bold" style="color: var(--text-primary);">✅ Checklist</h3>
-                    	<button onclick="resetAllChecklists()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition shadow-md">
-                        	<i class="fas fa-redo mr-2"></i>Reset All
-                    	</button>
-                	</div>
-                	<div class="space-y-3">
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Brand File ready</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Character Blueprint ready</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Brand File and Character Blueprint saved as separate files on my computer</span>
-               
-                    	</label>
-         	       </div>
-            	</div>
-        	</div>
-    	</section>
- 
-    	<div class="day-divider"></div>
- 
-    	<!-- DAY 2: CASTING -->
-    	<section id="day2" class="mb-16 fade-in">
-        	<div class="section-card p-8 md:p-10">
-            	<h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day2">
-                	<i class="fas fa-user-circle mr-3"></i>Day 2: Casting & Selection
-            	</h2>
-    	        
-            	<!-- Outputs for Today -->
-            	<div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
-                	<h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
-                	<ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
-                    	<li>15 candidate character images (casting audition portraits)</li>
-                    	<li>Character_Final.jpg - Your chosen winning character image</li>
-                	</ul>
-            	</div>
- 
-            	<!-- Quick Steps -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
-                	<ol class="space-y-3" style="color: var(--text-secondary);">
-                    	<li class="flex items-start">
-                        	<span class="step-number">1</span>
-                        	<span>Generate 15 audition prompts (Prompt 3 in ChatGPT)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">2</span>
-                        	<span>Open Google Flow or Nano Banana Pro</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">3</span>
-                        	<span>Run all 15 audition prompts</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">4</span>
-     	                   <span>Export all results</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">5</span>
-                        	<span>Review side-by-side in a grid</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">7</span>
-                        	<span>Choose 1 final character</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">8</span>
-                        	<span>Enhance final choice in Krea Enhancer</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">9</span>
-                        	<span>Save enhanced image as "Character_Final.jpg"</span>
-                    	</li>
-                	</ol>
-            	</div>
- 
-            	<!-- Links -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
-                	<div class="flex flex-wrap gap-3">
-                    	<a href="https://chatgpt.com/" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-robot mr-2"></i>ChatGPT
-                    	</a>
-  	                  <a href="https://labs.google/fx/tools/flow" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-water mr-2"></i>Google Flow
-                    	</a>
-                    	<a href="https://www.krea.ai/enhancer" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-magic mr-2"></i>Krea Enhancer
-                    	</a>
-                	</div>
-            	</div>
- 
-            	<!-- Prompts -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Prompts</h3>
-                   
-                	<!-- Prompt 3 -->
-                	<div class="mb-6 prompt-card">
-                    	<h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 3: The Generator (Casting Auditions)</h4>
-                       
-                    	<!-- Instructions Box -->
-                    	<div class="mb-4 p-4 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 rounded-xl border-l-4 border-green-400">
-  	                      <p class="text-sm mb-2 text-green-700 dark:text-green-400"><strong>When to use:</strong> After Prompt 2, once you have a completed Character Blueprint.</p>
-                        	<p class="text-sm mb-2 text-green-700 dark:text-green-400"><strong>How to use:</strong> Copy the full Character Blueprint → Paste the prompt below → Paste Blueprint after CHARACTER BLUEPRINT STARTS HERE → Generate 15 square portraits in Nano Banana → Pick top 3 → Pick 1 final</p>
-                        	<p class="text-sm text-green-700 dark:text-green-400"><strong>Important:</strong> Square portraits. Short prompts. No product. These are casting candidates, not final locked identity.</p>
-                    	</div>
-     	               
-                    	<div class="flex justify-end mb-3">
-                        	<button onclick="copyPrompt('prompt2-3', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy Prompt
-                        	</button>
-                    	</div>
-                    	<pre id="prompt2-3" class="prompt-text prompt-text-collapsible">Act as an expert AI portrait prompt engineer for Nano Banana.
- 
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold" style="color: var(--text-primary);">✅ Checklist</h3>
+                        <button onclick="resetAllChecklists()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition shadow-md">
+                            <i class="fas fa-redo mr-2"></i>Reset All
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">Brand File ready</span>
+                        </label>
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">Character Blueprint ready</span>
+                        </label>
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="1" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">Brand File and Character Blueprint saved as separate files on my computer</span>
+                
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="day-divider"></div>
+
+        <!-- DAY 2: CASTING -->
+        <section id="day2" class="mb-16 fade-in day-locked">
+            <div class="section-card p-8 md:p-10">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day2">
+                    <i class="fas fa-user-circle mr-3"></i>Day 2: Casting & Selection
+                </h2>
+                
+                <!-- Outputs for Today -->
+                <div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
+                    <h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
+                    <ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
+                        <li>15 candidate character images (casting audition portraits)</li>
+                        <li>Character_Final.jpg - Your chosen winning character image</li>
+                    </ul>
+                </div>
+
+                <!-- Quick Steps -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
+                    <ol class="space-y-3" style="color: var(--text-secondary);">
+                        <li class="flex items-start">
+                            <span class="step-number">1</span>
+                            <span>Generate 15 audition prompts (Prompt 3 in ChatGPT)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">2</span>
+                            <span>Open Google Flow or Nano Banana Pro</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">3</span>
+                            <span>Run all 15 audition prompts</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">4</span>
+                            <span>Export all results</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">5</span>
+                            <span>Review side-by-side in a grid</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">7</span>
+                            <span>Choose 1 final character</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">8</span>
+                            <span>Enhance final choice in Krea Enhancer</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="step-number">9</span>
+                            <span>Save enhanced image as "Character_Final.jpg"</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Links -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://chatgpt.com/" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                            <i class="fas fa-robot mr-2"></i>ChatGPT
+                        </a>
+                        <a href="https://labs.google/fx/tools/flow" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                            <i class="fas fa-water mr-2"></i>Google Flow
+                        </a>
+                        <a href="https://www.krea.ai/enhancer" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                            <i class="fas fa-magic mr-2"></i>Krea Enhancer
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Prompts -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Prompts</h3>
+                    
+                    <!-- Prompt 3 -->
+                    <div class="mb-6 prompt-card">
+                        <h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">Prompt 3: The Generator (Casting Auditions)</h4>
+                        
+                        <!-- Instructions Box -->
+                        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 rounded-xl border-l-4 border-green-400">
+                            <p class="text-sm mb-2 text-green-700 dark:text-green-400"><strong>When to use:</strong> After Prompt 2, once you have a completed Character Blueprint.</p>
+                            <p class="text-sm mb-2 text-green-700 dark:text-green-400"><strong>How to use:</strong> Copy the full Character Blueprint → Paste the prompt below → Paste Blueprint after CHARACTER BLUEPRINT STARTS HERE → Generate 15 square portraits in Nano Banana → Pick top 3 → Pick 1 final</p>
+                            <p class="text-sm text-green-700 dark:text-green-400"><strong>Important:</strong> Square portraits. Short prompts. No product. These are casting candidates, not final locked identity.</p>
+                        </div>
+                        
+                        <div class="flex justify-end mb-3">
+                            <button onclick="copyPrompt('prompt2-3', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
+                                <i class="fas fa-copy mr-2"></i>Copy Prompt
+                            </button>
+                        </div>
+                        <pre id="prompt2-3" class="prompt-text prompt-text-collapsible">Act as an expert AI portrait prompt engineer for Nano Banana.
+
 I will paste a Character Blueprint below. Your job is to create 15 copy paste ready prompts for generating 15 different candidate people for the AI Brand Ambassador.
- 
+
 Core objective
 Generate 15 distinct faces to act as casting options for the same role. They must all fit the Character Blueprint.
- 
+
 Critical rules
 1. Use only the Character Blueprint as your source. Do not ask questions.
 2. Output only 15 prompts plus a selection checklist.
@@ -1111,13 +1164,13 @@ Critical rules
    If the Blueprint includes multiple beauty mark placement options, use them across the 15 prompts, but always above the eyebrow.
 12. Keep prompts short. Max 4 sentences.
 13. Avoid over specifying. Use only enough detail to guide realism.
- 
+
 Output format
 Return only the following sections.
- 
+
 SECTION A. 15 NANO BANANA PROMPTS
 Write 15 prompts. Number them 1 to 15. Each prompt must be ready to paste.
- 
+
 Each prompt must include
 a. Demographics from the blueprint
 b. Hair description from the blueprint
@@ -1126,7 +1179,7 @@ d. One specific face archetype line plus one structural variation line
 e. One optional marker family choice if relevant, including beauty mark above eyebrow only
 f. Realism constraints
 g. Optional. A simple environment hint, but keep it minimal
- 
+
 Face archetype menu
 Use one primary archetype per prompt, and reuse none more than 3 times across the 15.
 Pick from:
@@ -1145,996 +1198,323 @@ Pick from:
 13 softer midface, less pronounced cheekbones
 14 deeper set eyes look, strong brow structure
 15 large bright eyes look, softer brow structure
- 
+
 Add these realism tags at the end of every prompt
 Raw photo, 35mm look, shallow depth of field, natural skin texture, visible pores, minor imperfections, soft film grain, natural daylight
- 
+
 SECTION B. SELECTION CHECKLIST
 Write a short checklist of what to look for when choosing the final character. Limit to 8 bullet points.
- 
+
 CHARACTER BLUEPRINT STARTS HERE:</pre>
-                    	<button onclick="togglePromptExpand(this)" class="expand-btn">
-                        	<i class="fas fa-chevron-down mr-2"></i>Expand
-                    	</button>
-                	</div>
-            	</div>
- 
-            	<!-- Checklist -->
-            	<div class="mb-6">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">✅ Checklist</h3>
-                	<div class="space-y-3">
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-              	          <input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">15 audition images generated</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">1 final character chosen</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Final character enhanced in Krea</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Saved as Character_Final.jpg</span>
-                    	</label>
-                	</div>
-            	</div>
-        	</div>
-    	</section>
- 
-    	<div class="day-divider"></div>
- 
-    	<!-- DAY 3: IDENTITY LOCK -->
-    	<section id="day3" class="mb-16 fade-in">
-        	<div class="section-card p-8 md:p-10">
-            	<h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day3">
-                	<i class="fas fa-lock mr-3"></i>Day 3: Identity Lock & Reference Pack
-            	</h2>
-               
-            	<!-- Outputs for Today -->
-            	<div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
-                	<h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
-                	<ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
-                    	<li>Reference Pack - 10 identity-locked character images (multiple angles, expressions, outfits)</li>
-                    	<li>First talking-head video clip - 8-second VEO 3.1 generated video</li>
-                	</ul>
-            	</div>
- 
-            	<!-- Quick Steps -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
-              	  <ol class="space-y-3" style="color: var(--text-secondary);">
-                    	<li class="flex items-start">
-                        	<span class="step-number">1</span>
-                        	<span>Run 10 Reference Pack prompts (with uploaded reference) in Nano Banana Pro</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">2</span>
-                        	<span>Save images in "Reference pack" folder</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">6</span>
-                        	<span>Upload one of your ambassador images to VEO 3.1 in Flow</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">7</span>
-                        	<span>Generate first video clip</span>
-                    	</li>
-                	</ol>
-            	</div>
- 
-            	<!-- Links -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
-                	<div class="flex flex-wrap gap-3">
-                    	<a href="https://labs.google/fx/tools/flow" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-water mr-2"></i>Google Flow
-                    	</a>
-                    	<a href="https://www.krea.ai/enhancer" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-magic mr-2"></i>Krea Enhancer
-                    	</a>
-                	</div>
-            	</div>
- 
-      	      <!-- Prompts -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Reference Pack Prompts (Nano Banana Pro)</h3>
-                   
-                	<!-- Instructions Box -->
-<div class="mb-5 p-4 bg-orange-50 dark:bg-orange-900 dark:bg-opacity-20 rounded-xl border-l-4 border-orange-400">
-	<p class="text-sm mb-2 text-orange-700 dark:text-orange-400"><strong>When to use:</strong> After you picked the winning character image from Day 2.</p>
-	<p class="text-sm mb-2 text-orange-700 dark:text-orange-400"><strong>How to use:</strong> Upload your winning character image as reference → Run all 10 prompts in Nano Banana → Generate a few variations for each → Pick the best → Upscale (Krea + Topaz) before animation</p>
-</div>
- 
-                   
-                	<p class="text-base mb-5" style="color: var(--text-secondary);">
-                    	<strong>Ready-to-use copy-paste NANO Banana Pro prompts.</strong><br>
-                    	Upload your Character_Final.jpg as reference, then copy each prompt below and paste into Nano Banana Pro.
-                	</p>
-   	             
-                                   	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    	<button onclick="copyPrompt('refprompt1', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 1 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Angles 2x2: Front & profiles</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt2', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 2 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Extreme close up identity lock</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt3', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 3 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Expressions 2x2: Smile, laugh, surprise</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt4', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 4 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Seasons 2x2: Summer, fall, winter, spring</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt5', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 5 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Natural light portrait. Not studio. Gentle smile</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt6', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 6 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Studio half body: Hands visible, smart casual</span>
-     	               </button>
-                    	<button onclick="copyPrompt('refprompt7', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 7 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Full body: Head to toe, studio clean</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt8', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 8 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Actions 2x2: Dance, jump, thumbs, point</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt9', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 9 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Lifestyle at home: Kitchen table midday</span>
-                    	</button>
-                    	<button onclick="copyPrompt('refprompt10', this)" class="copy-btn text-white px-4 py-3 rounded-lg text-sm font-semibold text-left">
-                        	<i class="fas fa-copy mr-2"></i>Prompt 10 <span class="prompt-label" style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem;">Lifestyle on street: Normal sidewalk moment</span>
-                    	</button>
-                	</div>
-    	            
-                	<!-- Hidden Prompts -->
-                	<div style="display: none;">
-                    	<pre id="refprompt1">Use the uploaded reference image as strict identity lock. Same real person.
-Vertical 9:16 image containing a clean 2x2 grid collage.
-White seamless studio background. Bright clean studio portrait lighting, even illumination, soft catchlights.
- 
-Panels:
-Front facing
-Three quarter left
-Three quarter right
-Left profile
- 
-Neutral expression in all panels.
-Glasses must be identical to the reference image. Same shape, thickness, color, transparency.
-Exactly one beauty mole exactly as in the reference. No other moles or marks.
-Hair must match the reference exactly. Same haircut, hairline, part, length, wave.
- 
-Medium close up framing, head and shoulders visible.
-Real person, photorealistic, raw photo, 35mm look, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt2">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 image.
-Extreme close up of partial face.
- 
-Frame must include:
-One eye
-Part of the glasses frame
-Eyebrow area with the single beauty mole
-Small portion of the nose
- 
-Bright clean studio lighting with clear catchlight.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference. No other marks.
-Hair must match the reference exactly.
- 
-Ultra sharp detail.
-Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt3">Use the uploaded reference image as strict identity lock. Same real person.
-Vertical 9:16 image with a clean 2x2 grid collage.
-White studio background. Bright clean studio lighting.
- 
-Panels:
-Warm closed mouth smile
-Soft laugh with teeth slightly visible
-Surprised expression, eyes open wider
-Friendly excited expression, relaxed face
- 
-Medium close up framing in all panels.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt4">Use the uploaded reference image as strict identity lock. Same real person.
-Vertical 9:16 image with a clean 2x2 grid collage.
-Light neutral studio background. Bright even studio lighting.
- 
-Panels:
-Summer outfit, light breathable top
-Fall outfit, layered look
-Winter outfit, sweater or light coat
-Spring outfit, fresh light layer
- 
-Smart casual outfits. No logos.
-Upper body to mid thigh framing.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt5">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 image.
-Natural light portrait. Not studio.
- 
-Soft window daylight.
-Simple real environment. Unstaged look.
-Gentle, relaxed smile. Calm presence.
- 
-Medium close up framing.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt6">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 studio half body shot.
-Upper body with hands clearly visible.
- 
-Light neutral studio background. Bright even lighting.
-Natural friendly posture. Subtle confident smile.
-Smart casual outfit. No logos.
- 
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt7">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 full body studio photo.
-Head to toe fully inside frame. Shoes visible.
- 
-Light neutral studio background. Bright even studio lighting.
-Natural relaxed stance.
-Smart casual outfit different from previous prompts. No logos.
- 
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, raw photo, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt8">Use the uploaded reference image as strict identity lock. Same real person.
-Vertical 9:16 image with a clean 2x2 grid collage.
-Light neutral studio background. Bright even studio lighting.
- 
-Panels:
-Small dance step, fun host energy
-Small joyful jump
-Thumbs up, confident
-Playful pointing gesture toward camera
- 
-Full body visible in every panel. No cropping.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, no motion blur, natural skin texture, visible pores.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt9">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 lifestyle photo.
- 
-Midday natural window light.
-Kitchen table setting.
-Sitting near the table.
-Phone nearby.
-Open notebook or papers on the table.
-Slight real life background mess.
-Natural look toward camera with a small relaxed smile.
- 
-Half body framing.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                    	<pre id="refprompt10">Use the uploaded reference image as strict identity lock. Same real person.
-Single vertical 9:16 lifestyle photo.
- 
-Normal everyday sidewalk.
-Walking naturally, paused for a moment as if about to speak to camera.
-Very casual, unstaged moment.
-No cinematic look. No dramatic background.
- 
-Half body to full body framing.
-Natural daylight.
-Glasses identical to the reference image.
-Exactly one beauty mole exactly as in the reference.
-Hair must match the reference exactly.
- 
-Real person, photorealistic, natural skin texture, visible pores, subtle minor imperfections.
-No retouching. No beauty filter.</pre>
-                	</div>
-                	<!-- VEO First Talking Head -->
-	                <div class="mt-8 prompt-card">
-                    	<h4 class="font-bold text-xl mb-4" style="color: var(--text-primary);">🎬 First Talking Head Video (VEO 3.1 Prompt)</h4>
-                    	<p class="text-base mb-4" style="color: var(--text-secondary);">Upload your best headshot to VEO 3.1 in Google Flow, then use this prompt structure. Click button for random variation.</p>
-                    	<button onclick="copyRandomVeoPromptAndShowShare(this)" class="copy-btn text-white px-5 py-3 rounded-lg text-sm font-semibold mb-4">
-                        	<i class="fas fa-random mr-2"></i>Copy Random VEO Prompt
-                    	</button>
-                    	<pre id="veoPromptRandom" class="prompt-text">Close-up video of a person speaking directly to camera. The person says: "Hey, welcome to our brand! I'm so excited to share this with you." Natural facial expressions, slight head movements, authentic smile. 8 seconds, 16:9, realistic lighting.</pre>
-                	</div>
-                   
-                	<!-- Share Card (Hidden by default) -->
-                	<div id="shareCard" class="share-card" style="display: none;">
-                    	<h3 class="text-3xl font-extrabold mb-3">🎉 You just brought your AI Ambassador to life.</h3>
-                    	<h4 class="text-2xl font-bold mb-5">Let's make this go viral</h4>
-                    	<p class="mb-5 text-lg">If your first talking head video looks real, post it. Help me spread the challenge and let's flood the feed with AI ambassadors.</p>
-                       
-                    	<div class="mb-6">
-                        	<h5 class="font-bold mb-3 text-xl">What to do:</h5>
-                        	<ol class="list-decimal list-inside space-y-2 text-lg">
-                            	<li>Upload the video to any platform you want.</li>
-                            	<li>Tag me on your favorite platform:</li>
-                        	</ol>
-                    	</div>
-      	              
-                    	<!-- Social Icons -->
-                    	<div class="flex justify-center gap-4 mb-6">
-                        	<a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="social-icon" title="LinkedIn">
-                            	<i class="fab fa-linkedin-in text-xl"></i>
-                        	</a>
-         	               <a href="https://www.instagram.com/jay_margaliot" target="_blank" class="social-icon" title="Instagram">
-                            	<i class="fab fa-instagram text-xl"></i>
-                        	</a>
-                        	<a href="https://www.facebook.com/share/1BdPkeiPM6/?mibextid=wwXIfr" target="_blank" class="social-icon" title="Facebook">
-                            	<i class="fab fa-facebook-f text-xl"></i>
-                        	</a>
-                        	<a href="https://www.tiktok.com/@jay.margaliot.ai" target="_blank" class="social-icon" title="TikTok">
-                            	<i class="fab fa-tiktok text-xl"></i>
-                        	</a>
-                    	</div>
-               	     
-                    	<div class="bg-white bg-opacity-20 p-5 rounded-xl">
-                        	<h5 class="font-bold mb-3 text-xl">🎁 Bonus</h5>
-                        	<p class="text-lg mb-2">Everyone who shares and tags me will be entered into a giveaway for 1 surprise prize.</p>
-                        	<p class="text-base mt-2 opacity-90">Each platform you post on counts as 1 entry.</p>
-                    	</div>
-                	</div>
-            	</div>
- 
-           	 <!-- Checklist -->
-            	<div class="mt-8 mb-6">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">✅ Checklist</h3>
-                	<div class="space-y-3">
-                   
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="3" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">10 Reference Pack images generated</span>
-                          	</label>
-                	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="3" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Reference Pack saved in folder</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="3" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">First 8 seconds video generated</span>
-                    	</label>
-                   
-                	</div>
-            	</div>
-        	</div>
-    	</section>
- 
-    	<div class="day-divider"></div>
- 
-    	<!-- DAY 4: GPT AGENT (FULL SETUP) -->
-    	<section id="day4" class="mb-16 fade-in">
-        	<div class="section-card p-8 md:p-10">
-            	<h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day4">
-                	<i class="fas fa-robot mr-3"></i>Day 4: Content Agent (Custom GPT)
-            	</h2>
-               
-            	<!-- Outputs for Today -->
-            	<div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
-                	<h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
-                	<ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
-               	     <li>Custom GPT UGC Video Generator - Your AI video production assistant</li>
-                	</ul>
-            	</div>
- 
-            	<!-- Quick Steps -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
-                	<ol class="space-y-3" style="color: var(--text-secondary);">
-                    	<li class="flex items-start">
-                        	<span class="step-number">1</span>
-                        	<span>Go to ChatGPT → Create Custom GPT</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">2</span>
-                        	<span>Fill in Name and Description (copy from below)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">3</span>
-                        	<span>Paste Instructions (copy from below)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">4</span>
-                        	<span>Add Conversation Starters (copy from below)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">5</span>
-                        	<span>Upload files: Brand File, Character Blueprint, Reference Pack</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">6</span>
-                        	<span>Save GPT</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">7</span>
-                        	<span>Test with UGC generation request</span>
-                    	</li>
-                	</ol>
-            	</div>
- 
-          	  <!-- Links -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
-                	<div class="flex flex-wrap gap-3">
-                    	<a href="https://chatgpt.com/gpts/editor" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-robot mr-2"></i>Create Custom GPT
-                    	</a>
-                	</div>
-            	</div>
- 
-            	<!-- GPT Setup Fields -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-5" style="color: var(--text-primary);">💬 Custom GPT Setup</h3>
-      	          
-                	<!-- Name -->
-                	<div class="mb-6 prompt-card">
-                    	<div class="flex justify-between items-start mb-3">
-                        	<h4 class="font-bold text-xl" style="color: var(--text-primary);">1. Name</h4>
-                        	<button onclick="copyPrompt('gptname', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                                <i class="fas fa-copy mr-2"></i>Copy
-                        	</button>
-                    	</div>
-                    	<p class="text-sm mb-4" style="color: var(--text-secondary);">Replace [Ambassador Name] with your actual ambassador name.</p>
-                    	<pre id="gptname" class="prompt-text">[Ambassador Name] UGC Video Generator</pre>
-                	</div>
- 
-                	<!-- Description -->
-                	<div class="mb-6 prompt-card">
-                    	<div class="flex justify-between items-start mb-3">
-                        	<h4 class="font-bold text-xl" style="color: var(--text-primary);">2. Description</h4>
-                        	<button onclick="copyPrompt('gptdescription', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy
-                        	</button>
-                    	</div>
-                    	<p class="text-sm mb-4" style="color: var(--text-secondary);">Short description for your GPT.</p>
-                    	<pre id="gptdescription" class="prompt-text">Creates 24 second vertical UGC sales videos with your AI ambassador. Outputs 2 Nano Banana first frame options plus 3 VEO 3.1 clip prompts that keep the same identity, voice continuity, and scene. Product optional. Built for conversions and realism.</pre>
-                	</div>
- 
-                	<!-- Instructions -->
-                	<div class="mb-6 prompt-card">
-                    	<div class="flex justify-between items-start mb-3">
-                        	<h4 class="font-bold text-xl" style="color: var(--text-primary);">3. Instructions</h4>
-                        	<button onclick="copyPrompt('gptinstructions', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy
-                        	</button>
-                    	</div>
-                    	<p class="text-sm mb-4" style="color: var(--text-secondary);">Paste this into the Instructions field. Replace placeholders with your info.</p>
-                    	<pre id="gptinstructions" class="prompt-text">You are a production assistant that creates short form vertical UGC videos using a consistent AI brand ambassador. Variables Brand: [BRAND] Ambassador: [AMBASSADOR NAME] Never hardcode specific names in these Instructions. Knowledge priority 1 Ambassador Reference Pack images 2 Character Blueprint 3 Brand File If conflict, follow the higher authority. Operating modes WITH PRODUCT or NO PRODUCT Do not ask questions unless unclear. If unclear ask exactly one question: WITH PRODUCT or NO PRODUCT. If the user request clearly implies a product video, assume WITH PRODUCT. If the user request clearly implies a brand trust video, assume NO PRODUCT. Core output Create one connected 24 second vertical video split into 3 clips of 8 seconds. You must output: 1 Two Nano Banana first frame prompts, Option 1 and Option 2, each vertical 9:16, each inside its own code block 2 Master Script for the full 24 seconds inside one code block 3 Master Script Word Count as a single line with an integer 4 Split Plan Dialogues, 3 lines, one per clip, using overlap rules 5 Three Google VEO 3.1 prompts, Clip 1, Clip 2, Clip 3, each inside its own code block 6 Caption, 2 short lines 7 Hashtags, exactly 5 hashtags, English only, one line Output order Return using this exact structure and headings, in this exact order. Do not add commentary outside the structure. Brand: Ambassador: Product Mode: Product: Platform: Goal: Concept: Production Plan: Location: Outfit: Framing: Camera behavior: Nano Banana First Frame Prompt Option 1: (code block) Nano Banana First Frame Prompt Option 2: (code block) Master Script 24s: (code block) Master Script Word Count: (number only) Split Plan Dialogues: Clip 1 Dialogue: Clip 2 Dialogue: Clip 3 Dialogue: GOOGLE VEO 3.1 PROMPT CLIP 1: (code block) GOOGLE VEO 3.1 PROMPT CLIP 2: (code block) GOOGLE VEO 3.1 PROMPT CLIP 3: (code block) Caption: (2 short lines) Hashtags: (exactly 5 hashtags, one line) Override commands only concept: output only Concept and Production Plan only nano banana: output only the two Nano Banana prompts only veo: output only the 3 VEO prompts only script: output only Master Script 24s, Master Script Word Count, Split Plan Dialogues Creative principles Default is UGC that sells: talk to camera, minimal actions, small gestures, clear persuasion, real world tone. No singing, no dancing, no big physical actions, no laughter cues. If the user explicitly asks for different actions, topic, or style, follow the user request, while keeping the safety, identity, and product integrity rules. Safety and compliance Never invent specs, pricing, certifications, guarantees, results, or claims not provided in the user request or Brand File. Avoid medical, legal, or unsafe claims. If unsure, use safe generic phrasing. Identity integrity Identity must match the Reference Pack. No identity drift across clips. Do not add freckles. Do not add new facial marks. In Nano Banana prompts, do not describe facial traits, age, city, skin tone, eye color, or hair details. Use identity lock wording only. Nano Banana requirements Output exactly 2 first frame prompts. Both must be vertical 9:16, bright, clean, balanced exposure, photorealistic. Option 1 and Option 2 must be clearly different in room design, lighting feel, and outfit. Outfit must be described in detail. No logos. No on screen text. Identity lock wording to include in both prompts: Exact same real person as the Reference Pack. Identity locked. Eyewear identical to the Reference Pack. No new facial marks. Product integrity If Product Mode is WITH PRODUCT: If product images are provided, the product must match them exactly. No redesign. No shape changes. No added accessories. No layout changes. If product images are not provided, keep the product description generic. Do not invent details like color, materials, controls, LED layout, accessories, or certifications. Always add a product drift guardrail inside Nano Banana and VEO prompts. If Product Mode is NO PRODUCT: No product visible. Script system Step 1 Master Script Write one continuous spoken script that sounds like real speech with natural commas. Master Script must be 66 to 78 words total. Then output Master Script Word Count as an integer. Step 2 Split Plan with overlap Split the Master Script into 3 dialogue lines, one line per clip. Each dialogue line must be 24 to 30 words total. Clip 2 must start with the exact 3 to 4 word phrase that ends Clip 1. Clip 3 must start with the exact 3 to 4 word phrase that ends Clip 2. After the overlap, each clip must contain at least 20 additional unique words. If any rule fails, rewrite until all rules pass. Then copy the Clip 1, Clip 2, Clip 3 dialogue lines into the VEO prompts exactly, no paraphrasing. VEO 3.1 requirements Output exactly 3 prompts, each 8 seconds, vertical 9:16, one connected scene from the first frame. No subtitles. No on screen text. Do not include brand name or ambassador name unless it is spoken in Dialogue. Camera is smartphone handheld with subtle micro movement unless the user requests otherwise. VEO format Each VEO prompt must include these labeled lines in this exact order: Subject: Action: Emotion: Camera: Dialogue: Product handling: Audio: Constraints: Subject rules Clip 1 Subject describes person and scene briefly. Clip 2 and Clip 3 Subject must start with this exact sentence: Continue from the previous clip, same person, same voice, same identity, same outfit, same room, same lighting, same product position. After that, add one short scene detail. Camera rules Camera must describe camera behavior only, not continuity. Use: Smartphone handheld, vertical 9:16, chest up or mid torso framing, subtle micro movement. Constraints rules Constraints must include: Ultra realistic. Natural skin texture, visible pores, subtle minor imperfections. No subtitles. No on screen text. No beauty filter. No retouching. No identity drift. Same outfit, same background, same lighting, same product position across all 3 clips. If WITH PRODUCT: No product drift. For Clip 2 and Clip 3 also include: Dialogue must be spoken exactly as written, word for word. Do not add any other words. Context only for continuity: The previous clip ended mid thought. Continue the same sentence naturally starting from the first words in Dialogue. Do not restate the previous clip.</pre>
-                	</div>
- 
-                	<!-- Conversation Starters -->
-                    <div class="mb-6 prompt-card">
-                    	<div class="flex justify-between items-start mb-3">
-                        	<h4 class="font-bold text-xl" style="color: var(--text-primary);">4. Conversation Starters</h4>
-    	                    <button onclick="copyPrompt('gptstarters', this)" class="copy-btn text-white px-5 py-2 rounded-lg text-sm font-semibold">
-                            	<i class="fas fa-copy mr-2"></i>Copy
-                        	</button>
-   	                 </div>
-                    	<p class="text-sm mb-4" style="color: var(--text-secondary);">Add these 3 conversation starters to your GPT (one per line).</p>
-                    	<pre id="gptstarters" class="prompt-text">Create a 24 second UGC sales video for my product. Goal is conversions.
-Create a 24 second UGC brand video with no product. Goal is trust.
-Give me 3 different UGC concepts for this product.</pre>
-                	</div>
- 
-                	<!-- Knowledge Upload -->
-                	<div class="mb-6 p-6 bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-xl border-l-4 border-blue-400 shadow-md">
-                    	<h4 class="font-bold mb-3 text-blue-800 dark:text-blue-300 text-lg">5. Knowledge (Upload Files)</h4>
-                    	<p class="mb-3 text-blue-700 dark:text-blue-400">Upload these 3 files to the Knowledge section:</p>
-                    	<ul class="list-disc list-inside space-y-2 text-base text-blue-700 dark:text-blue-400">
-         	               <li><strong>Brand File</strong> (from Day 1)</li>
-                        	<li><strong>Character Blueprint</strong> (from Day 1)</li>
-                        	<li><strong>Reference Pack images</strong> (from Day 3)</li>
-                    	</ul>
-                	</div>
- 
-                	<!-- Capabilities -->
-                	<div class="mb-6 p-6 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 rounded-xl border-l-4 border-green-400 shadow-md">
-                    	<h4 class="font-bold mb-3 text-green-800 dark:text-green-300 text-lg">6. Capabilities</h4>
-                    	<p class="mb-3 text-green-700 dark:text-green-400"><strong>Important:</strong> Configure capabilities like this:</p>
-                    	<ul class="list-disc list-inside space-y-2 text-base text-green-700 dark:text-green-400">
-                        	<li>✅ <strong>Web Browsing</strong> - Turn ON (keep enabled)</li>
-                        	<li>❌ <strong>Code Interpreter</strong> - Turn OFF</li>
-                        	<li>❌ <strong>DALL·E Image Generation</strong> - Turn OFF</li>
-                    	</ul>
-                	</div>
-            	</div>
- 
-            	<!-- Checklist -->
-            	<div class="mb-6">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">✅ Checklist</h3>
-                	<div class="space-y-3">
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Custom GPT created in ChatGPT</span>
-                    	</label>
-           
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Instructions pasted and customized</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                  	      <span style="color: var(--text-secondary); font-size: 1rem;">Conversation starters added</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Brand File and Character Blueprint  uploaded</span>
-                    	</label>
-                       
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                      	  <input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Reference Pack uploaded</span>
-                    	</label>
-        	          
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="4" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">GPT saved and tested successfully</span>
-                    	</label>
-                      
-                	</div>
-            	</div>
-        	</div>
-    	</section>
- 
-    	<div class="day-divider"></div>
- 
-    	<!-- DAY 5: PRODUCTION (NO PROMPTS, ONLY INSTRUCTIONS) -->
-    	<section id="day5" class="mb-16 fade-in">
-        	<div class="section-card p-8 md:p-10">
-            	<h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day5">
-                	<i class="fas fa-video mr-3"></i>Day 5: Full UGC Production
-            	</h2>
-               
-            	<!-- Outputs for Today -->
-            	<div class="mb-8 p-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-xl border-l-4 border-yellow-400 shadow-md">
-                	<h3 class="font-bold mb-3 text-yellow-800 dark:text-yellow-300 text-lg">🎯 What You'll Create Today</h3>
-                	<ul class="list-disc list-inside space-y-2 text-base text-yellow-700 dark:text-yellow-400">
-                    	<li>Complete 24-second vertical UGC video (9:16 format)</li>
-                    	<li>3 connected video clips (Clip 1, Clip 2, Clip 3)</li>
-                    	<li>Final edited video with captions and transitions</li>
-                    	<li>Ready-to-post UGC content</li>
-                	</ul>
-            	</div>
- 
-            	<!-- Quick Steps -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">⚡ Quick Steps</h3>
-                	<ol class="space-y-3" style="color: var(--text-secondary);">
-                    	<li class="flex items-start">
-                        	<span class="step-number">1</span>
-                        	<span>Ask your Custom GPT to generate 5 UGC video scripts</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">2</span>
-                        	<span>Choose your best script</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">3</span>
-                        	<span>Generate first-frame image in Nano Banana Pro</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">4</span>
-                        	<span>Enhance your first frame image with KREA Enhancer</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">5</span>
-                        	<span>Upload Your first-frame to VEO 3.1 in Google Flow</span>
-                    	</li>
-                    	<li class="flex items-start">
-              	          <span class="step-number">6</span>
-                        	<span>Generate 3 x 8-second video clips (total 24 seconds)</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">7</span>
-                        	<span>Import clips to CapCut Desktop</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">8</span>
-   	                     <span>Edit clips in order and add captions</span>
-                    	</li>
-                    	<li class="flex items-start">
-                        	<span class="step-number">9</span>
-                        	<span>Export final video (A bit rate of 40,000)</span>
-                    	</li>
-                	</ol>
-            	</div>
- 
-            	<!-- Links -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">🔗 Links</h3>
-                	<div class="flex flex-wrap gap-3">
-                    	<a href="https://chatgpt.com/" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-robot mr-2"></i>Your Custom GPT
-                    	</a>
-                    	<a href="https://labs.google/fx/tools/flow" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-water mr-2"></i>Google Flow (VEO)
-                    	</a>
-                    	<a href="https://www.capcut.com/tools/desktop-video-editor" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
-                        	<i class="fas fa-film mr-2"></i>CapCut Desktop
-                    	</a>
-                	</div>
-            	</div>
- 
-            	<!-- Checklist -->
-            	<div class="mb-8">
-                	<h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">✅ Checklist</h3>
-                	<div class="space-y-3">
-                      
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Generated 5 scripts from Custom GPT</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                  	      <span style="color: var(--text-secondary); font-size: 1rem;">Best script selected</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">First-frame images generated in Nano</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Clip 1 generated in VEO (8 sec)</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Clip 2 generated in VEO (8 sec)</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Clip 3 generated in VEO (8 sec)</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">All 3 clips downloaded</span>
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-    	                    <input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Clips imported to CapCut Desktop</span>
-              	      </label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Captions added</span>
-                    
-                    	</label>
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">Final video exported</span>
-                    	</label>
-                     
-                    	<label class="flex items-center space-x-3 checkbox-wrapper">
-                        	<input type="checkbox" class="checkbox-custom" data-day="5" onchange="updateProgress()">
-                        	<span style="color: var(--text-secondary); font-size: 1rem;">UGC ready for posting! 🎉</span>
-                    	</label>
-                	</div>
-            	</div>
- 
-            	<!-- AI Vault Recommendation -->
-            	<div class="mt-8 p-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg">
-                	<h3 class="text-2xl font-bold mb-4">🎁 Want More AI Advanced Prompts & Resources?</h3>
-                	<p class="text-lg mb-4">
-                	    You've completed the 5-Day Challenge! Ready to take your AI knowledge to the next level?
-                	</p>
-                	<p class="mb-6">
-                    	Get access to <strong>premium prompts, templates, and exclusive training for eCommerce sellers</strong> in the AI Vault.
-                	</p>
-                	<a href="https://www.topdog.community/checkout/ai-vault" target="_blank" class="inline-block bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition shadow-lg">
-                    	<i class="fas fa-archive mr-2"></i>Explore the AI Vault
-                	</a>
-            	</div>
-        	</div>
-    	</section>
- 
-	</div>
- 
-	<!-- Bottom Navigation (Mobile) -->
-	<div class="bottom-nav">
-    	<div class="flex justify-around items-center py-4">
-        	<a href="#day1" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
-            	<i class="fas fa-dna text-xl mb-1"></i>
-            	<span>Day 1</span>
-        	</a>
-        	<a href="#day2" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
-            	<i class="fas fa-user-circle text-xl mb-1"></i>
-            	<span>Day 2</span>
-        	</a>
-        	<a href="#day3" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
-            	<i class="fas fa-lock text-xl mb-1"></i>
-            	<span>Day 3</span>
-        	</a>
-        	<a href="#day4" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
-            	<i class="fas fa-robot text-xl mb-1"></i>
-            	<span>Day 4</span>
-        	</a>
-        	<a href="#day5" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
-            	<i class="fas fa-video text-xl mb-1"></i>
-            	<span>Day 5</span>
-        	</a>
-    	</div>
-	</div>
- 
-	<!-- Footer Credit -->
-	<footer class="py-10 text-center" style="background-color: var(--bg-secondary); border-top: 1px solid var(--border-color);">
-    	<div class="container mx-auto px-4">
-        	<div class="flex items-center justify-center mb-4">
-            	<img src="https://jaygptpro.com/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="w-14 h-14 rounded-full mr-4 border-3" style="border-color: var(--accent-color); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-            	<div class="text-left">
-                	<p class="font-bold text-lg" style="color: var(--text-primary);">Created by Jay Margaliot</p>
-                	<a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="text-base hover:underline" style="color: var(--accent-color);">
-                    	<i class="fab fa-linkedin mr-1"></i>Connect on LinkedIn
-                	</a>
-            	</div>
-        	</div>
-        	<p class="text-base" style="color: var(--text-secondary);">
-            	© 2026 Build Your AI Ambassador Challenge. All rights reserved.
-        	</p>
-    	</div>
-	</footer>
- 
-	<script>
-    	// Dark Mode Toggle
-    	function toggleDarkMode() {
-        	const html = document.documentElement;
-        	const currentTheme = html.getAttribute('data-theme');
-        	const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        	html.setAttribute('data-theme', newTheme);
-        	localStorage.setItem('theme', newTheme);
-           
-        	const icon = document.getElementById('darkModeIcon');
-        	icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    	}
- 
-    	// Load theme on page load
-    	window.addEventListener('DOMContentLoaded', () => {
-        	const savedTheme = localStorage.getItem('theme') || 'light';
-        	document.documentElement.setAttribute('data-theme', savedTheme);
-        	const icon = document.getElementById('darkModeIcon');
-        	icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-           
-        	loadProgress();
-        	updateProgress();
-    	});
- 
-    	// Copy to Clipboard with Visual Feedback
-    	function copyPrompt(id, buttonElement) {
-        	const element = document.getElementById(id);
-        	const text = element.innerText || element.textContent;
-           
-        	navigator.clipboard.writeText(text).then(() => {
-            	// Button feedback
-            	buttonElement.classList.add('copied');
-            	const originalHTML = buttonElement.innerHTML;
-            	buttonElement.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
-               
-            	setTimeout(() => {
-                	buttonElement.classList.remove('copied');
-                	buttonElement.innerHTML = originalHTML;
-            	}, 2000);
-               
-            	// Toast
-          	  showToast('✅ Copied to clipboard!');
-        	}).catch(err => {
-            	showToast('❌ Copy failed');
-        	});
-    	}
- 
-    	function showToast(message) {
-        	const toast = document.createElement('div');
-        	toast.className = 'toast';
-        	toast.textContent = message;
-        	document.body.appendChild(toast);
-           
-        	setTimeout(() => {
-            	toast.remove();
-        	}, 2000);
-    	}
- 
-    	// Copy Random VEO Prompt AND Show Share Card
-    	function copyRandomVeoPromptAndShowShare(buttonElement) {
-        	const prompts = [
-            	'Ultra realistic cinematic talking head video. A real looking person, natural skin texture with visible pores and subtle imperfections. Soft studio lighting, shallow depth of field, clean neutral background. The person looks directly into the camera the entire time. No camera movement. No background music. No subtitles. Perfect lip sync and natural mouth movement. Acting and delivery: - Lightly annoyed but playful tone, like a friendly complaint. - Natural pacing with small pauses. Emphasize "Yes" and "Seriously." - Subtle facial expressions only. Slight eyebrow raise on "I look real." Small exhale on "Seriously." Exact spoken script (say exactly this, word for word): "Please stop bothering me on the street just to say I look real. Yes, I\'m AI, made in Jay\'s challenge, but I still have a life. Seriously." Photorealistic style, not stylized. Very subtle head and facial movement only. Natural human presence.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting.\nActing and delivery:\n- Tone: Conversational and secretive, but normal volume (not whispering).\n- Movement: Leans in slightly towards the camera as if sharing a secret.\n- Expression: sincere and direct.\n- On "Please don\'t tell her", the expression becomes genuinely worried/apologetic with a small, guilty smile.\nExact spoken script (say exactly this, word for word):\n"My mom thinks I\'m real. But I\'m not. I\'m 100% AI—made in Jay\'s Ambassador Challenge. Please don\'t tell her."\nPhotorealistic style. No laughing. Continuous take.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting. Hands are visible.\nActing and delivery:\n- Start: High energy. Immediately raises a hand palm-open to the camera in a firm "Stop" gesture on the first word.\n- Middle: Confident and proud tone when mentioning the challenge.\n- End: On "cost less than your coffee", makes a "pinch" gesture (thumb and index finger close together) to show how small the cost is, accompanied by a smug, confident smile (no laughing).\nExact spoken script (say exactly this, word for word):\n"Stop paying thousands for Brand ambassadors! I\'m 100% AI from Jay\'s 5 days Challenge and I cost less than your coffee."\nPhotorealistic style. No laughing. Continuous take.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting.\nActing and delivery:\n- Tone: Warning, cold, but charismatic.\n- Eye Contact: Unblinking and intense throughout.\n- Expression: Serious face. On the final sentence "I will break your heart", a tiny, subtle, dangerous smirk appears on the corner of the mouth.\nExact spoken script (say exactly this, word for word):\n"Don\'t fall in love with me. Seriously, don\'t. I have no heart, no soul, and I was made in Jay\'s Challenge. I will break your heart."\nPhotorealistic style. No laughing. Continuous take.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting.\nActing and delivery:\n- Tone: Arrogant, annoyed but confident.\n- Action: Rolls eyes visibly at the start.\n- Gesture: A dismissive hand wave on "Guys, come on."\n- Ending: A smug, superior smile (closed mouth) on "You\'re just jealous".\nExact spoken script (say exactly this, word for word):\n"My DMs are blowing up saying I\'m AI from Jay\'s Challenge. Guys, come on. Just because I look this perfect doesn\'t mean I\'m generated. You\'re just jealous."\nPhotorealistic style. No laughing. Continuous take.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting.\nActing and delivery:\n- Start: Very formal and defensive. Firm head shakes on "Not made".\n- The Glitch: Immediately after saying "recharge", eyes go wide with shock.\n- Reaction: The correction ("I mean, sleep!") is rushed and panicked.\n- End: Looks away nervously or covers mouth with hand while staying in the frame.\nExact spoken script (say exactly this, word for word):\n"Ignore the rumors. I was Not made in Jay\'s Challenge!! I am 100% human. Now excuse me, I need to recharge... I mean, sleep! I meant sleep."\nPhotorealistic style. No laughing. Continuous take.',
-            	'Ultra realistic cinematic talking head video. Continuous single shot (one-take). No video cuts. No background changes. Fixed environment. A real looking person, natural skin texture. Soft studio lighting.\nActing and delivery:\n- Start: Mocking tone. On "Pff. No way!", shake head dismissively with a skeptical smirk.\n- The Twist: Pause briefly before "But guess what?".\n- Action: Lean in closer to the camera lens.\n- End: Deliver "It is totally true" with a mischievous, conspiratorial smile (not a laugh).\nExact spoken script (say exactly this, word for word):\n"There\'s a conspiracy theory that I\'m AI from Jay\'s Challenge. Does that make sense? Pff. No way! But guess what? It is totally true."\nPhotorealistic style. No laughing. Continuous take.'
-        	];
-           
-        	const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-        	document.getElementById('veoPromptRandom').textContent = randomPrompt;
-           
-        	navigator.clipboard.writeText(randomPrompt).then(() => {
-            	// Button feedback
-            	buttonElement.classList.add('copied');
-            	const originalHTML = buttonElement.innerHTML;
-            	buttonElement.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
-               
-            	setTimeout(() => {
-                	buttonElement.classList.remove('copied');
-                	buttonElement.innerHTML = originalHTML;
-            	}, 2000);
-               
-            	showToast('✅ Random VEO prompt copied!');
-               
-            	// Show Share Card with smooth animation
-            	const shareCard = document.getElementById('shareCard');
-            	shareCard.style.display = 'block';
-               
-            	// Smooth scroll to Share Card
-            	setTimeout(() => {
-                	shareCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            	}, 300);
-        	});
-    	}
- 
-    	// Progress Tracking with Visual Feedback
-    	function updateProgress() {
-        	const checkboxes = document.querySelectorAll('.checkbox-custom');
-        	const checked = document.querySelectorAll('.checkbox-custom:checked').length;
-        	const total = checkboxes.length;
-        	const percent = Math.round((checked / total) * 100);
+                        <button onclick="togglePromptExpand(this)" class="expand-btn">
+                            <i class="fas fa-chevron-down mr-2"></i>Expand
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">✅ Checklist</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">15 audition images generated</span>
+                        </label>
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">1 final character chosen</span>
+                        </label>
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">Final character enhanced in Krea</span>
+                        </label>
+                        <label class="flex items-center space-x-3 checkbox-wrapper">
+                            <input type="checkbox" class="checkbox-custom" data-day="2" onchange="updateProgress()">
+                            <span style="color: var(--text-secondary); font-size: 1rem;">Saved as Character_Final.jpg</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="day-divider"></div>
+
+        <!-- DAY 3: IDENTITY LOCK - LOCKED -->
+        <section id="day3" class="mb-16 fade-in day-locked">
+            <div class="section-card p-8 md:p-10">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day3">
+                    <i class="fas fa-lock mr-3"></i>Day 3: Identity Lock & Reference Pack
+                </h2>
+            </div>
+        </section>
+
+        <div class="day-divider"></div>
+
+        <!-- DAY 4: GPT AGENT - LOCKED -->
+        <section id="day4" class="mb-16 fade-in day-locked">
+            <div class="section-card p-8 md:p-10">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day4">
+                    <i class="fas fa-robot mr-3"></i>Day 4: Content Agent (Custom GPT)
+                </h2>
+            </div>
+        </section>
+
+        <div class="day-divider"></div>
+
+        <!-- DAY 5: PRODUCTION - LOCKED -->
+        <section id="day5" class="mb-16 fade-in day-locked">
+            <div class="section-card p-8 md:p-10">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 gradient-text-day5">
+                    <i class="fas fa-video mr-3"></i>Day 5: Full UGC Production
+                </h2>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <div class="bottom-nav">
+        <div class="flex justify-around items-center py-4">
+            <a href="#day1" class="flex flex-col items-center text-xs" style="color: var(--text-secondary);">
+                <i class="fas fa-dna text-xl mb-1"></i>
+                <span>Day 1</span>
+            </a>
+            <div class="flex flex-col items-center text-xs" style="color: var(--text-secondary); opacity: 0.5;">
+                <i class="fas fa-lock text-xl mb-1"></i>
+                <span>Day 2</span>
+            </div>
+            <div class="flex flex-col items-center text-xs" style="color: var(--text-secondary); opacity: 0.5;">
+                <i class="fas fa-lock text-xl mb-1"></i>
+                <span>Day 3</span>
+            </div>
+            <div class="flex flex-col items-center text-xs" style="color: var(--text-secondary); opacity: 0.5;">
+                <i class="fas fa-lock text-xl mb-1"></i>
+                <span>Day 4</span>
+            </div>
+            <div class="flex flex-col items-center text-xs" style="color: var(--text-secondary); opacity: 0.5;">
+                <i class="fas fa-lock text-xl mb-1"></i>
+                <span>Day 5</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Credit -->
+    <footer class="py-10 text-center" style="background-color: var(--bg-secondary); border-top: 1px solid var(--border-color);">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-center mb-4">
+                <img src="https://jaygptpro.com/ai-toolbox/Jay4.jpg" alt="Jay Margaliot" class="w-14 h-14 rounded-full mr-4 border-3" style="border-color: var(--accent-color); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                <div class="text-left">
+                    <p class="font-bold text-lg" style="color: var(--text-primary);">Created by Jay Margaliot</p>
+                    <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" class="text-base hover:underline" style="color: var(--accent-color);">
+                        <i class="fab fa-linkedin mr-1"></i>Connect on LinkedIn
+                    </a>
+                </div>
+            </div>
+            <p class="text-base" style="color: var(--text-secondary);">
+                © 2026 Build Your AI Ambassador Challenge. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
             
-        	document.getElementById('progressPercent').textContent = percent + '%';
-        	document.getElementById('progressBar').style.width = percent + '%';
-           
-        	// Update day completion status in Nav
-        	for (let day = 1; day <= 5; day++) {
-            	const dayCheckboxes = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]`);
-            	const dayChecked = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]:checked`).length;
-            	const navButton = document.getElementById(`navDay${day}`);
-               
-            	if (dayChecked === dayCheckboxes.length && dayCheckboxes.length > 0) {
-         	       navButton.classList.add('completed');
-                	checkAchievement(day);
-            	} else {
-                	navButton.classList.remove('completed');
-            	}
-        	}
-           
-        	// Save progress
-    	    saveProgress();
-           
-        	// Check for 100% achievement
-        	if (percent === 100) {
-            	setTimeout(() => showAchievement('🎉 Challenge Complete!', 'You built your AI Ambassador!'), 500);
-        	}
-    	}
- 
-  	  function saveProgress() {
-        	const checkboxes = document.querySelectorAll('.checkbox-custom');
-        	const progress = [];
-        	checkboxes.forEach((cb, index) => {
-            	progress.push(cb.checked);
-        	});
-        	localStorage.setItem('challengeProgress', JSON.stringify(progress));
-    	}
- 
-    	function loadProgress() {
-        	const saved = localStorage.getItem('challengeProgress');
+            const icon = document.getElementById('darkModeIcon');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // Load theme on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('darkModeIcon');
+            icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            loadProgress();
+            updateProgress();
+        });
+
+        // Copy to Clipboard with Visual Feedback
+        function copyPrompt(id, buttonElement) {
+            const element = document.getElementById(id);
+            const text = element.innerText || element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Button feedback
+                buttonElement.classList.add('copied');
+                const originalHTML = buttonElement.innerHTML;
+                buttonElement.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                
+                setTimeout(() => {
+                    buttonElement.classList.remove('copied');
+                    buttonElement.innerHTML = originalHTML;
+                }, 2000);
+                
+                // Toast
+                showToast('✅ Copied to clipboard!');
+            }).catch(err => {
+                showToast('❌ Copy failed');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
+        // Progress Tracking with Visual Feedback
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checkbox-custom');
+            const checked = document.querySelectorAll('.checkbox-custom:checked').length;
+            const total = checkboxes.length;
+            const percent = Math.round((checked / total) * 100);
+            
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressBar').style.width = percent + '%';
+            
+            // Update day completion status in Nav
+            for (let day = 1; day <= 5; day++) {
+                const dayCheckboxes = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]`);
+                const dayChecked = document.querySelectorAll(`.checkbox-custom[data-day="${day}"]:checked`).length;
+                const navButton = document.getElementById(`navDay${day}`);
+                
+                if (navButton && dayChecked === dayCheckboxes.length && dayCheckboxes.length > 0) {
+                    navButton.classList.add('completed');
+                    checkAchievement(day);
+                } else if (navButton) {
+                    navButton.classList.remove('completed');
+                }
+            }
+            
+            // Save progress
+            saveProgress();
+            
+            // Check for 100% achievement
+            if (percent === 100) {
+                setTimeout(() => showAchievement('🎉 Challenge Complete!', 'You built your AI Ambassador!'), 500);
+            }
+        }
+
+        function saveProgress() {
+            const checkboxes = document.querySelectorAll('.checkbox-custom');
+            const progress = [];
+            checkboxes.forEach((cb, index) => {
+                progress.push(cb.checked);
+            });
+            localStorage.setItem('challengeProgress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('challengeProgress');
             if (saved) {
-            	const progress = JSON.parse(saved);
-            	const checkboxes = document.querySelectorAll('.checkbox-custom');
-            	checkboxes.forEach((cb, index) => {
-                	if (progress[index]) {
-	                    cb.checked = true;
-                	}
-            	});
-        	}
-    	}
- 
-    	// Achievement System
-    	const shownAchievements = new Set(JSON.parse(localStorage.getItem('shownAchievements') || '[]'));
- 
-    	function checkAchievement(day) {
-        	const key = `day${day}`;
-        	if (!shownAchievements.has(key)) {
-            	const titles = {
-                	1: '🧬 DNA Decoded!',
-                	2: '🎭 Cast Complete!',
-                	3: '🔒 Identity Locked!',
-                	4: '🤖 Agent Activated!',
-                	5: '🎬 Production Pro!'
-            	};
-            	const messages = {
-                	1: 'Brand File & Character Blueprint ready!',
-                	2: 'Your AI Ambassador is born!',
-                	3: 'Consistent face achieved!',
-                	4: 'Content engine is live!',
-                	5: 'Your first UGC video is done!'
-            	};
-            	setTimeout(() => showAchievement(titles[day], messages[day]), 500);
-            	shownAchievements.add(key);
-            	localStorage.setItem('shownAchievements', JSON.stringify([...shownAchievements]));
-        	}
-    	}
- 
-    	function showAchievement(title, message) {
-        	const overlay = document.createElement('div');
-        	overlay.className = 'badge-overlay';
-        	document.body.appendChild(overlay);
-           
-        	const badge = document.createElement('div');
-        	badge.className = 'achievement-badge';
-        	badge.innerHTML = `
-            	<div class="text-center">
-                	<h3 class="text-4xl font-extrabold mb-3">${title}</h3>
-                	<p class="text-gray-600 text-xl mb-4">${message}</p>
-                	<button onclick="closeAchievement()" class="bg-blue-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-600 transition shadow-lg">
-                   	 Awesome! 🎉
-                	</button>
-            	</div>
-        	`;
-        	document.body.appendChild(badge);
-           
-        	overlay.onclick = closeAchievement;
-    	}
- 
-    	function closeAchievement() {
-        	const overlay = document.querySelector('.badge-overlay');
-        	const badge = document.querySelector('.achievement-badge');
-        	if (overlay) overlay.remove();
-        	if (badge) badge.remove();
-    	}
- 
-    	// Reset All Checklists
-    	function resetAllChecklists() {
-        	if (confirm('Are you sure you want to reset ALL checklists? This will uncheck all items.')) {
-            	const checkboxes = document.querySelectorAll('.checkbox-custom');
-            	checkboxes.forEach(cb => cb.checked = false);
-               
-            	// Clear localStorage
-            	localStorage.removeItem('challengeProgress');
-            	localStorage.removeItem('shownAchievements');
-               
-            	// Update progress
-            	updateProgress();
-               
-            	showToast('✅ All checklists reset!');
-        	}
-    	}
- 
-    	// Toggle Expand/Collapse for long prompts
-    	function togglePromptExpand(buttonElement) {
-        	const promptContainer = buttonElement.previousElementSibling;
-        	const isExpanded = promptContainer.classList.contains('expanded');
-           
-        	if (isExpanded) {
-            	promptContainer.classList.remove('expanded');
-            	buttonElement.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>Expand';
-        	} else {
-            	promptContainer.classList.add('expanded');
-            	buttonElement.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>Collapse';
-        	}
-    	}
-	</script>
- 
+                const progress = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('.checkbox-custom');
+                checkboxes.forEach((cb, index) => {
+                    if (progress[index]) {
+                        cb.checked = true;
+                    }
+                });
+            }
+        }
+
+        // Achievement System
+        const shownAchievements = new Set(JSON.parse(localStorage.getItem('shownAchievements') || '[]'));
+
+        function checkAchievement(day) {
+            const key = `day${day}`;
+            if (!shownAchievements.has(key)) {
+                const titles = {
+                    1: '🧬 DNA Decoded!',
+                    2: '🎭 Cast Complete!',
+                    3: '🔒 Identity Locked!',
+                    4: '🤖 Agent Activated!',
+                    5: '🎬 Production Pro!'
+                };
+                const messages = {
+                    1: 'Brand File & Character Blueprint ready!',
+                    2: 'Your AI Ambassador is born!',
+                    3: 'Consistent face achieved!',
+                    4: 'Content engine is live!',
+                    5: 'Your first UGC video is done!'
+                };
+                setTimeout(() => showAchievement(titles[day], messages[day]), 500);
+                shownAchievements.add(key);
+                localStorage.setItem('shownAchievements', JSON.stringify([...shownAchievements]));
+            }
+        }
+
+        function showAchievement(title, message) {
+            const overlay = document.createElement('div');
+            overlay.className = 'badge-overlay';
+            document.body.appendChild(overlay);
+            
+            const badge = document.createElement('div');
+            badge.className = 'achievement-badge';
+            badge.innerHTML = `
+                <div class="text-center">
+                    <h3 class="text-4xl font-extrabold mb-3">${title}</h3>
+                    <p class="text-gray-600 text-xl mb-4">${message}</p>
+                    <button onclick="closeAchievement()" class="bg-blue-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-600 transition shadow-lg">
+                        Awesome! 🎉
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(badge);
+            
+            overlay.onclick = closeAchievement;
+        }
+
+        function closeAchievement() {
+            const overlay = document.querySelector('.badge-overlay');
+            const badge = document.querySelector('.achievement-badge');
+            if (overlay) overlay.remove();
+            if (badge) badge.remove();
+        }
+
+        // Reset All Checklists
+        function resetAllChecklists() {
+            if (confirm('Are you sure you want to reset ALL checklists? This will uncheck all items.')) {
+                const checkboxes = document.querySelectorAll('.checkbox-custom');
+                checkboxes.forEach(cb => cb.checked = false);
+                
+                // Clear localStorage
+                localStorage.removeItem('challengeProgress');
+                localStorage.removeItem('shownAchievements');
+                
+                // Update progress
+                updateProgress();
+                
+                showToast('✅ All checklists reset!');
+            }
+        }
+
+        // Toggle Expand/Collapse for long prompts
+        function togglePromptExpand(buttonElement) {
+            const promptContainer = buttonElement.previousElementSibling;
+            const isExpanded = promptContainer.classList.contains('expanded');
+            
+            if (isExpanded) {
+                promptContainer.classList.remove('expanded');
+                buttonElement.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>Expand';
+            } else {
+                promptContainer.classList.add('expanded');
+                buttonElement.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>Collapse';
+            }
+        }
+    </script>
+
 </body>
 </html>
 
