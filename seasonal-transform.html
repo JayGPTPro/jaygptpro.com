@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seasonal Image Transformer for Amazon Sellers | Nano Banana Pro | Jay Margaliot</title>
+    <meta name="description" content="Transform any product image into a seasonal or holiday version in seconds. Free prompts for Nano Banana Pro.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --accent-gold: #D4AF37;
+            --dark-bg: #0A0A0A;
+            --darker-bg: #050505;
+            --text-gold: #F4E5C2;
+            --shadow-gold: rgba(212,175,55,0.3);
+            --whatsapp-green: #25D366;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            background: var(--dark-bg);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 15% 25%, rgba(212,175,55,0.06) 0%, transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(255,179,71,0.05) 0%, transparent 45%);
+            z-index: 0; pointer-events: none;
+        }
+        .floating-banana {
+            position: fixed; font-size: 2.5rem;
+            animation: floatBanana 4s ease-in-out infinite;
+            z-index: 0; opacity: 0.08; pointer-events: none;
+        }
+        @keyframes floatBanana {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-14px) rotate(8deg); }
+        }
+
+        /* PAGE LAYOUT */
+        .page {
+            position: relative; z-index: 1;
+            max-width: 860px; margin: 0 auto;
+            padding: 1rem 1.2rem 0.6rem;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            gap: 0.7rem;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            text-align: center; flex-shrink: 0;
+            padding: 1.6rem 1rem 0.6rem;
+        }
+        .hero h1 {
+            font-size: 1.7rem; font-weight: 900;
+            color: var(--accent-gold);
+            line-height: 1.25; margin-bottom: 0.7rem;
+        }
+        .hero p {
+            font-size: 0.88rem; color: var(--text-gold);
+            line-height: 1.65;
+            margin-bottom: 1rem; opacity: 0.8;
+            max-width: 560px; margin-left: auto; margin-right: auto;
+        }
+        .btn-wa {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white; font-size: 0.82rem;
+            padding: 0.45rem 1.1rem; border: none;
+            border-radius: 10px; font-weight: 700; cursor: pointer;
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            box-shadow: 0 3px 12px rgba(37,211,102,0.25);
+            transition: all 0.25s;
+        }
+        .btn-wa:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(37,211,102,0.35); }
+
+        /* ── CAROUSEL ── */
+        .carousel-section {
+            flex-shrink: 0;
+            display: flex; align-items: center;
+            justify-content: center; gap: 0.8rem;
+        }
+        .carousel-arrow {
+            background: rgba(212,175,55,0.1);
+            border: 2px solid rgba(212,175,55,0.3);
+            color: var(--accent-gold);
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            font-size: 1rem; cursor: pointer;
+            transition: all 0.2s; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .carousel-arrow:hover {
+            background: rgba(212,175,55,0.22);
+            border-color: var(--accent-gold);
+            transform: scale(1.1);
+        }
+        .carousel-track {
+            display: flex; align-items: center;
+            gap: 0.5rem; overflow: hidden;
+        }
+        .ci {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0; text-align: center;
+            background: rgba(255,255,255,0.03);
+            user-select: none;
+        }
+        .ci.far  { width: 76px;  height: 76px;  opacity: 0.28; transform: scale(0.78); }
+        .ci.near { width: 110px; height: 88px;  opacity: 0.58; transform: scale(0.9);  }
+        .ci.center { width: 164px; height: 120px; opacity: 1; transform: scale(1); background: rgba(255,255,255,0.06); }
+        .ci .ci-emoji { line-height: 1; margin-bottom: 0.25rem; }
+        .ci.far  .ci-emoji { font-size: 1.8rem; }
+        .ci.near .ci-emoji { font-size: 2.2rem; }
+        .ci.center .ci-emoji { font-size: 3rem; }
+        .ci .ci-name { font-weight: 700; }
+        .ci.far  .ci-name { font-size: 0.62rem; opacity: 0.5; }
+        .ci.near .ci-name { font-size: 0.72rem; color: var(--text-gold); }
+        .ci.center .ci-name { font-size: 0.88rem; color: white; }
+        .ci .ci-cat { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.55; margin-top: 0.12rem; }
+        .ci:hover:not(.center) { opacity: 0.8; }
+
+        /* ── DOT INDICATORS ── */
+        .dot-nav {
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            gap: 1.2rem;
+        }
+        .dot-group {
+            display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+        }
+        .dot-group-label {
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-gold); opacity: 0.5; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s;
+            background: none; border: none; padding: 0;
+        }
+        .dot-group-label:hover { opacity: 0.9; }
+        .dot-row { display: flex; align-items: center; gap: 0.4rem; }
+        .dot {
+            width: 11px; height: 11px; border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dot:hover { background: rgba(255,255,255,0.38); transform: scale(1.2); }
+        .dot.active {
+            width: 13px; height: 13px;
+            background: var(--dot-color, var(--accent-gold));
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 0 9px var(--dot-color, var(--accent-gold));
+        }
+        .dot-separator {
+            width: 1px; height: 28px;
+            background: linear-gradient(to bottom, transparent, rgba(212,175,55,0.35), transparent);
+        }
+
+        /* ── PROMPT SECTION ── */
+        .prompt-section {
+            flex: 1;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px;
+            padding: 1.1rem 1.2rem;
+            display: flex; flex-direction: column;
+            gap: 0.7rem; min-height: 0;
+            transition: border-color 0.4s ease;
+        }
+        .prompt-header {
+            display: flex; align-items: center;
+            gap: 0.8rem; flex-shrink: 0;
+        }
+        .ph-emoji { font-size: 2rem; flex-shrink: 0; }
+        .ph-text h2 { font-size: 1.05rem; font-weight: 800; transition: color 0.4s; }
+        .ph-text p { font-size: 0.75rem; color: var(--text-gold); opacity: 0.65; }
+        .prompt-content-wrap {
+            position: relative; flex-shrink: 0;
+        }
+        .prompt-content {
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(212,175,55,0.18);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 0.78rem; line-height: 1.65;
+            overflow-y: auto; color: var(--text-gold);
+            white-space: pre-wrap;
+            max-height: 115px;
+            transition: max-height 0.4s ease;
+        }
+        .prompt-content.expanded { max-height: 420px; }
+        .prompt-content::-webkit-scrollbar { width: 6px; }
+        .prompt-content::-webkit-scrollbar-track { background: transparent; }
+        .prompt-content::-webkit-scrollbar-thumb { background: var(--accent-gold); border-radius: 10px; }
+        .prompt-fade {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 44px;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85));
+            border-radius: 0 0 12px 12px;
+            pointer-events: none; transition: opacity 0.3s;
+        }
+        .prompt-content.expanded + .prompt-fade { opacity: 0; }
+        .btn-expand {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.3rem; width: 100%;
+            background: none; border: none;
+            color: var(--accent-gold); font-size: 0.72rem;
+            font-weight: 600; cursor: pointer;
+            padding: 0.3rem 0; opacity: 0.7; transition: opacity 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .btn-expand:hover { opacity: 1; }
+        .prompt-actions { display: flex; gap: 0.7rem; flex-shrink: 0; }
+        .btn {
+            flex: 1; border: none; border-radius: 10px;
+            padding: 0.65rem 1rem; font-weight: 700; font-size: 0.88rem;
+            cursor: pointer; transition: all 0.25s;
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.5rem; text-decoration: none;
+        }
+        .btn-copy {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #B8860B 100%);
+            color: #050505; box-shadow: 0 4px 14px rgba(212,175,55,0.25);
+        }
+        .btn-copy.copied { background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: white; }
+        .btn-nano {
+            background: linear-gradient(135deg, #FFD93D 0%, #F4C430 100%);
+            color: #050505; box-shadow: 0 4px 14px rgba(255,217,61,0.2);
+        }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        .pro-tip {
+            flex-shrink: 0;
+            background: rgba(212,175,55,0.07);
+            border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 10px; padding: 0.55rem 0.8rem;
+            font-size: 0.78rem; color: var(--text-gold); font-weight: 500;
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center; flex-shrink: 0;
+            padding: 0.3rem 0 0.5rem;
+            font-size: 0.72rem; color: rgba(244,229,194,0.45);
+        }
+        .footer a { color: var(--accent-gold); text-decoration: none; }
+        .footer a:hover { color: #FFD93D; }
+
+        /* ── MOBILE ── */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.25rem; }
+            .ci.far { display: none; }
+            .ci.center { width: 145px; height: 108px; }
+            .btn { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+    <div class="floating-banana" style="top:7%;left:2%;animation-delay:0s;">🍌</div>
+    <div class="floating-banana" style="top:68%;right:3%;animation-delay:2s;">🍌</div>
+
+    <div class="page">
+
+        <!-- HERO -->
+        <div class="hero">
+            <h1>Make Your Listings Feel Like Right Now</h1>
+            <p>Transform any product photo into a seasonal or holiday version in seconds.<br>Free AI prompts for 🍌 Nano Banana Pro. Built for Amazon sellers.</p>
+            <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" class="btn-wa">
+                <i class="fab fa-whatsapp"></i> Join the Amazon Sellers WhatsApp Group
+            </a>
+        </div>
+
+        <!-- CAROUSEL -->
+        <div class="carousel-section">
+            <button class="carousel-arrow" onclick="navigate(-1)" title="Previous">&#9664;</button>
+            <div class="carousel-track" id="carouselTrack"></div>
+            <button class="carousel-arrow" onclick="navigate(1)" title="Next">&#9654;</button>
+        </div>
+
+        <!-- DOT INDICATORS -->
+        <div class="dot-nav">
+            <div class="dot-group">
+                <button class="dot-group-label" onclick="selectTheme('summer')" title="Jump to Seasons">🌿 Seasons</button>
+                <div class="dot-row" id="dotsSeasons"></div>
+            </div>
+            <div class="dot-separator"></div>
+            <div class="dot-group">
+                <button class="dot-group-label" onclick="selectTheme('thanksgiving')" title="Jump to Holidays">🎉 Holidays</button>
+                <div class="dot-row" id="dotsHolidays"></div>
+            </div>
+        </div>
+
+        <!-- PROMPT -->
+        <div class="prompt-section" id="promptSection">
+            <div class="prompt-header">
+                <span class="ph-emoji" id="phEmoji"></span>
+                <div class="ph-text">
+                    <h2 id="phTitle"></h2>
+                    <p>Copy and paste into Nano Banana Pro with your product image</p>
+                </div>
+            </div>
+            <div class="prompt-content-wrap">
+                <div class="prompt-content" id="promptContent"></div>
+                <div class="prompt-fade" id="promptFade"></div>
+            </div>
+            <button class="btn-expand" id="expandBtn" onclick="toggleExpand()">
+                <span id="expandIcon">▼</span> <span id="expandLabel">Show full prompt</span>
+            </button>
+            <div class="prompt-actions">
+                <button class="btn btn-copy" id="copyBtn" onclick="copyPrompt()">
+                    <i class="fas fa-copy"></i> Copy Prompt
+                </button>
+                <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" class="btn btn-nano" id="openNanoBtn">
+                    🍌 Open Nano Banana Pro
+                </a>
+            </div>
+            <div class="pro-tip" id="proTip"></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            Created by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a>
+            &nbsp;·&nbsp; In collaboration with <a href="https://www.linkedin.com/in/antcofranc/" target="_blank">Anthony Cofrancesco</a>
+            &nbsp;·&nbsp; © 2026 🍌
+        </div>
+
+    </div>
+
+    <script>
+    const prompts = {
+        summer: {
+            emoji: '☀️', shortName: 'Summer', category: 'Season', color: '#FFB347',
+            tip: '💡 Pro Tip: Works great with lifestyle and outdoor images. Clothing adapts to summer weather and visible outdoor elements become a bright summer day. Studio shots stay clean.',
+            prompt: `Create a clean premium summer version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit summer naturally. Use light summer outfits such as linen shirts, shorts, tank tops, sundresses, sandals, or sunglasses. Keep the exact same clothing style, formality, and brand character. Only adapt the fabric weight and layering to suit warm weather. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a bright warm summer day with blue skies, lush green foliage, and strong natural sunlight. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may add one or two small summer props placed to the side on an existing surface such as a fresh green plant, a light natural textile, or a simple seasonal accent that fits the product context. Do not add more than two small props total. Do not place any prop on or directly touching the product itself. Do not add a beach, pool, sand, or ocean unless the original scene is already in that setting. Do not add cartoon suns, fake palm trees, surfboards, or beach umbrellas. Do not add food or drinks unless the product is related to food or beverages.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake sparkles, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft summer-themed graphics such as sun rays, tropical leaf accents, or warm gradient touches.
+The result should look like this photo was naturally taken on a summer day. Warm inviting and fresh.`
+        },
+        fall: {
+            emoji: '🍂', shortName: 'Fall', category: 'Season', color: '#CC7722',
+            tip: '💡 Pro Tip: Restraint is everything. Two or three leaves placed naturally look premium. A pile of leaves looks like clip art. One mini pumpkin is cozy. Five pumpkins is a pumpkin patch.',
+            prompt: `Create a clean premium fall version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit autumn naturally. Use layered fall outfits such as sweaters, cardigans, flannel shirts, light scarves, boots, or denim jackets. Keep the exact same clothing style, formality, and brand character. Only adapt the fabric weight and layering to suit cool weather. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a crisp autumn day with golden hour lighting, warm amber sky tones, and autumn foliage with orange red and yellow leaves in the background. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may place two or three small fall leaves to the side on an existing surface and add one small cozy prop such as a warm ceramic mug, a small candle, or one mini decorative pumpkin. Do not add more than one small prop besides the leaves. Do not place any prop on or directly touching the product itself. Do not turn the entire image orange or brown. Do not add a pile of pumpkins or a harvest display. Do not add fog overlay or fake mist. Do not add any Thanksgiving elements such as turkey, table settings, or cornucopia.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake leaves, artificial textures, or floating objects.
+If the image includes graphic elements you may add soft fall-themed graphics such as warm leaf accents, amber gradients, or harvest-toned design touches.
+The result should look like this photo was naturally taken on an autumn day. Warm rich and cozy.`
+        },
+        spring: {
+            emoji: '🌸', shortName: 'Spring', category: 'Season', color: '#77DD77',
+            tip: '💡 Pro Tip: One small bouquet of tulips or cherry blossoms near your product creates a premium seasonal feel. Spring is about freshness and clean energy, not a flower explosion.',
+            prompt: `Create a clean premium spring version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit spring naturally. Use light spring outfits such as denim jackets, light cardigans, pastel sweaters, floral dresses, sneakers, or ballet flats. Keep the exact same clothing style, formality, and brand character. Only adapt the fabric weight and layering to suit mild warm weather. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a fresh bright spring day with soft sunlight, clear skies, blooming trees or flowers in the background, and fresh green foliage. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may place one small flower arrangement to the side on an existing surface using soft spring flowers such as tulips, daffodils, or cherry blossom stems. Use no more than one small bouquet or two to three individual stems. Do not place any prop on or directly touching the product itself. Do not add flowers everywhere or cover surfaces with petals. Do not add rain, puddles, or water drops on the product. Do not place butterflies on the product or on people. Do not add Easter elements such as eggs, bunnies, or baskets. Do not add fake rainbows or exaggerated bloom effects.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake sparkles, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft spring-themed graphics such as pastel accents, delicate floral touches, or light fresh gradient elements.
+The result should look like this photo was naturally taken on a spring day. Clean airy and naturally fresh.`
+        },
+        winter: {
+            emoji: '❄️', shortName: 'Winter', category: 'Season', color: '#87CEEB',
+            tip: '💡 Pro Tip: Perfect for January and February listings. Frost on background windows and cozy knit textures signal winter without any holiday decorations.',
+            prompt: `Create a clean premium winter version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit winter naturally. Use warm winter outfits such as knit sweaters, heavy coats, scarves, beanies, gloves, wool layers, or boots. Keep the exact same clothing style, formality, and brand character. Only adapt the fabric weight and layering to suit cold weather. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a cold winter day with gray or pale skies, bare trees, frost on surfaces, and possibly light snow on the ground or rooftops in the background. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is. You may add a light frost effect on window edges or glass surfaces in the background only.
+You may place one small cozy prop to the side on an existing surface such as a warm knit textile edge, a steaming mug, or a single candle. Do not place any prop on or directly touching the product itself. Do not add any Christmas or holiday elements. No red and green color schemes, no ornaments, no Santa hats, no Christmas trees, no wrapped gifts, no stockings, no holiday lights, and no holiday decorations of any kind. This is a winter season image not a holiday image. Do not cover the product in snow or frost. Do not add frost or ice directly on the product as it will look damaged. Do not add a snowman or any snow character. Do not use a heavy snow overlay covering the scene.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake sparkles, artificial frost patterns, or floating objects.
+If the image includes graphic elements you may add soft winter-themed graphics such as subtle snowflake accents, cool gradient touches, or elegant frost-inspired design elements. Do not use red and green colors in the graphics.
+The result should look like this photo was naturally taken on a winter day. Cool cozy and elegant.`
+        },
+        thanksgiving: {
+            emoji: '🦃', shortName: 'Thanksgiving', category: 'Holiday', color: '#CD853F',
+            tip: '💡 Pro Tip: Thanksgiving is about the gathering feeling, not the dinner table. A small pumpkin and warm candle create that cozy holiday mood without turning your listing into a food ad.',
+            prompt: `Create a clean premium Thanksgiving version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit a cozy Thanksgiving gathering naturally. Use warm layered outfits such as knit sweaters, cardigans, flannel shirts, or fall dresses in warm neutral tones. Keep the exact same clothing style, formality, and brand character. Only adapt the fabric weight and layering to suit a comfortable autumn indoor gathering. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a warm late autumn day with golden amber light and fall foliage. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may add one or two small Thanksgiving props placed to the side on an existing surface such as a small decorative pumpkin or gourd, a warm candle, or autumn leaves. Do not add more than two small props total. Do not place any prop on or directly touching the product itself. Do not add a full table setting, serving dishes, or dining elements. Do not add a turkey or any cooked food. Do not add cornucopia or pilgrim imagery. Do not add Halloween elements. Keep it warm and inviting without turning it into a dinner scene.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake textures, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft Thanksgiving-themed graphics such as harvest leaf accents, warm amber tones, or subtle gratitude-themed design touches.
+The result should look like this photo was taken during a warm Thanksgiving gathering. Cozy gathered and naturally warm.`
+        },
+        halloween: {
+            emoji: '🎃', shortName: 'Halloween', category: 'Holiday', color: '#FF6600',
+            tip: '💡 Pro Tip: This is the one theme where a subtle mood shift works on ALL images, including studio shots. The orange and purple accent lighting gives everything that Halloween feel without looking cheap.',
+            prompt: `Create a clean premium Halloween version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image do not put them in full costumes or masks. You may add one small playful Halloween accessory to one person only such as a subtle cat ear headband, a small witch hat, or face paint accent. Keep it minimal and fun, not scary or over the top.
+Shift the overall mood to a slightly darker and moodier atmosphere with warm orange and soft purple accent lighting. This mood shift applies to all image types including studio shots because Halloween has a distinct visual tone that works everywhere. Keep the shift subtle and elegant, not dramatic or horror-like.
+You may add one or two small Halloween props placed to the side on an existing surface such as a small jack-o-lantern, a few mini pumpkins, or a candle. Do not add more than two props total. Do not place any prop on or directly touching the product itself. Do not add cobwebs directly on the product. Do not add fake blood, skeletons, tombstones, ghosts, or anything scary. Do not add bats flying across the image. Do not add heavy fog or smoke overlay. Do not add candy or trick-or-treat bags unless the product is related to candy or treats.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, cheap-looking decorations, neon glow effects, or floating objects.
+If the image includes graphic elements you may add soft Halloween-themed graphics such as subtle pumpkin accents, orange and purple gradient touches, or playful spooky design elements that stay classy.
+The result should look like a stylish Halloween-themed photo. Moody playful and elegantly spooky.`
+        },
+        valentines: {
+            emoji: '💝', shortName: "Valentine's", category: 'Holiday', color: '#FF69B4',
+            tip: "💡 Pro Tip: A single rose or a few scattered petals is all you need. Valentine's is the easiest theme to overdo. If it looks like a greeting card, you've gone too far.",
+            prompt: `Create a clean premium Valentine's Day version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image keep their clothing exactly as is. Do not change outfits, colors, or accessories. You may add one subtle romantic accessory like a delicate bracelet or a small pin but only if it looks completely natural.
+Do not change the overall lighting or color tone of the image. Keep the original atmosphere and only enhance the scene with small additions. If any outdoor environment or window view is visible you may add a soft warm romantic atmosphere with gentle warm light.
+You may add one or two small romantic props placed to the side on an existing surface such as a single rose, a few rose petals scattered on a surface edge, a small heart-shaped box, or a soft candle. Do not add more than two props total. Do not place any prop on or directly touching the product itself. Do not add giant hearts, teddy bears, balloons, or cupid imagery. Do not scatter hearts across the image. Do not add text like Be Mine or I Love You. Do not make it look like a greeting card. Keep it tasteful and premium.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake sparkles, glitter overlays, or floating objects.
+If the image includes graphic elements you may add soft Valentine's-themed graphics such as subtle rose accents, soft pink gradients, or delicate heart-shaped design touches that stay elegant.
+The result should look like a premium gift-worthy Valentine's Day photo. Romantic warm and elegantly subtle.`
+        },
+        mothers: {
+            emoji: '💐', shortName: "Mother's Day", category: 'Holiday', color: '#DDA0DD',
+            tip: "💡 Pro Tip: Use elegant flowers like peonies or lilies instead of roses to differentiate from Valentine's Day. A small wrapped gift box adds that thoughtful gift-giving feeling.",
+            prompt: `Create a clean premium Mother's Day version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image keep their clothing exactly as is. Do not change outfits or accessories.
+Do not change the overall lighting or color tone of the image. Keep the original atmosphere and only enhance the scene with small additions. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may add one or two small elegant props placed to the side on an existing surface such as a small bouquet of peonies, lilies, or soft pastel flowers, or a beautifully wrapped small gift box with a ribbon. Do not add more than two props total. Do not place any prop on or directly touching the product itself. Use elegant flower varieties only, not basic roses. Do not add breakfast trays, kitchen scenes, or stationery cards unless the product is specifically related to those categories. Do not add text like Best Mom or Happy Mother's Day. Do not add children's drawings or crafts. Do not make it look like a greeting card. Keep the feeling of a premium thoughtful gift.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake sparkles, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft Mother's Day-themed graphics such as elegant floral accents, soft pastel gradients, or delicate ribbon-inspired design touches.
+The result should look like a premium gift photo for Mother's Day. Elegant caring and beautifully thoughtful.`
+        },
+        fathers: {
+            emoji: '👔', shortName: "Father's Day", category: 'Holiday', color: '#4682B4',
+            tip: "💡 Pro Tip: No ties, no tools, no dad jokes. Think high-end men's store window display. A leather notebook or classic watch box next to your product says 'premium gift for him.'",
+            prompt: `Create a clean premium Father's Day version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image keep their clothing exactly as is. Do not change outfits or accessories. Do not add ties, tool belts, or stereotypical dad accessories.
+Do not change the overall lighting or color tone of the image. Keep the original atmosphere and only enhance the scene with small additions. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may add one or two small refined props placed to the side on an existing surface such as a quality leather-bound notebook, a classic watch box, a small elegant gift box with a dark ribbon, or a simple clean coffee mug on a dark wood surface. Do not add more than two props total. Do not place any prop on or directly touching the product itself. Do not add grilling tools, golf clubs, fishing gear, or power tools. Do not add text like Best Dad or Happy Father's Day. Do not add children's drawings, socks, or joke gifts. Keep the feeling refined and premium, like a high-end gift for a man who appreciates quality.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, fake textures, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft Father's Day-themed graphics such as clean masculine design accents, subtle navy or dark wood tones, or refined minimal graphic touches.
+The result should look like a premium gift photo for Father's Day. Classic refined and quietly elegant.`
+        },
+        july4th: {
+            emoji: '🇺🇸', shortName: 'July 4th', category: 'Holiday', color: '#B22234',
+            tip: "💡 Pro Tip: A small flag and some red-white-blue touches go a long way. The goal is 'backyard BBQ celebration' not 'flag store explosion.' Keep it casual and fun.",
+            prompt: `Create a clean premium July 4th Independence Day version of this exact image. Keep the original photo fully intact with no changes to product shape, materials, product colors, or camera angle.
+If people appear in the image adjust their clothing to fit a casual summer celebration naturally. You may add subtle patriotic touches such as a red white or blue t-shirt, a bandana, a baseball cap, or denim shorts. Keep the exact same clothing style, formality, and brand character. Keep the clothing casual and natural, not a flag costume. Do not wrap anyone in a flag or cover them in stars and stripes. If someone is wearing a uniform, branded clothing, or sports gear keep it unchanged.
+If any outdoor environment, sky, street, or window view is visible make it look like a bright festive summer day with blue skies and warm sunlight. You may add subtle patriotic bunting or a small American flag in the distant background. If the image is a studio shot or a plain indoor scene with no visible outdoor elements do not change the overall lighting or color tone of the image. If the background is plain white, a solid color, or a clean studio backdrop keep it exactly as is.
+You may add one or two small celebration props placed to the side on an existing surface such as a small American flag or red white and blue napkins. Do not add more than two props total. Do not place any prop on or directly touching the product itself. Do not add fireworks in the sky unless the scene is clearly an evening outdoor setting. Do not add eagles, liberty bells, or Statue of Liberty imagery. Do not plaster stars and stripes on every surface. Do not add text like USA or God Bless America. Keep it a natural celebration vibe not a political statement.
+All additions must match the real lighting, shadows, and color tones of the original image. Keep everything photorealistic with no cartoon items, cheap flag overlays, artificial glow, or floating objects.
+If the image includes graphic elements you may add soft patriotic-themed graphics such as subtle red white and blue accents, clean star elements, or festive summer design touches.
+The result should look like this photo was taken at a natural July 4th celebration. Festive patriotic and casually fun.`
+        },
+        christmas: {
+            emoji: '🎄', shortName: 'Christmas', category: 'Holiday', color: '#C41E3A',
+            tip: '💡 Pro Tip: One Santa hat on one adult only — and it must match the head shape and lighting perfectly, or it will look pasted on. Less is always more.',
+            prompt: `Create a clean premium Christmas version of this exact image. Keep the original photo fully intact with no changes to people, faces, clothing, poses, hands, product shape, materials, colors, lighting, shadows, depth, or camera angle.
+Add only subtle realistic holiday accents that fit naturally. Use warm lights, soft bokeh, light garland, small greenery, candles, or a few wrapped gift boxes. Do not add Christmas trees unless the scene is clearly a home living room. In a living room you may add one realistic tree placed naturally. In any other location do not add any trees.
+All additions must match the real lighting, shadows, and color tones. Keep everything photorealistic with no cartoon items, fake sparkles, snow overlays, glitter, or floating objects.
+If adults appear you may add one natural red Santa hat to one adult. The hat must match head shape, shadow, and lighting.
+If the image includes graphic elements you may add soft Christmas graphics or elements.
+The result should look naturally decorated for Christmas. Warm elegant and subtle.`
+        }
+    };
+
+    // Seasons first, then Holidays — in this exact order
+    const seasons  = ['summer','fall','spring','winter'];
+    const holidays = ['thanksgiving','halloween','valentines','mothers','fathers','july4th','christmas'];
+    const themeOrder = [...seasons, ...holidays];
+
+    let currentIndex = 0;
+
+    function navigate(dir) {
+        currentIndex = (currentIndex + dir + themeOrder.length) % themeOrder.length;
+        renderCarousel();
+        renderDots();
+        updatePrompt();
+    }
+
+    function selectTheme(key) {
+        const idx = themeOrder.indexOf(key);
+        if (idx !== -1) {
+            currentIndex = idx;
+            renderCarousel();
+            renderDots();
+            updatePrompt();
+        }
+    }
+
+    function renderCarousel() {
+        const track = document.getElementById('carouselTrack');
+        track.innerHTML = '';
+        [-2, -1, 0, 1, 2].forEach(offset => {
+            const idx = (currentIndex + offset + themeOrder.length) % themeOrder.length;
+            const key = themeOrder[idx];
+            const data = prompts[key];
+            const posClass = offset === 0 ? 'center' : Math.abs(offset) === 1 ? 'near' : 'far';
+
+            const item = document.createElement('div');
+            item.className = `ci ${posClass}`;
+            if (offset === 0) {
+                item.style.borderColor = data.color;
+                item.style.boxShadow = `0 0 28px ${data.color}38, 0 0 8px ${data.color}22`;
+            }
+            item.innerHTML = `
+                <span class="ci-emoji">${data.emoji}</span>
+                <span class="ci-name">${data.shortName}</span>
+                ${offset === 0 ? `<span class="ci-cat">${data.category}</span>` : ''}
+            `;
+            item.onclick = () => selectTheme(key);
+            track.appendChild(item);
+        });
+    }
+
+    function renderDots() {
+        function buildDots(containerId, keys) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            keys.forEach(key => {
+                const data = prompts[key];
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (themeOrder[currentIndex] === key ? ' active' : '');
+                if (themeOrder[currentIndex] === key) {
+                    dot.style.setProperty('--dot-color', data.color);
+                }
+                dot.title = data.shortName;
+                dot.onclick = () => selectTheme(key);
+                container.appendChild(dot);
+            });
+        }
+        buildDots('dotsSeasons', seasons);
+        buildDots('dotsHolidays', holidays);
+    }
+
+    function updatePrompt() {
+        const key = themeOrder[currentIndex];
+        const data = prompts[key];
+
+        document.getElementById('phEmoji').textContent = data.emoji;
+        const title = document.getElementById('phTitle');
+        title.textContent = `${data.shortName} Transform Prompt`;
+        title.style.color = data.color;
+
+        document.getElementById('promptContent').textContent = data.prompt;
+        document.getElementById('proTip').textContent = data.tip;
+        document.getElementById('promptSection').style.borderColor = data.color;
+
+        const btn = document.getElementById('copyBtn');
+        btn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+        btn.classList.remove('copied');
+
+        // reset expand state
+        isExpanded = false;
+        document.getElementById('promptContent').classList.remove('expanded');
+        document.getElementById('expandIcon').textContent = '▼';
+        document.getElementById('expandLabel').textContent = 'Show full prompt';
+    }
+
+    function copyPrompt() {
+        const text = prompts[themeOrder[currentIndex]].prompt;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+        } else { fallbackCopy(text); }
+        const btn = document.getElementById('copyBtn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied Successfully!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+            btn.classList.remove('copied');
+        }, 3000);
+    }
+
+    let isExpanded = false;
+    function toggleExpand() {
+        isExpanded = !isExpanded;
+        document.getElementById('promptContent').classList.toggle('expanded', isExpanded);
+        document.getElementById('expandIcon').textContent = isExpanded ? '▲' : '▼';
+        document.getElementById('expandLabel').textContent = isExpanded ? 'Collapse' : 'Show full prompt';
+    }
+
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+    }
+
+    document.getElementById('openNanoBtn').addEventListener('click', function() {
+        const text = prompts[themeOrder[currentIndex]].prompt;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+        } else { fallbackCopy(text); }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  navigate(-1);
+        if (e.key === 'ArrowRight') navigate(1);
+    });
+
+    // Init
+    renderCarousel();
+    renderDots();
+    updatePrompt();
+    </script>
+
+    <script data-goatcounter="https://seasonal-transform.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
