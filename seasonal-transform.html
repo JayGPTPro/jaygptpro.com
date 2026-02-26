@@ -243,6 +243,21 @@
             font-size: 0.78rem; color: var(--text-gold); font-weight: 500;
         }
 
+        /* ── PARTICLES ── */
+        @keyframes particleBurst {
+            0%   { opacity: 1; transform: translate(-50%, -50%) translateX(0) translateY(0) rotate(0deg) scale(1); }
+            70%  { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -50%) translateX(var(--px)) translateY(var(--py)) rotate(var(--pr)) scale(0.4); }
+        }
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            user-select: none;
+            line-height: 1;
+            animation: particleBurst var(--dur, 1.6s) ease-out forwards;
+        }
+
         /* ── FOOTER ── */
         .footer {
             text-align: center; flex-shrink: 0;
@@ -711,6 +726,7 @@ The result should look naturally decorated for Christmas. Warm elegant and subtl
             navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
         } else { fallbackCopy(text); }
         const btn = document.getElementById('copyBtn');
+        launchParticles(btn, themeOrder[currentIndex]);
         btn.innerHTML = '<i class="fas fa-check"></i> Copied Successfully!';
         btn.classList.add('copied');
         setTimeout(() => {
@@ -798,12 +814,72 @@ PASTE YOUR PRODUCT IMAGE BELOW THIS LINE:
             navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
         } else { fallbackCopy(text); }
         const btn = document.getElementById('superCopyBtn');
+        launchParticles(btn, 'super');
         btn.innerHTML = '<i class="fas fa-check"></i> Copied Successfully!';
         btn.classList.add('copied');
         setTimeout(() => {
             btn.innerHTML = '<i class="fas fa-copy"></i> Copy Batch Prompt';
             btn.classList.remove('copied');
         }, 3000);
+    }
+
+    // ── PARTICLE EFFECTS ──
+    const particleCfg = {
+        summer:       { emojis: ['☀️','🌊','🌻','🌴','🏖️'],      style: 'burst' },
+        fall:         { emojis: ['🍂','🍁','🍃','🌾','🍂'],       style: 'fall'  },
+        spring:       { emojis: ['🌸','🌷','🦋','🌺','🌿'],       style: 'rise'  },
+        winter:       { emojis: ['❄️','❄️','✨','🌨️','❄️'],       style: 'fall'  },
+        christmas:    { emojis: ['⭐','🎁','❄️','🔔','✨','🎄'],   style: 'burst' },
+        halloween:    { emojis: ['🎃','🦇','👻','🕷️','🎃'],       style: 'fall'  },
+        july4th:      { emojis: ['🇺🇸','⭐','🎆','🎇','⭐'],      style: 'burst' },
+        thanksgiving: { emojis: ['🍂','🍁','🦃','🌽','🍂'],       style: 'fall'  },
+        valentines:   { emojis: ['💝','💖','❤️','💕','💗'],       style: 'rise'  },
+        mothers:      { emojis: ['🌸','💐','🌷','🌺','💕'],        style: 'rise'  },
+        fathers:      { emojis: ['🔧','⚽','👔','🏆','🍺'],        style: 'burst' },
+        super:        { emojis: ['🎉','🎊','✨','🌟','🚀','💫','🎈'], style: 'burst' },
+    };
+
+    function launchParticles(btn, theme) {
+        const cfg = particleCfg[theme] || particleCfg.super;
+        const rect = btn.getBoundingClientRect();
+        const cx = rect.left + rect.width  * 0.5;
+        const cy = rect.top  + rect.height * 0.5;
+        const count = 20;
+
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('span');
+            el.className = 'particle';
+            el.textContent = cfg.emojis[Math.floor(Math.random() * cfg.emojis.length)];
+
+            let px, py;
+            const angle = Math.random() * Math.PI * 2;
+            const spread = 120 + Math.random() * 140;
+
+            if (cfg.style === 'fall') {
+                px = (Math.random() - 0.5) * 220;
+                py =  90 + Math.random() * 200;
+            } else if (cfg.style === 'rise') {
+                px = (Math.random() - 0.5) * 220;
+                py = -(90 + Math.random() * 200);
+            } else {
+                px = Math.cos(angle) * spread;
+                py = Math.sin(angle) * spread;
+            }
+
+            const pr  = (Math.random() - 0.5) * 520;
+            const dur = 2.2 + Math.random() * 0.8;
+            const delay = Math.random() * 0.3;
+            const size  = 2.0 + Math.random() * 1.6;
+
+            el.style.cssText = `
+                left: ${cx}px; top: ${cy}px;
+                --px: ${px}px; --py: ${py}px; --pr: ${pr}deg; --dur: ${dur}s;
+                animation-delay: ${delay}s;
+                font-size: ${size}rem;
+            `;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), (dur + delay + 0.3) * 1000);
+        }
     }
 
     // Init
