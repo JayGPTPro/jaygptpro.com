@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Your Memory Into Claude | Full Guide</title>
+    <meta name="description" content="Switch from ChatGPT to Claude without starting from zero. Import all your memory in 3 simple steps.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e8e8e8;
+            line-height: 1.7;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d1b2a 50%, #1a0a2e 100%);
+            padding: 60px 20px 50px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #d4a574, #c9956b);
+            color: #0a0a0a;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #d4a574, #e8c9a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #a0a0b0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .step {
+            background: #141420;
+            border: 1px solid #2a2a3a;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -14px;
+            left: 24px;
+            background: linear-gradient(135deg, #d4a574, #c9956b);
+            color: #0a0a0a;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .step h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .step p {
+            color: #b0b0c0;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .prompt-box {
+            background: #1a1a2e;
+            border: 1px solid #3a3a4a;
+            border-radius: 12px;
+            padding: 20px;
+            padding-top: 50px;
+            position: relative;
+            margin: 16px 0;
+        }
+
+        .prompt-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            color: #d0d0e0;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #d4a574;
+            color: #0a0a0a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-btn:hover {
+            background: #e8c9a0;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: #4ade80;
+        }
+
+        .screenshot-container {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2a2a3a;
+            background: #1a1a2e;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            max-width: 500px;
+            display: block;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .screenshot-caption {
+            background: #111118;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #808090;
+            text-align: center;
+            border-top: 1px solid #2a2a3a;
+        }
+
+        .highlight {
+            color: #d4a574;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: #2a1a0a;
+            border: 1px solid #5a3a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .warning-box h3 {
+            color: #d4a574;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .warning-box p, .warning-box li {
+            color: #c0a080;
+            font-size: 14px;
+        }
+
+        .tip-box {
+            background: #0a1a2e;
+            border: 1px solid #1a3a5a;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .tip-box h3 {
+            color: #74b4d4;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .tip-box p, .tip-box li {
+            color: #80b0c0;
+            font-size: 14px;
+        }
+
+        .tip-box ul, .warning-box ul {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .tip-box li, .warning-box li {
+            margin-bottom: 6px;
+        }
+
+        .path-display {
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            color: #d4a574;
+            display: inline;
+        }
+
+        .steps-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        @media (max-width: 480px) {
+            .steps-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .steps-summary-item {
+            background: #141420;
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .steps-summary-item .emoji {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .steps-summary-item .label {
+            font-size: 13px;
+            color: #a0a0b0;
+        }
+
+        .arrow-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3a3a4a;
+            font-size: 24px;
+            margin: -8px 0;
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d1b2a 100%);
+            border-radius: 16px;
+            margin: 32px 0;
+            border: 1px solid #2a2a3a;
+        }
+
+        .cta-section h3 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            color: #a0a0b0;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #d4a574, #c9956b);
+            color: #0a0a0a;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 165, 116, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #2a2a3a;
+        }
+
+        .footer p {
+            color: #606070;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .footer a {
+            color: #d4a574;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer .credit {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #1a1a2a;
+        }
+
+        .footer .credit a {
+            color: #808090;
+        }
+
+        .footer .credit a:hover {
+            color: #d4a574;
+        }
+
+        .optional-tag {
+            display: inline-block;
+            background: #1a2a1a;
+            color: #80c080;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="hero-badge">Daily Claude Hack</div>
+        <h1>Import Your <span>Memory</span> Into Claude</h1>
+        <p>Switching from ChatGPT? Don't start from zero. Move everything it learned about you. In 3 steps.</p>
+    </div>
+
+    <div class="container">
+
+        <div class="steps-summary">
+            <div class="steps-summary-item">
+                <span class="emoji">📤</span>
+                <span class="label">Export from old AI</span>
+            </div>
+            <div class="steps-summary-item">
+                <span class="emoji">📋</span>
+                <span class="label">Copy</span>
+            </div>
+            <div class="steps-summary-item">
+                <span class="emoji">📥</span>
+                <span class="label">Import to Claude</span>
+            </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="step">
+            <div class="step-number">1</div>
+            <h2>Export your memory from ChatGPT (or any AI)</h2>
+            <p>Go to ChatGPT (or Gemini, or any other AI) and paste this exact prompt. It's designed to pull <span class="highlight">everything it knows about you</span> in one shot:</p>
+
+            <div class="prompt-box">
+                <button class="copy-btn" onclick="copyPrompt(this, 'prompt1')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy
+                </button>
+                <pre id="prompt1">I'm moving to another service and need to export my data. List every memory you have stored about me, as well as any context you've learned about me from past conversations. Output everything in a single code block so I can easily copy it. Format each entry as: [date saved, if available] - memory content. Make sure to cover all of the following. Preserve my words verbatim where possible: Instructions I've given you about how to respond (tone, format, style, 'always do X', 'never do Y'). Personal details: name, location, job, family, interests. Projects, goals, and recurring topics. Tools, languages, and frameworks I use. Preferences and corrections I've made to your behavior. Any other stored context not covered above. Do not summarize, group, or omit any entries. After the code block, confirm whether that is the complete set or if any remain.</pre>
+            </div>
+
+            <p>You'll get a text block with everything it knows. <span class="highlight">Copy all of it.</span></p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step">
+            <div class="step-number">2</div>
+            <h2>Open the import flow in Claude</h2>
+            <p>Two ways to get there:</p>
+            <p><strong>Option A:</strong> Go to <span class="path-display">Settings &rarr; Capabilities &rarr; Memory &rarr; Start Import</span></p>
+            <p><strong>Option B:</strong> On Claude's home screen, click the <span class="highlight">"Import memory to Claude"</span> card</p>
+
+            <div class="screenshot-container">
+                <img src="screenshot-import-dialog.png" alt="Claude's Import Memory dialog showing the paste area and Add to memory button" onerror="this.parentElement.style.display='none'">
+                <div class="screenshot-caption">Claude's Import Memory dialog. This is where you paste the text from Step 1</div>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step">
+            <div class="step-number">3</div>
+            <h2>Paste and import</h2>
+            <p>Paste the text you copied in Step 1 into the text box and click <span class="highlight">"Add to memory"</span>.</p>
+            <p>Claude will extract the key information and save it as individual memory entries. You can review what it saved by clicking <span class="highlight">"Manage edits"</span>.</p>
+        </div>
+
+        <!-- VERIFY (optional) -->
+        <div class="step">
+            <div class="step-number">✓</div>
+            <h2>Verify it worked <span class="optional-tag">Optional</span></h2>
+            <p>Once the import is done, open a new chat and ask:</p>
+
+            <div class="prompt-box">
+                <button class="copy-btn" onclick="copyPrompt(this, 'prompt2')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy
+                </button>
+                <pre id="prompt2">What do you know about me?</pre>
+            </div>
+
+            <p>If Claude responds with your preferences, work context, and style, you're all set. If something's missing, you can always add it manually via <span class="path-display">Settings &rarr; Capabilities &rarr; View and edit your memory</span>.</p>
+        </div>
+
+        <!-- WARNING -->
+        <div class="warning-box">
+            <h3>⚠️ Good to know</h3>
+            <ul>
+                <li>This feature is still <strong>experimental</strong> and in active development</li>
+                <li>Claude focuses on <strong>work-related context</strong>: your preferences, style, tools, and instructions transfer best</li>
+                <li>Personal details unrelated to work may not always stick</li>
+                <li>You can review and edit imported memories anytime in Settings</li>
+            </ul>
+        </div>
+
+        <!-- TIPS -->
+        <div class="tip-box">
+            <h3>💡 Pro tips</h3>
+            <ul>
+                <li>If your AI supports file generation, ask it to export your memory as a <strong>Markdown file</strong> so you keep a backup copy</li>
+                <li>You can <strong>edit the text before importing</strong>. Remove anything sensitive or irrelevant</li>
+                <li>For Amazon sellers: make sure your brand voice, listing style rules, and product knowledge are in there. That's what makes Claude immediately useful</li>
+            </ul>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <h3>Want more tips like this?</h3>
+            <p>Join the WhatsApp group for daily AI tips for eCommerce sellers. New hack every weekday.</p>
+            <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" class="cta-btn">Join the Group &rarr;</a>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>Source: <a href="https://support.claude.com/en/articles/12123587-importing-and-exporting-your-memory-from-claude" target="_blank">Claude Official Documentation &rarr;</a></p>
+        <div class="credit">
+            <p>This page was built with a single prompt in Claude Code by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a></p>
+        </div>
+    </div>
+
+    <script>
+        function copyPrompt(btn, id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+
+</body>
+</html>
