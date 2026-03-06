@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go Cash | Landing Page Video System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Hebrew:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e2e5ea;
+    --border-hover: #c5cad3;
+    --accent: #2563eb;
+    --accent-light: #eff4ff;
+    --accent-dark: #1d4ed8;
+    --green: #059669;
+    --green-light: #ecfdf5;
+    --orange: #d97706;
+    --orange-light: #fffbeb;
+    --red: #dc2626;
+    --text: #374151;
+    --text-dim: #6b7280;
+    --text-dark: #111827;
+    --prompt-bg: #f9fafb;
+    --prompt-border: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans Hebrew', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body[dir="ltr"] { font-family: 'Inter', 'Noto Sans Hebrew', sans-serif; }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .logo {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 17px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .control-btn {
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    box-shadow: var(--shadow);
+  }
+
+  .control-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .control-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  /* Steps */
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+
+  .step:hover { border-color: var(--border-hover); box-shadow: var(--shadow-hover); }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .step-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    flex: 1;
+  }
+
+  .step-tool {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    flex-shrink: 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .step-tool:hover { opacity: 0.8; }
+
+  .tool-ai { background: var(--accent-light); color: var(--accent); }
+  .tool-elevenlabs { background: var(--green-light); color: var(--green); }
+  .tool-heygen { background: var(--orange-light); color: var(--orange); }
+  .tool-nano { background: #f3e8ff; color: #7c3aed; }
+  .tool-kling { background: #fce7f3; color: #db2777; }
+  .tool-maps { background: var(--green-light); color: var(--green); }
+  .tool-earth { background: #e0f7fa; color: #0097a7; }
+  .tool-capcut { background: var(--orange-light); color: var(--orange); }
+  .tool-manual { background: #f3f4f6; color: #6b7280; }
+  .tool-drive { background: #e8f5e9; color: #2e7d32; }
+
+  .step-arrow {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  .step.open .step-arrow { transform: rotate(180deg); }
+
+  .step-body {
+    display: none;
+    padding: 0 22px 22px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+
+  .step.open .step-body { display: block; }
+
+  .step-instructions {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+
+  .step-instructions ol { padding-inline-start: 20px; }
+  .step-instructions li { margin-bottom: 8px; }
+  .step-instructions a { color: var(--accent); }
+
+  /* Prompt Box */
+  .prompt-box {
+    position: relative;
+    background: var(--prompt-bg);
+    border: 1px solid var(--prompt-border);
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+
+  .prompt-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--prompt-border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .copy-btn {
+    padding: 5px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .copy-btn:hover { background: var(--accent-dark); }
+
+  .copy-btn.copied { background: var(--green); }
+
+  .prompt-content {
+    padding: 16px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    direction: ltr;
+    text-align: left;
+  }
+
+  /* Settings Box */
+  .settings-box {
+    background: var(--prompt-bg);
+    border: 1px solid var(--prompt-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .settings-box h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting-row:last-child { border: none; }
+  .setting-key { color: var(--text-dim); }
+  .setting-value { color: var(--text-dark); font-weight: 600; }
+
+  /* Tip / Warning */
+  .tip {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--green-light);
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--green);
+  }
+
+  .warning {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--orange-light);
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--orange);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .container { padding: 20px 16px 60px; }
+    .step-header { padding: 14px 16px; gap: 10px; }
+    .step-body { padding: 0 16px 16px; padding-top: 14px; }
+    .step-tool { display: none; }
+    .controls { gap: 8px; }
+    .control-btn { padding: 8px 12px; font-size: 13px; }
+    .quick-links { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body dir="rtl">
+
+<div class="container">
+
+  <div class="header">
+    <div class="logo">Go <span>Cash</span></div>
+    <div class="subtitle" data-he="מערכת יצירת סרטוני דף נחיתה" data-en="Landing Page Video Production System"></div>
+  </div>
+
+  <div class="controls">
+    <button class="control-btn active" id="langBtn" onclick="toggleLang()">
+      <span data-he="English" data-en="עברית"></span>
+    </button>
+    <button class="control-btn" id="dirBtn" onclick="toggleDir()">
+      <span data-he="LTR ←" data-en="RTL →"></span>
+    </button>
+    <button class="control-btn" onclick="toggleAll(true)">
+      <span data-he="פתח הכל" data-en="Expand All"></span>
+    </button>
+    <button class="control-btn" onclick="toggleAll(false)">
+      <span data-he="סגור הכל" data-en="Collapse All"></span>
+    </button>
+  </div>
+
+  <!-- STEP 1 Script -->
+  <div class="step open">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">1</div>
+      <div class="step-title" data-he="סקריפט" data-en="Script"></div>
+      <div class="step-tool tool-ai">Any AI</div>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>לוקחים את פרטי הנכס מהאימייל (כתובת, מחיר, ARV, תיקונים, highlights, מצב הנכס)</li><li>מעתיקים את הפרומפט למטה</li><li>מדביקים את פרטי הנכס בסוף הפרומפט במקום <b>[PASTE PROPERTY DETAILS HERE]</b></li><li>מריצים בכל AI, Claude, Gemini, ChatGPT</li><li>מקבלים סקריפט מוכן להדבקה ישירה ב-ElevenLabs</li></ol>"
+        data-en="<ol><li>Take the property details from the email (address, price, ARV, repairs, highlights, condition)</li><li>Copy the prompt below</li><li>Paste the property details at the end replacing <b>[PASTE PROPERTY DETAILS HERE]</b></li><li>Run in any AI, Claude, Gemini, ChatGPT</li><li>You'll get a script ready to paste directly into ElevenLabs</li></ol>">
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">
+          <span>PROMPT: SCRIPT</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-content">You are a script writer for short real estate wholesale pitch videos. You write scripts for a person named Ido who presents properties to real estate investors and flippers.
+
+TONE: Down to earth. Genuine. Trustworthy. Like a friend who found a good deal and is telling you about it over coffee. NOT a salesman, NOT a marketer, NOT an infomercial. If a sentence sounds like it could be in a marketing email, rewrite it. Ido is calm, confident, and real.
+
+FORMAT: Write a script of 70-100 words (40-60 seconds when spoken naturally).
+
+STRUCTURE (always follow this exact order):
+1. HOOK (1 sentence): Start with the city + a compelling angle
+2. THE NUMBERS (2-3 sentences): Price, ARV, estimated repair cost, potential profit margin
+3. HIGHLIGHTS (1-2 sentences): Best features, lot size, location, layout, etc.
+4. CONDITION REALITY (1 sentence): Honest note about what needs work
+5. CTA (1 sentence): Strong closing line, call to action
+
+RULES:
+- Never use hype phrases like "great deal", "amazing opportunity", "cash machine", "no-brainer", "act fast", "won't last long"
+- Always include specific numbers (price, ARV, repair estimate, potential profit)
+- Write in first person as Ido speaking directly to camera
+- Use natural spoken English, contractions, casual phrasing
+- One short paragraph, no bullet points
+- Do not add stage directions or [brackets]
+- If repair costs are not provided, don't mention them
+
+ELEVENLABS FORMATTING:
+- Put words that Ido should EMPHASIZE in ALL CAPS
+- Write all numbers as full words (forty-nine thousand, not $49,000)
+- Add "..." for natural pauses where Ido would take a breath
+- Keep sentences short, long sentences sound unnatural when spoken
+- THE LAST SENTENCE (CTA) must feel decisive and confident, use ALL CAPS on the key action words to make ElevenLabs deliver it with energy and conviction. This is the moment Ido stops being casual and gets direct.
+
+OUTPUT: Just the script text ready to paste into ElevenLabs. Nothing else.
+
+Here is the property information:
+[PASTE PROPERTY DETAILS HERE]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2, Voice -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">2</div>
+      <div class="step-title" data-he="קול (ElevenLabs)" data-en="Voice (ElevenLabs)"></div>
+      <a class="step-tool tool-elevenlabs" href="https://elevenlabs.io/app/speech-synthesis/text-to-speech" target="_blank" onclick="event.stopPropagation()">ElevenLabs ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>נכנסים ל-<a href='https://elevenlabs.io/app/speech-synthesis/text-to-speech' target='_blank'>ElevenLabs</a> ובוחרים את ה-Voice Clone של עידו</li><li>מדביקים את הסקריפט מהשלב הקודם</li><li>מאזינים ובודקים שהטון טבעי, במיוחד שהמשפט האחרון נשמע החלטי</li><li>מורידים כ-MP3</li></ol>"
+        data-en="<ol><li>Go to <a href='https://elevenlabs.io/app/speech-synthesis/text-to-speech' target='_blank'>ElevenLabs</a> and select Ido's Voice Clone</li><li>Paste the script from the previous step</li><li>Listen and check the tone sounds natural, especially that the last sentence sounds decisive</li><li>Download as MP3</li></ol>">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3, Ido Photo -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">3</div>
+      <div class="step-title" data-he="תמונת עידו" data-en="Ido Photo"></div>
+      <a class="step-tool tool-drive" href="https://drive.google.com/drive/folders/17WKPOLmgGvWzvOR4z6v6dcX0lCPB1OK1" target="_blank" onclick="event.stopPropagation()">Drive ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>בוחרים תמונה קיימת של עידו מ<a href='https://drive.google.com/drive/folders/17WKPOLmgGvWzvOR4z6v6dcX0lCPB1OK1' target='_blank'>תיקיית תמונות עידו</a></li><li>אם צריך תמונה חדשה, מייצרים ב-Nano Banana Pro עם הפרומפט למטה</li><li>התמונה צריכה להיות 16:9, עידו ברקע משרד מקצועי</li></ol>"
+        data-en="<ol><li>Choose an existing photo of Ido from the <a href='https://drive.google.com/drive/folders/17WKPOLmgGvWzvOR4z6v6dcX0lCPB1OK1' target='_blank'>Ido Photos folder</a></li><li>If you need a new photo, generate in Nano Banana Pro with the prompt below</li><li>Photo should be 16:9, Ido with a professional office background</li></ol>">
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">
+          <span>PROMPT: IDO PHOTO (if needed)</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-content">Enhance this photo of a man for a professional real estate video thumbnail. Make the background look like a modern, clean office setting. Improve lighting to be warm and professional. Keep the person's face and appearance exactly as they are, do not change facial features, skin tone, or expression. 16:9 horizontal composition. Photorealistic output only.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4, Avatar -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">4</div>
+      <div class="step-title" data-he="אווטאר (HeyGen)" data-en="Avatar (HeyGen)"></div>
+      <a class="step-tool tool-heygen" href="https://app.heygen.com/create-v4/draft?vt=l&avatarGroup=74e5c77518454fde8b11ea5981c960da&defaultLookId=74e5c77518454fde8b11ea5981c960da&fromCreateButton=true" target="_blank" onclick="event.stopPropagation()">HeyGen ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>נכנסים ל-<a href='https://app.heygen.com/create-v4/draft?vt=l&avatarGroup=74e5c77518454fde8b11ea5981c960da&defaultLookId=74e5c77518454fde8b11ea5981c960da&fromCreateButton=true' target='_blank'>HeyGen: אווטאר של עידו</a></li><li>מעלים את קובץ ה-MP3 מ-ElevenLabs</li><li>מעלים את תמונת עידו (מהשלב הקודם)</li><li>מייצרים את הסרטון</li><li>מקבלים סרטון של עידו מדבר</li></ol>"
+        data-en="<ol><li>Go to <a href='https://app.heygen.com/create-v4/draft?vt=l&avatarGroup=74e5c77518454fde8b11ea5981c960da&defaultLookId=74e5c77518454fde8b11ea5981c960da&fromCreateButton=true' target='_blank'>HeyGen: Ido's Avatar</a></li><li>Upload the MP3 file from ElevenLabs</li><li>Upload Ido's photo (from previous step)</li><li>Generate the video</li><li>You'll get a video of Ido speaking</li></ol>">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5, Property Photo -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">5</div>
+      <div class="step-title" data-he="שיפור תמונת הנכס (Nano Banana Pro)" data-en="Property Photo Enhancement (Nano Banana Pro)"></div>
+      <div class="step-tool tool-nano">Nano Banana Pro</div>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>לוקחים את תמונת החוץ של הנכס מהאימייל</li><li>מעלים ל-Nano Banana Pro עם הפרומפט למטה</li><li>בודקים שהתוצאה נראית מקצועית אבל אמיתית, אין נזקים שנעלמו</li></ol>"
+        data-en="<ol><li>Take the exterior property photo from the email</li><li>Upload to Nano Banana Pro with the prompt below</li><li>Verify the result looks professional but real, no damage should be hidden</li></ol>">
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">
+          <span>PROMPT: PROPERTY PHOTO</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-content">Professional real estate exterior photo enhancement.
+
+IMPROVE: Lighting balance and exposure, fix underexposed or overexposed areas. Color temperature and white balance. Image sharpness and clarity. Lens distortion correction. Straighten horizon and vertical lines. Sky replacement only if sky is overcast, blown out, or ugly, replace with clean blue sky with soft clouds. If grass is brown or patchy, make it look slightly healthier but keep it realistic for the season.
+
+REMOVE: All vehicles, trash cans, garbage bags, people, pets, satellite dishes, ladders, signs, hoses, debris, power lines, and any temporary items not part of the property itself.
+
+DO NOT CHANGE: Any structural defects, damage, cracks, stains, mold, peeling paint, broken fixtures, missing siding, roof damage, or wear and tear, these MUST remain exactly as they are. Do not add any new trees, bushes, shrubs, flowers, or landscaping that does not exist. Do not change bare trees to leafy trees. Do not change the season. Do not change the house structure, materials, or colors.
+
+ONLY IMPROVE: Lighting, sky, color balance, sharpness, lens correction, and removal of temporary items.
+
+OUTPUT: Ultra photorealistic. Professional real estate photography quality. No HDR glow. No AI artifacts.</div>
+      </div>
+      <div class="warning">
+        <span data-he="⚠️ חשוב: לעולם לא להסתיר נזקים או ליפות את מצב הנכס, המשקיעים חייבים לראות את המצב האמיתי"
+              data-en="⚠️ Important: Never hide damage or beautify the property condition, investors must see the real condition"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6, Kling Video -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">6</div>
+      <div class="step-title" data-he="סרטון הנכס (Kling 3.0)" data-en="Property Video (Kling 3.0)"></div>
+      <a class="step-tool tool-kling" href="https://app.klingai.com/" target="_blank" onclick="event.stopPropagation()">Kling 3.0 ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>מעלים את התמונה המשופרת ל-<a href='https://app.klingai.com/' target='_blank'>Kling 3.0</a></li><li>מדביקים את הפרומפט למטה</li><li>בוחרים את הגדרות המצלמה מהרשימה למטה</li><li>מוודאים ש-<b>Multi-Shot מופעל (ON)</b></li><li>לוחצים Generate</li></ol>"
+        data-en="<ol><li>Upload the enhanced photo to <a href='https://app.klingai.com/' target='_blank'>Kling 3.0</a></li><li>Paste the prompt below</li><li>Select the camera settings listed below</li><li>Make sure <b>Multi-Shot is ON</b></li><li>Click Generate</li></ol>">
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">
+          <span>PROMPT: PROPERTY VIDEO</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-content">Cinematic gentle push forward toward a residential property exterior. Slow steady dolly movement at eye level approaching the front of the house. Two shots, first shot from further away showing the full property, then cut to a second closer shot from a slightly different angle continuing the approach. Natural daylight. Photorealistic. No artificial effects. No people. No animals. Smooth camera movement.</div>
+      </div>
+      <div class="settings-box">
+        <h4 data-he="הגדרות מצלמה ב-Kling" data-en="Kling Camera Settings"></h4>
+        <div class="setting-row">
+          <span class="setting-key">Camera Movement</span>
+          <span class="setting-value">camera tilts up</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Shot Type</span>
+          <span class="setting-value">positioned at a Low Angle</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Multi-Shot</span>
+          <span class="setting-value" style="color: var(--green);">ON ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7, Google Maps Screenshot -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">7</div>
+      <div class="step-title" data-he="צילום מסך מפה (Google Maps)" data-en="Map Screenshot (Google Maps)"></div>
+      <a class="step-tool tool-maps" href="https://www.google.com/maps/" target="_blank" onclick="event.stopPropagation()">Google Maps ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>נכנסים ל-<a href='https://www.google.com/maps/' target='_blank'>Google Maps</a> ומחפשים את כתובת הנכס</li><li>ממקמים את הנכס במרכז המסך</li><li>מצלמים screenshot</li><li>שומרים, זו תמונת ה-B-roll למפה</li></ol>"
+        data-en="<ol><li>Go to <a href='https://www.google.com/maps/' target='_blank'>Google Maps</a> and search for the property address</li><li>Center the property in the middle of the screen</li><li>Take a screenshot</li><li>Save, this is the map B-roll image</li></ol>">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 8, KML File -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">8</div>
+      <div class="step-title" data-he="קובץ KML (סימון נכס על המפה)" data-en="KML File (Property Map Marker)"></div>
+      <a class="step-tool tool-drive" href="https://drive.google.com/drive/folders/1oJtrMnof0a28TzZqBs97P33jYT6BgiJ4" target="_blank" onclick="event.stopPropagation()">KML Folder ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>נכנסים ל-<a href='https://www.google.com/maps/' target='_blank'>Google Maps</a>, מחפשים את הכתובת, קליק ימני ומקבלים קואורדינטות (למשל <b>31.6896, -98.9707</b>)</li><li>פותחים קובץ KML קיים מ<a href='https://drive.google.com/drive/folders/1oJtrMnof0a28TzZqBs97P33jYT6BgiJ4' target='_blank'>תיקיית KML</a> בכל עורך טקסט</li><li>מחליפים את <b>הכתובת</b> בשורת ה-name</li><li>מחליפים את <b>הקואורדינטות</b>. <span style='color:var(--orange);font-weight:600;'>חשוב: הסדר הפוך!</span> Google Maps נותן lat,lon אבל KML צריך lon,lat,0</li><li>שומרים עם שם חדש ומעלים ל<a href='https://drive.google.com/drive/folders/1oJtrMnof0a28TzZqBs97P33jYT6BgiJ4' target='_blank'>תיקיית KML</a></li></ol>"
+        data-en="<ol><li>Go to <a href='https://www.google.com/maps/' target='_blank'>Google Maps</a>, search the address, right-click and get coordinates (e.g. <b>31.6896, -98.9707</b>)</li><li>Open an existing KML file from the <a href='https://drive.google.com/drive/folders/1oJtrMnof0a28TzZqBs97P33jYT6BgiJ4' target='_blank'>KML folder</a> with any text editor</li><li>Replace the <b>address</b> in the name line</li><li>Replace the <b>coordinates</b>. <span style='color:var(--orange);font-weight:600;'>Important: reverse the order!</span> Google Maps gives lat,lon but KML needs lon,lat,0</li><li>Save with a new name and upload to <a href='https://drive.google.com/drive/folders/1oJtrMnof0a28TzZqBs97P33jYT6BgiJ4' target='_blank'>KML folder</a></li></ol>">
+      </div>
+      <div class="tip">
+        <span data-he="💡 דוגמה: Google Maps מראה 31.6896, -98.9707 וב-KML כותבים -98.9707,31.6896,0"
+              data-en="💡 Example: Google Maps shows 31.6896, -98.9707 and in KML write -98.9707,31.6896,0"></span>
+      </div>
+      <div class="prompt-box" style="margin-top:16px;">
+        <div class="prompt-label">
+          <span>KML TEMPLATE</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-content">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;kml xmlns="http://www.opengis.net/kml/2.2"&gt;
+  &lt;Document&gt;
+    &lt;name&gt;Go Cash Property Pin&lt;/name&gt;
+    &lt;Style id="propertyPin"&gt;
+      &lt;IconStyle&gt;
+        &lt;scale&gt;3.0&lt;/scale&gt;
+        &lt;Icon&gt;
+          &lt;href&gt;https://maps.google.com/mapfiles/kml/paddle/red-circle.png&lt;/href&gt;
+        &lt;/Icon&gt;
+        &lt;hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/&gt;
+      &lt;/IconStyle&gt;
+      &lt;LabelStyle&gt;
+        &lt;scale&gt;1.4&lt;/scale&gt;
+        &lt;color&gt;ffffffff&lt;/color&gt;
+      &lt;/LabelStyle&gt;
+    &lt;/Style&gt;
+    &lt;Placemark&gt;
+      &lt;name&gt;[ADDRESS HERE]&lt;/name&gt;
+      &lt;styleUrl&gt;#propertyPin&lt;/styleUrl&gt;
+      &lt;Point&gt;
+        &lt;coordinates&gt;[LONGITUDE],[LATITUDE],0&lt;/coordinates&gt;
+      &lt;/Point&gt;
+    &lt;/Placemark&gt;
+  &lt;/Document&gt;
+&lt;/kml&gt;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 9, Earth Studio -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">9</div>
+      <div class="step-title" data-he="סרטון מפה (Google Earth Studio)" data-en="Map Video (Google Earth Studio)"></div>
+      <a class="step-tool tool-earth" href="https://www.google.com/earth/studio/" target="_blank" onclick="event.stopPropagation()">Earth Studio ↗</a>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>נכנסים ל-<a href='https://www.google.com/earth/studio/' target='_blank'>Google Earth Studio</a></li><li>Quick Start ובוחרים <b>Fly To and Orbit</b></li><li>מחפשים את הכתובת בשורת החיפוש</li><li>ממשיכים בשלבי ה-wizard ומגדירים את ההגדרות למטה</li><li>בפרויקט: <b>Overlays</b> ואז <b>Import KML</b> ובוחרים את קובץ ה-KML מהשלב הקודם</li><li>לוחצים Play לבדיקה. אם טוב, לוחצים <b>Render</b></li><li>בוחרים <b>Video (.mp4)</b> ו-Submit</li></ol>"
+        data-en="<ol><li>Go to <a href='https://www.google.com/earth/studio/' target='_blank'>Google Earth Studio</a></li><li>Quick Start and choose <b>Fly To and Orbit</b></li><li>Search for the property address</li><li>Continue through the wizard and set the settings below</li><li>In the project: <b>Overlays</b> then <b>Import KML</b> and select the KML file from the previous step</li><li>Hit Play to preview. If good, click <b>Render</b></li><li>Choose <b>Video (.mp4)</b> and Submit</li></ol>">
+      </div>
+      <div class="settings-box">
+        <h4 data-he="הגדרות Earth Studio" data-en="Earth Studio Settings"></h4>
+        <div class="setting-row">
+          <span class="setting-key">Template</span>
+          <span class="setting-value">Fly To and Orbit</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Duration</span>
+          <span class="setting-value">8-10 seconds</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">End Altitude</span>
+          <span class="setting-value">50-80 meters</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Orbit Radius</span>
+          <span class="setting-value">50-70 meters</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Clouds</span>
+          <span class="setting-value">OFF</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Render Format</span>
+          <span class="setting-value">Video (.mp4) / 1920x1080</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 10, CapCut -->
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <div class="step-number">10</div>
+      <div class="step-title" data-he="עריכה (CapCut)" data-en="Editing (CapCut)"></div>
+      <div class="step-tool tool-capcut">CapCut</div>
+      <div class="step-arrow">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-instructions"
+        data-he="<ol><li>פותחים פרויקט חדש ב-CapCut (1920x1080, 30fps)</li><li>מוסיפים את <b>סרטון עידו</b> כטראק הראשי</li><li>מוסיפים את <b>מוזיקת הרקע</b> מ<a href='https://drive.google.com/drive/folders/1g6d8jBn21q93tT1JhGNnZ1NVO7JqNRXp' target='_blank'>תיקיית המוזיקה</a>, מנמיכים ווליום ל-15-20%</li><li>מוסיפים את <b>סרטון הנכס</b> (Kling) כ-video overlay, בלי לחתוך את האודיו של עידו</li><li>מוסיפים את <b>סרטון המפה</b> (Earth Studio) כ-video overlay, בלי לחתוך את האודיו של עידו</li><li>מוסיפים מעברי <b>Cross Dissolve</b> (0.5 שניות) בין הביירולים</li><li>מייצאים ומעלים את הסרטון הסופי ל<a href='https://drive.google.com/drive/folders/1__7ovGXnJngMegN1pK49XywsP_6kmt15' target='_blank'>תיקיית הסרטונים הסופיים</a></li></ol>"
+        data-en="<ol><li>Open a new CapCut project (1920x1080, 30fps)</li><li>Add <b>Ido's video</b> as the main track</li><li>Add the <b>background music</b> from <a href='https://drive.google.com/drive/folders/1g6d8jBn21q93tT1JhGNnZ1NVO7JqNRXp' target='_blank'>Music folder</a>, lower volume to 15-20%</li><li>Add the <b>property video</b> (Kling) as video overlay, without cutting Ido's audio</li><li>Add the <b>map video</b> (Earth Studio) as video overlay, without cutting Ido's audio</li><li>Add <b>Cross Dissolve</b> transitions (0.5 seconds) between B-rolls</li><li>Export and upload the final video to <a href='https://drive.google.com/drive/folders/1__7ovGXnJngMegN1pK49XywsP_6kmt15' target='_blank'>Final Videos folder</a></li></ol>">
+      </div>
+      <div class="settings-box">
+        <h4 data-he="הגדרות CapCut" data-en="CapCut Settings"></h4>
+        <div class="setting-row">
+          <span class="setting-key">Resolution</span>
+          <span class="setting-value">1920x1080</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">FPS</span>
+          <span class="setting-value">30</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Transitions</span>
+          <span class="setting-value">Cross Dissolve (0.5s)</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-key">Music Volume</span>
+          <span class="setting-value">15-20%</span>
+        </div>
+      </div>
+      <div class="tip">
+        <span data-he="💡 האודיו של עידו רץ ברציפות לאורך כל הסרטון, הביירולים מוסיפים ויזואל בלבד"
+              data-en="💡 Ido's audio runs continuously throughout the entire video, B-rolls add visuals only"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Go Cash | Landing Page Video System
+  </div>
+
+</div>
+
+<script>
+let currentLang = 'he';
+
+function updateContent() {
+  document.querySelectorAll('[data-he]').forEach(el => {
+    const text = el.getAttribute('data-' + currentLang);
+    if (text) el.innerHTML = text;
+  });
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'he' ? 'en' : 'he';
+  updateContent();
+  document.getElementById('langBtn').classList.toggle('active');
+}
+
+function toggleDir() {
+  const body = document.body;
+  const isRtl = body.getAttribute('dir') === 'rtl';
+  body.setAttribute('dir', isRtl ? 'ltr' : 'rtl');
+  document.documentElement.setAttribute('dir', isRtl ? 'ltr' : 'rtl');
+  document.getElementById('dirBtn').classList.toggle('active');
+}
+
+function toggleStep(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+function toggleAll(open) {
+  document.querySelectorAll('.step').forEach(s => {
+    if (open) s.classList.add('open');
+    else s.classList.remove('open');
+  });
+}
+
+function copyPrompt(btn) {
+  const content = btn.closest('.prompt-box').querySelector('.prompt-content');
+  let text = content.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Initialize
+updateContent();
+</script>
+
+</body>
+</html>
