@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Complete Claude Glossary | Daily Claude Hacks by Jay Margaliot</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy: #1a1a2e;
+            --navy-light: #16213e;
+            --navy-mid: #0f3460;
+            --orange: #f97316;
+            --orange-light: #fdba74;
+            --orange-bg: #fff7ed;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+            transition: direction 0.3s;
+        }
+
+        [dir="rtl"] body, [dir="rtl"] { direction: rtl; text-align: right; }
+        [dir="rtl"] .cat-accent { border-left: none; border-right: 4px solid; }
+        [dir="rtl"] .term-toggle-icon { transform: rotate(0deg); }
+        [dir="rtl"] .term-toggle-icon.open { transform: rotate(90deg); }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 50%, var(--navy-light) 100%);
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 24px 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .brand {
+            color: var(--orange);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .brand a {
+            color: var(--orange);
+            text-decoration: none;
+        }
+        .brand a:hover { text-decoration: underline; }
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .lang-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .lang-btn {
+            padding: 6px 14px;
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: var(--orange);
+            color: white;
+        }
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .wa-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37,211,102,0.4);
+        }
+        .header-title {
+            color: white;
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .header-title span { color: var(--orange); }
+        .header-sub {
+            color: rgba(255,255,255,0.7);
+            font-size: 16px;
+            max-width: 600px;
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            max-width: 1100px;
+            margin: -20px auto 24px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+        .stats-inner {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .stats-left {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-num {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--navy);
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.3;
+        }
+
+        /* SEARCH */
+        .search-wrap {
+            max-width: 1100px;
+            margin: 0 auto 24px;
+            padding: 0 24px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        [dir="rtl"] .search-box input { padding: 14px 48px 14px 20px; }
+        .search-box input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+        }
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 18px;
+        }
+        [dir="rtl"] .search-icon { left: auto; right: 16px; }
+        .search-count {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 13px;
+        }
+        [dir="rtl"] .search-count { right: auto; left: 16px; }
+
+        /* CATEGORY NAV */
+        .cat-nav {
+            max-width: 1100px;
+            margin: 0 auto 32px;
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cat-nav-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 20px;
+            background: white;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .cat-nav-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .cat-nav-btn.active {
+            background: var(--orange);
+            color: white;
+            border-color: var(--orange);
+        }
+
+        /* CATEGORIES GRID */
+        .categories {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .category-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .category-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .category-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+        .cat-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .cat-info { flex: 1; }
+        .cat-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .cat-count {
+            font-size: 13px;
+            color: var(--gray-400);
+        }
+        .cat-toggle {
+            font-size: 20px;
+            color: var(--gray-400);
+            transition: transform 0.3s;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cat-toggle.open { transform: rotate(180deg); }
+
+        .cat-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .cat-body.open { max-height: 5000px; }
+        .terms-list {
+            padding: 0 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* TERM ITEM */
+        .term-item {
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .term-item:hover { background: var(--gray-50); }
+        .term-head {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .term-toggle-icon {
+            color: var(--gray-400);
+            font-size: 12px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .term-toggle-icon.open { transform: rotate(90deg); }
+        .term-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 15px;
+            flex: 1;
+        }
+        .term-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .term-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .term-body.open { max-height: 500px; }
+        .term-desc {
+            padding: 0 16px 14px 40px;
+            color: var(--gray-600);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        [dir="rtl"] .term-desc { padding: 0 40px 14px 16px; }
+        .term-highlight {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: var(--orange-bg);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--orange);
+            font-weight: 500;
+        }
+
+        /* COLORS PER CATEGORY */
+        .cat-core .cat-icon { background: #eff6ff; color: #2563eb; }
+        .cat-core .cat-header { border-left: 4px solid #3b82f6; }
+        .cat-models .cat-icon { background: #fef3c7; color: #d97706; }
+        .cat-models .cat-header { border-left: 4px solid #f59e0b; }
+        .cat-products .cat-icon { background: #ecfdf5; color: #059669; }
+        .cat-products .cat-header { border-left: 4px solid #10b981; }
+        .cat-commands .cat-icon { background: #f5f3ff; color: #7c3aed; }
+        .cat-commands .cat-header { border-left: 4px solid #8b5cf6; }
+        .cat-connections .cat-icon { background: #fff1f2; color: #e11d48; }
+        .cat-connections .cat-header { border-left: 4px solid #f43f5e; }
+        .cat-advanced .cat-icon { background: #fdf4ff; color: #a21caf; }
+        .cat-advanced .cat-header { border-left: 4px solid #d946ef; }
+        .cat-plans .cat-icon { background: #f0fdfa; color: #0d9488; }
+        .cat-plans .cat-header { border-left: 4px solid #14b8a6; }
+
+        [dir="rtl"] .cat-header { border-left: none !important; }
+        [dir="rtl"] .cat-core .cat-header { border-right: 4px solid #3b82f6; }
+        [dir="rtl"] .cat-models .cat-header { border-right: 4px solid #f59e0b; }
+        [dir="rtl"] .cat-products .cat-header { border-right: 4px solid #10b981; }
+        [dir="rtl"] .cat-commands .cat-header { border-right: 4px solid #8b5cf6; }
+        [dir="rtl"] .cat-connections .cat-header { border-right: 4px solid #f43f5e; }
+        [dir="rtl"] .cat-advanced .cat-header { border-right: 4px solid #d946ef; }
+        [dir="rtl"] .cat-plans .cat-header { border-right: 4px solid #14b8a6; }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-400);
+            font-size: 18px;
+            display: none;
+        }
+
+        /* SCROLL TOP */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(249,115,22,0.4);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scroll-top.show { opacity: 1; transform: translateY(0); }
+        [dir="rtl"] .scroll-top { right: auto; left: 30px; }
+
+        /* FOOTER */
+        .footer {
+            background: var(--navy);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 24px;
+            font-size: 13px;
+        }
+        .footer a { color: var(--orange); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* RESPONSIVE */
+        @media (max-width: 640px) {
+            .header-top { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-controls { width: 100%; justify-content: space-between; }
+            .stats-left { gap: 16px; }
+            .stat-num { font-size: 20px; }
+            .cat-nav { gap: 6px; }
+            .cat-nav-btn { padding: 6px 12px; font-size: 12px; }
+            .wa-btn span.wa-text { display: none; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .search-no-match { background: #fef2f2 !important; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="header-top">
+            <div class="brand">Daily Claude Hacks by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a></div>
+            <div class="header-controls">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+                    <button class="lang-btn" onclick="setLang('he')">עב</button>
+                </div>
+                <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" class="wa-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    <span class="wa-text" data-en="Join Group" data-he="הצטרפו לקבוצה">Join Group</span>
+                </a>
+            </div>
+        </div>
+        <h1 class="header-title" data-en="The Complete Claude <span>Glossary</span>" data-he="מילון המונחים <span>המלא</span> של Claude">The Complete Claude <span>Glossary</span></h1>
+        <p class="header-sub" data-en="Every term you need to know, organized by topic. Built for business owners, not engineers." data-he="כל המונחים שצריך להכיר, מאורגנים לפי נושא. נבנה לבעלי עסקים, לא למהנדסים.">Every term you need to know, organized by topic. Built for business owners, not engineers.</p>
+    </div>
+</header>
+
+<div class="stats-bar">
+    <div class="stats-inner">
+        <div class="stats-left">
+            <div class="stat-item">
+                <div class="stat-num" id="totalTerms">0</div>
+                <div class="stat-label" data-en="Terms" data-he="מונחים">Terms</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num" id="totalCats">7</div>
+                <div class="stat-label" data-en="Categories" data-he="קטגוריות">Categories</div>
+            </div>
+        </div>
+        <div style="font-size:13px;color:var(--gray-400)" data-en="Click any category to expand" data-he="לחצו על קטגוריה כדי לפתוח">Click any category to expand</div>
+    </div>
+</div>
+
+<div class="search-wrap">
+    <div class="search-box">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="searchInput" data-placeholder-en="Search terms..." data-placeholder-he="...חיפוש מונחים" placeholder="Search terms..." oninput="filterTerms()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+</div>
+
+<div class="cat-nav" id="catNav"></div>
+
+<div class="categories" id="categoriesContainer"></div>
+<div class="no-results" id="noResults" data-en="No terms found. Try a different search." data-he="לא נמצאו מונחים. נסו חיפוש אחר.">No terms found. Try a different search.</div>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
+
+<footer class="footer">
+    <p>Daily Claude Hacks by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a> &copy; 2025</p>
+</footer>
+
+<script>
+const DATA = [
+  {
+    id: "core",
+    cls: "cat-core",
+    icon: "&#9881;",
+    name: { en: "Core Concepts", he: "מושגי יסוד" },
+    terms: [
+      {
+        name: { en: "Tokens", he: "טוקנים" },
+        desc: {
+          en: "The basic units AI uses to read and write text. Roughly, 1 token equals about 3/4 of a word in English. Every prompt and response costs tokens, and your plan's limits are measured in them.",
+          he: "יחידות הבסיס שבהן AI קורא וכותב טקסט. בקירוב, טוקן אחד שווה לכ-3/4 מילה באנגלית. כל פרומפט ותשובה עולים טוקנים, ומגבלות התוכנית שלכם נמדדות בהם."
+        },
+        tip: { en: "Think of tokens like characters in an SMS, each one counts.", he: "תחשבו על טוקנים כמו תווים בהודעת SMS, כל אחד נספר." }
+      },
+      {
+        name: { en: "Context Window", he: "חלון הקשר" },
+        desc: {
+          en: "The total amount of text the AI can 'see' at once in a conversation. Measured in tokens. Claude's context window ranges from 200K tokens on standard plans up to 1M tokens on Claude Opus 4.6. When the window fills up, older parts of the conversation are forgotten.",
+          he: "כמות הטקסט הכוללת שה-AI יכול 'לראות' בבת אחת בשיחה. נמדד בטוקנים. חלון ההקשר של Claude נע בין 200K טוקנים בתוכניות רגילות ועד מיליון טוקנים ב-Claude Opus 4.6. כשהחלון מתמלא, חלקים ישנים של השיחה נשכחים."
+        }
+      },
+      {
+        name: { en: "Temperature", he: "טמפרטורה" },
+        desc: {
+          en: "A setting that controls how creative or random the AI's responses are. Low temperature (closer to 0) means more predictable, focused answers. High temperature means more creative and varied responses. For business tasks, low temperature is usually better.",
+          he: "הגדרה שקובעת כמה יצירתיות או אקראיות יש בתשובות ה-AI. טמפרטורה נמוכה (קרוב ל-0) אומרת תשובות יותר צפויות ומדויקות. טמפרטורה גבוהה אומרת תשובות יותר יצירתיות ומגוונות. למשימות עסקיות, טמפרטורה נמוכה עדיפה בדרך כלל."
+        }
+      },
+      {
+        name: { en: "Prompt", he: "פרומפט" },
+        desc: {
+          en: "The text instruction you give to the AI. The quality of your prompt directly affects the quality of the response. A good prompt is clear, specific, and gives the AI enough context to deliver what you need.",
+          he: "הוראת הטקסט שאתם נותנים ל-AI. איכות הפרומפט משפיעה ישירות על איכות התשובה. פרומפט טוב הוא ברור, ספציפי, ונותן ל-AI מספיק הקשר כדי לספק את מה שאתם צריכים."
+        },
+        tip: { en: "Better prompts = better results. Always.", he: "פרומפטים טובים יותר = תוצאות טובות יותר. תמיד." }
+      },
+      {
+        name: { en: "System Prompt", he: "פרומפט מערכת" },
+        desc: {
+          en: "A special set of instructions given to the AI before the conversation starts. It defines the AI's personality, role, rules, and limitations. Users don't usually see the system prompt. In Claude Code, the CLAUDE.md file functions as your system prompt.",
+          he: "סט הוראות מיוחד שניתן ל-AI לפני שהשיחה מתחילה. הוא מגדיר את האישיות, התפקיד, הכללים והמגבלות של ה-AI. משתמשים בדרך כלל לא רואים את פרומפט המערכת. ב-Claude Code, קובץ CLAUDE.md מתפקד כפרומפט המערכת שלכם."
+        }
+      },
+      {
+        name: { en: "Hallucination", he: "הזיה" },
+        desc: {
+          en: "When the AI confidently generates information that is incorrect or completely made up. This is one of the biggest challenges in AI. Always verify important facts, especially numbers, dates, and specific claims.",
+          he: "כשה-AI יוצר בביטחון מידע שגוי או בדוי לחלוטין. זהו אחד האתגרים הגדולים ביותר ב-AI. תמיד אמתו עובדות חשובות, במיוחד מספרים, תאריכים וטענות ספציפיות."
+        },
+        tip: { en: "Trust but verify. Especially with numbers and links.", he: "סמכו אבל בדקו. במיוחד מספרים וקישורים." }
+      },
+      {
+        name: { en: "Fine-tuning", he: "כוונון עדין" },
+        desc: {
+          en: "The process of further training an AI model on specific data to make it better at particular tasks. For example, training it on your company's writing style or industry terminology. Claude does not currently support direct fine-tuning by end users.",
+          he: "תהליך של אימון נוסף למודל AI על מידע ספציפי כדי לשפר אותו במשימות מסוימות. לדוגמה, אימון על סגנון הכתיבה של החברה שלכם או מונחים מקצועיים. Claude לא תומך כרגע בכוונון עדין ישיר על ידי משתמשי קצה."
+        }
+      }
+    ]
+  },
+  {
+    id: "models",
+    cls: "cat-models",
+    icon: "&#129302;",
+    name: { en: "Claude Models", he: "מודלי Claude" },
+    terms: [
+      {
+        name: { en: "Opus", he: "Opus" },
+        desc: {
+          en: "The most powerful and intelligent Claude model. Best for complex reasoning, long documents, and tasks that require deep understanding. Slower and more expensive per token. Currently at version 4.6 with up to 1M token context window.",
+          he: "המודל החזק והחכם ביותר של Claude. הכי טוב לחשיבה מורכבת, מסמכים ארוכים ומשימות שדורשות הבנה עמוקה. יותר איטי ויקר לכל טוקן. כרגע בגרסה 4.6 עם חלון הקשר של עד מיליון טוקנים."
+        },
+        tip: { en: "Use Opus when quality matters more than speed.", he: "השתמשו ב-Opus כשאיכות חשובה יותר ממהירות." }
+      },
+      {
+        name: { en: "Sonnet", he: "Sonnet" },
+        desc: {
+          en: "The balanced Claude model. Great performance at a reasonable speed and cost. Best for most everyday tasks: writing, analysis, coding, and business work. The sweet spot for most users.",
+          he: "מודל Claude המאוזן. ביצועים מעולים במהירות ועלות סבירות. הכי טוב לרוב המשימות היומיומיות: כתיבה, ניתוח, קוד ועבודה עסקית. הנקודה המושלמת לרוב המשתמשים."
+        },
+        tip: { en: "The default for most users. Fast and capable.", he: "ברירת המחדל לרוב המשתמשים. מהיר ומסוגל." }
+      },
+      {
+        name: { en: "Haiku", he: "Haiku" },
+        desc: {
+          en: "The fastest and most affordable Claude model. Great for simple tasks, quick answers, and high volume work. Less capable for complex reasoning but perfect for straightforward questions and automation.",
+          he: "מודל Claude המהיר והזול ביותר. מעולה למשימות פשוטות, תשובות מהירות ועבודה בנפח גבוה. פחות מסוגל לחשיבה מורכבת אבל מושלם לשאלות פשוטות ואוטומציה."
+        }
+      },
+      {
+        name: { en: "Claude 4.5 / 4.6", he: "Claude 4.5 / 4.6" },
+        desc: {
+          en: "The version numbers of Claude's model generations. Claude 4.5 introduced the Sonnet model with improved reasoning. Claude 4.6 brought Opus with 1M token context window. Higher numbers generally mean better capabilities.",
+          he: "מספרי הגרסאות של דורות המודלים של Claude. Claude 4.5 הציג את מודל Sonnet עם חשיבה משופרת. Claude 4.6 הביא את Opus עם חלון הקשר של מיליון טוקנים. מספרים גבוהים יותר בדרך כלל אומרים יכולות טובות יותר."
+        }
+      }
+    ]
+  },
+  {
+    id: "products",
+    cls: "cat-products",
+    icon: "&#128230;",
+    name: { en: "Claude Products", he: "מוצרי Claude" },
+    terms: [
+      {
+        name: { en: "claude.ai", he: "claude.ai" },
+        desc: {
+          en: "The main web interface for chatting with Claude. You open a browser, go to claude.ai, and start a conversation. Supports text, file uploads, and image analysis. Available on Free, Pro, and Max plans.",
+          he: "הממשק הראשי באינטרנט לשיחה עם Claude. פותחים דפדפן, נכנסים ל-claude.ai ומתחילים שיחה. תומך בטקסט, העלאת קבצים וניתוח תמונות. זמין בתוכניות Free, Pro ו-Max."
+        }
+      },
+      {
+        name: { en: "Cowork", he: "Cowork" },
+        desc: {
+          en: "A feature within claude.ai that lets Claude work on tasks in the background while you do other things. You give Claude a task, and it works autonomously, showing you the results when done. Think of it as giving a task to an assistant who works while you're away.",
+          he: "פיצ'ר בתוך claude.ai שמאפשר ל-Claude לעבוד על משימות ברקע בזמן שאתם עושים דברים אחרים. נותנים ל-Claude משימה, והוא עובד באופן עצמאי ומציג את התוצאות כשסיים. תחשבו על זה כמו לתת משימה לעוזר שעובד כשאתם לא שם."
+        },
+        tip: { en: "Great for research, analysis, and writing tasks.", he: "מעולה למשימות מחקר, ניתוח וכתיבה." }
+      },
+      {
+        name: { en: "Claude Code", he: "Claude Code" },
+        desc: {
+          en: "Anthropic's command line tool for developers and power users. Runs in the terminal and can read, write, and edit files on your computer. Used to build software, automate workflows, and manage projects. The tool behind everything in this glossary.",
+          he: "כלי שורת הפקודה של Anthropic למפתחים ומשתמשים מתקדמים. רץ בטרמינל ויכול לקרוא, לכתוב ולערוך קבצים במחשב שלכם. משמש לבניית תוכנה, אוטומציה של תהליכים וניהול פרויקטים. הכלי שמאחורי כל מה שבמילון הזה."
+        },
+        tip: { en: "The most powerful way to use Claude. Period.", he: "הדרך הכי חזקה להשתמש ב-Claude. נקודה." }
+      },
+      {
+        name: { en: "API", he: "API" },
+        desc: {
+          en: "Application Programming Interface. A way for software to talk to Claude directly, without a chat window. Developers use the API to build apps, tools, and automations that use Claude's intelligence. You pay per token used.",
+          he: "ממשק תכנות יישומים. דרך לתוכנה לדבר עם Claude ישירות, בלי חלון צ'אט. מפתחים משתמשים ב-API כדי לבנות אפליקציות, כלים ואוטומציות שמשתמשות באינטליגנציה של Claude. משלמים לפי טוקנים."
+        }
+      },
+      {
+        name: { en: "Claude Desktop", he: "Claude Desktop" },
+        desc: {
+          en: "The desktop application for Claude, available for Mac and Windows. Provides the same features as claude.ai but as a native app. Supports MCP connections, making it possible to connect Claude to local tools and services on your computer.",
+          he: "אפליקציית הדסקטופ של Claude, זמינה ל-Mac ו-Windows. מספקת את אותם הפיצ'רים כמו claude.ai אבל כאפליקציה מקומית. תומכת בחיבורי MCP, מה שמאפשר לחבר את Claude לכלים ושירותים מקומיים במחשב שלכם."
+        }
+      },
+      {
+        name: { en: "Artifacts", he: "ארטיפקטים" },
+        desc: {
+          en: "A feature in claude.ai that creates standalone pieces of content in a side panel. Can generate HTML pages, code, documents, diagrams, and interactive applications. You can preview, copy, and share artifacts directly.",
+          he: "פיצ'ר ב-claude.ai שיוצר תכנים עצמאיים בפאנל צדדי. יכול ליצור דפי HTML, קוד, מסמכים, דיאגרמות ואפליקציות אינטראקטיביות. אפשר לצפות, להעתיק ולשתף ארטיפקטים ישירות."
+        }
+      }
+    ]
+  },
+  {
+    id: "commands",
+    cls: "cat-commands",
+    icon: "&#9000;",
+    name: { en: "Commands & Shortcuts", he: "פקודות וקיצורים" },
+    terms: [
+      {
+        name: { en: "/compact", he: "/compact" },
+        desc: {
+          en: "A Claude Code command that compresses the current conversation to free up context window space. Use this when your conversation gets long and Claude starts forgetting earlier parts. It summarizes what happened so far and continues with a lighter memory footprint.",
+          he: "פקודת Claude Code שדוחסת את השיחה הנוכחית כדי לפנות מקום בחלון ההקשר. השתמשו כשהשיחה מתארכת ו-Claude מתחיל לשכוח חלקים מוקדמים. היא מסכמת מה שקרה עד כה וממשיכה עם טביעת זיכרון קלה יותר."
+        },
+        tip: { en: "Use when context is above 50%. Saves your conversation.", he: "השתמשו כשההקשר מעל 50%. שומר את השיחה שלכם." }
+      },
+      {
+        name: { en: "/clear", he: "/clear" },
+        desc: {
+          en: "Clears the entire conversation history and starts fresh. Unlike /compact which summarizes, /clear completely wipes the slate. Use when you want to start a completely new topic.",
+          he: "מוחק את כל היסטוריית השיחה ומתחיל מחדש. בניגוד ל-/compact שמסכם, /clear מנקה הכל לגמרי. השתמשו כשרוצים להתחיל נושא חדש לחלוטין."
+        }
+      },
+      {
+        name: { en: "/model", he: "/model" },
+        desc: {
+          en: "Switch between Claude models mid-conversation. For example, switch from Sonnet to Opus for a complex task, then back to Sonnet for simpler follow-ups. Lets you optimize cost and quality on the fly.",
+          he: "מחליף בין מודלים של Claude באמצע שיחה. לדוגמה, עוברים מ-Sonnet ל-Opus למשימה מורכבת, וחוזרים ל-Sonnet להמשך פשוט יותר. מאפשר לכם לייעל עלות ואיכות תוך כדי עבודה."
+        }
+      },
+      {
+        name: { en: "/cost", he: "/cost" },
+        desc: {
+          en: "Shows how much the current Claude Code session has cost in API tokens and dollars. Helps you track spending and understand which tasks are expensive. Essential for budgeting your AI usage.",
+          he: "מראה כמה עלתה הסשן הנוכחי של Claude Code בטוקני API ודולרים. עוזר לעקוב אחרי הוצאות ולהבין אילו משימות יקרות. חיוני לתקצוב השימוש ב-AI."
+        }
+      },
+      {
+        name: { en: "/context", he: "/context" },
+        desc: {
+          en: "Displays how much of your context window is currently used. Shows the percentage full and how many tokens remain. When it gets high, time to use /compact or /clear.",
+          he: "מציג כמה מחלון ההקשר שלכם מנוצל כרגע. מראה את האחוז המלא וכמה טוקנים נותרו. כשזה מגיע גבוה, הגיע הזמן להשתמש ב-/compact או /clear."
+        }
+      },
+      {
+        name: { en: "ultrathink", he: "ultrathink" },
+        desc: {
+          en: "A keyword you add to your prompt that makes Claude think much more deeply before responding. It uses extended thinking, where Claude works through the problem step by step internally before giving you an answer. Best for complex problems where you need the highest quality result.",
+          he: "מילת מפתח שמוסיפים לפרומפט שגורמת ל-Claude לחשוב הרבה יותר לעומק לפני שהוא עונה. הוא משתמש בחשיבה מורחבת, שבה Claude עובר על הבעיה צעד אחר צעד באופן פנימי לפני שנותן תשובה. הכי טוב לבעיות מורכבות שבהן צריכים את התוצאה הכי איכותית."
+        },
+        tip: { en: "Add 'ultrathink' for Claude's deepest reasoning mode.", he: "הוסיפו 'ultrathink' למצב החשיבה העמוק ביותר של Claude." }
+      }
+    ]
+  },
+  {
+    id: "connections",
+    cls: "cat-connections",
+    icon: "&#128279;",
+    name: { en: "Connections & Integrations", he: "חיבורים ואינטגרציות" },
+    terms: [
+      {
+        name: { en: "MCP (Model Context Protocol)", he: "MCP (פרוטוקול הקשר למודל)" },
+        desc: {
+          en: "A protocol that lets Claude connect to external tools and services. Think of it as USB ports for AI. Through MCP, Claude can access your Google Calendar, Gmail, Notion, browser, and many other tools. It is what makes Claude actually useful for real work.",
+          he: "פרוטוקול שמאפשר ל-Claude להתחבר לכלים ושירותים חיצוניים. תחשבו על זה כמו חיבורי USB ל-AI. דרך MCP, Claude יכול לגשת ליומן Google, Gmail, Notion, דפדפן וכלים רבים אחרים. זה מה שהופך את Claude לשימושי באמת לעבודה אמיתית."
+        },
+        tip: { en: "MCP is what turns Claude from a chatbot into a real assistant.", he: "MCP הוא מה שהופך את Claude מצ'אטבוט לעוזר אמיתי." }
+      },
+      {
+        name: { en: "Connectors", he: "מחברים" },
+        desc: {
+          en: "Pre-built MCP connections to popular services. Instead of setting up MCP manually, connectors give you one-click integration with tools like Google Calendar, Gmail, Notion, Asana, and more. Available in Claude Code and Claude Desktop.",
+          he: "חיבורי MCP מוכנים מראש לשירותים פופולריים. במקום להגדיר MCP ידנית, מחברים נותנים לכם אינטגרציה בלחיצה אחת עם כלים כמו Google Calendar, Gmail, Notion, Asana ועוד. זמינים ב-Claude Code וב-Claude Desktop."
+        }
+      },
+      {
+        name: { en: "Hooks", he: "הוקים" },
+        desc: {
+          en: "Automated actions that trigger before or after Claude performs certain tasks. For example, running tests automatically after Claude writes code, or formatting files before saving. Hooks let you create guardrails and automations around Claude's work.",
+          he: "פעולות אוטומטיות שמופעלות לפני או אחרי ש-Claude מבצע משימות מסוימות. לדוגמה, הרצת בדיקות אוטומטית אחרי ש-Claude כותב קוד, או פורמט קבצים לפני שמירה. הוקים מאפשרים ליצור מעקות בטיחות ואוטומציות סביב העבודה של Claude."
+        }
+      }
+    ]
+  },
+  {
+    id: "advanced",
+    cls: "cat-advanced",
+    icon: "&#9889;",
+    name: { en: "Advanced Features", he: "פיצ'רים מתקדמים" },
+    terms: [
+      {
+        name: { en: "Skills", he: "מיומנויות" },
+        desc: {
+          en: "Reusable instruction files that teach Claude how to perform specific tasks. Saved as Markdown files in your project, skills let you standardize workflows. For example, a skill for 'deploy to production' or 'generate social media post'. Build once, use everywhere.",
+          he: "קבצי הוראות לשימוש חוזר שמלמדים את Claude איך לבצע משימות ספציפיות. נשמרים כקבצי Markdown בפרויקט, מיומנויות מאפשרות לתקנן תהליכי עבודה. לדוגמה, מיומנות ל'פריסה לפרודקשן' או 'יצירת פוסט לרשתות חברתיות'. בונים פעם אחת, משתמשים בכל מקום."
+        }
+      },
+      {
+        name: { en: "CLAUDE.md", he: "CLAUDE.md" },
+        desc: {
+          en: "A special file that acts as Claude Code's instruction manual for your project. It contains your preferences, rules, coding standards, and context that Claude reads at the start of every conversation. Think of it as training a new employee with a detailed onboarding doc.",
+          he: "קובץ מיוחד שמשמש כמדריך הוראות של Claude Code לפרויקט שלכם. הוא מכיל את ההעדפות, הכללים, תקני הקוד וההקשר שלכם, ו-Claude קורא אותו בתחילת כל שיחה. תחשבו על זה כמו הדרכת עובד חדש עם מסמך קליטה מפורט."
+        },
+        tip: { en: "Your most important file in any Claude Code project.", he: "הקובץ הכי חשוב בכל פרויקט Claude Code." }
+      },
+      {
+        name: { en: "Projects", he: "פרויקטים" },
+        desc: {
+          en: "In claude.ai, Projects let you create dedicated workspaces with custom instructions and uploaded knowledge files. Claude remembers the project context across conversations. Great for organizing work by client, topic, or team.",
+          he: "ב-claude.ai, פרויקטים מאפשרים ליצור סביבות עבודה ייעודיות עם הוראות מותאמות וקבצי ידע שהועלו. Claude זוכר את הקשר הפרויקט לאורך שיחות. מעולה לארגון עבודה לפי לקוח, נושא או צוות."
+        }
+      },
+      {
+        name: { en: "Dispatch", he: "שיגור" },
+        desc: {
+          en: "A feature in Claude Code that launches sub-agents to work on tasks in parallel. Instead of doing everything sequentially, Claude can dispatch multiple agents to handle different parts of a project simultaneously. Like having a team of AI assistants instead of just one.",
+          he: "פיצ'ר ב-Claude Code שמשגר סוכני משנה לעבוד על משימות במקביל. במקום לעשות הכל ברצף, Claude יכול לשגר מספר סוכנים לטפל בחלקים שונים של פרויקט בו זמנית. כמו צוות עוזרי AI במקום רק אחד."
+        }
+      },
+      {
+        name: { en: "Remote Control", he: "שלט רחוק" },
+        desc: {
+          en: "A way to control Claude Code remotely through the API. Lets you start, monitor, and manage Claude Code sessions from other tools or scripts. Useful for building automated workflows and integrating Claude Code into larger systems.",
+          he: "דרך לשלוט ב-Claude Code מרחוק דרך ה-API. מאפשר להפעיל, לנטר ולנהל סשנים של Claude Code מכלים או סקריפטים אחרים. שימושי לבניית תהליכי עבודה אוטומטיים ושילוב Claude Code במערכות גדולות יותר."
+        }
+      }
+    ]
+  },
+  {
+    id: "plans",
+    cls: "cat-plans",
+    icon: "&#128176;",
+    name: { en: "Plans & Pricing", he: "תוכניות ומחירים" },
+    terms: [
+      {
+        name: { en: "Free Plan", he: "תוכנית חינמית" },
+        desc: {
+          en: "The basic free tier of claude.ai. Limited number of messages per day. Uses Sonnet model only. Great for trying out Claude and light personal use. No access to Claude Code or advanced features.",
+          he: "התוכנית הבסיסית החינמית של claude.ai. מספר מוגבל של הודעות ביום. משתמש במודל Sonnet בלבד. מעולה לנסות את Claude ולשימוש אישי קל. אין גישה ל-Claude Code או לפיצ'רים מתקדמים."
+        }
+      },
+      {
+        name: { en: "Pro Plan", he: "תוכנית Pro" },
+        desc: {
+          en: "The $20/month plan. More messages, access to all models (including Opus), Projects, and priority access during high traffic. The entry point for serious users who want more from Claude.",
+          he: "תוכנית ב-20$/חודש. יותר הודעות, גישה לכל המודלים (כולל Opus), פרויקטים וגישה בעדיפות בשעות עומס. נקודת הכניסה למשתמשים רציניים שרוצים יותר מ-Claude."
+        }
+      },
+      {
+        name: { en: "Max Plan", he: "תוכנית Max" },
+        desc: {
+          en: "The premium plan at $100 or $200/month (5x or 20x usage). Highest message limits, full access to Claude Code, longer context windows, and all advanced features. For power users and professionals who use Claude extensively every day.",
+          he: "תוכנית הפרימיום ב-100$ או 200$/חודש (פי 5 או פי 20 שימוש). מגבלות ההודעות הגבוהות ביותר, גישה מלאה ל-Claude Code, חלונות הקשר ארוכים יותר וכל הפיצ'רים המתקדמים. למשתמשים מתקדמים ואנשי מקצוע שמשתמשים ב-Claude באופן נרחב כל יום."
+        },
+        tip: { en: "Best value for heavy Claude Code users.", he: "הערך הטוב ביותר למשתמשי Claude Code כבדים." }
+      },
+      {
+        name: { en: "Team Plan", he: "תוכנית צוותית" },
+        desc: {
+          en: "Designed for small to medium teams at $30/user/month. Shared workspace, higher limits than Pro, admin controls, and team billing. Good for companies starting to adopt Claude across their team.",
+          he: "מיועדת לצוותים קטנים עד בינוניים ב-30$/משתמש/חודש. סביבת עבודה משותפת, מגבלות גבוהות יותר מ-Pro, בקרות מנהל וחיוב צוותי. טובה לחברות שמתחילות לאמץ את Claude ברחבי הצוות."
+        }
+      },
+      {
+        name: { en: "Enterprise", he: "Enterprise" },
+        desc: {
+          en: "Custom pricing for large organizations. Includes everything in Team plus: SSO, advanced security, dedicated support, custom deployment options, higher rate limits, and admin dashboard. Contact Anthropic's sales team for pricing.",
+          he: "מחיר מותאם אישית לארגונים גדולים. כולל את כל מה שבתוכנית צוותית ובנוסף: SSO, אבטחה מתקדמת, תמיכה ייעודית, אפשרויות פריסה מותאמות, מגבלות שימוש גבוהות יותר ולוח בקרה למנהלים. צרו קשר עם צוות המכירות של Anthropic למחיר."
+        }
+      }
+    ]
+  }
+];
+
+let currentLang = 'en';
+let allTermsExpanded = false;
+
+function setLang(lang) {
+    currentLang = lang;
+    const html = document.documentElement;
+    html.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+    html.setAttribute('lang', lang);
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        if ((lang === 'en' && b.textContent === 'EN') || (lang === 'he' && b.textContent === 'עב'))
+            b.classList.add('active');
+    });
+
+    document.querySelectorAll('[data-en]').forEach(el => {
+        el.innerHTML = el.getAttribute('data-' + lang);
+    });
+
+    const input = document.getElementById('searchInput');
+    input.placeholder = input.getAttribute('data-placeholder-' + lang);
+
+    renderCategories();
+}
+
+function renderCategories() {
+    const container = document.getElementById('categoriesContainer');
+    const nav = document.getElementById('catNav');
+    let totalTerms = 0;
+
+    container.innerHTML = '';
+    nav.innerHTML = '';
+
+    const allBtn = document.createElement('button');
+    allBtn.className = 'cat-nav-btn active';
+    allBtn.textContent = currentLang === 'en' ? 'All' : 'הכל';
+    allBtn.onclick = () => filterCategory('all');
+    nav.appendChild(allBtn);
+
+    DATA.forEach((cat, ci) => {
+        totalTerms += cat.terms.length;
+
+        const navBtn = document.createElement('button');
+        navBtn.className = 'cat-nav-btn';
+        navBtn.textContent = cat.name[currentLang];
+        navBtn.setAttribute('data-cat', cat.id);
+        navBtn.onclick = () => filterCategory(cat.id);
+        nav.appendChild(navBtn);
+
+        const card = document.createElement('div');
+        card.className = `category-card ${cat.cls}`;
+        card.setAttribute('data-cat', cat.id);
+
+        let termsHTML = '';
+        cat.terms.forEach((term, ti) => {
+            const tipHTML = term.tip ? `<div class="term-highlight">${term.tip[currentLang]}</div>` : '';
+            termsHTML += `
+                <div class="term-item" data-search="${term.name.en.toLowerCase()} ${term.name.he} ${term.desc.en.toLowerCase()} ${term.desc.he}">
+                    <div class="term-head" onclick="toggleTerm(this)">
+                        <span class="term-toggle-icon">&#9654;</span>
+                        <span class="term-name">${term.name[currentLang]}</span>
+                    </div>
+                    <div class="term-body">
+                        <div class="term-desc">
+                            ${term.desc[currentLang]}
+                            ${tipHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="cat-header" onclick="toggleCategory(this)">
+                <div class="cat-icon">${cat.icon}</div>
+                <div class="cat-info">
+                    <div class="cat-name">${cat.name[currentLang]}</div>
+                    <div class="cat-count">${cat.terms.length} ${currentLang === 'en' ? 'terms' : 'מונחים'}</div>
+                </div>
+                <div class="cat-toggle">&#9660;</div>
+            </div>
+            <div class="cat-body">
+                <div class="terms-list">${termsHTML}</div>
+            </div>
+        `;
+
+        container.appendChild(card);
+
+        setTimeout(() => card.classList.add('visible'), 60 * ci);
+    });
+
+    document.getElementById('totalTerms').textContent = totalTerms;
+    filterTerms();
+}
+
+function toggleCategory(header) {
+    const body = header.nextElementSibling;
+    const toggle = header.querySelector('.cat-toggle');
+    body.classList.toggle('open');
+    toggle.classList.toggle('open');
+}
+
+function toggleTerm(head) {
+    const body = head.nextElementSibling;
+    const icon = head.querySelector('.term-toggle-icon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+}
+
+function filterCategory(catId) {
+    document.querySelectorAll('.cat-nav-btn').forEach(b => b.classList.remove('active'));
+    if (catId === 'all') {
+        document.querySelector('.cat-nav-btn').classList.add('active');
+        document.querySelectorAll('.category-card').forEach(c => c.style.display = '');
+    } else {
+        document.querySelector(`.cat-nav-btn[data-cat="${catId}"]`).classList.add('active');
+        document.querySelectorAll('.category-card').forEach(c => {
+            c.style.display = c.getAttribute('data-cat') === catId ? '' : 'none';
+        });
+    }
+}
+
+function filterTerms() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResults = document.getElementById('noResults');
+    let visibleCount = 0;
+    let totalVisible = 0;
+
+    document.querySelectorAll('.category-card').forEach(card => {
+        let catHasMatch = false;
+        card.querySelectorAll('.term-item').forEach(item => {
+            const match = !q || item.getAttribute('data-search').includes(q);
+            item.style.display = match ? '' : 'none';
+            if (match) {
+                catHasMatch = true;
+                totalVisible++;
+                if (q) {
+                    item.querySelector('.term-body').classList.add('open');
+                    item.querySelector('.term-toggle-icon').classList.add('open');
+                }
+            }
+        });
+        if (q) {
+            card.style.display = catHasMatch ? '' : 'none';
+            if (catHasMatch) {
+                card.querySelector('.cat-body').classList.add('open');
+                card.querySelector('.cat-toggle').classList.add('open');
+                visibleCount++;
+            }
+        } else {
+            card.style.display = '';
+            card.querySelectorAll('.term-body').forEach(b => { b.classList.remove('open'); });
+            card.querySelectorAll('.term-toggle-icon').forEach(i => { i.classList.remove('open'); });
+        }
+    });
+
+    const countEl = document.getElementById('searchCount');
+    if (q) {
+        countEl.textContent = totalVisible + (currentLang === 'en' ? ' found' : ' נמצאו');
+    } else {
+        countEl.textContent = '';
+    }
+
+    noResults.style.display = (q && totalVisible === 0) ? 'block' : 'none';
+}
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scrollTop');
+    btn.classList.toggle('show', window.scrollY > 400);
+});
+
+// Init
+renderCategories();
+</script>
+</body>
+</html>

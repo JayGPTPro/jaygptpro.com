@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Claude Workflows That Save Hours Every Week | Daily Claude Hacks</title>
+    <meta name="description" content="10 real, tested Claude workflows for business owners. Copy the prompts, save hours every week.">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy: #1a1a2e;
+            --navy-light: #16213e;
+            --navy-mid: #0f3460;
+            --orange: #f97316;
+            --orange-hover: #ea580c;
+            --orange-soft: rgba(249, 115, 22, 0.1);
+            --orange-glow: rgba(249, 115, 22, 0.25);
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 24px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* Scroll Progress */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--orange), #fbbf24);
+            z-index: 9999;
+            width: 0%;
+            transition: width 0.12s ease-out;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+            color: #fff;
+            padding: 6rem 1.5rem 7rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -10%;
+            width: 120%;
+            height: 180%;
+            background: radial-gradient(ellipse at 30% 30%, rgba(249,115,22,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 70%, rgba(251,191,36,0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--bg);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(249,115,22,0.15);
+            border: 1px solid rgba(249,115,22,0.3);
+            color: #fbbf24;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            letter-spacing: 0.03em;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--orange), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.7);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2.5rem;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--orange);
+        }
+
+        .hero-stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Quick Start */
+        .quick-start {
+            margin: -2rem auto 3rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .quick-start-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .quick-start-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-start-title .icon {
+            font-size: 1.3rem;
+        }
+
+        .quick-start-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .quick-start-item {
+            background: var(--orange-soft);
+            border: 1px solid rgba(249,115,22,0.15);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-start-item:hover {
+            background: rgba(249,115,22,0.18);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .quick-start-item .num {
+            width: 28px;
+            height: 28px;
+            background: var(--orange);
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .quick-start-item .label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Section Header */
+        .section-header {
+            text-align: center;
+            margin: 4rem 0 2.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.6rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Workflow Card */
+        .workflow-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .workflow-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(249,115,22,0.3);
+        }
+
+        .workflow-card.open {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(249,115,22,0.4);
+        }
+
+        .workflow-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .workflow-header:hover {
+            background: rgba(249,115,22,0.03);
+        }
+
+        .workflow-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            color: var(--orange);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .workflow-card.open .workflow-number {
+            background: linear-gradient(135deg, var(--orange), var(--orange-hover));
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .workflow-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .workflow-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .workflow-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-time {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .badge-tool {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .workflow-toggle {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            color: var(--text-light);
+        }
+
+        .workflow-card.open .workflow-toggle {
+            transform: rotate(180deg);
+            color: var(--orange);
+        }
+
+        .workflow-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .workflow-body-inner {
+            padding: 0 1.5rem 1.5rem;
+            padding-left: calc(48px + 16px + 1.5rem);
+        }
+
+        .workflow-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.7;
+        }
+
+        /* Prompt Box */
+        .prompt-box {
+            background: #1e293b;
+            border-radius: var(--radius-sm);
+            padding: 1.2rem 1.4rem;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--orange);
+            margin-bottom: 10px;
+        }
+
+        .prompt-text {
+            color: #e2e8f0;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: var(--orange);
+            border-color: var(--orange);
+        }
+
+        .copy-btn.copied {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        /* Pro Tip */
+        .pro-tip {
+            background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(251,191,36,0.06));
+            border: 1px solid rgba(249,115,22,0.15);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .pro-tip-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .pro-tip-text {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .pro-tip-text strong {
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 4rem 0;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 140%;
+            height: 200%;
+            background: radial-gradient(ellipse at 50% 50%, rgba(249,115,22,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .cta-section h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            position: relative;
+        }
+
+        .cta-section p {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 1.8rem;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--orange);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s;
+            position: relative;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-btn:hover {
+            background: var(--orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249,115,22,0.3);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 1.5rem 2rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .footer a {
+            color: var(--orange);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: var(--orange-hover);
+        }
+
+        .footer .brand {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        /* Scroll to top */
+        .scroll-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 44px;
+            height: 44px;
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            background: var(--orange-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Mobile */
+        @media (max-width: 640px) {
+            .hero { padding: 4rem 1.25rem 5rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-stats { gap: 1.5rem; }
+            .hero-stat-number { font-size: 1.5rem; }
+            .workflow-header { padding: 1rem 1.25rem; gap: 12px; }
+            .workflow-number { width: 40px; height: 40px; font-size: 1rem; border-radius: 11px; }
+            .workflow-body-inner { padding: 0 1.25rem 1.25rem; padding-left: 1.25rem; }
+            .workflow-title { font-size: 0.95rem; }
+            .quick-start-card { padding: 1.5rem; }
+            .cta-section { padding: 2rem 1.5rem; }
+            .section-header h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">Daily Claude Hacks by Jay Margaliot</div>
+        <h1>10 Claude Workflows<br>That <span>Save Hours Every Week</span></h1>
+        <p>Real, tested prompts for business owners. Copy them, paste into Claude, and watch your daily operations run faster.</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-number">10</div>
+                <div class="hero-stat-label">Workflows</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">5h+</div>
+                <div class="hero-stat-label">Saved Weekly</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">100%</div>
+                <div class="hero-stat-label">Copy Paste Ready</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start -->
+<div class="container quick-start">
+    <div class="quick-start-card">
+        <div class="quick-start-title">
+            <span class="icon">&#9889;</span> Best Starting Points for Beginners
+        </div>
+        <div class="quick-start-grid">
+            <div class="quick-start-item" onclick="openWorkflow(1)">
+                <span class="num">1</span>
+                <span class="label">Morning Email Brief</span>
+            </div>
+            <div class="quick-start-item" onclick="openWorkflow(4)">
+                <span class="num">4</span>
+                <span class="label">Customer Service Templates</span>
+            </div>
+            <div class="quick-start-item" onclick="openWorkflow(10)">
+                <span class="num">10</span>
+                <span class="label">End of Day Wrap Up</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflows -->
+<div class="container">
+    <div class="section-header">
+        <h2>The Workflows</h2>
+        <p>Click any card to expand the full prompt and details.</p>
+    </div>
+
+    <div id="workflows"></div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+        <h2>Want a New Workflow Every Day?</h2>
+        <p>Join 200+ business owners getting daily Claude hacks on WhatsApp.</p>
+        <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" class="cta-btn">
+            Join the WhatsApp Group &#8594;
+        </a>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="brand">Daily Claude Hacks</div>
+    <p>Created by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a></p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
+
+<script>
+const workflowData = [
+    {
+        num: 1,
+        title: "Morning Email Brief",
+        time: "3 min",
+        tool: "Claude.ai",
+        desc: "Start your day with a clear action plan. Paste your latest emails into Claude and get a prioritized summary with suggested replies. No more inbox overwhelm.",
+        prompt: `I'm going to paste my emails from this morning. Please do the following:
+
+1. Summarize each email in one sentence
+2. Categorize as: Urgent, Follow Up, or FYI
+3. Draft short reply suggestions for anything marked Urgent
+4. List any deadlines or action items with dates
+
+Format the output as a clean table. Here are my emails:
+
+[Paste your emails here]`,
+        tip: "Save this as a Project in Claude with custom instructions so it already knows your business context every morning."
+    },
+    {
+        num: 2,
+        title: "Competitor Price Check",
+        time: "5 min",
+        tool: "Claude.ai with Web Search",
+        desc: "Keep tabs on competitor pricing without spending hours browsing. Claude can analyze pricing pages you share and flag changes or opportunities.",
+        prompt: `I run a [your business type] business. My main competitors are:
+1. [Competitor 1]
+2. [Competitor 2]
+3. [Competitor 3]
+
+Please search for their current pricing and create a comparison table with:
+- Product/service name
+- Their price
+- My current price: [your price]
+- Price difference (percentage)
+- Recommendation: whether I should adjust
+
+Highlight any competitor running a sale or promotion right now.`,
+        tip: "Run this weekly. You can paste screenshots of competitor pricing pages if web search does not capture everything."
+    },
+    {
+        num: 3,
+        title: "Weekly Sales Report",
+        time: "5 min",
+        tool: "Claude.ai",
+        desc: "Turn raw sales data into an executive summary your team can actually read. Paste a spreadsheet export and get insights, trends, and action items.",
+        prompt: `Here is my sales data for this week. Please analyze it and create a report with:
+
+1. Total revenue and comparison to last week (if provided)
+2. Top 3 performing products/services
+3. Bottom 3 performing products/services
+4. Notable trends or patterns
+5. 3 specific action items for next week based on this data
+
+Use clear headers and bullet points. Keep the tone professional but concise. Here is the data:
+
+[Paste your CSV or sales data here]`,
+        tip: "Export your data from Shopify, WooCommerce, or your POS system as CSV. Claude handles messy data well."
+    },
+    {
+        num: 4,
+        title: "Customer Service Templates",
+        time: "10 min setup, then seconds per use",
+        tool: "Claude.ai Projects",
+        desc: "Build a library of professional response templates for common customer situations. Set up once, use every day.",
+        prompt: `I run a [business type] business. Create 8 customer service email templates for these common situations:
+
+1. Order confirmation and estimated delivery
+2. Shipping delay apology
+3. Refund approved
+4. Refund denied (with explanation)
+5. Response to a positive review (thank you)
+6. Response to a negative review (resolution offer)
+7. Product out of stock, suggesting alternative
+8. Follow up after purchase asking for feedback
+
+For each template:
+- Use a warm, professional tone
+- Include [BRACKETS] for personalization fields
+- Keep each under 100 words
+- Add a subject line suggestion`,
+        tip: "Save these in a Claude Project called 'Customer Service.' Then just tell Claude the situation and it will pick the right template."
+    },
+    {
+        num: 5,
+        title: "Social Media Content Calendar",
+        time: "10 min",
+        tool: "Claude.ai",
+        desc: "Generate a full week of social media posts with captions, hashtags, and posting times. Tailored to your brand voice and audience.",
+        prompt: `Create a 7 day social media content calendar for my [business type] business.
+
+My target audience: [describe your audience]
+My brand voice: [professional/casual/fun/educational]
+Platforms: [Instagram/LinkedIn/Facebook/TikTok]
+
+For each day, provide:
+1. Post topic and angle
+2. Full caption (ready to copy and paste)
+3. 5 relevant hashtags
+4. Best posting time
+5. Visual suggestion (what image or video to create)
+
+Mix content types: educational, behind the scenes, product highlight, customer story, and engagement post. Make sure each post provides value, not just promotion.`,
+        tip: "Tell Claude about a post that performed well in the past. It will learn your winning patterns and create more like it."
+    },
+    {
+        num: 6,
+        title: "Supplier Communication",
+        time: "3 min",
+        tool: "Claude.ai",
+        desc: "Draft professional supplier emails for negotiations, order issues, or new inquiries. Get the tone right every time.",
+        prompt: `Draft a professional email to my supplier about [choose one]:
+
+A) Negotiating a better price for bulk orders
+B) Following up on a late shipment
+C) Requesting samples of a new product
+D) Reporting a quality issue with recent delivery
+E) Asking about minimum order quantities
+
+Context:
+- My business: [your business name and type]
+- Supplier name: [name]
+- Product: [product details]
+- Current situation: [brief description]
+- Desired outcome: [what you want to achieve]
+
+Write the email in a firm but respectful tone. Include specific details and a clear call to action with a deadline.`,
+        tip: "For negotiations, paste the supplier's last email so Claude can respond strategically to their specific points."
+    },
+    {
+        num: 7,
+        title: "Product Listing Optimization",
+        time: "5 min per product",
+        tool: "Claude.ai",
+        desc: "Rewrite product titles, descriptions, and bullet points for better conversion. Works for Amazon, Shopify, Etsy, or any marketplace.",
+        prompt: `Optimize this product listing for [platform: Amazon/Shopify/Etsy]:
+
+Current title: [your current title]
+Current description: [your current description]
+Product category: [category]
+Target keywords: [main keywords]
+Price point: [price]
+Target audience: [who buys this]
+
+Please provide:
+1. Optimized title (with main keywords front loaded)
+2. 5 benefit driven bullet points
+3. Full product description (150 words, scannable)
+4. SEO meta description (155 characters max)
+5. 5 backend/hidden search keywords
+
+Focus on benefits over features. Use sensory and emotional language where appropriate.`,
+        tip: "Paste a competitor's top listing alongside yours. Ask Claude to identify what makes theirs convert better."
+    },
+    {
+        num: 8,
+        title: "Market Research Brief",
+        time: "10 min",
+        tool: "Claude.ai with Web Search",
+        desc: "Get a quick market overview before launching a product, entering a new market, or making a strategic decision.",
+        prompt: `I'm considering [launching a product / entering a market / expanding to a new area]. Please research and create a brief covering:
+
+Business: [your business type]
+Opportunity: [what you're exploring]
+
+Research brief should include:
+1. Market size and growth trend (with sources)
+2. Top 5 competitors and their positioning
+3. Target customer profile
+4. Pricing landscape (low, mid, premium ranges)
+5. 3 opportunities I should consider
+6. 3 risks or challenges to watch for
+7. Recommended next steps
+
+Keep it actionable. I need to make a decision this week, not write a thesis.`,
+        tip: "Use this before any major business decision. The 10 minutes you spend here can save months of going in the wrong direction."
+    },
+    {
+        num: 9,
+        title: "Financial Summary",
+        time: "5 min",
+        tool: "Claude.ai",
+        desc: "Turn your messy financial data into a clear monthly overview. Spot trends, track margins, and identify where money is leaking.",
+        prompt: `Here is my financial data for [month/period]. Please create a clean financial summary:
+
+Revenue: [total]
+Major expense categories: [list them with amounts]
+Outstanding invoices: [amount]
+
+Please provide:
+1. Revenue vs. expenses breakdown (table format)
+2. Profit margin calculation
+3. Top 3 expense categories as percentage of revenue
+4. Month over month trend (if prior data is provided)
+5. Cash flow status: healthy, watch, or critical
+6. 3 specific recommendations to improve profitability
+
+Flag anything unusual. Keep the summary on one page. Use plain language, not accounting jargon.`,
+        tip: "Export your data from QuickBooks, Wave, or even a simple spreadsheet. Claude can work with messy numbers."
+    },
+    {
+        num: 10,
+        title: "End of Day Wrap Up",
+        time: "3 min",
+        tool: "Claude.ai",
+        desc: "Close your workday with clarity. Summarize what got done, what needs attention, and set up tomorrow for success.",
+        prompt: `Help me wrap up my workday. Here is what happened today:
+
+Completed tasks:
+[list what you finished]
+
+Ongoing items:
+[list what's still in progress]
+
+Issues or blockers:
+[anything that came up]
+
+Please create:
+1. Today's accomplishment summary (3 bullet points max)
+2. Priority list for tomorrow (numbered, max 5 items)
+3. Any items I should delegate or defer
+4. One thing that went well today (find it in my notes)
+5. Reminder of any upcoming deadlines this week
+
+Keep it brief. This should take 30 seconds to read.`,
+        tip: "Make this a daily habit. After a week, ask Claude to analyze your patterns and suggest time management improvements."
+    }
+];
+
+function renderWorkflows() {
+    const container = document.getElementById('workflows');
+    container.innerHTML = workflowData.map(w => `
+        <div class="workflow-card" id="workflow-${w.num}">
+            <div class="workflow-header" onclick="toggleCard(${w.num})">
+                <div class="workflow-number">${String(w.num).padStart(2, '0')}</div>
+                <div class="workflow-info">
+                    <div class="workflow-title">${w.title}</div>
+                    <div class="workflow-meta">
+                        <span class="badge badge-time">&#9202; ${w.time}</span>
+                        <span class="badge badge-tool">&#128736; ${w.tool}</span>
+                    </div>
+                </div>
+                <div class="workflow-toggle">&#9660;</div>
+            </div>
+            <div class="workflow-body">
+                <div class="workflow-body-inner">
+                    <p class="workflow-desc">${w.desc}</p>
+                    <div class="prompt-box">
+                        <div class="prompt-label">&#9998; Prompt</div>
+                        <button class="copy-btn" onclick="event.stopPropagation();copyPrompt(this, ${w.num - 1})">
+                            &#128203; Copy
+                        </button>
+                        <pre class="prompt-text">${escapeHtml(w.prompt)}</pre>
+                    </div>
+                    <div class="pro-tip">
+                        <span class="pro-tip-icon">&#128161;</span>
+                        <p class="pro-tip-text"><strong>Pro Tip:</strong> ${w.tip}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function toggleCard(num) {
+    const card = document.getElementById(`workflow-${num}`);
+    const body = card.querySelector('.workflow-body');
+    const isOpen = card.classList.contains('open');
+
+    if (isOpen) {
+        body.style.maxHeight = '0px';
+        card.classList.remove('open');
+    } else {
+        card.classList.add('open');
+        body.style.maxHeight = body.scrollHeight + 'px';
+    }
+}
+
+function openWorkflow(num) {
+    const card = document.getElementById(`workflow-${num}`);
+    if (!card) return;
+
+    // Close all others
+    document.querySelectorAll('.workflow-card.open').forEach(c => {
+        if (c.id !== `workflow-${num}`) {
+            c.classList.remove('open');
+            c.querySelector('.workflow-body').style.maxHeight = '0px';
+        }
+    });
+
+    // Open target
+    if (!card.classList.contains('open')) {
+        card.classList.add('open');
+        const body = card.querySelector('.workflow-body');
+        body.style.maxHeight = body.scrollHeight + 'px';
+    }
+
+    // Scroll to it
+    setTimeout(() => {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+function copyPrompt(btn, index) {
+    const text = workflowData[index].prompt;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = '&#10003; Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.innerHTML = '&#128203; Copy';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// Progress bar
+window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+
+    // Scroll to top button
+    const btn = document.getElementById('scrollTop');
+    if (scrollTop > 600) {
+        btn.classList.add('visible');
+    } else {
+        btn.classList.remove('visible');
+    }
+});
+
+// Init
+renderWorkflows();
+</script>
+</body>
+</html>

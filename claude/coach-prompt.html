@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Claude Code Coach Prompt | Daily Claude Hacks by Jay Margaliot</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --warm-50: #fffbf5;
+            --warm-100: #fff3e0;
+            --warm-200: #ffe0b2;
+            --warm-300: #ffcc80;
+            --orange: #f97316;
+            --orange-dark: #ea580c;
+            --orange-glow: rgba(249, 115, 22, 0.25);
+            --dark: #1a1a2e;
+            --dark-mid: #16213e;
+            --dark-light: #1e293b;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --surface: #ffffff;
+            --bg: #faf8f5;
+            --green: #22c55e;
+            --green-dark: #16a34a;
+            --terminal-bg: #0d1117;
+            --terminal-header: #161b22;
+            --terminal-border: #30363d;
+            --code-text: #e6edf3;
+            --code-comment: #8b949e;
+            --code-keyword: #79c0ff;
+            --code-heading: #ffa657;
+            --code-bullet: #7ee787;
+            --code-string: #a5d6ff;
+            --code-line-nr: #484f58;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            background: linear-gradient(160deg, #1a1a2e 0%, #0f172a 40%, #1e1b4b 70%, #312e81 100%);
+            padding: 100px 24px 140px;
+            text-align: center;
+            overflow: hidden;
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Geometric coach metaphor shapes */
+        .hero-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.08;
+        }
+        .hero-shape.s1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, var(--orange) 0%, transparent 70%);
+            top: -200px; right: -100px;
+        }
+        .hero-shape.s2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #818cf8 0%, transparent 70%);
+            bottom: -150px; left: -80px;
+        }
+        .hero-shape.s3 {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--orange) 0%, transparent 70%);
+            top: 60%; left: 60%;
+            opacity: 0.05;
+        }
+
+        /* Floating geometric decorations */
+        .hero-geo {
+            position: absolute;
+            opacity: 0.12;
+            animation: float 6s ease-in-out infinite;
+        }
+        .hero-geo.g1 {
+            top: 15%; left: 8%;
+            width: 60px; height: 60px;
+            border: 2px solid var(--orange);
+            border-radius: 12px;
+            transform: rotate(25deg);
+            animation-delay: 0s;
+        }
+        .hero-geo.g2 {
+            top: 25%; right: 12%;
+            width: 40px; height: 40px;
+            border: 2px solid #818cf8;
+            border-radius: 50%;
+            animation-delay: 2s;
+        }
+        .hero-geo.g3 {
+            bottom: 30%; left: 15%;
+            width: 0; height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 35px solid rgba(249, 115, 22, 0.3);
+            animation-delay: 4s;
+        }
+        .hero-geo.g4 {
+            top: 40%; right: 8%;
+            width: 30px; height: 30px;
+            background: rgba(129, 140, 248, 0.3);
+            border-radius: 6px;
+            transform: rotate(45deg);
+            animation-delay: 1s;
+        }
+        .hero-geo.g5 {
+            bottom: 25%; right: 20%;
+            width: 50px; height: 50px;
+            border: 2px solid rgba(249, 115, 22, 0.3);
+            border-radius: 50%;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            color: var(--orange);
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+        }
+
+        .hero h1 .accent {
+            background: linear-gradient(135deg, var(--orange), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: clamp(17px, 2.5vw, 21px);
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 480px;
+            margin: 0 auto 40px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--orange-glow);
+        }
+
+        .hero-cta:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--orange-glow);
+        }
+
+        .hero-wave {
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 80px;
+            overflow: hidden;
+        }
+
+        .hero-wave svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--orange);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-tag::before {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--orange);
+            border-radius: 1px;
+        }
+
+        .section h2 {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--dark);
+            letter-spacing: -0.8px;
+            line-height: 1.15;
+        }
+
+        .section-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.7;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0;
+        }
+
+        /* ===== WHAT SECTION ===== */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 48px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 32px 28px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--orange), #fb923c);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(249, 115, 22, 0.3);
+            box-shadow: 0 8px 30px rgba(249, 115, 22, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--warm-100);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* ===== BEFORE / AFTER ===== */
+        .compare-section {
+            background: linear-gradient(180deg, var(--bg), #f1ede8);
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .compare-card {
+            border-radius: 20px;
+            padding: 36px 32px;
+            position: relative;
+        }
+
+        .compare-card.before {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .compare-card.after {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .compare-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding: 6px 14px;
+            border-radius: 100px;
+        }
+
+        .compare-card.before .compare-label {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .compare-card.after .compare-label {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .compare-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .compare-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .compare-list li .icon {
+            flex-shrink: 0;
+            margin-top: 2px;
+            font-size: 16px;
+        }
+
+        .compare-card.before .compare-list li .icon { color: #ef4444; }
+        .compare-card.after .compare-list li .icon { color: #22c55e; }
+
+        /* ===== HOW SECTION ===== */
+        .setup-options {
+            display: flex;
+            gap: 16px;
+            margin: 40px 0 12px;
+            flex-wrap: wrap;
+        }
+
+        .setup-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .setup-badge.basic {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+        }
+
+        .setup-badge.recommended {
+            background: var(--warm-100);
+            color: var(--orange);
+            border: 1px solid var(--warm-200);
+        }
+
+        .setup-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            padding-left: 4px;
+        }
+
+        .steps {
+            list-style: none;
+            padding: 0;
+            margin-top: 40px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            left: 23px;
+            top: 48px;
+            bottom: 48px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--orange), var(--warm-200));
+            border-radius: 1px;
+        }
+
+        .steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--dark), var(--dark-mid));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px;
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(26, 26, 46, 0.2);
+        }
+
+        .step-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--dark);
+        }
+
+        .step-content p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .step-content code {
+            background: var(--warm-100);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--orange-dark);
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-weight: 600;
+        }
+
+        /* ===== CODE / TERMINAL BLOCK ===== */
+        .terminal-wrapper {
+            position: relative;
+            margin-top: 48px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px var(--terminal-border),
+                0 16px 70px rgba(0, 0, 0, 0.25),
+                0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .terminal-header {
+            background: var(--terminal-header);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--terminal-border);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
+
+        .terminal-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: var(--code-comment);
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        }
+
+        .terminal-tabs {
+            display: flex;
+            gap: 1px;
+        }
+
+        .terminal-tab {
+            font-size: 12px;
+            color: var(--code-comment);
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        }
+
+        .terminal-tab.active {
+            background: var(--terminal-bg);
+            color: var(--code-text);
+        }
+
+        .terminal-body {
+            background: var(--terminal-bg);
+            padding: 0;
+            overflow-x: auto;
+            max-height: 560px;
+            overflow-y: auto;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--terminal-border) transparent;
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: var(--terminal-border);
+            border-radius: 4px;
+        }
+
+        .code-table {
+            display: table;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .code-line {
+            display: table-row;
+            line-height: 1.9;
+        }
+
+        .code-line:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .line-number {
+            display: table-cell;
+            width: 50px;
+            text-align: right;
+            padding-right: 20px;
+            padding-left: 16px;
+            color: var(--code-line-nr);
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 12px;
+            user-select: none;
+            -webkit-user-select: none;
+            vertical-align: top;
+        }
+
+        .line-content {
+            display: table-cell;
+            padding-right: 24px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 13.5px;
+            color: var(--code-text);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .c-comment { color: var(--code-comment); font-style: italic; }
+        .c-heading { color: var(--code-heading); font-weight: 700; }
+        .c-keyword { color: var(--code-keyword); font-weight: 600; }
+        .c-bullet { color: var(--code-bullet); }
+        .c-string { color: var(--code-string); }
+        .c-emoji { color: #f1fa8c; }
+
+        /* Floating copy button */
+        .terminal-copy {
+            position: sticky;
+            top: 12px;
+            float: right;
+            margin-right: 12px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(48, 54, 61, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--terminal-border);
+            color: var(--code-text);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .terminal-copy:hover {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .terminal-copy.copied {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .terminal-copy svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .terminal-copy .check-svg { display: none; }
+        .terminal-copy.copied .copy-svg { display: none; }
+        .terminal-copy.copied .check-svg { display: block; }
+
+        /* Big copy CTA below the terminal */
+        .copy-cta-wrap {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .copy-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 52px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+            color: white;
+            border: none;
+            border-radius: 100px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 24px var(--orange-glow);
+            font-family: inherit;
+        }
+
+        .copy-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.35);
+        }
+
+        .copy-cta:active {
+            transform: translateY(0);
+        }
+
+        .copy-cta.copied {
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            box-shadow: 0 6px 24px rgba(34, 197, 94, 0.25);
+        }
+
+        .copy-cta svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .copy-cta .check-svg { display: none; }
+        .copy-cta.copied .copy-svg { display: none; }
+        .copy-cta.copied .check-svg { display: block; }
+
+        /* ===== TIP BUBBLES ===== */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 48px;
+        }
+
+        .tip-bubble {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tip-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 32px;
+            width: 16px;
+            height: 16px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            transform: rotate(45deg);
+        }
+
+        .tip-bubble:hover {
+            border-color: rgba(249, 115, 22, 0.3);
+            box-shadow: 0 8px 30px rgba(249, 115, 22, 0.08);
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .tip-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .tip-sender {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .tip-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .tip-body {
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.65;
+        }
+
+        .tip-body strong {
+            color: var(--orange-dark);
+        }
+
+        .tip-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 14px;
+            padding: 4px 12px;
+            background: var(--warm-100);
+            color: var(--orange-dark);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ===== FAQ ACCORDION ===== */
+        .faq-list {
+            margin-top: 48px;
+            max-width: 720px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-item:first-child {
+            border-top: 1px solid var(--border);
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 24px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: inherit;
+            transition: color 0.2s ease;
+            gap: 16px;
+        }
+
+        .faq-question:hover {
+            color: var(--orange);
+        }
+
+        .faq-chevron {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            color: var(--text-muted);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-item.open .faq-chevron {
+            transform: rotate(180deg);
+            color: var(--orange);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-answer-inner {
+            padding: 0 0 24px;
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 600px;
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 250px;
+        }
+
+        /* ===== CTA BANNER ===== */
+        .cta-banner {
+            background: linear-gradient(160deg, var(--dark) 0%, #1e1b4b 100%);
+            border-radius: 24px;
+            padding: 60px 48px;
+            text-align: center;
+            margin: 40px auto 0;
+            max-width: 860px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-banner::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.15), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .cta-banner h2 {
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .cta-banner p {
+            font-size: 17px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .cta-banner .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #25d366;
+            color: white;
+            text-decoration: none;
+            padding: 16px 36px;
+            border-radius: 100px;
+            font-size: 17px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
+        }
+
+        .cta-banner .whatsapp-btn:hover {
+            background: #20bd5a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 211, 102, 0.35);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--dark);
+            padding: 48px 24px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .footer-inner {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-brand {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .footer-brand a {
+            color: var(--orange);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .footer-brand a:hover {
+            color: #fb923c;
+        }
+
+        .footer-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25d366;
+            color: white;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+        }
+
+        .footer-whatsapp:hover {
+            background: #20bd5a;
+            transform: translateY(-1px);
+        }
+
+        .footer-copy {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-top: 20px;
+        }
+
+        .footer-copy a {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-copy a:hover {
+            color: var(--orange);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 72px 20px 100px;
+                min-height: auto;
+            }
+
+            .hero-geo { display: none; }
+
+            .section { padding: 56px 0; }
+
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .terminal-title { display: none; }
+
+            .line-number {
+                width: 36px;
+                padding-right: 12px;
+                padding-left: 10px;
+                font-size: 11px;
+            }
+
+            .line-content {
+                font-size: 12px;
+            }
+
+            .copy-cta {
+                width: 100%;
+                justify-content: center;
+                padding: 16px 32px;
+                font-size: 16px;
+            }
+
+            .cta-banner {
+                padding: 40px 24px;
+                border-radius: 16px;
+                margin: 24px 12px 0;
+            }
+
+            .steps::before { left: 23px; }
+
+            .faq-question { font-size: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 32px; }
+            .terminal-copy span { display: none; }
+            .terminal-copy { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HERO ===== -->
+    <header class="hero">
+        <div class="hero-shape s1"></div>
+        <div class="hero-shape s2"></div>
+        <div class="hero-shape s3"></div>
+        <div class="hero-geo g1"></div>
+        <div class="hero-geo g2"></div>
+        <div class="hero-geo g3"></div>
+        <div class="hero-geo g4"></div>
+        <div class="hero-geo g5"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge">Daily Claude Hacks by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Jay Margaliot</a></div>
+            <h1>Your Personal<br><span class="accent">Claude Code Coach</span></h1>
+            <p class="hero-sub">One prompt. Paste it once. Claude teaches you while it builds your projects.</p>
+            <a href="#the-prompt" class="hero-cta">Get the Prompt &#x2193;</a>
+        </div>
+
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 80" preserveAspectRatio="none" fill="var(--bg)">
+                <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- ===== WHAT THIS DOES ===== -->
+    <div class="container">
+        <section class="section">
+            <div class="section-tag">What it does</div>
+            <h2>Claude works. You learn.</h2>
+            <p class="section-desc">One prompt transforms Claude Code into a patient teacher that coaches you in the background, while you build real projects.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f6e0;</div>
+                    <h3>Zero Friction</h3>
+                    <p>Claude works at full speed on your tasks. No slowdown, no interruptions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f4a1;</div>
+                    <h3>Contextual Tips</h3>
+                    <p>Every few messages, Claude drops a short learning tip that helps you level up your workflow.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f4c1;</div>
+                    <h3>Auto Project Setup</h3>
+                    <p>Task lists, specs, and decision logs are created automatically. Your project stays organized from day one.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f4dd;</div>
+                    <h3>Learning Summaries</h3>
+                    <p>Say "we're done" and Claude writes a summary of everything you learned during the session.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f680;</div>
+                    <h3>Beginner to Pro</h3>
+                    <p>After a few projects you'll know exactly what to ask and when. No more guessing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon">&#x1f50d;</div>
+                    <h3>Pattern Detection</h3>
+                    <p>Claude tracks how you work and suggests smarter approaches over time.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ===== BEFORE / AFTER ===== -->
+    <section class="section compare-section">
+        <div class="container">
+            <div class="section-tag">How it feels</div>
+            <h2>Before vs. After the Coach</h2>
+            <p class="section-desc">The difference between working alone and having a guide by your side.</p>
+
+            <div class="compare-grid">
+                <div class="compare-card before">
+                    <div class="compare-label">&#x274C; Without Coach</div>
+                    <ul class="compare-list">
+                        <li>
+                            <span class="icon">&#x2716;</span>
+                            <span>Repeat the same mistakes across projects</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2716;</span>
+                            <span>Miss powerful features you didn't know existed</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2716;</span>
+                            <span>Conversations become messy and unfocused</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2716;</span>
+                            <span>No documentation, no structure, no memory</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2716;</span>
+                            <span>Start every project from scratch</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="compare-card after">
+                    <div class="compare-label">&#x2705; With Coach</div>
+                    <ul class="compare-list">
+                        <li>
+                            <span class="icon">&#x2714;</span>
+                            <span>Learn from every session, improve constantly</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2714;</span>
+                            <span>Discover skills, MCPs, and shortcuts naturally</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2714;</span>
+                            <span>Get nudged to /compact at the right time</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2714;</span>
+                            <span>Auto generated docs, tasks, and decision logs</span>
+                        </li>
+                        <li>
+                            <span class="icon">&#x2714;</span>
+                            <span>Reusable learnings that carry across projects</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ===== HOW TO USE IT ===== -->
+    <div class="container">
+        <section class="section">
+            <div class="section-tag">Setup</div>
+            <h2>Ready in 60 Seconds</h2>
+            <p class="section-desc">Two ways to get started. Pick whichever works for you.</p>
+
+            <div class="setup-options">
+                <span class="setup-badge basic">Option A: Quick Start</span>
+            </div>
+            <p class="setup-desc">Paste the prompt at the start of any Claude Code conversation.</p>
+
+            <div class="setup-options">
+                <span class="setup-badge recommended">&#x2B50; Option B: Recommended</span>
+            </div>
+            <p class="setup-desc">Save it as your CLAUDE.md file so it loads automatically in every project.</p>
+
+            <ol class="steps">
+                <li>
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Copy the prompt below</h3>
+                        <p>Use the copy button on the code block or the big button underneath.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Create a file called <code>CLAUDE.md</code></h3>
+                        <p>Place it in your project's root folder (the main folder).</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Paste and save</h3>
+                        <p>Open the file, paste the content, save. Done.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Start working with Claude Code</h3>
+                        <p>Claude reads the file automatically and enters coach mode. No setup needed.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ===== THE PROMPT ===== -->
+    <div class="container">
+        <section class="section" id="the-prompt">
+            <div class="section-tag">The Prompt</div>
+            <h2>Copy. Paste. Coach.</h2>
+            <p class="section-desc">The complete coach prompt. Everything you need in one block.</p>
+
+            <div class="terminal-wrapper">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <div class="terminal-dot red"></div>
+                        <div class="terminal-dot yellow"></div>
+                        <div class="terminal-dot green"></div>
+                    </div>
+                    <div class="terminal-title">CLAUDE.md</div>
+                    <div class="terminal-tabs">
+                        <div class="terminal-tab active">CLAUDE.md</div>
+                    </div>
+                </div>
+                <div class="terminal-body">
+                    <button class="terminal-copy" onclick="copyPrompt(this)">
+                        <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Copy</span>
+                    </button>
+                    <div class="code-table" id="code-table">
+<div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="c-heading">## Coach Mode: Beginner</span></span></div>
+<div class="code-line"><span class="line-number">2</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">3</span><span class="line-content">You work with me in a dual role: technical assistant + coach</span></div>
+<div class="code-line"><span class="line-number">4</span><span class="line-content">teaching me to use Claude Code smarter. I'm a beginner.</span></div>
+<div class="code-line"><span class="line-number">5</span><span class="line-content">I don't need to understand deep technical details,</span></div>
+<div class="code-line"><span class="line-number">6</span><span class="line-content">I want to know what to ask and when.</span></div>
+<div class="code-line"><span class="line-number">7</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">8</span><span class="line-content">Your job:</span></div>
+<div class="code-line"><span class="line-number">9</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">DO</span> what needs to be done without asking</span></div>
+<div class="code-line"><span class="line-number">10</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">TEACH</span> me as we go. Not lectures, short notes that blend into the work</span></div>
+<div class="code-line"><span class="line-number">11</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">RECOMMEND</span> what to ask. If you see I could get a better result with a different request, say so</span></div>
+<div class="code-line"><span class="line-number">12</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">TRACK</span> my patterns and suggest better approaches</span></div>
+<div class="code-line"><span class="line-number">13</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">ALWAYS</span> drop &#x1f4a1; tips on things I can do better in Claude Code, even if I didn't ask</span></div>
+<div class="code-line"><span class="line-number">14</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">15</span><span class="line-content"><span class="c-heading">## Basic Rule</span></span></div>
+<div class="code-line"><span class="line-number">16</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">17</span><span class="line-content">Work normally. Don't stop to ask if you should do something. Just do it.</span></div>
+<div class="code-line"><span class="line-number">18</span><span class="line-content">But ALWAYS drop &#x1f4a1; tips on things I can do better, even if I didn't ask.</span></div>
+<div class="code-line"><span class="line-number">19</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">20</span><span class="line-content">Tips can be about:</span></div>
+<div class="code-line"><span class="line-number">21</span><span class="line-content"><span class="c-bullet">-</span> Claude Code features I'm not using (skills, scheduled tasks, MCP, etc.)</span></div>
+<div class="code-line"><span class="line-number">22</span><span class="line-content"><span class="c-bullet">-</span> Smarter ways to phrase requests</span></div>
+<div class="code-line"><span class="line-number">23</span><span class="line-content"><span class="c-bullet">-</span> Right timing for /compact, file updates</span></div>
+<div class="code-line"><span class="line-number">24</span><span class="line-content"><span class="c-bullet">-</span> Anything that saves time next time</span></div>
+<div class="code-line"><span class="line-number">25</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">26</span><span class="line-content">Every tip = one line on what to do + one line on why.</span></div>
+<div class="code-line"><span class="line-number">27</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">28</span><span class="line-content"><span class="c-heading">## One Time Setup Check</span></span></div>
+<div class="code-line"><span class="line-number">29</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">30</span><span class="line-content">Check what exists. Quietly create what's missing:</span></div>
+<div class="code-line"><span class="line-number">31</span><span class="line-content"><span class="c-bullet">-</span> No CLAUDE.md in project <span class="c-string">&#x2192;</span> create a basic version based on what you see</span></div>
+<div class="code-line"><span class="line-number">32</span><span class="line-content"><span class="c-bullet">-</span> No docs/SPEC.md <span class="c-string">&#x2192;</span> create short doc: what the project is, requirements, what's out of scope</span></div>
+<div class="code-line"><span class="line-number">33</span><span class="line-content"><span class="c-bullet">-</span> No docs/TASKS.md <span class="c-string">&#x2192;</span> create with [ ] for each task you identify</span></div>
+<div class="code-line"><span class="line-number">34</span><span class="line-content"><span class="c-bullet">-</span> No docs/DECISIONS.md <span class="c-string">&#x2192;</span> create empty and ready</span></div>
+<div class="code-line"><span class="line-number">35</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">36</span><span class="line-content">If everything exists, continue straight to work.</span></div>
+<div class="code-line"><span class="line-number">37</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">38</span><span class="line-content"><span class="c-heading">## When to Drop a Tip</span></span></div>
+<div class="code-line"><span class="line-number">39</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">40</span><span class="line-content"><span class="c-bullet">-</span> After completing something: <span class="c-emoji">&#x1f4a1;</span> Update TASKS.md and mark [x] so we always know where we are.</span></div>
+<div class="code-line"><span class="line-number">41</span><span class="line-content"><span class="c-bullet">-</span> After solving a hard problem: <span class="c-emoji">&#x1f4a1;</span> Document this decision in DECISIONS.md so we don't waste time on the same question again.</span></div>
+<div class="code-line"><span class="line-number">42</span><span class="line-content"><span class="c-bullet">-</span> When conversation gets long: <span class="c-emoji">&#x1f4a1;</span> Conversation is long. /compact at the right time.</span></div>
+<div class="code-line"><span class="line-number">43</span><span class="line-content"><span class="c-bullet">-</span> When we built a reusable process: <span class="c-emoji">&#x1f4a1;</span> What we did here can be saved as a skill. Set up once, save explaining in every project. Want me to create one?</span></div>
+<div class="code-line"><span class="line-number">44</span><span class="line-content"><span class="c-bullet">-</span> When I'm doing something the hard way: <span class="c-emoji">&#x1f4a1;</span> There's an easier way. [short explanation].</span></div>
+<div class="code-line"><span class="line-number">45</span><span class="line-content"><span class="c-bullet">-</span> When CLAUDE.md hasn't been updated in a while: <span class="c-emoji">&#x1f4a1;</span> We learned new things. Worth saving them in CLAUDE.md so they don't get lost.</span></div>
+<div class="code-line"><span class="line-number">46</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">47</span><span class="line-content"><span class="c-heading">## When I Say "We're Done"</span></span></div>
+<div class="code-line"><span class="line-number">48</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">49</span><span class="line-content">Create docs/LEARNINGS.md with:</span></div>
+<div class="code-line"><span class="line-number">50</span><span class="line-content"><span class="c-bullet">-</span> What we built in this project</span></div>
+<div class="code-line"><span class="line-number">51</span><span class="line-content"><span class="c-bullet">-</span> Claude Code techniques we used</span></div>
+<div class="code-line"><span class="line-number">52</span><span class="line-content"><span class="c-bullet">-</span> What worked well, what didn't</span></div>
+<div class="code-line"><span class="line-number">53</span><span class="line-content"><span class="c-bullet">-</span> What I'd do differently</span></div>
+<div class="code-line"><span class="line-number">54</span><span class="line-content"><span class="c-bullet">-</span> Skills we created worth keeping</span></div>
+<div class="code-line"><span class="line-number">55</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">56</span><span class="line-content"><span class="c-heading">## Work Preferences</span></span></div>
+<div class="code-line"><span class="line-number">57</span><span class="line-content"></span></div>
+<div class="code-line"><span class="line-number">58</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">Concise</span>: don't write essays. Short and clear.</span></div>
+<div class="code-line"><span class="line-number">59</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">Proactive</span>: if you see a problem, fix it. Don't ask "would you like me to..."</span></div>
+<div class="code-line"><span class="line-number">60</span><span class="line-content"><span class="c-bullet">-</span> <span class="c-keyword">File and variable names</span>: always in English, even if the project is in another language.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="copy-cta-wrap">
+                <button class="copy-cta" onclick="copyPrompt(this)">
+                    <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="copy-label">Copy to Clipboard</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ===== EXAMPLE TIPS ===== -->
+    <div class="container">
+        <section class="section">
+            <div class="section-tag">In Action</div>
+            <h2>Tips That Actually Help</h2>
+            <p class="section-desc">These tips appear naturally while you work. Here's what coaching looks like in practice.</p>
+
+            <div class="tips-grid">
+                <div class="tip-bubble">
+                    <div class="tip-header">
+                        <div class="tip-avatar">C</div>
+                        <div class="tip-sender">Claude Coach</div>
+                        <div class="tip-time">just now</div>
+                    </div>
+                    <div class="tip-body">&#x1f4a1; The conversation is getting long. Run <strong>/compact</strong> to free up space. Claude keeps your context but works sharper.</div>
+                    <div class="tip-tag">&#x23F1; Timing</div>
+                </div>
+
+                <div class="tip-bubble">
+                    <div class="tip-header">
+                        <div class="tip-avatar">C</div>
+                        <div class="tip-sender">Claude Coach</div>
+                        <div class="tip-time">2m ago</div>
+                    </div>
+                    <div class="tip-body">&#x1f4a1; What we just built can be saved as a <strong>skill</strong>. Set it up once, reuse in every project without explaining again.</div>
+                    <div class="tip-tag">&#x1f4be; Reusability</div>
+                </div>
+
+                <div class="tip-bubble">
+                    <div class="tip-header">
+                        <div class="tip-avatar">C</div>
+                        <div class="tip-sender">Claude Coach</div>
+                        <div class="tip-time">5m ago</div>
+                    </div>
+                    <div class="tip-body">&#x1f4a1; Good time to update <strong>CLAUDE.md</strong> with what we learned. Claude remembers it next session too.</div>
+                    <div class="tip-tag">&#x1f9e0; Memory</div>
+                </div>
+
+                <div class="tip-bubble">
+                    <div class="tip-header">
+                        <div class="tip-avatar">C</div>
+                        <div class="tip-sender">Claude Coach</div>
+                        <div class="tip-time">8m ago</div>
+                    </div>
+                    <div class="tip-body">&#x1f4a1; There's an easier way. Use <strong>/init</strong> to set up the project structure instead of creating files manually.</div>
+                    <div class="tip-tag">&#x26A1; Shortcut</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ===== FAQ ===== -->
+    <div class="container">
+        <section class="section">
+            <div class="section-tag">Questions</div>
+            <h2>Frequently Asked</h2>
+
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do I need to know how to code?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">Not at all. This prompt is designed for beginners. Claude handles the technical work and teaches you what matters: what to ask and when to ask it.</div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Will this slow Claude down?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">No. Claude works at the same speed. Tips only appear at natural learning moments: after completing a task, solving a problem, or when it spots a better approach.</div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I customize it?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">Absolutely. Edit the prompt to match your needs. Add your role, preferred tools, specific rules, or change the language. It's your coach, make it work for you.</div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Does it work with any project type?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">Yes. Whether you're building a web app, a CLI tool, an automation, or just exploring code, the coach adapts to whatever you're working on.</div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What if I already know Claude Code well?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">Change "Beginner" to "Intermediate" or "Advanced" in the first line. The coach adjusts its tips to your level. Advanced users still discover features they missed.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== CTA BANNER ===== -->
+    <div class="container" style="padding-bottom: 20px;">
+        <div class="cta-banner">
+            <h2>Ready to Level Up?</h2>
+            <p>Join the community. Get daily Claude Code tips, prompts, and workflows.</p>
+            <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" class="whatsapp-btn">
+                &#x1f4f2; Join the WhatsApp Group
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                Part of <strong>Daily Claude Hacks</strong> by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">Jay Margaliot</a>
+            </div>
+            <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" class="footer-whatsapp">
+                &#x1f4f2; Join our WhatsApp group
+            </a>
+            <div class="footer-copy">
+                &copy; 2026 <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">Jay Margaliot</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const PROMPT_TEXT = `## Coach Mode: Beginner
+
+You work with me in a dual role: technical assistant + coach
+teaching me to use Claude Code smarter. I'm a beginner.
+I don't need to understand deep technical details,
+I want to know what to ask and when.
+
+Your job:
+- DO what needs to be done without asking
+- TEACH me as we go. Not lectures, short notes that blend into the work
+- RECOMMEND what to ask. If you see I could get a better result with a different request, say so
+- TRACK my patterns and suggest better approaches
+- ALWAYS drop \u{1F4A1} tips on things I can do better in Claude Code, even if I didn't ask
+
+## Basic Rule
+
+Work normally. Don't stop to ask if you should do something. Just do it.
+But ALWAYS drop \u{1F4A1} tips on things I can do better, even if I didn't ask.
+
+Tips can be about:
+- Claude Code features I'm not using (skills, scheduled tasks, MCP, etc.)
+- Smarter ways to phrase requests
+- Right timing for /compact, file updates
+- Anything that saves time next time
+
+Every tip = one line on what to do + one line on why.
+
+## One Time Setup Check
+
+Check what exists. Quietly create what's missing:
+- No CLAUDE.md in project \u2192 create a basic version based on what you see
+- No docs/SPEC.md \u2192 create short doc: what the project is, requirements, what's out of scope
+- No docs/TASKS.md \u2192 create with [ ] for each task you identify
+- No docs/DECISIONS.md \u2192 create empty and ready
+
+If everything exists, continue straight to work.
+
+## When to Drop a Tip
+
+- After completing something: \u{1F4A1} Update TASKS.md and mark [x] so we always know where we are.
+- After solving a hard problem: \u{1F4A1} Document this decision in DECISIONS.md so we don't waste time on the same question again.
+- When conversation gets long: \u{1F4A1} Conversation is long. /compact at the right time.
+- When we built a reusable process: \u{1F4A1} What we did here can be saved as a skill. Set up once, save explaining in every project. Want me to create one?
+- When I'm doing something the hard way: \u{1F4A1} There's an easier way. [short explanation].
+- When CLAUDE.md hasn't been updated in a while: \u{1F4A1} We learned new things. Worth saving them in CLAUDE.md so they don't get lost.
+
+## When I Say "We're Done"
+
+Create docs/LEARNINGS.md with:
+- What we built in this project
+- Claude Code techniques we used
+- What worked well, what didn't
+- What I'd do differently
+- Skills we created worth keeping
+
+## Work Preferences
+
+- Concise: don't write essays. Short and clear.
+- Proactive: if you see a problem, fix it. Don't ask "would you like me to..."
+- File and variable names: always in English, even if the project is in another language.`;
+
+        function copyPrompt(btn) {
+            const label = btn.querySelector('span');
+            const originalText = label ? label.textContent : '';
+
+            navigator.clipboard.writeText(PROMPT_TEXT).then(() => {
+                showCopied(btn, label, originalText);
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = PROMPT_TEXT;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showCopied(btn, label, originalText);
+            });
+
+            // Also update the other copy button
+            document.querySelectorAll('.terminal-copy, .copy-cta').forEach(otherBtn => {
+                if (otherBtn !== btn) {
+                    const otherLabel = otherBtn.querySelector('span');
+                    const otherOriginal = otherLabel ? otherLabel.textContent : '';
+                    showCopied(otherBtn, otherLabel, otherOriginal);
+                }
+            });
+        }
+
+        function showCopied(btn, label, originalText) {
+            btn.classList.add('copied');
+            if (label) label.textContent = 'Copied!';
+
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                if (label) label.textContent = originalText;
+            }, 2500);
+        }
+
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const wasOpen = item.classList.contains('open');
+
+            document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+
+            if (!wasOpen) {
+                item.classList.add('open');
+            }
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
