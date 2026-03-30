@@ -145,7 +145,7 @@ footer a{color:var(--orange);text-decoration:none}
 </div>
 <div class="terminal-body">
 <span class="prompt">/amazon-landing-page</span> https://amazon.com/dp/B0...<br>
-<span class="comment"># ~60 seconds later → open index.html</span>
+<span class="comment"># Claude does its thing → open index.html</span>
 </div>
 </div>
 
@@ -165,14 +165,16 @@ footer a{color:var(--orange);text-decoration:none}
 </div>
 
 <footer>
-<p>Built by <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1">Jay</a> | Daily Claude Hacks</p>
+<p style="margin-bottom:8px">Want more skills and Claude Code tips?</p>
+<p><a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" style="font-weight:600">📲 Join the Daily Claude Hacks WhatsApp group</a></p>
+<p style="margin-top:12px">Built by Jay | Daily Claude Hacks</p>
 </footer>
 
 <script>
 function downloadSkill(){
 const skill=`---
 name: amazon-landing-page
-description: Build a premium landing page from any Amazon product URL. Extracts real product data (title, images, features, reviews, price) via Chrome MCP and generates a complete, beautiful landing page with scroll animations, real reviews, FAQ, email capture, and mobile-optimized CTA.
+description: Build a premium landing page from any Amazon product URL. Extracts real product data (title, images, features, reviews, price) via Chrome MCP and generates a complete, beautiful landing page with scroll animations, real reviews, FAQ, email capture, and mobile-optimized CTA. Use when the user says "build a landing page", "create a product page", "amazon landing page", or provides an Amazon product URL.
 argument-hint: "<amazon-product-url>"
 user-invocable: true
 ---
@@ -198,27 +200,87 @@ You are about to build a premium landing page for the Amazon product at **$ARGUM
 
 1. Open the Amazon product URL in Chrome MCP.
 2. Wait for the page to load (3 seconds).
-3. Extract product basics, feature bullets, high-res image URLs, and verified 4-5 star reviews using JavaScript execution on the Amazon page.
+3. Extract the following using JavaScript execution:
+
+\\\`\\\`\\\`javascript
+// Product basics
+{
+  title: document.getElementById('productTitle')?.textContent?.trim(),
+  price: document.querySelector('.a-price .a-offscreen')?.textContent?.trim(),
+  rating: document.querySelector('#acrPopover')?.title || document.querySelector('.a-icon-alt')?.textContent,
+  reviewCount: document.querySelector('#acrCustomerReviewText')?.textContent?.trim(),
+  brand: document.querySelector('#bylineInfo')?.textContent?.trim(),
+  badges: document.querySelector('#acBadge_feature_div')?.textContent?.trim()
+}
+\\\`\\\`\\\`
+
+\\\`\\\`\\\`javascript
+// Feature bullets
+Array.from(document.querySelectorAll('#feature-bullets .a-list-item'))
+  .map(el => el.textContent?.trim())
+  .filter(t => t && t.length > 10)
+\\\`\\\`\\\`
+
+\\\`\\\`\\\`javascript
+// High-res image URLs
+Array.from(document.querySelectorAll('#altImages .a-button-thumbnail img'))
+  .map(img => img.src.replace(/\\\\._.*_\\\\./, '._SL1500_.'))
+  .filter(s => s.includes('images/I/'))
+\\\`\\\`\\\`
+
+4. Scroll to the reviews section and extract REAL reviews:
+
+\\\`\\\`\\\`javascript
+Array.from(document.querySelectorAll('[data-hook="review"]')).map(r => ({
+  stars: parseFloat(r.querySelector('[data-hook="review-star-rating"] .a-icon-alt')?.textContent || '0'),
+  body: r.querySelector('[data-hook="review-body"] span')?.textContent?.trim(),
+  author: r.querySelector('.a-profile-name')?.textContent?.trim(),
+  date: r.querySelector('[data-hook="review-date"]')?.textContent?.trim(),
+  verified: !!r.querySelector('[data-hook="avp-badge"]')
+})).filter(r => r.stars >= 4 && r.body && r.body.length > 20 && r.verified)
+\\\`\\\`\\\`
 
 ### Phase 3: Download Images
 
-Download all product images using curl.
+Download all product images using curl:
+\\\`\\\`\\\`bash
+curl -sL "[image-url]" -o images/product-1.jpg
+\\\`\\\`\\\`
 
 ### Phase 4: Build the Landing Page
 
-Create index.html with: Fixed Nav Bar, Hero Section (image gallery + product info + CTA), Social Proof Bar, Features Section (6 cards), What's in the Box, Image Gallery, Email Capture (Google Form integration), Real Reviews, FAQ (accordion), Final CTA, Footer, Sticky Mobile Bar.
+Create \\\`index.html\\\` with the following sections (IN THIS ORDER):
 
-Design: Dark theme (#0a0a0a), orange CTA (#f97316), Inter font, scroll animations, Tailwind CDN.
+1. **Fixed Navigation Bar** - Brand name, section links, "Buy on Amazon - $[price]" CTA button, glassmorphism background
+2. **Hero Section** - LEFT: Product image gallery with thumbnails. RIGHT: Badge, catchy headline, description, star rating, price, trust badges, CTA with pulse animation
+3. **Social Proof Bar** - Animated counters for customer count, rating, key specs
+4. **Features Section** - 6 feature cards in 3-column grid from Amazon bullets, staggered scroll reveal
+5. **What's in the Box** - Product image + checklist with green checkmarks
+6. **Image Gallery** - 2-3 column grid with hover zoom
+7. **Email Capture** - "Join our VIP list", email input + button, Google Form integration (with setup comments)
+8. **Real Reviews** - ONLY extracted Amazon reviews, 4-5 star verified, with author/date/badge
+9. **FAQ Section** - 5 questions with accordion toggle
+10. **Final CTA** - Gradient card with headline and large CTA
+11. **Footer** - Trademark disclaimer
+12. **Sticky Mobile Bar** - Price + buy button fixed to bottom on mobile
+
+Design System: Background #0a0a0a, Cards #171717, Accent purple-to-indigo gradient, CTA orange #f97316 with glow, Inter font, rounded-2xl cards, scroll reveal animations, counter animations.
+
+Technical: Single HTML file, Tailwind CDN, custom config, responsive mobile-first, all Amazon links target="_blank".
 
 ### Phase 5: Open and Verify
 
-Open the HTML file and tell the user about Google Form email capture setup.
+1. Open the HTML file: \\\`open index.html\\\`
+2. Tell the user the page is ready
+3. Remind about Google Form setup for email capture
 
 ### Important Rules
 
-- NEVER fabricate reviews. Only use real Amazon reviews.
-- All data must come from the real Amazon page.
-- The page should look premium and professional.`;
+- NEVER fabricate or invent reviews. Only use reviews extracted from the Amazon page.
+- If no 4-5 star verified reviews exist, skip the reviews section entirely.
+- All product data must come from the real Amazon page.
+- The headline should be a rewritten, catchy version of the product title.
+- The page should look premium and professional, not like a template.`;
 
   const blob=new Blob([skill],{type:'text/markdown'});
   const a=document.createElement('a');
