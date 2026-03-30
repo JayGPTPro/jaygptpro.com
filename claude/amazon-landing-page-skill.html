@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Landing Page Skill | Daily Claude Hacks by Jay</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--orange:#f97316;--orange-dark:#ea580c;--orange-glow:rgba(249,115,22,.25);--dark:#1a1a2e;--dark-mid:#16213e;--text:#1e293b;--text-secondary:#64748b;--text-muted:#94a3b8;--border:#e2e8f0;--surface:#ffffff;--bg:#faf8f5;--green:#22c55e;--terminal-bg:#0d1117;--terminal-header:#161b22;--terminal-border:#30363d;--code-text:#e6edf3}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;color:var(--text);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+.container{max-width:720px;margin:0 auto;padding:0 20px}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--dark) 0%,var(--dark-mid) 100%);color:#fff;padding:60px 20px 50px;text-align:center}
+.hero h1{font-size:clamp(28px,5vw,42px);font-weight:800;line-height:1.2;margin-bottom:16px}
+.hero h1 span{color:var(--orange)}
+.hero p{font-size:18px;opacity:.8;max-width:560px;margin:0 auto 28px}
+.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.badge{background:rgba(249,115,22,.15);color:var(--orange);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+
+/* What it does */
+.section{padding:48px 20px}
+.section h2{font-size:26px;font-weight:700;margin-bottom:20px;text-align:center}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.feature-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.feature-card .icon{font-size:28px;margin-bottom:10px}
+.feature-card h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.5}
+
+/* Steps */
+.steps{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:32px;margin:0 auto;max-width:640px}
+.step{display:flex;gap:16px;margin-bottom:24px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{background:var(--dark);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.step-content h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.step-content p{font-size:14px;color:var(--text-secondary)}
+.step-content code{background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:13px;font-family:monospace}
+
+/* Terminal */
+.terminal{background:var(--terminal-bg);border-radius:12px;overflow:hidden;margin:32px auto;max-width:560px;border:1px solid var(--terminal-border)}
+.terminal-header{background:var(--terminal-header);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.terminal-dot{width:12px;height:12px;border-radius:50%}
+.terminal-dot.r{background:#ff5f56}.terminal-dot.y{background:#ffbd2e}.terminal-dot.g{background:#27c93f}
+.terminal-body{padding:20px;font-family:'SF Mono',Consolas,monospace;font-size:14px;color:var(--code-text);line-height:1.8}
+.terminal-body .prompt{color:#7ee787}
+.terminal-body .comment{color:#8b949e}
+
+/* Skill file download */
+.download-section{background:linear-gradient(135deg,#fff7ed,#fef3c7);border-radius:16px;padding:40px 32px;text-align:center;margin:32px auto;max-width:640px;border:2px solid #fed7aa}
+.download-section h2{font-size:22px;margin-bottom:12px}
+.download-section p{color:var(--text-secondary);margin-bottom:20px;font-size:15px}
+.download-btn{display:inline-block;background:var(--orange);color:#fff;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:.2s;box-shadow:0 4px 16px var(--orange-glow)}
+.download-btn:hover{background:var(--orange-dark);transform:translateY(-1px)}
+
+/* Pro tip */
+.tip-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:24px auto;max-width:640px}
+.tip-box h4{color:#166534;font-size:14px;margin-bottom:6px}
+.tip-box p{font-size:14px;color:#15803d}
+
+/* Requirements */
+.req-list{list-style:none;max-width:560px;margin:16px auto}
+.req-list li{padding:10px 0;border-bottom:1px solid var(--border);font-size:15px;display:flex;gap:10px;align-items:center}
+.req-list li:last-child{border:none}
+.req-check{color:var(--green);font-size:18px}
+
+/* CTA bottom */
+.cta-bottom{background:var(--dark);color:#fff;padding:48px 20px;text-align:center}
+.cta-bottom h2{font-size:24px;margin-bottom:12px}
+.cta-bottom p{opacity:.7;margin-bottom:24px;font-size:15px}
+
+/* Footer */
+footer{text-align:center;padding:24px;font-size:13px;color:var(--text-muted)}
+footer a{color:var(--orange);text-decoration:none}
+
+@media(max-width:600px){
+  .hero{padding:40px 16px 36px}
+  .section{padding:36px 16px}
+  .steps,.download-section{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<div class="badge-row">
+<span class="badge">Claude Code Skill</span>
+<span class="badge">Free Download</span>
+<span class="badge">Amazon Sellers</span>
+</div>
+<h1>Turn Any Amazon Product Into a <span>Premium Landing Page</span></h1>
+<p>One command. 60 seconds. A complete landing page with real product data, reviews, and email capture.</p>
+</div>
+
+<div class="section">
+<h2>Why You Need This</h2>
+<p style="text-align:center;max-width:600px;margin:0 auto 24px;color:var(--text-secondary)">If you sell on Amazon and run Meta ads or external traffic, you know you shouldn't send people directly to your Amazon listing. You need a landing page in between.</p>
+<div class="feature-grid">
+<div class="feature-card">
+<div class="icon">📧</div>
+<h3>Collect Emails First</h3>
+<p>Build your email list before sending traffic to Amazon. Own the customer relationship.</p>
+</div>
+<div class="feature-card">
+<div class="icon">🔗</div>
+<h3>Use Attribution Links</h3>
+<p>Add your Amazon affiliate or attribution link to the buy button. Track every click and earn commissions.</p>
+</div>
+<div class="feature-card">
+<div class="icon">🎯</div>
+<h3>Better Ad Performance</h3>
+<p>Meta ads perform better with a dedicated landing page than a direct Amazon link. Higher quality score, lower CPC.</p>
+</div>
+<div class="feature-card">
+<div class="icon">⚡</div>
+<h3>60 Seconds, Not 6 Hours</h3>
+<p>No Canva. No copywriter. No $200 freelancer. One command and a finished page with your real product data.</p>
+</div>
+</div>
+</div>
+
+<div class="section" style="background:var(--surface)">
+<h2>What You Get</h2>
+<div class="feature-grid">
+<div class="feature-card">
+<div class="icon">🖼️</div>
+<h3>Hero + Image Gallery</h3>
+<p>Product images pulled from Amazon with clickable thumbnails and zoom effects.</p>
+</div>
+<div class="feature-card">
+<div class="icon">⭐</div>
+<h3>Real Reviews</h3>
+<p>Only verified 4-5 star reviews extracted directly from Amazon. Never fabricated.</p>
+</div>
+<div class="feature-card">
+<div class="icon">📋</div>
+<h3>Features Breakdown</h3>
+<p>Product bullets rewritten as clean feature cards with icons.</p>
+</div>
+<div class="feature-card">
+<div class="icon">❓</div>
+<h3>FAQ Section</h3>
+<p>Auto-generated FAQ based on product type and features. Accordion toggle.</p>
+</div>
+<div class="feature-card">
+<div class="icon">📱</div>
+<h3>Mobile Optimized</h3>
+<p>Responsive design with sticky mobile CTA bar. Works on every device.</p>
+</div>
+<div class="feature-card">
+<div class="icon">✨</div>
+<h3>Scroll Animations</h3>
+<p>Smooth reveal animations, animated counters, and pulse CTA buttons. Looks premium.</p>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>How to Set It Up</h2>
+
+<div class="terminal">
+<div class="terminal-header">
+<div class="terminal-dot r"></div>
+<div class="terminal-dot y"></div>
+<div class="terminal-dot g"></div>
+</div>
+<div class="terminal-body">
+<span class="comment"># In Claude Code Desktop, type:</span><br>
+<span class="prompt">/amazon-landing-page</span> https://amazon.com/dp/B0...<br><br>
+<span class="comment"># Claude opens the page, extracts everything,</span><br>
+<span class="comment"># and builds a complete landing page.</span><br>
+<span class="comment"># ~60 seconds later: open index.html</span>
+</div>
+</div>
+
+<div class="steps">
+<div class="step">
+<div class="step-num">1</div>
+<div class="step-content">
+<h3>Install Claude Code Desktop</h3>
+<p>Download from <strong>claude.ai/download</strong> if you don't have it yet. Requires a paid plan (Pro, Max, or Team).</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">2</div>
+<div class="step-content">
+<h3>Install Claude in Chrome Extension</h3>
+<p>The skill uses Chrome to read Amazon pages. Install the extension from the Chrome Web Store.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">3</div>
+<div class="step-content">
+<h3>Download the Skill File</h3>
+<p>Click the download button below. You'll get a <code>SKILL.md</code> file.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">4</div>
+<div class="step-content">
+<h3>Save to Your Skills Folder</h3>
+<p>Create a folder <code>~/.claude/skills/amazon-landing-page/</code> and put the SKILL.md file inside.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">5</div>
+<div class="step-content">
+<h3>Run It</h3>
+<p>Open Claude Code Desktop, type <code>/amazon-landing-page</code> and paste your Amazon product URL.</p>
+</div>
+</div>
+</div>
+
+<div class="tip-box">
+<h4>💡 Pro Tip: Add Your Attribution Link</h4>
+<p>After the page is generated, add your Amazon affiliate or attribution link to the "Buy on Amazon" button. Every click from your landing page will count toward your earnings.</p>
+</div>
+</div>
+
+<div class="section" style="background:var(--surface)">
+<h2>Requirements</h2>
+<ul class="req-list">
+<li><span class="req-check">✅</span> Claude Code Desktop (paid plan: Pro, Max, or Team)</li>
+<li><span class="req-check">✅</span> Claude in Chrome extension (installed and connected)</li>
+<li><span class="req-check">✅</span> An Amazon product URL</li>
+</ul>
+</div>
+
+<div class="section">
+<div class="download-section">
+<h2>📥 Download the Skill</h2>
+<p>Free. No signup. Just download, save, and start using it.</p>
+<button class="download-btn" onclick="downloadSkill()">Download SKILL.md</button>
+<p style="margin-top:12px;font-size:12px;color:var(--text-muted)">Save to: ~/.claude/skills/amazon-landing-page/SKILL.md</p>
+</div>
+</div>
+
+<div class="cta-bottom">
+<h2>One Command. One Landing Page.</h2>
+<p>Stop paying for landing pages. Build them yourself in 60 seconds.</p>
+<button class="download-btn" onclick="downloadSkill()">Download the Skill Now</button>
+</div>
+
+<footer>
+<p>Built by <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1">Jay</a> | Daily Claude Hacks</p>
+<p style="margin-top:8px">Part of the <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1">Daily Claude Hacks WhatsApp group</a></p>
+</footer>
+
+<script>
+function downloadSkill(){
+const skill=`---
+name: amazon-landing-page
+description: Build a premium landing page from any Amazon product URL. Extracts real product data (title, images, features, reviews, price) via Chrome MCP and generates a complete, beautiful landing page with scroll animations, real reviews, FAQ, email capture, and mobile-optimized CTA. Use when the user says "build a landing page", "create a product page", "amazon landing page", or provides an Amazon product URL.
+argument-hint: "<amazon-product-url>"
+user-invocable: true
+---
+
+# Amazon Product Landing Page Builder
+
+You are about to build a premium landing page for the Amazon product at **$ARGUMENTS**.
+
+## Requirements
+
+- **Chrome MCP is required.** Test it immediately. If unavailable, tell the user to enable it.
+- The landing page will be a single HTML file with Tailwind CDN (no build step needed).
+- All product data must be extracted from the real Amazon page. Never invent or fabricate data.
+
+## Process
+
+### Phase 1: Setup
+
+1. Create a project folder: \\\`amazon-landing-page-[product-name]\\\` in the current directory.
+2. Create an \\\`images/\\\` subfolder inside it.
+
+### Phase 2: Extract Product Data via Chrome MCP
+
+1. Open the Amazon product URL in Chrome MCP.
+2. Wait for the page to load (3 seconds).
+3. Extract the following using JavaScript execution:
+
+\\\`\\\`\\\`javascript
+// Product basics
+{
+  title: document.getElementById('productTitle')?.textContent?.trim(),
+  price: document.querySelector('.a-price .a-offscreen')?.textContent?.trim(),
+  rating: document.querySelector('#acrPopover')?.title || document.querySelector('.a-icon-alt')?.textContent,
+  reviewCount: document.querySelector('#acrCustomerReviewText')?.textContent?.trim(),
+  brand: document.querySelector('#bylineInfo')?.textContent?.trim(),
+  badges: document.querySelector('#acBadge_feature_div')?.textContent?.trim()
+}
+\\\`\\\`\\\`
+
+\\\`\\\`\\\`javascript
+// Feature bullets
+Array.from(document.querySelectorAll('#feature-bullets .a-list-item'))
+  .map(el => el.textContent?.trim())
+  .filter(t => t && t.length > 10)
+\\\`\\\`\\\`
+
+\\\`\\\`\\\`javascript
+// High-res image URLs
+Array.from(document.querySelectorAll('#altImages .a-button-thumbnail img'))
+  .map(img => img.src.replace(/\\\\._.*_\\\\./, '._SL1500_.'))
+  .filter(s => s.includes('images/I/'))
+\\\`\\\`\\\`
+
+4. Scroll to the reviews section and extract REAL reviews:
+
+\\\`\\\`\\\`javascript
+Array.from(document.querySelectorAll('[data-hook="review"]')).map(r => ({
+  stars: parseFloat(r.querySelector('[data-hook="review-star-rating"] .a-icon-alt')?.textContent || '0'),
+  body: r.querySelector('[data-hook="review-body"] span')?.textContent?.trim(),
+  author: r.querySelector('.a-profile-name')?.textContent?.trim(),
+  date: r.querySelector('[data-hook="review-date"]')?.textContent?.trim(),
+  verified: !!r.querySelector('[data-hook="avp-badge"]')
+})).filter(r => r.stars >= 4 && r.body && r.body.length > 20 && r.verified)
+\\\`\\\`\\\`
+
+### Phase 3: Download Images
+
+Download all product images using curl.
+
+### Phase 4: Build the Landing Page
+
+Create index.html with: Fixed Nav Bar, Hero Section (image gallery + product info + CTA), Social Proof Bar, Features Section (6 cards), What's in the Box, Image Gallery, Email Capture (Google Form integration), Real Reviews, FAQ (accordion), Final CTA, Footer, Sticky Mobile Bar.
+
+Design: Dark theme (#0a0a0a), orange CTA (#f97316), Inter font, scroll animations, Tailwind CDN.
+
+### Phase 5: Open and Verify
+
+Open the HTML file and tell the user about Google Form email capture setup.
+
+### Important Rules
+
+- NEVER fabricate reviews. Only use real Amazon reviews.
+- All data must come from the real Amazon page.
+- The page should look premium and professional.`;
+
+  const blob=new Blob([skill],{type:'text/markdown'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='SKILL.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
