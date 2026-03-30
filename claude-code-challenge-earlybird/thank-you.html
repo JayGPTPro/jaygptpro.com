@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're In! | Claude Code Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --orange: #f97316;
+            --orange-dark: #ea580c;
+            --orange-glow: rgba(249, 115, 22, 0.25);
+            --dark: #08080c;
+            --dark-mid: #0e0e14;
+            --dark-card: #131320;
+            --dark-border: #1e1e35;
+            --text-white: #eeeef2;
+            --text-light: #c0c0d0;
+            --text-muted: #707088;
+            --green: #22c55e;
+            --green-glow: rgba(34, 197, 94, 0.15);
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark);
+            color: var(--text-white);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        .container {
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Checkmark animation */
+        .check-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--green), #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.3);
+        }
+
+        .check-circle svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: drawCheck 0.4s ease 0.3s forwards;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes drawCheck {
+            to { stroke-dashoffset: 0; }
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+
+        h1 .accent {
+            background: linear-gradient(135deg, var(--orange), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 17px;
+            margin-bottom: 48px;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Step section */
+        .step-label {
+            color: var(--orange);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            animation: fadeUp 0.6s ease 0.4s both;
+        }
+
+        .step-desc {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease 0.45s both;
+        }
+
+        /* Round cards */
+        .rounds {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 48px;
+            animation: fadeUp 0.6s ease 0.5s both;
+        }
+
+        .round-card {
+            padding: 28px 20px;
+            background: var(--dark-card);
+            border: 2px solid var(--dark-border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .round-card:hover {
+            border-color: var(--orange);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15);
+        }
+
+        .round-card .round-name {
+            color: var(--orange);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .round-card .round-dates {
+            color: var(--text-white);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .round-card .round-spots {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .round-card .whatsapp-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: #25D366;
+            color: white;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* What to expect */
+        .expect-section {
+            text-align: left;
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: 16px;
+            padding: 32px 28px;
+            margin-bottom: 32px;
+            animation: fadeUp 0.6s ease 0.6s both;
+        }
+
+        .expect-section h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-white);
+        }
+
+        .expect-list {
+            list-style: none;
+            display: grid;
+            gap: 14px;
+        }
+
+        .expect-list li {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            color: var(--text-light);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .expect-list .icon {
+            color: var(--orange);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .footer-note {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 40px;
+            animation: fadeUp 0.6s ease 0.7s both;
+        }
+
+        .footer-note a {
+            color: var(--orange);
+            text-decoration: none;
+        }
+
+        @media (max-width: 480px) {
+            .rounds { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Animated checkmark -->
+        <div class="check-circle">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 12 10 16 18 8"/>
+            </svg>
+        </div>
+
+        <h1>You're <span class="accent">In.</span></h1>
+        <p class="subtitle">Payment confirmed. You just locked in the early bird price. Here's your next step.</p>
+
+        <!-- Step 1: Choose round -->
+        <div class="step-label">Two quick steps</div>
+
+        <div style="display: grid; gap: 24px; margin-bottom: 40px;">
+            <!-- Step 1 -->
+            <div style="animation: fadeUp 0.6s ease 0.4s both;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div style="width: 32px; height: 32px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0;">1</div>
+                    <span style="font-size: 16px; font-weight: 600;">Pick your round</span>
+                </div>
+                <a href="https://docs.google.com/forms/d/18s4J4ar-XRvdRZt9U3qvvcSQ_axIkPkQRdKybrCdIJs/viewform" target="_blank" class="round-card" style="text-align: center; border-color: var(--orange); padding: 28px 24px;">
+                    <div class="round-spots" style="margin-bottom: 16px;">Round 1 (Apr 13-17) or Round 2 (Apr 20-24)</div>
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: var(--orange); color: white; border-radius: 100px; font-size: 15px; font-weight: 700;">
+                        Choose Round
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="animation: fadeUp 0.6s ease 0.55s both;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div style="width: 32px; height: 32px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0;">2</div>
+                    <span style="font-size: 16px; font-weight: 600;">Join the WhatsApp support group</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">This is where I'll share updates, answer questions, and support you throughout the challenge. The group opens a few days before your round starts.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" class="round-card" style="text-align: center; padding: 20px 16px;">
+                        <div style="font-size: 13px; color: #25D366; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Round 1</div>
+                        <div style="color: var(--text-white); font-size: 15px; font-weight: 600; margin-bottom: 12px;">Apr 13-17</div>
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #25D366; color: white; border-radius: 100px; font-size: 13px; font-weight: 600;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.387 0-4.597-.794-6.375-2.132l-.446-.344-3.082 1.034 1.034-3.082-.344-.446C1.394 15.197.6 12.987.6 10.6.6 5.373 5.973 2 12 2c6.627 0 10 4.373 10 10s-4.373 10-10 10z"/></svg>
+                            Join Group
+                        </div>
+                    </a>
+                    <a href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank" class="round-card" style="text-align: center; padding: 20px 16px;">
+                        <div style="font-size: 13px; color: #25D366; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Round 2</div>
+                        <div style="color: var(--text-white); font-size: 15px; font-weight: 600; margin-bottom: 12px;">Apr 20-24</div>
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #25D366; color: white; border-radius: 100px; font-size: 13px; font-weight: 600;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.387 0-4.597-.794-6.375-2.132l-.446-.344-3.082 1.034 1.034-3.082-.344-.446C1.394 15.197.6 12.987.6 10.6.6 5.373 5.973 2 12 2c6.627 0 10 4.373 10 10s-4.373 10-10 10z"/></svg>
+                            Join Group
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- What to expect -->
+        <div class="expect-section">
+            <h3>What happens next</h3>
+            <ul class="expect-list">
+                <li><span class="icon">1.</span> Full challenge details drop on <strong>April 9</strong></li>
+                <li><span class="icon">2.</span> You'll receive a <strong>Day 0 prep guide</strong> by email about a week before your round</li>
+                <li><span class="icon">3.</span> The WhatsApp group opens a few days before the challenge with updates and direct access to me</li>
+                <li><span class="icon">4.</span> Questions? Email <a href="mailto:info@jaygptpro.com" style="color: var(--orange);">info@jaygptpro.com</a></li>
+            </ul>
+        </div>
+
+        <p class="footer-note">
+            Confirmation email sent to your inbox.<br>
+            Questions? Email <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>
+        </p>
+    </div>
+</body>
+</html>
