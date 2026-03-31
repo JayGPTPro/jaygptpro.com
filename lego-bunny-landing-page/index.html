@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEGO Creator 3in1 Cute Bunny | Build. Rebuild. Repeat.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lego: {
+              red: '#E3000B',
+              yellow: '#FFD500',
+              blue: '#006DB7',
+              green: '#00A651',
+              darkRed: '#B8000A',
+              cream: '#FFF9E6',
+              warmWhite: '#FFFDF5',
+              dark: '#1A1A1A',
+            }
+          },
+          fontFamily: {
+            display: ['Nunito', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    .reveal { opacity: 0; transform: translateY(40px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-left.active { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-right.active { opacity: 1; transform: translateX(0); }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(227, 0, 11, 0.4); }
+      50% { box-shadow: 0 0 20px 8px rgba(227, 0, 11, 0.2); }
+    }
+    .cta-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+    .stud-pattern {
+      background-image: radial-gradient(circle, rgba(255,213,0,0.12) 8px, transparent 8px);
+      background-size: 40px 40px;
+    }
+    .star { color: #FFD500; }
+    .thumb-active { border: 3px solid #E3000B !important; }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .faq-answer.open { max-height: 500px; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+    .float-anim { animation: float 4s ease-in-out infinite; }
+    .float-anim-delay { animation: float 4s ease-in-out 1s infinite; }
+    html { scroll-behavior: smooth; }
+    .nav-glass { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .img-zoom { transition: transform 0.4s ease; }
+    .img-zoom:hover { transform: scale(1.05); }
+    .brick-divider {
+      background: linear-gradient(90deg, #E3000B 25%, #FFD500 25%, #FFD500 50%, #006DB7 50%, #006DB7 75%, #00A651 75%);
+      height: 6px;
+    }
+    .mobile-bar { transform: translateY(100%); transition: transform 0.3s ease; }
+    .mobile-bar.visible { transform: translateY(0); }
+    .box-item { opacity: 0; transform: translateX(-30px); transition: all 0.5s ease; }
+    .box-item.active { opacity: 1; transform: translateX(0); }
+  </style>
+</head>
+<body class="bg-lego-warmWhite text-lego-dark">
+
+  <!-- Fixed Navigation -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 nav-glass border-b border-gray-100 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-lego-red rounded-lg flex items-center justify-center">
+            <span class="text-white font-black text-xs">L</span>
+          </div>
+          <span class="font-black text-lg text-lego-dark">LEGO Creator</span>
+        </div>
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm font-bold text-gray-600 hover:text-lego-red transition-colors">Features</a>
+          <a href="#reviews" class="text-sm font-bold text-gray-600 hover:text-lego-red transition-colors">Reviews</a>
+          <a href="#faq" class="text-sm font-bold text-gray-600 hover:text-lego-red transition-colors">FAQ</a>
+        </div>
+        <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6" target="_blank"
+           class="bg-lego-red hover:bg-lego-darkRed text-white font-bold text-sm px-5 py-2.5 rounded-full transition-all hover:scale-105 shadow-lg shadow-red-200">
+          Buy on Amazon - $15.97
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <!-- LEFT: Image Gallery -->
+        <div class="reveal-left">
+          <div class="bg-white rounded-3xl p-6 shadow-xl shadow-yellow-100/50 border border-yellow-100">
+            <div class="aspect-square rounded-2xl overflow-hidden bg-lego-cream flex items-center justify-center mb-4">
+              <img id="mainImage" src="images/product-1.jpg" alt="LEGO Creator Cute Bunny" class="w-full h-full object-contain p-4 transition-opacity duration-300">
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2">
+              <button onclick="changeImage('images/product-1.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all thumb-active">
+                <img src="images/product-1.jpg" alt="Thumbnail 1" class="w-full h-full object-cover">
+              </button>
+              <button onclick="changeImage('images/product-2.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all">
+                <img src="images/product-2.jpg" alt="Thumbnail 2" class="w-full h-full object-cover">
+              </button>
+              <button onclick="changeImage('images/product-3.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all">
+                <img src="images/product-3.jpg" alt="Thumbnail 3" class="w-full h-full object-cover">
+              </button>
+              <button onclick="changeImage('images/product-4.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all">
+                <img src="images/product-4.jpg" alt="Thumbnail 4" class="w-full h-full object-cover">
+              </button>
+              <button onclick="changeImage('images/product-5.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all">
+                <img src="images/product-5.jpg" alt="Thumbnail 5" class="w-full h-full object-cover">
+              </button>
+              <button onclick="changeImage('images/product-6.jpg', this)" class="flex-shrink-0 w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden hover:border-lego-red transition-all">
+                <img src="images/product-6.jpg" alt="Thumbnail 6" class="w-full h-full object-cover">
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Product Info -->
+        <div class="reveal-right">
+          <div class="inline-flex items-center gap-2 bg-lego-yellow/20 border border-lego-yellow rounded-full px-4 py-1.5 mb-4">
+            <span class="text-sm font-bold text-yellow-700">Amazon's Choice</span>
+          </div>
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-lego-dark leading-tight mb-4">
+            One Set.<br>
+            <span class="text-lego-red">Three Adorable</span><br>
+            Animals.
+          </h1>
+          <p class="text-lg text-gray-600 mb-6 max-w-md">
+            Build a cute bunny, a playful seal, or a charming llama. 326 pieces of pure creative fun for ages 8+.
+          </p>
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex"><span class="star text-xl">&#9733;</span><span class="star text-xl">&#9733;</span><span class="star text-xl">&#9733;</span><span class="star text-xl">&#9733;</span><span class="star text-xl">&#9733;</span></div>
+            <span class="font-bold text-lego-dark">4.8</span>
+            <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6#customerReviews" target="_blank" class="text-lego-blue hover:underline font-semibold">1,962 reviews</a>
+          </div>
+          <div class="flex items-baseline gap-3 mb-2">
+            <span class="text-4xl font-black text-lego-red">$15.97</span>
+            <span class="text-lg text-gray-400 line-through">$19.99</span>
+            <span class="bg-lego-green/10 text-green-700 font-bold text-sm px-3 py-1 rounded-full">Save 20%</span>
+          </div>
+          <p class="text-sm text-gray-500 mb-8 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-lego-blue" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+            FREE Prime Delivery
+          </p>
+          <div class="flex flex-wrap gap-4 mb-8">
+            <div class="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
+              <svg class="w-5 h-5 text-lego-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="text-sm font-bold">30-Day Returns</span>
+            </div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
+              <svg class="w-5 h-5 text-lego-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/></svg>
+              <span class="text-sm font-bold">Ships via Amazon</span>
+            </div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
+              <svg class="w-5 h-5 text-lego-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <span class="text-sm font-bold">LEGO Quality</span>
+            </div>
+          </div>
+          <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6" target="_blank"
+             class="inline-flex items-center gap-3 bg-lego-red hover:bg-lego-darkRed text-white font-black text-lg px-10 py-4 rounded-full transition-all hover:scale-105 cta-pulse shadow-xl shadow-red-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            Buy on Amazon
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="brick-divider"></div>
+
+  <!-- Social Proof Bar -->
+  <section class="bg-white py-12 stud-pattern">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="reveal" style="transition-delay: 0.1s">
+          <div class="text-3xl md:text-4xl font-black text-lego-red"><span class="counter" data-target="1962">0</span>+</div>
+          <div class="text-sm font-bold text-gray-500 mt-1">Happy Customers</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.2s">
+          <div class="text-3xl md:text-4xl font-black text-lego-yellow flex items-center justify-center gap-1">4.8 <span class="star text-2xl">&#9733;</span></div>
+          <div class="text-sm font-bold text-gray-500 mt-1">Average Rating</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.3s">
+          <div class="text-3xl md:text-4xl font-black text-lego-blue"><span class="counter" data-target="326">0</span></div>
+          <div class="text-sm font-bold text-gray-500 mt-1">LEGO Pieces</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.4s">
+          <div class="text-3xl md:text-4xl font-black text-lego-green">3 in 1</div>
+          <div class="text-sm font-bold text-gray-500 mt-1">Build Options</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-20 bg-lego-cream/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="inline-block bg-lego-red/10 text-lego-red font-bold text-sm px-4 py-1.5 rounded-full mb-4">WHY KIDS LOVE IT</span>
+        <h2 class="text-3xl md:text-4xl font-black text-lego-dark">Built for Creative Play</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.1s">
+          <div class="w-14 h-14 bg-lego-red/10 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-lego-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">3 Builds, 1 Set</h3>
+          <p class="text-gray-600">Build and rebuild a cute bunny, a seal, or a llama using the same 326 bricks. Triple the fun.</p>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.2s">
+          <div class="w-14 h-14 bg-lego-yellow/20 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">Fully Posable</h3>
+          <p class="text-gray-600">Move heads, ears, legs, and flippers. Each animal has posable parts for expressive play and display.</p>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.3s">
+          <div class="w-14 h-14 bg-lego-blue/10 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-lego-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">Perfect Gift</h3>
+          <p class="text-gray-600">Ideal for Easter baskets, birthdays, or just because. A fun experience for builders ages 8+.</p>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.4s">
+          <div class="w-14 h-14 bg-lego-green/10 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-lego-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">Fun Accessories</h3>
+          <p class="text-gray-600">Sunflower and carrot for the bunny, grass for the llama, ice with a fish for the seal.</p>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.5s">
+          <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">Sparks Creativity</h3>
+          <p class="text-gray-600">LEGO Creator sets inspire kids to imagine, build, and create stories. Screen-free, pure fun.</p>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg shadow-yellow-50 border border-yellow-50 hover:shadow-xl hover:-translate-y-1 transition-all" style="transition-delay: 0.6s">
+          <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <h3 class="text-xl font-black mb-2">LEGO Quality</h3>
+          <p class="text-gray-600">Premium bricks that click perfectly and last for generations. Clear instructions make building a breeze.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What's in the Box -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="reveal-left">
+          <img src="images/product-7.jpg" alt="LEGO Cute Bunny box contents" class="rounded-3xl shadow-2xl shadow-yellow-100/50">
+        </div>
+        <div class="reveal-right">
+          <span class="inline-block bg-lego-blue/10 text-lego-blue font-bold text-sm px-4 py-1.5 rounded-full mb-4">WHAT'S INCLUDED</span>
+          <h2 class="text-3xl md:text-4xl font-black text-lego-dark mb-8">Everything You Need</h2>
+          <div class="space-y-4">
+            <div class="flex items-start gap-4 box-item" style="transition-delay: 0.1s">
+              <div class="w-8 h-8 bg-lego-green rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div><p class="font-bold text-lg">326 LEGO Pieces</p><p class="text-gray-500 text-sm">High-quality bricks for 3 different builds</p></div>
+            </div>
+            <div class="flex items-start gap-4 box-item" style="transition-delay: 0.2s">
+              <div class="w-8 h-8 bg-lego-green rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div><p class="font-bold text-lg">Bunny with Sunflower & Carrot</p><p class="text-gray-500 text-sm">Posable head, ears, forelegs and hind legs</p></div>
+            </div>
+            <div class="flex items-start gap-4 box-item" style="transition-delay: 0.3s">
+              <div class="w-8 h-8 bg-lego-green rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div><p class="font-bold text-lg">Seal with Ice Sheet & Fish</p><p class="text-gray-500 text-sm">Movable head, neck and flippers</p></div>
+            </div>
+            <div class="flex items-start gap-4 box-item" style="transition-delay: 0.4s">
+              <div class="w-8 h-8 bg-lego-green rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div><p class="font-bold text-lg">Llama with Grass & Carrot Top</p><p class="text-gray-500 text-sm">Posable ears, head, tail and feet</p></div>
+            </div>
+            <div class="flex items-start gap-4 box-item" style="transition-delay: 0.5s">
+              <div class="w-8 h-8 bg-lego-green rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div><p class="font-bold text-lg">Step-by-Step Instructions</p><p class="text-gray-500 text-sm">Clear, kid-friendly building guide for all 3 models</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Image Gallery -->
+  <section class="py-20 bg-lego-cream/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 reveal">
+        <span class="inline-block bg-lego-yellow/30 text-yellow-700 font-bold text-sm px-4 py-1.5 rounded-full mb-4">GALLERY</span>
+        <h2 class="text-3xl md:text-4xl font-black text-lego-dark">See It From Every Angle</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.1s"><img src="images/product-1.jpg" alt="LEGO Bunny" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.2s"><img src="images/product-2.jpg" alt="LEGO Seal" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.3s"><img src="images/product-3.jpg" alt="LEGO Llama" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.4s"><img src="images/product-4.jpg" alt="LEGO Animals" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.5s"><img src="images/product-5.jpg" alt="LEGO Play" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+        <div class="reveal rounded-2xl overflow-hidden shadow-lg bg-white" style="transition-delay: 0.6s"><img src="images/product-6.jpg" alt="LEGO Details" class="w-full aspect-square object-contain p-4 img-zoom"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Email Capture -->
+  <section class="py-20 bg-white stud-pattern">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+      <div class="bg-gradient-to-br from-lego-red to-red-700 rounded-3xl p-10 md:p-14 shadow-2xl shadow-red-200/50">
+        <div class="text-5xl mb-4">&#x1F430;</div>
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">Join the Builders Club</h2>
+        <p class="text-red-100 text-lg mb-8">Get exclusive deals, early access to new sets, and creative building ideas.</p>
+        <form id="emailForm" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <input type="email" id="emailInput" placeholder="Your email address" required class="flex-1 px-5 py-3.5 rounded-full text-lego-dark font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-300 shadow-lg">
+          <button type="submit" class="bg-lego-yellow hover:bg-yellow-400 text-lego-dark font-black px-8 py-3.5 rounded-full transition-all hover:scale-105 shadow-lg whitespace-nowrap">Join Free</button>
+        </form>
+        <div id="emailSuccess" class="hidden mt-6">
+          <p class="text-white font-bold text-lg">You're in! Welcome to the club.</p>
+          <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6" target="_blank" class="inline-block mt-3 text-lego-yellow hover:text-white font-bold underline">Grab your LEGO Bunny now &rarr;</a>
+        </div>
+        <p class="text-red-200 text-xs mt-4">No spam, ever. Unsubscribe anytime.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section id="reviews" class="py-20 bg-lego-cream/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 reveal">
+        <span class="inline-block bg-lego-green/10 text-green-700 font-bold text-sm px-4 py-1.5 rounded-full mb-4">VERIFIED REVIEWS</span>
+        <h2 class="text-3xl md:text-4xl font-black text-lego-dark">What Builders Are Saying</h2>
+        <div class="flex items-center justify-center gap-2 mt-3">
+          <div class="flex"><span class="star text-2xl">&#9733;</span><span class="star text-2xl">&#9733;</span><span class="star text-2xl">&#9733;</span><span class="star text-2xl">&#9733;</span><span class="star text-2xl">&#9733;</span></div>
+          <span class="font-bold text-lg">4.8 out of 5</span>
+          <span class="text-gray-500">(1,962 ratings)</span>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg border border-yellow-50 hover:shadow-xl transition-all" style="transition-delay: 0.1s">
+          <div class="flex items-center gap-1 mb-3"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div>
+          <p class="text-gray-700 mb-4 leading-relaxed">"Love the seal so much, super cute and easy to build !!"</p>
+          <div class="flex items-center justify-between">
+            <div><p class="font-bold text-sm">Trademark Carpentry LLC</p><p class="text-xs text-gray-400">March 4, 2026</p></div>
+            <span class="bg-lego-green/10 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">Verified</span>
+          </div>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg border border-yellow-50 hover:shadow-xl transition-all" style="transition-delay: 0.2s">
+          <div class="flex items-center gap-1 mb-3"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div>
+          <p class="text-gray-700 mb-4 leading-relaxed">"An absolute hit in our house! The bunny build is incredibly cute, with thoughtful details. My 9-year-old had a blast building it solo."</p>
+          <div class="flex items-center justify-between">
+            <div><p class="font-bold text-sm">KBK</p><p class="text-xs text-gray-400">Verified Review</p></div>
+            <span class="bg-lego-green/10 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">Verified</span>
+          </div>
+        </div>
+        <div class="reveal bg-white rounded-2xl p-7 shadow-lg border border-yellow-50 hover:shadow-xl transition-all" style="transition-delay: 0.3s">
+          <div class="flex items-center gap-1 mb-3"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div>
+          <p class="text-gray-700 mb-4 leading-relaxed">"Great Easter basket stuffer. Like all LEGO products, it's built to last. Bonus points for encouraging creativity and quiet play."</p>
+          <div class="flex items-center justify-between">
+            <div><p class="font-bold text-sm">Happy Parent</p><p class="text-xs text-gray-400">Verified Review</p></div>
+            <span class="bg-lego-green/10 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">Verified</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-10 reveal">
+        <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6#customerReviews" target="_blank" class="inline-flex items-center gap-2 text-lego-blue hover:text-blue-800 font-bold transition-colors">
+          Read all 1,962 reviews on Amazon
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="py-20 bg-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 reveal">
+        <span class="inline-block bg-lego-blue/10 text-lego-blue font-bold text-sm px-4 py-1.5 rounded-full mb-4">FAQ</span>
+        <h2 class="text-3xl md:text-4xl font-black text-lego-dark">Common Questions</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="reveal bg-lego-cream/50 rounded-2xl border border-yellow-100 overflow-hidden" style="transition-delay: 0.1s">
+          <button onclick="toggleFaq(this)" class="w-full text-left px-7 py-5 flex items-center justify-between">
+            <span class="font-bold text-lg">What ages is this set designed for?</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer px-7 pb-5"><p class="text-gray-600">Recommended for ages 8 and up. With 326 pieces, it provides a rewarding challenge. Younger kids may enjoy building with a parent.</p></div>
+        </div>
+        <div class="reveal bg-lego-cream/50 rounded-2xl border border-yellow-100 overflow-hidden" style="transition-delay: 0.2s">
+          <button onclick="toggleFaq(this)" class="w-full text-left px-7 py-5 flex items-center justify-between">
+            <span class="font-bold text-lg">Can you build all 3 animals at the same time?</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer px-7 pb-5"><p class="text-gray-600">No, the 3 models share the same 326 bricks, so you build one at a time. The fun is in rebuilding: finish the bunny, then create the seal or llama.</p></div>
+        </div>
+        <div class="reveal bg-lego-cream/50 rounded-2xl border border-yellow-100 overflow-hidden" style="transition-delay: 0.3s">
+          <button onclick="toggleFaq(this)" class="w-full text-left px-7 py-5 flex items-center justify-between">
+            <span class="font-bold text-lg">How big is the finished bunny?</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer px-7 pb-5"><p class="text-gray-600">The bunny stands approximately 7 inches (18 cm) tall. A satisfying display piece for a shelf or desk.</p></div>
+        </div>
+        <div class="reveal bg-lego-cream/50 rounded-2xl border border-yellow-100 overflow-hidden" style="transition-delay: 0.4s">
+          <button onclick="toggleFaq(this)" class="w-full text-left px-7 py-5 flex items-center justify-between">
+            <span class="font-bold text-lg">Are the building instructions included?</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer px-7 pb-5"><p class="text-gray-600">Yes! Clear step-by-step instructions for all three builds. Also available digitally through the free LEGO Builder app.</p></div>
+        </div>
+        <div class="reveal bg-lego-cream/50 rounded-2xl border border-yellow-100 overflow-hidden" style="transition-delay: 0.5s">
+          <button onclick="toggleFaq(this)" class="w-full text-left px-7 py-5 flex items-center justify-between">
+            <span class="font-bold text-lg">Is this compatible with other LEGO sets?</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer px-7 pb-5"><p class="text-gray-600">Absolutely! Like all LEGO bricks, every piece is compatible with other sets. Kids can combine bricks to create their own designs.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="py-20 bg-lego-cream/30">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+      <div class="bg-gradient-to-r from-lego-yellow via-yellow-300 to-lego-yellow rounded-3xl p-10 md:p-16 text-center shadow-2xl shadow-yellow-200/50 relative overflow-hidden">
+        <div class="absolute top-4 left-6 text-6xl opacity-20 float-anim">&#x1F9F1;</div>
+        <div class="absolute bottom-4 right-8 text-5xl opacity-20 float-anim-delay">&#x1F430;</div>
+        <h2 class="text-3xl md:text-5xl font-black text-lego-dark mb-4 relative z-10">Ready to Start Building?</h2>
+        <p class="text-lg text-yellow-800 mb-8 max-w-xl mx-auto relative z-10">326 pieces. 3 adorable animals. Unlimited creativity. Get it now before it hops away.</p>
+        <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6" target="_blank"
+           class="relative z-10 inline-flex items-center gap-3 bg-lego-red hover:bg-lego-darkRed text-white font-black text-xl px-12 py-5 rounded-full transition-all hover:scale-105 cta-pulse shadow-xl shadow-red-300/50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          Buy on Amazon - $15.97
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-lego-dark text-gray-400 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-sm">Independent product page. LEGO is a registered trademark of the LEGO Group. Purchase fulfilled by Amazon.com.</p>
+      <p class="text-xs mt-2 text-gray-600">Product data sourced from Amazon. All reviews are from verified purchasers.</p>
+    </div>
+  </footer>
+
+  <!-- Sticky Mobile Bar -->
+  <div id="mobileBar" class="mobile-bar fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-4 py-3 md:hidden shadow-2xl">
+    <div class="flex items-center justify-between">
+      <div><p class="font-black text-lego-red text-lg">$15.97</p><p class="text-xs text-gray-500">FREE Prime Delivery</p></div>
+      <a href="https://www.amazon.com/LEGO-Creator-Cute-Bunny-Toy/dp/B0DJ1B2RW6" target="_blank" class="bg-lego-red hover:bg-lego-darkRed text-white font-bold px-8 py-3 rounded-full transition-all shadow-lg">Buy on Amazon</a>
+    </div>
+  </div>
+
+  <script>
+    function changeImage(src, thumb) {
+      const main = document.getElementById('mainImage');
+      main.style.opacity = '0';
+      setTimeout(() => { main.src = src; main.style.opacity = '1'; }, 200);
+      document.querySelectorAll('.thumb-active').forEach(t => t.classList.remove('thumb-active'));
+      if (thumb) thumb.classList.add('thumb-active');
+    }
+    function revealOnScroll() {
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .box-item').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight - 80) el.classList.add('active');
+      });
+    }
+    window.addEventListener('scroll', revealOnScroll);
+    window.addEventListener('load', revealOnScroll);
+    function animateCounters() {
+      document.querySelectorAll('.counter').forEach(counter => {
+        if (counter.dataset.animated) return;
+        if (counter.getBoundingClientRect().top < window.innerHeight) {
+          counter.dataset.animated = 'true';
+          const target = parseInt(counter.dataset.target);
+          const start = performance.now();
+          function update(now) {
+            const progress = Math.min((now - start) / 1500, 1);
+            counter.textContent = Math.floor((1 - Math.pow(1 - progress, 3)) * target).toLocaleString();
+            if (progress < 1) requestAnimationFrame(update);
+            else counter.textContent = target.toLocaleString();
+          }
+          requestAnimationFrame(update);
+        }
+      });
+    }
+    window.addEventListener('scroll', animateCounters);
+    window.addEventListener('load', animateCounters);
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const isOpen = answer.classList.contains('open');
+      document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+      document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+      if (!isOpen) { answer.classList.add('open'); icon.style.transform = 'rotate(180deg)'; }
+    }
+    window.addEventListener('scroll', () => {
+      document.getElementById('mobileBar').classList.toggle('visible', window.scrollY > 600);
+      document.getElementById('navbar').classList.toggle('shadow-md', window.scrollY > 10);
+    });
+    document.getElementById('emailForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      // Google Form integration - seller fills these in:
+      // const GOOGLE_FORM_URL = ''; // Paste your Google Form action URL here
+      // const EMAIL_FIELD_ID = ''; // Paste your email field entry ID here
+      this.style.display = 'none';
+      document.getElementById('emailSuccess').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
