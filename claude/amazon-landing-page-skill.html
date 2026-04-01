@@ -10,6 +10,37 @@
   gtag('js', new Date());
   gtag('config', 'G-M4RK6H5NMH');
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Track skill download
+  var dlBtn = document.querySelector('.download-btn');
+  if (dlBtn) {
+    dlBtn.addEventListener('click', function() {
+      gtag('event', 'skill_download', { event_category: 'conversion', event_label: 'amazon_landing_page' });
+    });
+  }
+  // Track challenge banner click
+  var challengeLink = document.querySelector('a[href*="claude-code-challenge"]');
+  if (challengeLink) {
+    challengeLink.addEventListener('click', function() {
+      gtag('event', 'challenge_click', { event_category: 'conversion', event_label: 'from_skill_page' });
+    });
+  }
+  // Track scroll depth
+  var scrollMarks = { 25: false, 50: false, 75: false, 100: false };
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var percent = Math.round((scrollTop / docHeight) * 100);
+    [25, 50, 75, 100].forEach(function(mark) {
+      if (percent >= mark && !scrollMarks[mark]) {
+        scrollMarks[mark] = true;
+        gtag('event', 'scroll_depth', { event_category: 'engagement', event_label: mark + '%' });
+      }
+    });
+  }, { passive: true });
+});
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amazon Landing Page Skill | Daily Claude Hacks by Jay</title>
 <meta property="og:title" content="Free Skill: Amazon Product → Premium Landing Page">
