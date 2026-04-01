@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Vault Mastermind Groups</title>
+<meta name="description" content="Small group sessions for AI Vault members. Share wins, solve challenges, build connections.">
+<meta property="og:title" content="AI Vault Mastermind Groups">
+<meta property="og:description" content="Small group sessions where Vault members share wins, solve real challenges, and build connections.">
+<meta property="og:image" content="zoom.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blue: #2d7ff9;
+    --glow: #4da3ff;
+    --light: #a0cbff;
+    --purple: #7b61ff;
+    --emerald: #00d68f;
+    --amber: #f59e0b;
+
+    --bg: #050d1a;
+    --surface: #091929;
+    --card: #0c1f38;
+    --card-hi: #102847;
+    --border: rgba(77, 163, 255, 0.08);
+    --border-on: rgba(77, 163, 255, 0.22);
+
+    --t1: #f0f4ff;
+    --t2: #8ba4c4;
+    --t3: #4a6a8f;
+
+    --radius: 16px;
+    --radius-sm: 10px;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--t1);
+    line-height: 1.65;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 48px);
+  }
+
+  /* ===== REVEAL ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  }
+  .reveal.v { opacity: 1; transform: translateY(0); }
+  .d1 { transition-delay: 0.08s; }
+  .d2 { transition-delay: 0.16s; }
+  .d3 { transition-delay: 0.24s; }
+  .d4 { transition-delay: 0.32s; }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 120px 0 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(45, 127, 249, 0.1) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(123, 97, 255, 0.05) 0%, transparent 60%),
+      linear-gradient(180deg, #081528 0%, var(--bg) 100%);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(77, 163, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77, 163, 255, 0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 70%);
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .hero-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 20px 6px 6px;
+    margin-bottom: 32px;
+  }
+
+  .hero-brand img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .hero-brand span {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--glow);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 6vw, 68px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 .accent {
+    display: block;
+    background: linear-gradient(135deg, var(--glow), var(--light), var(--purple));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: grad 5s ease infinite;
+  }
+
+  @keyframes grad {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+  }
+
+  .hero-sub {
+    font-size: clamp(15px, 1.8vw, 18px);
+    color: var(--t2);
+    max-width: 500px;
+    margin: 0 auto 36px;
+    font-weight: 400;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 36px;
+    background: var(--blue);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.3s var(--ease);
+    box-shadow: 0 4px 20px rgba(45, 127, 249, 0.3);
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(45, 127, 249, 0.45);
+    background: #3a8aff;
+  }
+
+  .hero-cta svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s;
+  }
+
+  .hero-cta:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ===== META BAR ===== */
+  .meta-bar {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 36px 0 12px;
+  }
+
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--t2);
+  }
+
+  /* ===== TIMEZONE ===== */
+  .tz-wrap {
+    text-align: center;
+    padding: 12px 0 48px;
+  }
+
+  .tz-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-size: 13px;
+    color: var(--t2);
+  }
+
+  .tz-box select {
+    background: transparent;
+    border: none;
+    color: var(--glow);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .tz-box select option {
+    background: var(--card);
+    color: var(--t1);
+  }
+
+  .tz-note {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--t3);
+    transition: color 0.3s;
+  }
+
+  .tz-note.on {
+    color: var(--emerald);
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    padding: 72px 0;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-size: clamp(26px, 3.5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+
+  .section-sub {
+    font-size: 15px;
+    color: var(--t2);
+    max-width: 480px;
+    margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  /* ===== ALL-PASS ===== */
+  .all-pass {
+    background: linear-gradient(135deg, rgba(45, 127, 249, 0.06), rgba(123, 97, 255, 0.04));
+    border: 1.5px solid var(--border-on);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 24px;
+  }
+
+  .all-pass:hover {
+    border-color: rgba(45, 127, 249, 0.35);
+    box-shadow: 0 0 20px rgba(45, 127, 249, 0.06);
+  }
+
+  .all-pass.on {
+    border-color: var(--emerald);
+    background: rgba(0, 214, 143, 0.04);
+  }
+
+  .all-pass-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .all-pass-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .all-pass-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .all-pass-desc {
+    font-size: 12px;
+    color: var(--t2);
+    margin-top: 1px;
+  }
+
+  .checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s var(--ease);
+    flex-shrink: 0;
+  }
+
+  .checkbox svg {
+    width: 14px;
+    height: 14px;
+    stroke: white;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.25s var(--ease);
+  }
+
+  .on > .checkbox,
+  .on .checkbox {
+    background: var(--emerald);
+    border-color: var(--emerald);
+  }
+
+  .on > .checkbox svg,
+  .on .checkbox svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ===== SESSION CARDS (TIMELINE) ===== */
+  .timeline {
+    position: relative;
+    max-width: 720px;
+    padding-left: 48px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--border-on) 0%, var(--border) 80%, transparent 100%);
+  }
+
+  .session {
+    position: relative;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+  }
+
+  /* Timeline dot */
+  .session-dot {
+    position: absolute;
+    left: -44px;
+    top: 28px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  .session:nth-child(1) .session-dot { background: var(--blue); }
+  .session:nth-child(2) .session-dot { background: var(--purple); }
+  .session:nth-child(3) .session-dot { background: var(--emerald); }
+
+  .session.on .session-dot {
+    transform: scale(1.6);
+  }
+
+  .session:nth-child(1).on .session-dot { box-shadow: 0 0 12px var(--blue); }
+  .session:nth-child(2).on .session-dot { box-shadow: 0 0 12px var(--purple); }
+  .session:nth-child(3).on .session-dot { box-shadow: 0 0 12px var(--emerald); }
+
+  .session-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s var(--ease);
+  }
+
+  .session:hover .session-card {
+    background: var(--card-hi);
+    border-color: rgba(77, 163, 255, 0.15);
+  }
+
+  .session.on .session-card {
+    border-color: var(--border-on);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .session:nth-child(1).on .session-card { border-color: rgba(45, 127, 249, 0.35); }
+  .session:nth-child(2).on .session-card { border-color: rgba(123, 97, 255, 0.35); }
+  .session:nth-child(3).on .session-card { border-color: rgba(0, 214, 143, 0.35); }
+
+  /* Color accent top bar */
+  .session-bar {
+    height: 3px;
+  }
+
+  .session:nth-child(1) .session-bar { background: linear-gradient(90deg, #2d7ff9, #4da3ff); }
+  .session:nth-child(2) .session-bar { background: linear-gradient(90deg, #7b61ff, #a78bfa); }
+  .session:nth-child(3) .session-bar { background: linear-gradient(90deg, #00d68f, #34d399); }
+
+  .session-content {
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  /* Calendar block */
+  .cal-block {
+    flex-shrink: 0;
+    width: 60px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .session:nth-child(1) .cal-block { background: rgba(45, 127, 249, 0.06); }
+  .session:nth-child(2) .cal-block { background: rgba(123, 97, 255, 0.06); }
+  .session:nth-child(3) .cal-block { background: rgba(0, 214, 143, 0.06); }
+
+  .cal-month {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 5px 0 2px;
+  }
+
+  .session:nth-child(1) .cal-month { color: var(--glow); background: rgba(45, 127, 249, 0.1); }
+  .session:nth-child(2) .cal-month { color: #a78bfa; background: rgba(123, 97, 255, 0.1); }
+  .session:nth-child(3) .cal-month { color: #34d399; background: rgba(0, 214, 143, 0.1); }
+
+  .cal-day {
+    font-size: 26px;
+    font-weight: 800;
+    padding: 2px 0;
+    line-height: 1.2;
+  }
+
+  .cal-weekday {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 6px;
+  }
+
+  .session-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .session-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--t2);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .session-local {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    color: var(--emerald);
+    font-weight: 600;
+    display: none;
+  }
+
+  .session-local.show { display: inline; }
+
+  .session-topic {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .session-desc {
+    font-size: 13px;
+    color: var(--t2);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  .session-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .session-check {
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  /* ===== FLOATING ACTION BAR ===== */
+  .action-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface);
+    border: 1px solid var(--border-on);
+    border-radius: 14px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 100;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 32px rgba(45, 127, 249, 0.06);
+    transition: transform 0.4s var(--ease);
+    backdrop-filter: blur(16px);
+  }
+
+  .action-bar.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .action-bar-text {
+    font-size: 14px;
+    color: var(--t2);
+  }
+
+  .action-bar-text strong {
+    color: var(--glow);
+  }
+
+  .action-bar-btn {
+    padding: 11px 24px;
+    background: var(--blue);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+
+  .action-bar-btn:hover {
+    background: #3a8aff;
+    box-shadow: 0 4px 16px rgba(45, 127, 249, 0.3);
+  }
+
+  /* ===== HOW IT WORKS ===== */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .how-item {
+    text-align: center;
+    padding: 28px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.3s;
+  }
+
+  .how-item:hover {
+    border-color: var(--border-on);
+  }
+
+  .how-num {
+    font-family: 'Space Mono', monospace;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: rgba(45, 127, 249, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--glow);
+    margin: 0 auto 12px;
+  }
+
+  .how-item h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .how-item p {
+    font-size: 12px;
+    color: var(--t2);
+  }
+
+  /* ===== SPLIT LAYOUT ===== */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+
+  .split.reverse {
+    direction: rtl;
+  }
+
+  .split.reverse > * {
+    direction: ltr;
+  }
+
+  .split-image {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .split-image img {
+    width: 100%;
+    display: block;
+  }
+
+  .flow-list {
+    list-style: none;
+  }
+
+  .flow-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .flow-item:last-child {
+    border-bottom: none;
+  }
+
+  .flow-time {
+    flex-shrink: 0;
+    width: 80px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    padding-top: 3px;
+    text-align: right;
+  }
+
+  .flow-body h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .flow-body p {
+    font-size: 13px;
+    color: var(--t2);
+  }
+
+  /* Value items */
+  .value-item {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .value-item:last-child {
+    border-bottom: none;
+  }
+
+  .value-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: rgba(45, 127, 249, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .value-item h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .value-item p {
+    font-size: 13px;
+    color: var(--t2);
+  }
+
+  /* ===== QUOTE ===== */
+  .quote-block {
+    max-width: 620px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 48px 36px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    position: relative;
+  }
+
+  .quote-block::before {
+    content: '\201C';
+    font-size: 96px;
+    font-weight: 800;
+    color: rgba(45, 127, 249, 0.06);
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    line-height: 1;
+  }
+
+  .quote-block p {
+    font-size: 17px;
+    color: #c0d0e4;
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .quote-block cite {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--t3);
+    font-style: normal;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== BOTTOM CTA ===== */
+  .bottom-cta {
+    text-align: center;
+    padding: 64px 0 100px;
+  }
+
+  .bottom-cta h2 {
+    font-size: clamp(24px, 3.5vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+
+  .bottom-cta p {
+    font-size: 15px;
+    color: var(--t2);
+    margin-bottom: 28px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: var(--t3);
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 13, 26, 0.88);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.on {
+    display: flex;
+    opacity: 1;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-on);
+    border-radius: 20px;
+    padding: 40px 36px;
+    max-width: 440px;
+    width: 92%;
+    position: relative;
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.35s var(--ease);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-overlay.on .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: transparent;
+    color: var(--t3);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--t1);
+  }
+
+  .modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 16px;
+  }
+
+  .modal-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+
+  .modal-tag.blue { background: rgba(45, 127, 249, 0.1); color: var(--glow); }
+  .modal-tag.purple { background: rgba(123, 97, 255, 0.1); color: #a78bfa; }
+  .modal-tag.green { background: rgba(0, 214, 143, 0.1); color: #34d399; }
+  .modal-tag.all { background: rgba(255, 255, 255, 0.05); color: var(--t2); }
+
+  .modal h3 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--t2);
+    margin-bottom: 24px;
+  }
+
+  .field {
+    margin-bottom: 10px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--t1);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field input::placeholder {
+    color: var(--t3);
+  }
+
+  .field input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.08);
+  }
+
+  .btn-go {
+    width: 100%;
+    padding: 14px;
+    background: var(--blue);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 4px;
+    box-shadow: 0 4px 16px rgba(45, 127, 249, 0.2);
+  }
+
+  .btn-go:hover {
+    background: #3a8aff;
+    box-shadow: 0 6px 20px rgba(45, 127, 249, 0.35);
+  }
+
+  .btn-go:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .modal-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--t3);
+    margin-top: 14px;
+  }
+
+  .success-view {
+    display: none;
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .success-check {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(0, 214, 143, 0.1);
+    border: 2px solid var(--emerald);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 16px;
+  }
+
+  .success-view h3 {
+    color: var(--emerald);
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .success-view p {
+    font-size: 13px;
+    color: var(--t2);
+    line-height: 1.5;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .how-grid { grid-template-columns: repeat(2, 1fr); }
+    .split { grid-template-columns: 1fr; gap: 32px; }
+    .split.reverse { direction: ltr; }
+    .all-pass { flex-direction: column; text-align: center; }
+    .all-pass-left { flex-direction: column; align-items: center; }
+  }
+
+  @media (max-width: 600px) {
+    .timeline { padding-left: 32px; }
+    .timeline::before { left: 3px; }
+    .session-dot { left: -28px; width: 10px; height: 10px; top: 30px; }
+    .cal-block { display: none; }
+    .session-content { gap: 0; padding-left: 16px; }
+    .session-check { display: none; }
+    .how-grid { grid-template-columns: 1fr; }
+    .meta-bar { gap: 6px; }
+    .meta-chip { font-size: 12px; padding: 6px 12px; }
+    .modal { padding: 32px 24px; }
+    .action-bar { padding: 12px 16px; gap: 10px; border-radius: 12px; }
+    .action-bar-btn { padding: 10px 18px; font-size: 13px; }
+    .hero { padding: 100px 0 60px; }
+    .hero h1 { letter-spacing: -1px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-brand reveal">
+        <img src="logo-transparent.jpg" alt="AI Vault">
+        <span>Vault Members Only</span>
+      </div>
+      <h1 class="reveal d1">AI Vault<br><span class="accent">Mastermind Groups</span></h1>
+      <p class="hero-sub reveal d2">Small group sessions where you share wins, solve real challenges, and build connections with people who get it.</p>
+      <a href="#sessions" class="hero-cta reveal d3">See Upcoming Sessions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== META ===== -->
+<div class="container">
+  <div class="meta-bar reveal">
+    <div class="meta-chip"><span>📅</span> Every Other Tuesday</div>
+    <div class="meta-chip"><span>🕑</span> 2:00 PM EST</div>
+    <div class="meta-chip"><span>👥</span> 5-8 Per Group</div>
+    <div class="meta-chip"><span>⏱</span> 60-90 Min</div>
+    <div class="meta-chip"><span>📍</span> Google Meet</div>
+  </div>
+</div>
+
+<!-- ===== TIMEZONE ===== -->
+<div class="container">
+  <div class="tz-wrap reveal">
+    <div class="tz-box">
+      🌍 Your timezone:
+      <select id="tzSel" onchange="updateTZ()">
+        <option value="">Select location</option>
+        <option value="America/New_York">New York (EST)</option>
+        <option value="America/Chicago">Chicago (CST)</option>
+        <option value="America/Denver">Denver (MST)</option>
+        <option value="America/Los_Angeles">Los Angeles (PST)</option>
+        <option value="America/Sao_Paulo">Sao Paulo (BRT)</option>
+        <option value="Europe/London">London (GMT)</option>
+        <option value="Europe/Paris">Paris / Berlin (CET)</option>
+        <option value="Europe/Bucharest">Bucharest (EET)</option>
+        <option value="Asia/Jerusalem">Israel (IST)</option>
+        <option value="Asia/Dubai">Dubai (GST)</option>
+        <option value="Asia/Kolkata">India (IST)</option>
+        <option value="Asia/Shanghai">China (CST)</option>
+        <option value="Asia/Tokyo">Tokyo (JST)</option>
+        <option value="Australia/Sydney">Sydney (AEST)</option>
+      </select>
+    </div>
+    <div class="tz-note" id="tzR"></div>
+  </div>
+</div>
+
+<!-- ===== SESSIONS ===== -->
+<section class="section" id="sessions">
+  <div class="container">
+    <div class="section-label reveal">Upcoming Schedule</div>
+    <h2 class="reveal">Join As Many As You'd Like</h2>
+    <p class="section-sub reveal">Select individual sessions or sign up for all of them. You'll be matched into a small group for each one.</p>
+
+    <div class="all-pass reveal" onclick="togglePass()">
+      <div class="all-pass-left">
+        <div class="all-pass-icon">⚡</div>
+        <div>
+          <div class="all-pass-title">Every Session, Automatically</div>
+          <div class="all-pass-desc">Join every Mastermind, every two weeks. No need to sign up each time.</div>
+        </div>
+      </div>
+      <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+
+    <div class="timeline">
+      <!-- Session 1 -->
+      <div class="session reveal d1" onclick="toggleSession(this,'claude-code')">
+        <div class="session-dot"></div>
+        <div class="session-card">
+          <div class="session-bar"></div>
+          <div class="session-content">
+            <div class="cal-block">
+              <div class="cal-month">MAY</div>
+              <div class="cal-day">6</div>
+              <div class="cal-weekday">TUE</div>
+            </div>
+            <div class="session-info">
+              <div class="session-time">TUE MAY 6 / 2:00 PM EST <span class="session-local" data-i="0"></span></div>
+              <div class="session-topic">Claude Code for eCommerce</div>
+              <div class="session-desc">Build tools, automate workflows, and save hours. From prompts to full AI-powered automation.</div>
+              <div class="session-tags">
+                <span class="tag">AI Tools</span>
+                <span class="tag">Automation</span>
+                <span class="tag">Hands-on</span>
+              </div>
+            </div>
+            <div class="session-check">
+              <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session 2 -->
+      <div class="session reveal d2" onclick="toggleSession(this,'creative')">
+        <div class="session-dot"></div>
+        <div class="session-card">
+          <div class="session-bar"></div>
+          <div class="session-content">
+            <div class="cal-block">
+              <div class="cal-month">MAY</div>
+              <div class="cal-day">20</div>
+              <div class="cal-weekday">TUE</div>
+            </div>
+            <div class="session-info">
+              <div class="session-time">TUE MAY 20 / 2:00 PM EST <span class="session-local" data-i="1"></span></div>
+              <div class="session-topic">Creative: Images & Video with AI</div>
+              <div class="session-desc">Share your best AI visuals. Get feedback on listing images, product videos, and creative assets.</div>
+              <div class="session-tags">
+                <span class="tag">Nano Banana</span>
+                <span class="tag">Video</span>
+                <span class="tag">Creative</span>
+              </div>
+            </div>
+            <div class="session-check">
+              <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session 3 -->
+      <div class="session reveal d3" onclick="toggleSession(this,'product')">
+        <div class="session-dot"></div>
+        <div class="session-card">
+          <div class="session-bar"></div>
+          <div class="session-content">
+            <div class="cal-block">
+              <div class="cal-month">JUN</div>
+              <div class="cal-day">3</div>
+              <div class="cal-weekday">TUE</div>
+            </div>
+            <div class="session-info">
+              <div class="session-time">TUE JUN 3 / 2:00 PM EST <span class="session-local" data-i="2"></span></div>
+              <div class="session-topic">Product Improvement Lab</div>
+              <div class="session-desc">Bring your product. The group helps improve listings, images, pricing, and positioning with AI.</div>
+              <div class="session-tags">
+                <span class="tag">Products</span>
+                <span class="tag">Listings</span>
+                <span class="tag">Feedback</span>
+              </div>
+            </div>
+            <div class="session-check">
+              <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FLOATING BAR ===== -->
+<div class="action-bar" id="actionBar">
+  <div class="action-bar-text" id="barText"><strong>0</strong> sessions selected</div>
+  <button class="action-bar-btn" onclick="openModal()">Continue</button>
+</div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section">
+  <div class="container" style="text-align: center;">
+    <div class="section-label reveal">How It Works</div>
+    <h2 class="reveal" style="margin-bottom: 40px;">Four Simple Steps</h2>
+    <div class="how-grid">
+      <div class="how-item reveal d1"><div class="how-num">1</div><h3>Pick Sessions</h3><p>Choose topics or join all</p></div>
+      <div class="how-item reveal d2"><div class="how-num">2</div><h3>Get Matched</h3><p>Grouped with 5-8 members</p></div>
+      <div class="how-item reveal d3"><div class="how-num">3</div><h3>Calendar Invite</h3><p>Meet link in your calendar</p></div>
+      <div class="how-item reveal d4"><div class="how-num">4</div><h3>Show Up</h3><p>Share, ask, get real input</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INSIDE A SESSION ===== -->
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <div class="section-label reveal">Inside a Session</div>
+        <h2 class="reveal">What to Expect</h2>
+        <ul class="flow-list reveal">
+          <li class="flow-item">
+            <div class="flow-time">5-10 min</div>
+            <div class="flow-body"><h4>Intro Round</h4><p>Who you are, what you sell, where you are with AI.</p></div>
+          </li>
+          <li class="flow-item">
+            <div class="flow-time">~10 min each</div>
+            <div class="flow-body"><h4>Your Turn</h4><p>Share a win, bring a challenge, or get feedback. Real, honest input.</p></div>
+          </li>
+          <li class="flow-item">
+            <div class="flow-time">2-3 min</div>
+            <div class="flow-body"><h4>Wrap Up</h4><p>One takeaway each. Continue in the Vault WhatsApp.</p></div>
+          </li>
+        </ul>
+      </div>
+      <div class="split-image reveal"><img src="zoom.png" alt="Session"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUOTE ===== -->
+<section class="section">
+  <div class="container">
+    <div class="quote-block reveal">
+      <p>The best ideas I ever got for my business didn't come from courses or tools. They came from honest conversations with people doing the same thing.</p>
+      <cite>Jay Margaliot, AI Vault Founder</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY IT WORKS ===== -->
+<section class="section">
+  <div class="container">
+    <div class="split reverse">
+      <div class="split-image reveal"><img src="group.png" alt="Group"></div>
+      <div>
+        <div class="section-label reveal">Why It Works</div>
+        <h2 class="reveal">More Than a Meeting</h2>
+        <div class="reveal">
+          <div class="value-item"><div class="value-icon">🎯</div><div><h4>Accountability</h4><p>Tell 6 people what you'll do, and you actually do it.</p></div></div>
+          <div class="value-item"><div class="value-icon">💡</div><div><h4>Perspective</h4><p>Someone already solved the problem you're stuck on.</p></div></div>
+          <div class="value-item"><div class="value-icon">🤝</div><div><h4>Connections</h4><p>Real relationships with people who understand your world.</p></div></div>
+          <div class="value-item"><div class="value-icon">⚡</div><div><h4>Speed</h4><p>Skip weeks of trial and error. Answers in 10 minutes.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BOTTOM CTA ===== -->
+<section class="bottom-cta">
+  <div class="container">
+    <h2 class="reveal">Ready to Join?</h2>
+    <p class="reveal">Select your sessions above. No extra cost, included in your Vault membership.</p>
+    <a href="#sessions" class="hero-cta reveal">Choose Sessions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></a>
+  </div>
+</section>
+
+<div class="footer">AI Vault for eCom Sellers - Part of the Top Dog Community</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalForm">
+      <div class="modal-tags" id="modalTags"></div>
+      <h3>Reserve Your Spot</h3>
+      <p class="modal-sub">Enter your details. We'll send a calendar invite with your group.</p>
+      <form onsubmit="submitForm(event)">
+        <div class="field"><input type="text" placeholder="Your name" required id="nameInput"></div>
+        <div class="field"><input type="email" placeholder="Your email" required id="emailInput"></div>
+        <button type="submit" class="btn-go" id="submitBtn">Reserve My Spot</button>
+      </form>
+      <p class="modal-note">Included in your AI Vault membership. No additional cost.</p>
+    </div>
+    <div class="success-view" id="successView">
+      <div class="success-check">✓</div>
+      <h3>You're In!</h3>
+      <p>You'll receive a Google Calendar invite with your group and meeting link before each session.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Reveal on scroll
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('v'); });
+  }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // State
+  let selected = new Set();
+  let allPass = false;
+  const labels = { 'claude-code': 'May 6 - Claude Code', 'creative': 'May 20 - Creative', 'product': 'Jun 3 - Product Lab' };
+  const colors = { 'claude-code': 'blue', 'creative': 'purple', 'product': 'green' };
+
+  function toggleSession(el, val) {
+    if (allPass) return;
+    el.classList.toggle('on');
+    selected.has(val) ? selected.delete(val) : selected.add(val);
+    updateBar();
+  }
+
+  function togglePass() {
+    allPass = !allPass;
+    document.querySelector('.all-pass').classList.toggle('on', allPass);
+    if (allPass) {
+      selected = new Set(['claude-code', 'creative', 'product']);
+      document.querySelectorAll('.session').forEach(s => s.classList.add('on'));
+    } else {
+      selected.clear();
+      document.querySelectorAll('.session').forEach(s => s.classList.remove('on'));
+    }
+    updateBar();
+  }
+
+  function updateBar() {
+    const bar = document.getElementById('actionBar');
+    const txt = document.getElementById('barText');
+    const n = selected.size;
+    if (n > 0) {
+      bar.classList.add('show');
+      txt.innerHTML = allPass
+        ? '<strong>All sessions</strong> - every 2 weeks'
+        : '<strong>' + n + '</strong> session' + (n > 1 ? 's' : '') + ' selected';
+    } else {
+      bar.classList.remove('show');
+    }
+  }
+
+  function openModal() {
+    const tags = document.getElementById('modalTags');
+    tags.innerHTML = '';
+    if (allPass) {
+      tags.innerHTML = '<span class="modal-tag all">⚡ Every Session</span>';
+    } else {
+      selected.forEach(s => {
+        tags.innerHTML += '<span class="modal-tag ' + colors[s] + '">' + labels[s] + '</span>';
+      });
+    }
+    document.getElementById('modalForm').style.display = 'block';
+    document.getElementById('successView').style.display = 'none';
+    document.getElementById('submitBtn').textContent = 'Reserve My Spot';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('modalOverlay').classList.add('on');
+    setTimeout(() => document.getElementById('nameInput').focus(), 250);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('on');
+    document.getElementById('nameInput').value = '';
+    document.getElementById('emailInput').value = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Submit
+  const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+
+  function submitForm(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    const data = {
+      name: document.getElementById('nameInput').value,
+      email: document.getElementById('emailInput').value,
+      sessions: allPass ? 'all' : Array.from(selected).join(','),
+      allPass: allPass,
+      timestamp: new Date().toISOString()
+    };
+    if (SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+      fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(showSuccess).catch(showSuccess);
+    } else {
+      setTimeout(showSuccess, 600);
+    }
+  }
+
+  function showSuccess() {
+    document.getElementById('modalForm').style.display = 'none';
+    document.getElementById('successView').style.display = 'block';
+  }
+
+  // Timezone
+  const sessionDates = [
+    new Date('2025-05-06T18:00:00Z'),
+    new Date('2025-05-20T18:00:00Z'),
+    new Date('2025-06-03T18:00:00Z')
+  ];
+
+  function updateTZ() {
+    const tz = document.getElementById('tzSel').value;
+    const res = document.getElementById('tzR');
+    if (!tz) {
+      res.textContent = '';
+      res.classList.remove('on');
+      document.querySelectorAll('.session-local').forEach(e => e.classList.remove('show'));
+      return;
+    }
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short'
+    });
+    const local = fmt.format(sessionDates[0]);
+    res.textContent = 'Sessions start at ' + local + ' in your timezone';
+    res.classList.add('on');
+    document.querySelectorAll('.session-local').forEach((el, i) => {
+      el.textContent = '(' + fmt.format(sessionDates[i]) + ' your time)';
+      el.classList.add('show');
+    });
+  }
+
+  // Auto-detect timezone
+  try {
+    const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const sel = document.getElementById('tzSel');
+    for (let opt of sel.options) {
+      if (opt.value === userTz) { opt.selected = true; updateTZ(); break; }
+    }
+  } catch (e) {}
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
