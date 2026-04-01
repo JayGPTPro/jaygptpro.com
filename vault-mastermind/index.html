@@ -69,47 +69,43 @@
 
   /* ===== HERO ===== */
   .hero {
-    padding: 120px 0 80px;
+    padding: 100px 0 80px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(45, 127, 249, 0.1) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(123, 97, 255, 0.05) 0%, transparent 60%),
-      linear-gradient(180deg, #081528 0%, var(--bg) 100%);
+    background: linear-gradient(180deg, #081528 0%, var(--bg) 100%);
   }
 
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
+  .hero-bg { position: absolute; inset: 0; z-index: 0; }
+  .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.18; filter: saturate(0.5) brightness(0.6); }
+  .hero-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 50% 40%, transparent 30%, var(--bg) 80%), linear-gradient(to bottom, rgba(8,21,40,0.2) 0%, rgba(5,13,26,0.6) 50%, var(--bg) 100%); }
 
-  .hero-bg img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.12;
-    filter: saturate(0.4) brightness(0.6);
-  }
+  .hero-orb { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; animation: orb 10s ease-in-out infinite alternate; }
+  .hero-orb-1 { width: 400px; height: 400px; background: rgba(45,127,249,0.12); top: -10%; left: 15%; animation-duration: 12s; }
+  .hero-orb-2 { width: 300px; height: 300px; background: rgba(123,97,255,0.1); top: 10%; right: 10%; animation-duration: 8s; animation-delay: -3s; }
+  .hero-orb-3 { width: 200px; height: 200px; background: rgba(0,214,143,0.06); bottom: 10%; left: 40%; animation-duration: 14s; animation-delay: -5s; }
+  @keyframes orb { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-20px) scale(1.05)} 100%{transform:translate(-15px,15px) scale(0.97)} }
 
-  .hero-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(8, 21, 40, 0.4) 0%, rgba(5, 13, 26, 0.8) 60%, var(--bg) 100%);
-  }
+  .hero-deco { position: absolute; z-index: 1; opacity: 0.12; pointer-events: none; }
+  .hero-ring { width: 200px; height: 200px; border: 1px solid rgba(45,127,249,0.3); border-radius: 50%; top: 12%; right: 8%; animation: spin 30s linear infinite; }
+  .hero-ring::after { content: ''; position: absolute; inset: 25px; border: 1px solid rgba(123,97,255,0.2); border-radius: 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hero-dots { top: 22%; left: 6%; display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+  .hero-dots span { width: 3px; height: 3px; background: rgba(77,163,255,0.4); border-radius: 50%; }
+  .hero-line { width: 120px; height: 1px; background: linear-gradient(90deg,transparent,rgba(45,127,249,0.2),transparent); bottom: 28%; left: 8%; transform: rotate(-25deg); }
+  .hero-line-2 { width: 80px; height: 1px; background: linear-gradient(90deg,transparent,rgba(123,97,255,0.15),transparent); top: 32%; right: 14%; transform: rotate(15deg); }
 
   .hero::before {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 1;
     background-image:
-      linear-gradient(rgba(77, 163, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(77, 163, 255, 0.025) 1px, transparent 1px);
+      linear-gradient(rgba(77,163,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,163,255,0.03) 1px, transparent 1px);
     background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 70%);
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 10%, transparent 65%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 10%, transparent 65%);
   }
 
   .hero-inner {
@@ -1077,6 +1073,13 @@
 <!-- ===== HERO ===== -->
 <section class="hero">
   <div class="hero-bg"><img src="hero.png" alt=""></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+  <div class="hero-deco hero-ring"></div>
+  <div class="hero-deco hero-dots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="hero-deco hero-line"></div>
+  <div class="hero-deco hero-line-2"></div>
   <div class="container">
     <div class="hero-inner">
       <div class="hero-brand reveal">
@@ -1162,7 +1165,7 @@
             <div class="session-info">
               <div class="session-time">TUE MAY 6 / 2:00 PM EST <span class="session-local" data-i="0"></span></div>
               <div class="session-topic">Claude Code for eCommerce</div>
-              <div class="session-desc">Build tools, automate workflows, and save hours. From prompts to full AI-powered automation.</div>
+              <div class="session-desc">Share how you're using Claude Code, exchange prompts and workflows, and brainstorm automation ideas together.</div>
               <div class="session-tags">
                 <span class="tag">AI Tools</span>
                 <span class="tag">Automation</span>
@@ -1191,7 +1194,7 @@
             <div class="session-info">
               <div class="session-time">TUE MAY 20 / 2:00 PM EST <span class="session-local" data-i="1"></span></div>
               <div class="session-topic">Creative: Images & Video with AI</div>
-              <div class="session-desc">Share your best AI visuals. Get feedback on listing images, product videos, and creative assets.</div>
+              <div class="session-desc">Bring your AI-generated images and videos. Get honest feedback, discover new techniques, and see what's working for others.</div>
               <div class="session-tags">
                 <span class="tag">Nano Banana</span>
                 <span class="tag">Video</span>
@@ -1220,7 +1223,7 @@
             <div class="session-info">
               <div class="session-time">TUE JUN 3 / 2:00 PM EST <span class="session-local" data-i="2"></span></div>
               <div class="session-topic">Product Improvement Lab</div>
-              <div class="session-desc">Bring your product. The group helps improve listings, images, pricing, and positioning with AI.</div>
+              <div class="session-desc">Bring your product to the group. Get fresh eyes on your listings, images, pricing, and positioning. Real products, real feedback.</div>
               <div class="session-tags">
                 <span class="tag">Products</span>
                 <span class="tag">Listings</span>
