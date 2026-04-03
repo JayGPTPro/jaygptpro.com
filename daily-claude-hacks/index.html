@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Claude Hacks | Jay Margaliot</title>
+<meta name="description" content="Daily practical Claude tips and hacks for business owners. Learn to use Claude like a pro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080c;--bg2:#0f0f15;--bg3:#16161f;--bg4:#1e1e2a;
+  --orange:#e87040;--orange-light:#f0935e;--orange-dark:#c55a30;
+  --text:#e8e8ed;--text-dim:#9898a8;--text-bright:#ffffff;
+  --glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);
+  --radius:20px;--radius-sm:12px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden;min-height:100vh}
+
+/* ===== ANNOUNCEMENT BAR ===== */
+.announce-bar{
+  background:linear-gradient(90deg,var(--orange-dark),var(--orange),var(--orange-light));
+  color:#fff;text-align:center;padding:10px 48px 10px 20px;font-size:0.85rem;font-weight:600;
+  position:relative;z-index:1001;
+}
+.announce-bar a{color:#fff;text-decoration:underline;margin-left:8px}
+.announce-bar .close-btn{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:rgba(255,255,255,0.7);font-size:1.2rem;cursor:pointer;padding:4px 8px;
+}
+.announce-bar .close-btn:hover{color:#fff}
+.announce-bar.hidden{display:none}
+
+/* ===== TOP BAR ===== */
+.top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;border-bottom:1px solid var(--glass-border);
+}
+.top-left{display:flex;align-items:center;gap:12px}
+.top-logo{font-weight:800;font-size:1.1rem;color:var(--orange)}
+.top-count{
+  font-size:0.72rem;color:var(--text-dim);background:var(--glass);
+  border:1px solid var(--glass-border);padding:3px 10px;border-radius:16px;
+}
+.top-search{
+  background:var(--bg3);border:1px solid var(--glass-border);
+  border-radius:10px;padding:8px 14px;color:var(--text);
+  font-size:0.85rem;font-family:inherit;outline:none;width:220px;
+  transition:border-color 0.2s;
+}
+.top-search:focus{border-color:var(--orange)}
+.top-search::placeholder{color:var(--text-dim)}
+
+/* ===== HERO ===== */
+.hero{
+  text-align:center;padding:40px 24px 20px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(232,112,64,0.06) 0%,transparent 50%);
+}
+.hero h1{
+  font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;color:var(--text-bright);
+  letter-spacing:-1px;margin-bottom:8px;
+}
+.hero h1 span{color:var(--orange)}
+.hero p{font-size:0.9rem;color:var(--text-dim);max-width:500px;margin:0 auto}
+.hero p a{color:var(--orange);text-decoration:none;border-bottom:1px solid rgba(232,112,64,0.3)}
+
+/* ===== FILTERS ===== */
+.filters{
+  display:flex;gap:8px;align-items:center;justify-content:center;
+  padding:16px 24px 8px;flex-wrap:wrap;
+}
+.filter-pill{
+  padding:6px 16px;border-radius:20px;font-size:0.78rem;font-weight:600;
+  border:1px solid var(--glass-border);background:var(--glass);color:var(--text-dim);
+  cursor:pointer;white-space:nowrap;transition:all 0.2s;
+}
+.filter-pill:hover{border-color:var(--orange);color:var(--text)}
+.filter-pill.active{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* ===== CAROUSEL ===== */
+.carousel-wrapper{
+  position:relative;padding:24px 0 16px;
+  display:flex;align-items:center;justify-content:center;min-height:60vh;
+}
+
+.carousel-track{
+  width:100%;max-width:680px;margin:0 auto;
+  position:relative;perspective:1200px;
+}
+
+/* Main card */
+.card{
+  background:var(--bg2);border:1px solid var(--glass-border);
+  border-radius:var(--radius);overflow:hidden;
+  transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 8px 40px rgba(0,0,0,0.4);
+}
+.card:hover{border-color:rgba(232,112,64,0.2)}
+
+.card-header{
+  padding:20px 24px;display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--glass-border);
+}
+.hack-num{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;font-weight:800;font-size:0.9rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.hack-emoji{font-size:1.6rem;flex-shrink:0;line-height:1}
+.hack-title-area{flex:1;min-width:0}
+.hack-title-area h2{
+  font-size:1.05rem;font-weight:700;color:var(--text-bright);line-height:1.35;
+}
+.hack-meta-row{display:flex;gap:8px;margin-top:5px;align-items:center;flex-wrap:wrap}
+.cat-badge{
+  font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+  padding:2px 8px;border-radius:6px;
+}
+.cat-claude-code{background:rgba(34,197,94,0.15);color:#4ade80}
+.cat-claude-ai{background:rgba(99,102,241,0.15);color:#a5b4fc}
+.cat-cowork{background:rgba(245,158,11,0.15);color:#fbbf24}
+.cat-general{background:rgba(148,163,184,0.15);color:#94a3b8}
+.cat-chrome{background:rgba(236,72,153,0.15);color:#f472b6}
+.hack-date{font-size:0.72rem;color:var(--text-dim)}
+
+/* Media */
+.card-media{background:#000;position:relative}
+.card-media img{width:100%;display:block;max-height:380px;object-fit:contain;background:#000;cursor:zoom-in}
+.card-media video{width:100%;display:block;max-height:380px;background:#000}
+.card-media .yt-thumb{
+  position:relative;cursor:pointer;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+}
+.card-media .yt-thumb img{width:100%;height:100%;object-fit:cover}
+.play-btn{
+  position:absolute;width:68px;height:48px;
+  background:rgba(232,112,64,0.9);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.2s;
+}
+.yt-thumb:hover .play-btn{transform:scale(1.1)}
+.play-btn::after{
+  content:'';border-left:18px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;
+  margin-left:3px;
+}
+
+/* Content */
+.card-content{padding:24px;max-height:400px;overflow-y:auto}
+.card-content::-webkit-scrollbar{width:4px}
+.card-content::-webkit-scrollbar-track{background:transparent}
+.card-content::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
+.card-text{font-size:0.9rem;line-height:1.8;color:var(--text)}
+.card-text p{margin-bottom:12px}
+.card-text p:last-child{margin-bottom:0}
+.card-text strong{color:var(--text-bright);font-weight:700}
+.card-text code{
+  background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:0.82rem;
+  color:var(--orange-light);
+}
+.card-text a{color:var(--orange);text-decoration:none;border-bottom:1px solid rgba(232,112,64,0.3)}
+.card-text a:hover{border-bottom-color:var(--orange)}
+.card-text .arrow-item{padding-left:20px;position:relative;margin:4px 0}
+.card-text .arrow-item::before{content:'\2192';position:absolute;left:0;color:var(--orange)}
+
+/* Card actions */
+.card-actions{
+  padding:12px 24px;border-top:1px solid var(--glass-border);
+  display:flex;gap:8px;
+}
+.action-btn{
+  padding:6px 14px;border-radius:8px;font-size:0.75rem;font-weight:600;
+  border:1px solid var(--glass-border);background:var(--glass);color:var(--text-dim);
+  cursor:pointer;transition:all 0.2s;font-family:inherit;
+}
+.action-btn:hover{border-color:var(--orange);color:var(--text)}
+.action-btn.copied{background:rgba(34,197,94,0.2);border-color:#22c55e;color:#4ade80}
+
+/* ===== NAV ARROWS ===== */
+.nav-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:10;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--orange);border:3px solid var(--orange-light);
+  color:#fff;font-size:1.6rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.25s;
+  box-shadow:0 4px 20px rgba(232,112,64,0.4);
+}
+.nav-arrow:hover{transform:translateY(-50%) scale(1.12);box-shadow:0 6px 28px rgba(232,112,64,0.5)}
+.nav-arrow:active{transform:translateY(-50%) scale(0.95)}
+.nav-arrow:disabled{opacity:0.2;cursor:default;pointer-events:none;box-shadow:none}
+.nav-arrow.prev{left:-72px}
+.nav-arrow.next{right:-72px}
+@media(max-width:860px){
+  .nav-arrow.prev{left:6px}
+  .nav-arrow.next{right:6px}
+  .nav-arrow{width:44px;height:44px;font-size:1.3rem}
+}
+
+/* ===== MINI STRIP ===== */
+.mini-strip{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  padding:0 24px 16px;max-width:700px;margin:0 auto;
+}
+.mini-arrow{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:var(--orange);border:2px solid var(--orange-light);
+  color:#fff;font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+  box-shadow:0 2px 12px rgba(232,112,64,0.35);
+}
+.mini-arrow:hover{transform:scale(1.15);box-shadow:0 4px 18px rgba(232,112,64,0.5)}
+.mini-arrow:active{transform:scale(0.9)}
+.mini-arrow:disabled{opacity:0.15;cursor:default;pointer-events:none;box-shadow:none}
+.mini-items{display:flex;align-items:center;gap:10px}
+.mini-item{
+  flex-shrink:0;width:72px;padding:10px 6px 8px;
+  border-radius:14px;border:2px solid var(--glass-border);
+  background:var(--bg2);text-align:center;cursor:pointer;
+  transition:all 0.3s;opacity:0.4;
+}
+.mini-item:hover{opacity:0.7;border-color:var(--text-dim)}
+.mini-item.active{
+  border-color:var(--orange);opacity:1;
+  background:linear-gradient(135deg, rgba(232,112,64,0.15), rgba(232,112,64,0.05));
+  width:96px;padding:12px 8px 10px;
+  box-shadow:0 0 20px rgba(232,112,64,0.3), 0 0 40px rgba(232,112,64,0.1);
+  transform:scale(1.08);
+}
+.mini-emoji{font-size:1.4rem;line-height:1}
+.mini-item.active .mini-emoji{font-size:1.8rem;filter:drop-shadow(0 0 6px rgba(232,112,64,0.5))}
+.mini-label{font-size:0.6rem;color:var(--text-dim);font-weight:600;margin-top:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-item.active .mini-label{color:var(--orange);font-size:0.7rem;font-weight:800}
+@media(max-width:600px){
+  .mini-item{width:54px;padding:8px 4px 6px}
+  .mini-item.active{width:70px;padding:10px 6px 8px}
+  .mini-emoji{font-size:1.1rem}
+  .mini-item.active .mini-emoji{font-size:1.4rem}
+  .mini-strip{gap:8px}
+  .mini-items{gap:6px}
+  .mini-arrow{width:30px;height:30px;font-size:0.85rem}
+}
+
+/* ===== LIKE BUTTON ===== */
+.like-section{
+  display:flex;align-items:center;gap:6px;margin-left:auto;
+}
+.like-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;
+  border:1px solid var(--glass-border);background:var(--glass);color:var(--text-dim);
+  cursor:pointer;transition:all 0.25s;font-family:inherit;
+}
+.like-btn:hover{border-color:#ef4444;color:#f87171;background:rgba(239,68,68,0.08)}
+.like-btn.liked{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,0.12)}
+.like-btn .heart{font-size:1rem;transition:transform 0.3s}
+.like-btn.liked .heart{transform:scale(1.2)}
+.like-count{font-variant-numeric:tabular-nums}
+
+/* ===== POSITION INDICATOR ===== */
+.position-bar{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  padding:16px 24px;
+}
+.pos-arrow{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:var(--orange);border:2px solid var(--orange-light);
+  color:#fff;font-size:0.85rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;box-shadow:0 2px 10px rgba(232,112,64,0.3);
+}
+.pos-arrow:hover{transform:scale(1.12)}
+.pos-arrow:disabled{opacity:0.15;cursor:default;pointer-events:none;box-shadow:none}
+.position-dots{display:flex;gap:6px;align-items:center}
+.pos-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--glass-border);
+  transition:all 0.3s;cursor:pointer;
+}
+.pos-dot.active{background:var(--orange);width:24px;border-radius:4px}
+.pos-dot:hover{background:var(--text-dim)}
+.position-text{font-size:0.8rem;color:var(--text-dim);font-weight:600}
+
+/* ===== CTA SECTION ===== */
+.cta-section{
+  max-width:680px;margin:8px auto 0;padding:0 24px;
+}
+.cta-card{
+  background:linear-gradient(135deg,var(--bg3),var(--bg2));
+  border:1px solid rgba(232,112,64,0.3);border-left:4px solid var(--orange);
+  border-radius:var(--radius);padding:24px;
+  display:flex;align-items:center;gap:20px;
+  margin-bottom:16px;
+}
+.cta-card .cta-info{flex:1}
+.cta-card h3{font-size:1rem;font-weight:800;color:var(--text-bright);margin-bottom:4px}
+.cta-card p{font-size:0.82rem;color:var(--text-dim);line-height:1.5}
+.cta-button{
+  display:inline-block;flex-shrink:0;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;padding:10px 24px;border-radius:24px;
+  font-weight:700;font-size:0.82rem;text-decoration:none;
+  transition:transform 0.2s,box-shadow 0.2s;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(232,112,64,0.3);
+}
+.cta-button:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(232,112,64,0.4)}
+.cta-price{font-size:0.7rem;color:var(--text-dim);margin-top:6px}
+@media(max-width:600px){
+  .cta-card{flex-direction:column;text-align:center}
+}
+
+/* ===== NO RESULTS ===== */
+.no-results{
+  text-align:center;padding:80px 20px;color:var(--text-dim);
+}
+.no-results .emoji{font-size:3rem;margin-bottom:12px}
+
+/* ===== FOOTER ===== */
+.footer{
+  text-align:center;padding:32px 24px 80px;
+  border-top:1px solid var(--glass-border);
+  color:var(--text-dim);font-size:0.78rem;margin-top:16px;
+}
+
+/* ===== MOBILE STICKY CTA ===== */
+.mobile-cta{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;
+  background:rgba(8,8,12,0.95);backdrop-filter:blur(16px);
+  border-top:1px solid var(--glass-border);
+  padding:10px 16px;text-align:center;
+}
+.mobile-cta.hidden{display:none !important}
+.mobile-cta a{
+  display:block;background:var(--orange);color:#fff;padding:10px;
+  border-radius:10px;font-weight:700;font-size:0.85rem;text-decoration:none;
+}
+.mobile-cta .sub{font-size:0.7rem;color:var(--text-dim);margin-top:4px}
+@media(max-width:768px){.mobile-cta{display:block}}
+
+/* ===== LIGHTBOX ===== */
+.lightbox{
+  display:none;position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
+  cursor:zoom-out;justify-content:center;align-items:center;
+}
+.lightbox.active{display:flex}
+.lightbox img{max-width:95%;max-height:90vh;object-fit:contain;border-radius:8px}
+.lightbox-close{
+  position:fixed;top:16px;right:20px;color:#fff;font-size:2rem;
+  cursor:pointer;z-index:2001;opacity:0.7;
+}
+.lightbox-close:hover{opacity:1}
+
+/* ===== CHALLENGE POPUP ===== */
+.popup-overlay{
+  display:none;position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  justify-content:center;align-items:center;padding:24px;
+}
+.popup-overlay.active{display:flex}
+.popup-box{
+  background:var(--bg2);border:1px solid rgba(232,112,64,0.4);
+  border-radius:24px;max-width:480px;width:100%;padding:36px 32px;
+  text-align:center;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(232,112,64,0.15);
+  animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.popup-close{
+  position:absolute;top:12px;right:16px;
+  background:none;border:none;color:var(--text-dim);font-size:1.5rem;
+  cursor:pointer;transition:color 0.2s;
+}
+.popup-close:hover{color:var(--text-bright)}
+.popup-badge{
+  display:inline-block;background:rgba(232,112,64,0.15);border:1px solid rgba(232,112,64,0.3);
+  color:var(--orange);font-size:0.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;padding:4px 14px;border-radius:20px;margin-bottom:16px;
+}
+.popup-box h2{font-size:1.3rem;font-weight:800;color:var(--text-bright);margin-bottom:8px;line-height:1.3}
+.popup-box h2 span{color:var(--orange)}
+.popup-box p{font-size:0.88rem;color:var(--text-dim);line-height:1.6;margin-bottom:20px}
+.popup-cta{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;padding:14px 36px;border-radius:30px;
+  font-weight:800;font-size:0.95rem;text-decoration:none;
+  transition:transform 0.2s,box-shadow 0.2s;
+  box-shadow:0 6px 24px rgba(232,112,64,0.4);
+}
+.popup-cta:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(232,112,64,0.5)}
+.popup-price{font-size:0.75rem;color:var(--text-dim);margin-top:12px}
+.popup-price strong{color:var(--orange)}
+
+/* ===== ADMIN PANEL ===== */
+.admin-panel{display:none;background:var(--bg3);border-bottom:2px solid var(--orange);padding:24px}
+.admin-panel.active{display:block}
+.admin-panel h2{font-size:1.1rem;color:var(--orange);margin-bottom:16px;font-weight:700}
+.admin-panel textarea{
+  width:100%;min-height:140px;background:var(--bg);border:1px solid var(--glass-border);
+  border-radius:10px;padding:14px;color:var(--text);font-size:0.85rem;
+  font-family:'Inter',sans-serif;resize:vertical;outline:none;
+}
+.admin-panel textarea:focus{border-color:var(--orange)}
+.admin-row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:flex-end}
+.admin-field{display:flex;flex-direction:column;gap:4px}
+.admin-field label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
+.admin-field input,.admin-field select{
+  background:var(--bg);border:1px solid var(--glass-border);border-radius:8px;
+  padding:8px 12px;color:var(--text);font-size:0.85rem;font-family:inherit;outline:none;
+}
+.admin-btn{padding:8px 20px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;font-family:inherit;transition:all 0.2s}
+.admin-btn-parse{background:var(--orange);color:#fff}
+.admin-btn-copy{background:var(--bg);border:1px solid var(--glass-border);color:var(--text)}
+.admin-output{
+  margin-top:12px;background:var(--bg2);border:1px solid var(--glass-border);
+  border-radius:8px;padding:12px;font-family:monospace;font-size:0.75rem;
+  color:var(--orange-light);white-space:pre-wrap;word-break:break-all;
+  max-height:200px;overflow-y:auto;
+}
+
+/* ===== SWIPE ===== */
+.carousel-track{touch-action:pan-y}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .hero{padding:28px 16px 14px}
+  .hero h1{font-size:1.5rem}
+  .top-bar{padding:12px 16px;flex-wrap:wrap;gap:8px}
+  .top-search{width:100%;order:3}
+  .card-header{padding:16px}
+  .card-content{padding:16px;max-height:300px}
+  .carousel-wrapper{padding:16px 0 8px;min-height:auto}
+  .carousel-track{max-width:calc(100% - 16px)}
+  .footer{padding-bottom:70px}
+}
+</style>
+</head>
+<body>
+
+<!-- Announcement Bar -->
+<div class="announce-bar" id="announceBar">
+  <span id="countdownTimer"></span> April 14: The Complete Guide to Claude Code with Jay Margaliot. Free live session.
+  <a href="https://us06web.zoom.us/meeting/register/nzwG__emRuqRzB6ErXhQNw" target="_blank">Save Your Spot</a>
+  <button class="close-btn" onclick="closeAnnounce()">&times;</button>
+</div>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-left">
+    <div class="top-logo">Daily Claude Hacks</div>
+    <div class="top-count" id="hackCount">18 hacks</div>
+  </div>
+  <input class="top-search" type="text" placeholder="Search hacks..." id="searchInput">
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Daily <span>Claude</span> Hacks</h1>
+  <p>The complete collection from <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank">Jay Margaliot's daily hack series</a> in the WhatsApp group.</p>
+</section>
+
+<!-- Filters removed per Jay's request -->
+
+<!-- Admin Panel -->
+<div class="admin-panel" id="adminPanel">
+  <h2>Add New Hack</h2>
+  <textarea id="adminPaste" placeholder="Paste WhatsApp post here..."></textarea>
+  <div class="admin-row">
+    <div class="admin-field"><label>Date</label><input type="date" id="adminDate"></div>
+    <div class="admin-field"><label>Category</label>
+      <select id="adminCat">
+        <option value="claude-code">Claude Code</option>
+        <option value="claude-ai">claude.ai</option>
+        <option value="cowork">Cowork</option>
+        <option value="chrome">Chrome</option>
+        <option value="general">General</option>
+      </select>
+    </div>
+    <div class="admin-field"><label>Media URL</label><input type="text" id="adminMedia" placeholder="media/hack-19.jpeg"></div>
+    <div class="admin-field"><label>Media Type</label>
+      <select id="adminMediaType">
+        <option value="">None</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+        <option value="youtube">YouTube</option>
+      </select>
+    </div>
+    <button class="admin-btn admin-btn-parse" onclick="parseWhatsApp()">Parse</button>
+    <button class="admin-btn admin-btn-copy" onclick="copyParsed()">Copy JS Object</button>
+  </div>
+  <div id="adminPreview" style="display:none"><div class="admin-output" id="adminOutput"></div></div>
+</div>
+
+<!-- Mini strip -->
+<div class="mini-strip" id="miniStrip"></div>
+
+<!-- Carousel -->
+<div class="carousel-wrapper">
+  <div class="carousel-track" id="carouselTrack"></div>
+</div>
+
+<!-- Position indicator -->
+<div class="position-bar" id="positionBar"></div>
+
+<!-- No Results -->
+<div class="no-results" id="noResults" style="display:none">
+  <div class="emoji">&#128269;</div>
+  <p>No hacks match your search. Try a different term.</p>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+  <div class="cta-card">
+    <div class="cta-info">
+      <h3>The Complete Guide to Claude Code</h3>
+      <p>Free live session with Jay Margaliot. Learn the basics of Claude Code and how to build skills, landing pages, and dashboards. April 14.</p>
+    </div>
+    <a href="https://us06web.zoom.us/meeting/register/nzwG__emRuqRzB6ErXhQNw" target="_blank" class="cta-button">Save Your Spot</a>
+  </div>
+  <div class="cta-card">
+    <div class="cta-info">
+      <h3>Claude Code Challenge. 5 Days. Hands-On.</h3>
+      <p>Learn Claude Code from zero, build real AI systems for your business. No coding needed. Full details drop April 14.</p>
+      <div class="cta-price">Register before launch. Save $200. Early bird $197.</div>
+    </div>
+    <a href="https://jaygptpro.com/claude-code-challenge-earlybird/" target="_blank" class="cta-button">Lock In Early Bird Price</a>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>Built by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a> with Claude Code. New hacks drop daily.</p>
+</footer>
+
+<!-- Mobile CTA -->
+<div class="mobile-cta" id="mobileCta">
+  <a href="https://us06web.zoom.us/meeting/register/nzwG__emRuqRzB6ErXhQNw" target="_blank">
+    Apr 14: The Complete Guide to Claude Code. Free.
+  </a>
+  <div class="sub">5-Day Challenge pre-launch. Early bird $197.</div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- Challenge Popup -->
+<div class="popup-overlay" id="challengePopup" onclick="if(event.target===this)closePopup()">
+  <div class="popup-box">
+    <button class="popup-close" onclick="closePopup()">&times;</button>
+    <div class="popup-badge">Pre-Launch. Limited Spots.</div>
+    <h2>Learn <span>Claude Code</span> from Zero.<br>Build Real AI Systems.</h2>
+    <p>A 5-day hands-on challenge. No coding needed. Full details drop April 14. Early supporters save $200.</p>
+    <a href="https://jaygptpro.com/claude-code-challenge-earlybird/" target="_blank" class="popup-cta">Lock In Early Bird Price</a>
+    <div class="popup-price"><strong>$197</strong> for the first 20 to register (instead of $397)</div>
+  </div>
+</div>
+
+<script>
+// ===== HACKS DATA =====
+const HACKS_DATA = [
+  {
+    id: 1, date: "2026-03-11",
+    title: "Import your memory into Claude in 60 seconds",
+    emoji: "\ud83e\udde0", category: "claude-ai",
+    media: { type: "image", src: "media/hack-1.jpg" },
+    content: `Switching from ChatGPT, Gemini, or any other AI? Don't start from zero.
+
+Claude now lets you import everything your previous AI learned about you. Preferences, style, instructions, all of it. This feature just dropped this week, and it works on the free plan too.
+
+3 steps and you're set:
+1\u20e3 Ask your current AI to export all your memory (exact prompt in the link)
+2\u20e3 Copy it
+3\u20e3 Paste in Claude via Settings and click Import
+
+It already knows you, your style, your instructions. Why start over? Move it all to Claude and hit the ground running from day one.
+
+\ud83d\udccc I made a full guide with the exact prompt and step-by-step instructions:
+\ud83d\udd17 <a href="https://jaygptpro.com/claude/claude-memory-import-guide.html" target="_blank">Full guide here</a>
+
+\u26a0\ufe0f This feature is still experimental. Works great for work preferences, less so for personal details.`
+  },
+  {
+    id: 2, date: "2026-03-12",
+    title: "Cowork: set it and forget it",
+    emoji: "\u23f0", category: "cowork",
+    media: { type: "image", src: "media/hack-2.jpeg" },
+    content: `What if Claude could do things for you without you asking every time?
+
+Meet Scheduled Tasks, a mind-blowing feature inside Cowork, Claude's desktop mode.
+
+You can set up recurring tasks that Claude runs automatically. Every morning. Every week. Whatever you want.
+
+Set it once. It runs on its own:
+\ud83d\udd04 Every morning at 8am: "Check my email for anything urgent and summarize it"
+\ud83d\udd04 Every Thursday: "Pull last week's sales data and create a summary report"
+\ud83d\udd04 Every day: "Check competitor prices and flag any big changes"
+
+That's already useful. But combine it with Connectors and it becomes a different beast. Claude gets access to your Gmail, Drive, Slack, Calendar. Now your scheduled tasks aren't just reminders. They're autonomous agents working with your real data, producing real outputs, while you do something else entirely.
+
+This is Claude working <strong>for you</strong>, not just with you.`
+  },
+  {
+    id: 3, date: "2026-03-13",
+    title: "Free Claude Code course. 15 lessons. Everything you need.",
+    emoji: "\ud83c\udf93", category: "general",
+    media: { type: "image", src: "media/hack-3.webp" },
+    content: `Anthropic just dropped a full course on mastering Claude Code.
+
+15 lessons, 15 hours of hands on knowledge:
+\u2192 Context management
+\u2192 MCP Servers
+\u2192 Hooks and automations
+\u2192 GitHub integration
+
+Oh and you get a "Vibe Coder" certificate at the end \ud83d\ude0e
+
+Completely free.
+
+\ud83d\udd17 <a href="https://anthropic.skilljar.com/claude-code-in-action" target="_blank">Start the course</a>`
+  },
+  {
+    id: 4, date: "2026-03-16",
+    title: "Claude in Chrome. The extension you didn't know you needed.",
+    emoji: "\ud83c\udf10", category: "chrome",
+    media: { type: "video", src: "media/hack-4.mov" },
+    content: `Claude in Chrome is a beta extension that lets Claude actually see and interact with web pages. It reads what's on your screen, clicks buttons, fills forms, and navigates sites. All on your behalf.
+
+Just a few examples of what's possible:
+\u2192 Drag a few product tabs into one Tab Group and ask Claude to compare them side by side
+\u2192 Open your inbox and say "go through the last 20 emails and tell me what needs a reply"
+\u2192 Fill out supplier applications, registrations, and submissions automatically
+
+\ud83d\udd17 <a href="https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn" target="_blank">Get the extension</a>
+(Requires a paid plan: Pro, Max, Team, or Enterprise)
+
+This isn't "paste a URL and summarize." Claude actually sees the page like you do and takes actions.
+
+It's still in beta so not perfect. But when it works, it feels like the future.`
+  },
+  {
+    id: 5, date: "2026-03-17",
+    title: "Record your workflow once. Claude repeats it forever.",
+    emoji: "\ud83d\udd04", category: "chrome",
+    media: { type: "image", src: "media/hack-5.jpeg" },
+    content: `Remember yesterday's hack about Claude in Chrome? Today is the best part.
+
+Inside the extension there's a feature called <strong>Record Workflow</strong>. You hit record, do your thing in the browser, and Claude watches everything. When you stop, it doesn't just memorize your clicks. It understands the whole process.
+
+Here's a real example. Say you want to track new competitors entering your niche:
+
+You hit record and Claude watches you:
+\u2192 Search your product on Amazon
+\u2192 Filter by "Newest Arrivals"
+\u2192 Set a price range
+\u2192 Go through the results and flag the relevant ones
+\u2192 Save them to a tracking spreadsheet or add them to a competitor PPC campaign
+
+You do it once. Claude learns the whole flow. Next time you just type / and select the shortcut. Done.
+
+\ud83e\udd2f And here's the crazy part. You can <strong>schedule it</strong>. Toggle on "Schedule" in the shortcut settings, pick a time and frequency, and Claude runs it on its own. Every morning. Every Monday. Whatever you need.
+
+You're basically building your own AI employee that works on a schedule.`
+  },
+  {
+    id: 6, date: "2026-03-18",
+    title: "Get a team of Claude agents to review its own code.",
+    emoji: "\ud83d\udd0d", category: "claude-code",
+    media: { type: "video", src: "media/hack-6.mp4" },
+    content: `Meet <strong>Code Review</strong>, the new feature Anthropic just launched.
+
+You push code to GitHub and multiple AI agents review it automatically. Each one checks from a different angle: bugs, security vulnerabilities, edge cases, regressions, and compliance with your CLAUDE.md rules.
+
+Only findings with high confidence scores actually get posted. Everything else stays quiet.
+
+\u2699\ufe0f To enable: Admin goes to claude.ai/admin-settings/claude-code \u2192 Setup and installs the GitHub app. From there reviews run automatically on every new Pull Request.
+
+\u26a0\ufe0f Right now it's only for Team and Enterprise plans. But it gives us a glimpse of where Claude Code is heading. A tool that doesn't just build but also checks its own work.
+
+\ud83d\udd17 <a href="https://code.claude.com/docs/en/code-review" target="_blank">Official docs</a>`
+  },
+  {
+    id: 7, date: "2026-03-19",
+    title: "Session getting slow? Here's how to fix it.",
+    emoji: "\ud83e\uddf9", category: "claude-code",
+    media: { type: "image", src: "media/hack-7.jpeg" },
+    content: `The longer your conversation goes, the more Claude loses focus. That's because the context window fills up, and when it does, Claude starts ignoring what's in the middle of the conversation.
+
+Two commands you need to know:
+
+<strong>1. /compact</strong>
+Compresses your entire conversation into a short summary. A 70,000 token conversation can shrink to 4,000. Claude keeps working but with way more room.
+
+Pro tip: add instructions like <code>/compact focus on the database changes</code> and Claude keeps only what matters.
+
+<strong>2. /clear</strong>
+Wipes everything. Fresh start. Claude still reads your CLAUDE.md and sees your files, but the conversation history is gone.
+
+Simple rule: done with a task? /clear. Still mid flow but things are getting heavy? /compact.
+
+<strong>Bonus: /context</strong>
+Shows you exactly how full your context window is. Check it before things start to slow down.
+
+\ud83d\udca1 Claude auto compacts at around 80%, but don't wait for that. Run /compact after each major step.
+
+/compact and /clear also work in Cowork.`
+  },
+  {
+    id: 8, date: "2026-03-20",
+    title: "How to get double the usage on Claude right now.",
+    emoji: "\ud83d\ude80", category: "general", expired: true,
+    media: { type: "image", src: "media/hack-8.jpeg" },
+    content: `<strong style="color:var(--text-dim)">\u26a0\ufe0f This promotion has ended (March 27).</strong>
+
+Anthropic is running a promotion until March 27. Outside of peak hours, you get 2x usage on your existing plan. No upgrade needed.
+
+\ud83d\udd50 When does it kick in?
+Every day outside of 8:00 AM to 2:00 PM New York time. That's it. Work before 8, after 2, or at night, and you get double.
+
+On weekends, it's 2x all day.
+
+Works across everything: Claude on the web, desktop, mobile, Cowork, and Claude Code. Available on Free, Pro, Max, and Team plans.
+
+\u23f3 This ends March 27. Take advantage while it lasts.
+
+\ud83d\udd17 <a href="https://support.claude.com/en/articles/14063676-claude-march-2026-usage-promotion" target="_blank">Official details</a>`
+  },
+  {
+    id: 9, date: "2026-03-23",
+    title: "Claude can now visually illustrate things in the chat.",
+    emoji: "\ud83d\udcc8", category: "claude-ai",
+    media: { type: "video", src: "media/hack-9.mp4" },
+    content: `Until now, you'd ask a question and get a text-based explanation. Now, you can just type "show me," and it will generate a chart, graph, or visual flowchart right inside the chat.
+
+I was curious, so I asked Claude to summarize how Amazon's advertising system works. After a few long and tedious paragraphs, I simply asked it to "show me," and the visual chart it created left me speechless. I highly recommend giving it a try.
+
+Works on the claude.ai website and the desktop app. Not available on mobile yet.`
+  },
+  {
+    id: 10, date: "2026-03-24",
+    title: "You no longer need to be at your computer to use Claude Cowork.",
+    emoji: "\ud83d\udcf1", category: "cowork",
+    media: { type: "video", src: "media/hack-10.mp4" },
+    content: `It's called <strong>Dispatch</strong>. A brand new feature for Claude Cowork that launched yesterday.
+
+You pair your phone with Claude Desktop once. From that moment, you have a permanent open line to your Cowork session. You send it a task from your phone, anywhere, anytime, and Claude runs it on your computer using all your files, plugins, and connectors.
+
+\u2615 Sitting at a coffee shop, you send from your phone: "Search my email for all messages from the supplier this week and prepare a summary." You get back to your desk, the summary is waiting.
+
+Setup takes 2 minutes:
+1\u20e3 Update Claude Desktop + Claude on your phone
+2\u20e3 Open Cowork and tap "Dispatch"
+3\u20e3 Follow the pairing steps
+
+Done. One conversation that stays synced between your phone and your Cowork session.
+
+Good to know:
+\u2192 It's one continuous conversation. Claude remembers everything.
+\u2192 Your computer needs to stay awake with the app open.
+\u2192 This is a Claude Cowork feature only, not for Claude Chat or Claude Code.
+\u2192 Available now on Max. Coming to Pro very soon.`
+  },
+  {
+    id: 11, date: "2026-03-25",
+    title: "The 3 character command that turns your phone into a remote control.",
+    emoji: "\ud83c\udfae", category: "claude-code",
+    media: { type: "image", src: "media/hack-11.jpeg" },
+    content: `Yesterday we talked about Dispatch for Cowork. Today's hack is for Claude Code users.
+
+You're in the middle of a session. You type <code>/rc</code>. That's it. Three characters. A QR code pops up, you scan it with your phone, and you're controlling the exact same session from wherever you are.
+
+Not a new conversation. The <strong>same session</strong>. Same files, same history, same context. Your phone becomes a remote control for the terminal running on your computer.
+
+How it works:
+1\u20e3 Type /rc in your terminal
+2\u20e3 Scan the QR with the Claude app on your phone
+3\u20e3 You're in
+
+You can also open the link at claude.ai/code from a tablet or another computer.
+
+When this is useful:
+\u2192 Start a long build, walk away, monitor from your phone
+\u2192 Give Claude a task at the office, review it from home
+\u2192 Laptop loses connection? It reconnects automatically
+
+<strong>Dispatch vs Remote Control:</strong>
+\u2192 Dispatch = Claude Cowork \u2192 new conversation from your phone
+\u2192 Remote Control = Claude Code \u2192 continue same session from your phone
+
+\u26a0\ufe0f Remote Control works from the terminal only. Not from the Code tab inside Claude Desktop. At least for now.
+
+Available on Pro, Max, Team, and Enterprise.`
+  },
+  {
+    id: 12, date: "2026-03-26",
+    title: "Send Claude tasks from Telegram. It works on your computer.",
+    emoji: "\ud83d\udcac", category: "claude-code",
+    media: { type: "image", src: "media/hack-12.jpeg" },
+    content: `Say hello to <strong>Channels</strong>.
+
+Until now, Claude Code lived in your terminal. Now? You can send it tasks from your phone and come back to the computer when the work is already done.
+
+Say you're at the park with your kids \u2192 "Run the tests and fix whatever broke."
+
+Claude works on your computer at home and updates you when it's done.
+
+What you can do:
+\u2192 Send tasks and bug fixes on the go
+\u2192 Ask it to read files or check logs
+\u2192 Run tests and get notified when it's done
+
+How this is different from remote control (from the last hack):
+\u2192 /rc = enter a live session remotely
+\u2192 Channels = just send a message and Claude works
+
+Quick setup:
+1\u20e3 Create a bot (Telegram or Discord)
+2\u20e3 Run <code>claude channels</code>
+3\u20e3 Connect the token and start writing
+
+\u26a0\ufe0f Claude Code only. Computer must stay on. Setup is still a bit technical.`
+  },
+  {
+    id: 13, date: "2026-03-27",
+    title: "50 Claude terms you keep hearing but never fully understood.",
+    emoji: "\ud83c\udf81", category: "general",
+    media: { type: "image", src: "media/hack-13.jpeg" },
+    content: `I built something for you. A full interactive dictionary for everything Claude.
+
+Tokens? Context window? MCP? Opus? Hooks? Connectors?
+
+Every time I post a hack here, I use terms that not everyone knows. That's totally normal. Claude has its own language.
+
+So I built you a full interactive dictionary tool.
+
+What you're getting:
+\u2192 50 terms, each with a clear explanation
+\u2192 Tap any term to expand with a detailed breakdown and practical example
+\u2192 Search across everything, find any term instantly
+\u2192 Links to official docs for every term
+
+This isn't a post you read once. It's a tool you bookmark and keep coming back to every time you hit a term you don't know.
+
+\ud83d\udc49 <a href="https://jaygptpro.com/claude/claude-dictionary.html" target="_blank">Your free dictionary</a>`
+  },
+  {
+    id: 14, date: "2026-03-30",
+    title: "Three brains, one Claude. Pick the right one for the job.",
+    emoji: "\ud83c\udfaf", category: "claude-code",
+    media: { type: "image", src: "media/hack-14.jpeg" },
+    content: `You don't have to use the same model for the entire conversation.
+
+Type <code>/model</code> and pick:
+\u2192 <strong>Opus.</strong> the smartest. For complex problems.
+\u2192 <strong>Sonnet.</strong> the sweet spot. Fast and smart.
+\u2192 <strong>Haiku.</strong> the fastest and cheapest. For simple stuff.
+
+The smart strategy:
+1\u20e3 Start with Sonnet for regular work
+2\u20e3 Switch to Opus when you hit a hard problem
+3\u20e3 Switch to Haiku for formatting or repetitive tasks
+
+You wouldn't drive a Ferrari to the grocery store. Use the right model for the right task.
+
+On claude.ai: click the model name at the top.
+In Claude Code: type /model. No restart needed.
+
+\u26a0\ufe0f Available on Pro, Max, and Team plans.`
+  },
+  {
+    id: 15, date: "2026-03-31",
+    title: "Control your computer from your phone. Through Claude.",
+    emoji: "\ud83e\udd2f", category: "cowork",
+    media: { type: "video", src: "media/hack-15.mp4" },
+    content: `Anthropic just dropped maybe the biggest Claude update yet: full control of your computer, straight from your phone.
+
+Two new features working together:
+\u2192 <strong>Computer Use:</strong> Claude sees your screen, moves the mouse, types, opens apps. Exactly like a person sitting at your desk.
+\u2192 <strong>Dispatch:</strong> Send a task from your phone, Claude executes it on your computer. Even when you're nowhere near it.
+
+Picture this: you're at dinner. You remember a report needs to go out. You open Claude on your phone, type "open the weekly report spreadsheet, update the numbers, and email it to the team." Go back to eating. Report sent.
+
+How to set it up:
+1\u20e3 Claude Desktop on your Mac (Cowork mode)
+2\u20e3 Settings \u2192 Computer Use \u2192 toggle on
+3\u20e3 Grant Accessibility + Screen Recording permissions in macOS
+4\u20e3 On your phone, open Claude and go to the Dispatch tab
+5\u20e3 Send a task. Watch your computer execute it in real time.
+
+Good to know:
+\u2192 Requires a Max subscription (not Pro)
+\u2192 macOS only for now
+\u2192 Still in Research Preview. Sometimes slow, sometimes confused. Start with small tasks.
+\u2192 Your computer needs to be on and unlocked.
+
+The moment you see Claude open a window, type, and hit Send while you're watching from your phone, you realize something has changed for good.`
+  },
+  {
+    id: 16, date: "2026-04-01",
+    title: "Build it once. Use it forever. Meet Claude Code Skills.",
+    emoji: "\u26a1", category: "claude-code",
+    media: { type: "image", src: "media/hack-16.jpeg" },
+    content: `If I had to pick the single most important feature in Claude Code, it's this one.
+
+<strong>What's a skill?</strong>
+A saved set of instructions that Claude follows every time you trigger it. Think of it like a recipe card. You write it once, Claude executes it perfectly every time. No re-explaining. No repeating yourself.
+
+Skills can do anything you'd normally ask Claude to do manually. Analyze data. Write content. Build pages. Generate reports. Review work. Create documents. Anything you do more than once becomes a one-command workflow.
+
+How to create one:
+1\u20e3 Build a workflow with Claude that works well
+2\u20e3 Tell Claude: "save this as a skill called /my-skill-name"
+3\u20e3 Claude creates a file in your .claude/skills/ folder
+4\u20e3 Next time, just type the slash command
+
+Two ways skills get triggered:
+\u2192 <strong>Manual:</strong> you type the /command yourself
+\u2192 <strong>Automatic:</strong> Claude recognizes when a skill is relevant and activates it on its own
+
+Pro tip: you don't have to build every skill from scratch. During a conversation, ask Claude: "search for existing skills that do X" and it will find community skills you can use or adapt.
+
+Anyone who does the same type of work more than twice. If you repeat it, skill it.`
+  },
+  {
+    id: 17, date: "2026-04-02",
+    title: "I built a Skill that creates Amazon landing pages. And it's yours.",
+    emoji: "\ud83c\udf81\ud83d\udd25", category: "claude-code",
+    media: { type: "video", src: "media/hack-17.mp4" },
+    content: `Yesterday I showed you what Skills are. Today I'm giving you one.
+
+If you drive external traffic to Amazon and need a landing page, this is for you.
+
+<strong>One command. One Amazon URL.</strong> Claude pulls the real product data, images, reviews, and builds a complete premium landing page. Styled to match the brand. Ready to publish.
+
+Here's one I made:
+\ud83d\udc49 <a href="https://jaygptpro.com/lego-bunny-landing-page" target="_blank">Live example</a>
+My input: 10 seconds. Claude did everything else.
+
+Images, reviews, features, email capture, FAQ, mobile-optimized. All real data from the Amazon page.
+
+\ud83d\udc49 <a href="https://jaygptpro.com/claude/amazon-landing-page-skill.html" target="_blank">Download the skill + setup guide</a>`
+  },
+  {
+    id: 18, date: "2026-04-03",
+    title: "The fastest way to install the right skills. Let Claude pick for you.",
+    emoji: "\u26a1", category: "claude-code",
+    media: { type: "image", src: "media/hack-18.jpeg" },
+    content: `After the amazing feedback on the skills post, here's a small hack worth gold.
+
+Write this prompt in Claude Code:
+
+<code>"Scan everything you know about me. my CLAUDE.md, memory, and project history. Search for new skills I don't have yet, install globally the ones that will help me most, and explain in one line why each one fits me."</code>
+
+That's it. Claude scans what it knows about you and installs exactly what fits.
+
+\ud83d\udca1 Pro tip: even in the middle of a project, you can ask Claude to find a skill that will improve what you're building right now.`
+  },
+  // === UPCOMING HACKS (auto-publish on date) ===
+  { id: 19, date: "2026-04-06", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 20, date: "2026-04-07", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 21, date: "2026-04-08", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 22, date: "2026-04-09", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 23, date: "2026-04-10", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 24, date: "2026-04-13", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 25, date: "2026-04-14", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 26, date: "2026-04-15", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 27, date: "2026-04-16", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 28, date: "2026-04-17", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 29, date: "2026-04-20", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 30, date: "2026-04-21", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true }
+];
+
+// ===== LIKES SYSTEM =====
+// Seed random likes 20-50 per hack
+const BASE_LIKES = {};
+HACKS_DATA.forEach(h => { BASE_LIKES[h.id] = 20 + Math.floor(Math.random() * 31); });
+function getLikes(id) {
+  const extra = localStorage.getItem('like-' + id) ? 1 : 0;
+  return BASE_LIKES[id] + extra;
+}
+function isLiked(id) { return !!localStorage.getItem('like-' + id); }
+function toggleLike(id, btn) {
+  if (isLiked(id)) {
+    localStorage.removeItem('like-' + id);
+  } else {
+    localStorage.setItem('like-' + id, '1');
+  }
+  const liked = isLiked(id);
+  btn.classList.toggle('liked', liked);
+  btn.querySelector('.heart').textContent = liked ? '\u2764\ufe0f' : '\ud83e\ude76';
+  btn.querySelector('.like-count').textContent = getLikes(id);
+}
+
+// ===== STATE =====
+let currentCategory = 'all';
+let searchTerm = '';
+let currentIndex = 0;
+let filteredHacks = [];
+
+// ===== CORE =====
+function getVisibleHacks() {
+  const today = new Date().toISOString().slice(0, 10);
+  let hacks = HACKS_DATA.filter(h => h.date <= today);
+  if (currentCategory !== 'all') hacks = hacks.filter(h => h.category === currentCategory);
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    hacks = hacks.filter(h => h.title.toLowerCase().includes(term) || h.content.toLowerCase().includes(term));
+  }
+  // Oldest first (left to right, like English reading order)
+  hacks.sort((a, b) => a.id - b.id);
+  return hacks;
+}
+
+function categoryLabel(cat) {
+  return {'claude-code':'Claude Code','claude-ai':'claude.ai','cowork':'Cowork','chrome':'Chrome','general':'General'}[cat] || cat;
+}
+
+function formatContent(text) {
+  return text.split('\n\n').map(p => {
+    p = p.trim();
+    if (!p) return '';
+    if (p.includes('\n')) {
+      const lines = p.split('\n').map(l => {
+        l = l.trim();
+        if (l.startsWith('\u2192')) return `<div class="arrow-item">${l.substring(1).trim()}</div>`;
+        return l;
+      }).join('\n');
+      return `<p>${lines}</p>`;
+    }
+    return `<p>${p}</p>`;
+  }).join('');
+}
+
+function formatDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function renderMedia(hack) {
+  if (!hack.media) return '';
+  const m = hack.media;
+  if (m.type === 'image') return `<div class="card-media"><img src="${m.src}" alt="${hack.title}" loading="lazy" onclick="openLightbox('${m.src}')"></div>`;
+  if (m.type === 'video') {
+    const posterSrc = m.src.replace(/\.(mp4|mov)$/, '-poster.jpg');
+    return `<div class="card-media"><div class="yt-thumb" onclick="playVideo(this,'${m.src}')"><img src="${posterSrc}" alt="${hack.title}"><div class="play-btn"></div></div></div>`;
+  }
+  if (m.type === 'youtube') return `<div class="card-media"><div class="yt-thumb" onclick="loadYT(this,'${m.videoId}')"><img src="https://img.youtube.com/vi/${m.videoId}/maxresdefault.jpg" alt="${hack.title}"><div class="play-btn"></div></div></div>`;
+  return '';
+}
+
+function renderCard(hack) {
+  return `<div class="card" id="hack-${hack.id}">
+    <div class="card-header">
+      <div class="hack-num">#${hack.id}</div>
+      <div class="hack-emoji">${hack.emoji}</div>
+      <div class="hack-title-area">
+        <h2>${hack.title}</h2>
+        <div class="hack-meta-row">
+          <span class="cat-badge cat-${hack.category}">${categoryLabel(hack.category)}</span>
+          <span class="hack-date">${formatDate(hack.date)}</span>
+        </div>
+      </div>
+    </div>
+    ${renderMedia(hack)}
+    <div class="card-content">
+      <div class="card-text">${formatContent(hack.content)}</div>
+    </div>
+    <div class="card-actions">
+      <div class="like-section">
+        <button class="like-btn${isLiked(hack.id) ? ' liked' : ''}" onclick="toggleLike(${hack.id},this)">
+          <span class="heart">${isLiked(hack.id) ? '\u2764\ufe0f' : '\ud83e\ude76'}</span>
+          <span class="like-count">${getLikes(hack.id)}</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMiniStrip() {
+  const strip = document.getElementById('miniStrip');
+  if (filteredHacks.length === 0) { strip.innerHTML = ''; return; }
+
+  // Show 5 items centered around current
+  const range = 2;
+  let start = Math.max(0, currentIndex - range);
+  let end = Math.min(filteredHacks.length, currentIndex + range + 1);
+  if (end - start < 5 && filteredHacks.length >= 5) {
+    if (start === 0) end = Math.min(5, filteredHacks.length);
+    else if (end === filteredHacks.length) start = Math.max(0, end - 5);
+  }
+
+  let html = `<button class="mini-arrow" onclick="navigate(-1)"${currentIndex <= 0 ? ' disabled' : ''}>&#9664;</button>`;
+  html += '<div class="mini-items">';
+  for (let i = start; i < end; i++) {
+    const h = filteredHacks[i];
+    html += `<div class="mini-item${i === currentIndex ? ' active' : ''}" onclick="goTo(${i})">
+      <div class="mini-emoji">${h.emoji}</div>
+      <div class="mini-label">#${h.id}</div>
+    </div>`;
+  }
+  html += '</div>';
+  html += `<button class="mini-arrow" onclick="navigate(1)"${currentIndex >= filteredHacks.length - 1 ? ' disabled' : ''}>&#9654;</button>`;
+  strip.innerHTML = html;
+}
+
+function renderPositionDots() {
+  const bar = document.getElementById('positionBar');
+  if (filteredHacks.length === 0) { bar.innerHTML = ''; return; }
+
+  const upcomingCount = HACKS_DATA.filter(h => h.upcoming).length;
+  let html = `<button class="pos-arrow" onclick="navigate(-1)"${currentIndex <= 0 ? ' disabled' : ''}>&#9664;</button>`;
+  html += '<div class="position-dots">';
+  filteredHacks.forEach((_, i) => {
+    html += `<div class="pos-dot${i === currentIndex ? ' active' : ''}" onclick="goTo(${i})"></div>`;
+  });
+  html += `</div>`;
+  html += `<button class="pos-arrow" onclick="navigate(1)"${currentIndex >= filteredHacks.length - 1 ? ' disabled' : ''}>&#9654;</button>`;
+  html += `<div class="position-text">${currentIndex + 1} / ${filteredHacks.length}</div>`;
+  if (upcomingCount > 0) html += `<div class="position-text" style="color:var(--orange)">${upcomingCount} more coming soon</div>`;
+  bar.innerHTML = html;
+}
+
+function render() {
+  filteredHacks = getVisibleHacks();
+  const track = document.getElementById('carouselTrack');
+  const noResults = document.getElementById('noResults');
+  const allVisible = HACKS_DATA.filter(h => h.date <= new Date().toISOString().slice(0, 10));
+  const upcoming = HACKS_DATA.filter(h => h.upcoming).length;
+  document.getElementById('hackCount').textContent = allVisible.length + ' of ' + HACKS_DATA.length + ' hacks';
+
+  if (filteredHacks.length === 0) {
+    track.innerHTML = '';
+    noResults.style.display = 'block';
+    document.getElementById('positionBar').innerHTML = '';
+    return;
+  }
+  noResults.style.display = 'none';
+  if (currentIndex >= filteredHacks.length) currentIndex = filteredHacks.length - 1;
+
+  track.innerHTML = renderCard(filteredHacks[currentIndex]);
+  renderMiniStrip();
+  renderPositionDots();
+
+  // Deep link
+  history.replaceState(null, '', '#hack-' + filteredHacks[currentIndex].id);
+}
+
+
+// ===== NAVIGATION =====
+function navigate(dir) {
+  const next = currentIndex + dir;
+  if (next < 0 || next >= filteredHacks.length) return;
+  currentIndex = next;
+  render();
+  // Scroll to top of the card
+  const strip = document.getElementById('miniStrip');
+  if (strip) strip.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function goTo(i) {
+  currentIndex = i;
+  render();
+}
+
+// ===== INTERACTIONS =====
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function loadYT(el, id) {
+  el.innerHTML = `<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+}
+function playVideo(el, src) {
+  const type = src.endsWith('.mov') ? 'video/quicktime' : 'video/mp4';
+  el.outerHTML = `<video controls autoplay style="width:100%;max-height:380px;background:#000"><source src="${src}" type="${type}"></video>`;
+}
+function shareHack(id) {
+  const url = location.origin + location.pathname + '#hack-' + id;
+  if (navigator.share) navigator.share({ title: 'Daily Claude Hack #' + id, url });
+  else navigator.clipboard.writeText(url);
+}
+function copyHack(id, btn) {
+  const hack = HACKS_DATA.find(h => h.id === id);
+  if (!hack) return;
+  const plain = hack.content.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+  navigator.clipboard.writeText(`${hack.emoji} ${hack.title}\n\nDaily Claude Hack #${hack.id}\n\n${plain}`);
+  if (btn) { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy Text'; btn.classList.remove('copied'); }, 2000); }
+}
+function closeAnnounce() {
+  document.getElementById('announceBar').classList.add('hidden');
+  sessionStorage.setItem('announce-dismissed', '1');
+}
+
+// ===== FILTERS & SEARCH =====
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => { searchTerm = this.value.trim(); currentIndex = 0; render(); }, 300);
+});
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === '/' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+    e.preventDefault(); document.getElementById('searchInput').focus();
+  }
+});
+
+// ===== SWIPE =====
+let touchStartX = 0;
+document.getElementById('carouselTrack').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('carouselTrack').addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+}, {passive:true});
+
+// ===== ADMIN =====
+function initAdmin() {
+  if (new URLSearchParams(location.search).has('admin')) {
+    document.getElementById('adminPanel').classList.add('active');
+    document.getElementById('adminDate').valueAsDate = new Date();
+  }
+}
+function parseWhatsApp() {
+  const text = document.getElementById('adminPaste').value.trim();
+  if (!text) return;
+  let hackNum = HACKS_DATA.length + 1;
+  const numMatch = text.match(/Hack\s*#(\d+)/i);
+  if (numMatch) hackNum = parseInt(numMatch[1]);
+  let emoji = '\ud83d\udca1', title = '';
+  const lines = text.split('\n').filter(l => l.trim());
+  for (const line of lines) {
+    const clean = line.trim();
+    if (clean.match(/Daily Claude Hack/i)) continue;
+    if (clean.startsWith('*') || /^[^\w\s]/.test(clean)) {
+      const em = clean.match(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u);
+      if (em) emoji = em[0];
+      title = clean.replace(/^\*|\*$/g, '').replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*/u, '').trim();
+      if (title) break;
+    }
+  }
+  if (!title) title = lines.length > 1 ? lines[1].replace(/\*/g, '').trim() : 'Untitled';
+  let content = text.replace(/Daily Claude Hack\s*#\d+\s*/i,'').replace(/React with.*$/im,'').replace(/Drop a.*$/im,'').replace(/\n\s*Jay\s*$/m,'').replace(/\ud83d\udcf2.*whatsapp\.com\S*/gi,'').replace(/\n{3,}/g,'\n\n').trim();
+  const date = document.getElementById('adminDate').value || new Date().toISOString().slice(0,10);
+  const category = document.getElementById('adminCat').value;
+  const mediaSrc = document.getElementById('adminMedia').value;
+  const mediaType = document.getElementById('adminMediaType').value;
+  let mediaObj = 'null';
+  if (mediaType && mediaSrc) {
+    if (mediaType === 'youtube') { const vid = mediaSrc.match(/(?:v=|youtu\.be\/)([^&]+)/)?.[1] || mediaSrc; mediaObj = `{ type: "youtube", videoId: "${vid}" }`; }
+    else mediaObj = `{ type: "${mediaType}", src: "${mediaSrc}" }`;
+  }
+  const escaped = content.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+  const output = `  {\n    id: ${hackNum}, date: "${date}",\n    title: "${title.replace(/"/g,'\\"')}",\n    emoji: "${emoji}", category: "${category}",\n    media: ${mediaObj},\n    content: \`${escaped}\`\n  }`;
+  document.getElementById('adminPreview').style.display = 'block';
+  document.getElementById('adminOutput').textContent = output;
+  window._parsedOutput = output;
+}
+function copyParsed() {
+  if (window._parsedOutput) { navigator.clipboard.writeText(window._parsedOutput); event.target.textContent = 'Copied!'; setTimeout(() => event.target.textContent = 'Copy JS Object', 2000); }
+}
+
+// ===== INIT =====
+if (sessionStorage.getItem('announce-dismissed')) document.getElementById('announceBar').classList.add('hidden');
+initAdmin();
+
+// Handle deep link or start at latest hack
+const hash = location.hash.match(/hack-(\d+)/);
+filteredHacks = getVisibleHacks();
+if (hash) {
+  const targetId = parseInt(hash[1]);
+  const idx = filteredHacks.findIndex(h => h.id === targetId);
+  if (idx >= 0) currentIndex = idx;
+} else {
+  // Default: start at the latest (rightmost) hack
+  currentIndex = filteredHacks.length - 1;
+}
+render();
+
+// ===== COUNTDOWN TIMER =====
+function updateCountdown() {
+  const target = new Date('2026-04-14T18:00:00-04:00'); // April 14, 6pm ET
+  const now = new Date();
+  const diff = target - now;
+  const el = document.getElementById('countdownTimer');
+  if (!el) return;
+  if (diff <= 0) { el.textContent = 'TODAY!'; return; }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) {
+    el.textContent = days + 'd ' + hours + 'h left.';
+  } else {
+    el.textContent = hours + 'h left.';
+  }
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+
+// ===== CHALLENGE POPUP =====
+let navCount = 0;
+const origNavigate = navigate;
+// Override navigate to track count
+const _nav = window.navigate;
+window.navigate = function(dir) {
+  _nav(dir);
+  navCount++;
+  if (navCount === 3 && !sessionStorage.getItem('popup-shown')) {
+    setTimeout(() => {
+      document.getElementById('challengePopup').classList.add('active');
+      sessionStorage.setItem('popup-shown', '1');
+    }, 600);
+  }
+};
+function closePopup() {
+  document.getElementById('challengePopup').classList.remove('active');
+}
+</script>
+</body>
+</html>
