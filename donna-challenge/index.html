@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אתגר דונה . פורטל משתתפים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080c;
+  --card:#12121f;
+  --card-hover:#181830;
+  --orange:#e87040;
+  --orange-light:#f0935e;
+  --orange-dark:#c55a30;
+  --text:#e8e8ed;
+  --dim:#9898a8;
+  --bright:#ffffff;
+  --green:#3dd68c;
+  --green-bg:rgba(61,214,140,0.12);
+  --red:#ff5c5c;
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --radius:16px;
+  --radius-sm:10px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ===== MOBILE BLOCK ===== */
+.mobile-block{
+  display:none;
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;
+  background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;
+}
+.mobile-block .icon{font-size:3em;margin-bottom:20px}
+.mobile-block h2{color:var(--orange);font-size:1.4em;margin-bottom:12px}
+.mobile-block p{color:var(--dim);font-size:1em;max-width:300px}
+@media(max-width:899px){
+  .mobile-block{display:flex !important}
+  .login-screen,.main-app,.login-loading{display:none !important}
+}
+
+/* ===== LOGIN SCREEN ===== */
+.login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:40px;
+}
+.login-card{
+  background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius);padding:48px 40px;
+  max-width:440px;width:100%;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+.login-card h1{
+  font-size:1.6em;font-weight:800;color:var(--bright);
+  margin-bottom:8px;line-height:1.4;
+}
+.login-card .subtitle{
+  color:var(--dim);font-size:0.9em;margin-bottom:32px;
+}
+.google-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  width:100%;max-width:320px;padding:14px 24px;
+  background:#ffffff;color:#3c4043;
+  border:1px solid #dadce0;border-radius:var(--radius-sm);
+  font-size:1em;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all 0.3s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+.google-btn:hover{
+  background:#f8f9fa;box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  transform:translateY(-1px);
+}
+.google-btn svg{flex-shrink:0}
+.login-note{
+  color:var(--dim);font-size:0.82em;margin-top:20px;
+}
+.login-error{
+  color:var(--red);font-size:0.85em;
+  margin-top:16px;min-height:1.2em;
+  line-height:1.5;
+}
+.login-error a{color:var(--orange);text-decoration:underline}
+
+/* Not Allowed Screen */
+.not-allowed-card{
+  background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius);padding:48px 40px;
+  max-width:480px;width:100%;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+.not-allowed-card h2{
+  color:var(--red);font-size:1.3em;font-weight:700;margin-bottom:12px;
+}
+.not-allowed-card .email-display{
+  color:var(--bright);font-size:0.95em;
+  background:rgba(255,255,255,0.06);
+  padding:10px 16px;border-radius:8px;
+  margin:16px 0;direction:ltr;
+}
+.not-allowed-card p{
+  color:var(--dim);font-size:0.9em;line-height:1.7;margin-bottom:8px;
+}
+.not-allowed-card .whatsapp-link{
+  display:inline-block;margin-top:16px;padding:12px 28px;
+  background:#25D366;color:#fff;border-radius:var(--radius-sm);
+  font-weight:700;text-decoration:none;font-size:0.92em;
+  transition:all 0.3s;
+}
+.not-allowed-card .whatsapp-link:hover{
+  background:#20bd5a;transform:translateY(-1px);
+}
+.signout-btn{
+  display:inline-block;margin-top:16px;padding:10px 24px;
+  background:transparent;color:var(--dim);
+  border:1px solid var(--glass-border);border-radius:var(--radius-sm);
+  font-size:0.88em;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all 0.3s;
+}
+.signout-btn:hover{color:var(--text);border-color:var(--text)}
+
+/* User info bar in header */
+.user-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:800px;margin:0 auto 16px;
+  padding:0 4px;
+}
+.user-email{
+  color:var(--dim);font-size:0.82em;
+  direction:ltr;
+}
+.header-signout{
+  background:transparent;color:var(--dim);
+  border:1px solid var(--glass-border);border-radius:8px;
+  padding:6px 16px;font-size:0.78em;font-weight:600;
+  font-family:inherit;cursor:pointer;transition:all 0.2s;
+}
+.header-signout:hover{color:var(--text);border-color:var(--text)}
+
+/* Loading spinner */
+.login-loading{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--glass-border);
+  border-top-color:var(--orange);border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== MAIN APP ===== */
+.main-app{display:none}
+
+/* Header */
+.app-header{
+  text-align:center;padding:48px 24px 24px;
+  border-bottom:1px solid var(--glass-border);
+  background:linear-gradient(180deg,rgba(232,112,64,0.06) 0%,transparent 100%);
+}
+.app-header h1{
+  font-size:2em;font-weight:800;color:var(--bright);
+  margin-bottom:4px;
+}
+.app-header .header-sub{
+  color:var(--dim);font-size:1em;margin-bottom:24px;
+}
+.app-header .header-sub span{color:var(--orange)}
+
+/* Progress bar */
+.progress-wrap{
+  max-width:500px;margin:0 auto;
+}
+.progress-label{
+  display:flex;justify-content:space-between;
+  font-size:0.8em;color:var(--dim);margin-bottom:6px;
+}
+.progress-bar{
+  height:8px;background:rgba(255,255,255,0.06);
+  border-radius:4px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-light));
+  border-radius:4px;transition:width 0.6s ease;
+}
+
+/* Nav tabs */
+.day-nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,8,12,0.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  padding:12px 24px;
+  display:flex;justify-content:center;gap:8px;
+  flex-wrap:wrap;
+}
+.day-tab{
+  padding:10px 20px;border-radius:var(--radius-sm);
+  border:1px solid var(--glass-border);
+  background:var(--glass);color:var(--dim);
+  font-family:inherit;font-size:0.88em;font-weight:600;
+  cursor:pointer;transition:all 0.3s;
+  display:flex;align-items:center;gap:6px;
+  white-space:nowrap;position:relative;
+}
+.day-tab:hover:not(.locked){background:var(--card-hover);color:var(--text)}
+.day-tab.active{
+  background:var(--orange);color:#fff;
+  border-color:var(--orange);
+}
+.day-tab.completed::after{
+  content:'';display:inline-block;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);margin-right:2px;
+}
+.day-tab.active.completed::after{background:#fff}
+.day-tab.locked{
+  opacity:0.4;cursor:not-allowed;
+}
+.day-tab .lock-icon{font-size:0.75em}
+.day-tab .lock-date{
+  font-size:0.65em;font-weight:400;
+  position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+  color:var(--dim);white-space:nowrap;
+}
+
+/* Content area */
+.content-area{
+  max-width:800px;margin:0 auto;padding:40px 24px 80px;
+}
+
+/* Day content */
+.day-content{display:none}
+.day-content.active{display:block}
+
+/* Day header */
+.day-header{margin-bottom:32px}
+.day-number{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;padding:4px 14px;border-radius:20px;
+  font-size:0.8em;font-weight:700;margin-bottom:10px;
+}
+.day-title{
+  font-size:1.8em;font-weight:800;color:var(--bright);
+  margin-bottom:6px;
+}
+.day-subtitle{color:var(--dim);font-size:1em}
+
+/* Video placeholder */
+.video-container{
+  background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  aspect-ratio:16/9;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  margin-bottom:32px;
+  position:relative;overflow:hidden;
+}
+.video-container::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(232,112,64,0.05),transparent);
+}
+.play-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(232,112,64,0.15);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;position:relative;
+}
+.play-icon::after{
+  content:'';display:block;
+  width:0;height:0;
+  border-top:12px solid transparent;
+  border-bottom:12px solid transparent;
+  border-right:20px solid var(--orange);
+  margin-right:3px;
+}
+.video-container p{color:var(--dim);font-size:0.9em;position:relative}
+
+/* Sections */
+.section{
+  background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius);padding:28px;
+  margin-bottom:20px;
+}
+.section h3{
+  color:var(--orange);font-size:1.15em;font-weight:700;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.section h3 .sec-icon{font-size:1.1em}
+.section ul{list-style:none;padding:0}
+.section ul li{
+  padding:8px 0;padding-right:20px;position:relative;
+  color:var(--text);font-size:0.95em;
+}
+.section ul li::before{
+  content:'';position:absolute;right:0;top:16px;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--orange);
+}
+.section ol{padding-right:20px;counter-reset:none}
+.section ol li{
+  padding:10px 0;color:var(--text);font-size:0.95em;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.section ol li:last-child{border-bottom:none}
+.section ol li a{color:var(--orange);text-decoration:none}
+.section ol li a:hover{text-decoration:underline}
+.section ol li strong{color:var(--bright)}
+
+/* Code blocks with copy */
+.cmd-block{
+  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
+  border-radius:var(--radius-sm);padding:14px 18px;
+  margin:10px 0;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;
+  direction:ltr;text-align:left;
+}
+.cmd-block code{
+  font-family:'SF Mono','Fira Code',monospace;
+  font-size:0.88em;color:var(--green);
+  word-break:break-all;flex:1;
+}
+.copy-btn{
+  background:rgba(255,255,255,0.08);border:none;
+  color:var(--dim);padding:6px 14px;border-radius:8px;
+  font-size:0.75em;font-family:inherit;font-weight:600;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  direction:rtl;
+}
+.copy-btn:hover{background:var(--orange);color:#fff}
+.copy-btn.copied{background:var(--green);color:#000}
+
+/* Tips section */
+.section.tips{
+  border-color:rgba(232,112,64,0.2);
+  background:linear-gradient(135deg,rgba(232,112,64,0.06),var(--card));
+}
+.section.tips h3{color:var(--orange-light)}
+
+/* FAQ accordion */
+.faq-item{
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:0;
+}
+.faq-item:last-child{border-bottom:none}
+.faq-q{
+  padding:14px 0;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  font-weight:600;color:var(--text);font-size:0.95em;
+  user-select:none;
+}
+.faq-q::before{
+  content:'+';color:var(--orange);font-size:1.2em;
+  font-weight:700;margin-left:12px;transition:transform 0.3s;
+  flex-shrink:0;
+}
+.faq-item.open .faq-q::before{content:'-'}
+.faq-a{
+  max-height:0;overflow:hidden;transition:max-height 0.3s ease;
+  color:var(--dim);font-size:0.9em;line-height:1.7;
+}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:14px}
+
+/* Checklist */
+.check-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;user-select:none;
+}
+.check-item:last-child{border-bottom:none}
+.check-box{
+  width:22px;height:22px;border-radius:6px;
+  border:2px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;flex-shrink:0;
+}
+.check-item.checked .check-box{
+  background:var(--green);border-color:var(--green);
+}
+.check-item.checked .check-box::after{
+  content:'';display:block;
+  width:6px;height:10px;
+  border:solid #000;border-width:0 2px 2px 0;
+  transform:rotate(45deg);margin-top:-2px;
+}
+.check-item.checked .check-label{
+  color:var(--dim);text-decoration:line-through;
+}
+.check-label{font-size:0.92em;color:var(--text)}
+
+/* Homework section */
+.section.homework{
+  border-color:rgba(61,214,140,0.15);
+  background:linear-gradient(135deg,rgba(61,214,140,0.04),var(--card));
+}
+.section.homework h3{color:var(--green)}
+
+/* Complete button */
+.complete-btn{
+  display:block;width:100%;padding:18px;margin-top:28px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;border:none;border-radius:var(--radius);
+  font-size:1.1em;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(232,112,64,0.25);
+}
+.complete-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 40px rgba(232,112,64,0.35);
+}
+.complete-btn.done{
+  background:var(--green-bg);color:var(--green);
+  border:1px solid rgba(61,214,140,0.2);
+  box-shadow:none;cursor:default;
+}
+.complete-btn.done:hover{transform:none}
+
+/* Graduation box */
+.graduation-box{
+  text-align:center;padding:30px;margin-top:20px;
+  background:linear-gradient(135deg,rgba(232,112,64,0.15),rgba(232,112,64,0.05));
+  border:2px solid var(--orange);border-radius:var(--radius);
+}
+.graduation-box .grad-icon{font-size:2em;margin-bottom:10px}
+.graduation-box h3{color:var(--orange);font-size:1.3em}
+.graduation-box p{margin-top:8px;font-size:0.92em}
+.graduation-box .next-label{
+  color:var(--text);margin-top:12px;font-weight:600;
+}
+.graduation-box .next-desc{color:var(--dim);margin-top:6px}
+.graduation-box .share-btn{
+  display:inline-block;margin-top:16px;padding:12px 30px;
+  background:var(--orange);color:#fff;border-radius:var(--radius-sm);
+  font-weight:700;text-decoration:none;font-size:0.95em;
+  transition:all 0.3s;
+}
+.graduation-box .share-btn:hover{background:var(--orange-light);transform:translateY(-1px)}
+
+/* Links */
+.link{color:var(--orange);text-decoration:none}
+.link:hover{text-decoration:underline}
+
+/* Smooth transitions for day switching */
+.day-content{animation:fadeIn 0.4s ease}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+</style>
+</head>
+<body>
+
+<!-- MOBILE BLOCK -->
+<div class="mobile-block" id="mobileBlock">
+  <div class="icon">💻</div>
+  <h2>האתגר מיועד למחשב</h2>
+  <p>פתח את הדף במחשב כדי לגשת לפורטל האתגר.</p>
+</div>
+
+<!-- LOADING STATE -->
+<div class="login-loading" id="loadingScreen">
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen" style="display:none">
+  <div class="login-card">
+    <h1>אתגר דונה<br><span style="color:var(--orange);font-size:0.6em;font-weight:400">5 ימים לבנות עובד AI</span></h1>
+    <p class="subtitle">התחבר עם חשבון Google שלך</p>
+    <button class="google-btn" id="googleBtn" onclick="signInWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      התחבר עם Google
+    </button>
+    <p class="login-note">רק חשבונות שרשומים לאתגר יכולים להיכנס</p>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- NOT ALLOWED SCREEN -->
+<div class="login-screen" id="notAllowedScreen" style="display:none">
+  <div class="not-allowed-card">
+    <h2>המייל הזה לא רשום לאתגר</h2>
+    <div class="email-display" id="notAllowedEmail"></div>
+    <p>אם שילמת, פנה לתמיכה בקבוצת WhatsApp.</p>
+    <a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" class="whatsapp-link">פנה לתמיכה בWhatsApp</a>
+    <br>
+    <button class="signout-btn" onclick="signOut()">התנתק ונסה מייל אחר</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="main-app" id="mainApp">
+
+  <!-- Header -->
+  <div class="app-header">
+    <div class="user-bar">
+      <span class="user-email" id="userEmail"></span>
+      <button class="header-signout" onclick="signOut()">התנתק</button>
+    </div>
+    <h1>אתגר דונה</h1>
+    <p class="header-sub"><span>Your First AI Hire</span> . 5 ימים לבנות עובד AI</p>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">0 מתוך 6 ימים הושלמו</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day Navigation -->
+  <div class="day-nav" id="dayNav">
+    <button class="day-tab" data-day="0" onclick="switchDay(0)">יום 0</button>
+    <button class="day-tab" data-day="1" onclick="switchDay(1)">יום 1</button>
+    <button class="day-tab" data-day="2" onclick="switchDay(2)">יום 2</button>
+    <button class="day-tab" data-day="3" onclick="switchDay(3)">יום 3</button>
+    <button class="day-tab" data-day="4" onclick="switchDay(4)">יום 4</button>
+    <button class="day-tab" data-day="5" onclick="switchDay(5)">יום 5</button>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content-area">
+
+    <!-- ==================== DAY 0 ==================== -->
+    <div class="day-content" id="day0">
+      <div class="day-header">
+        <span class="day-number">יום 0</span>
+        <h2 class="day-title">Meet Claude Code</h2>
+        <p class="day-subtitle">התקנת הכלים והכרות ראשונה</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>Claude Desktop מותקן ומוגדר</li>
+          <li>מנוי Pro פעיל ($20/חודש)</li>
+          <li>Obsidian מותקן ומוכן</li>
+          <li>Starter Kit הורד ונפתח</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>הורד Claude Desktop מ-<a href="https://claude.ai/download" target="_blank" class="link">claude.ai/download</a> והתקן</li>
+          <li>הירשם למנוי Pro ($20/חודש). לחץ על הפרופיל > Upgrade</li>
+          <li>פתח שיחה ראשונה. כתוב:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Hello! Tell me what you can do.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="4">
+          <li>שים לב ל-3 הטאבים למעלה: <strong>Chat, Cowork, Code</strong>. אנחנו עובדים מ-<strong>Code</strong>.</li>
+          <li>הורד Obsidian מ-<a href="https://obsidian.md" target="_blank" class="link">obsidian.md</a>. חינמי.</li>
+          <li>הורד את ה-Starter Kit (<a href="[LINK]" target="_blank" class="link">קישור להורדה</a>)</li>
+          <li>פתח את תיקיית donna-starter-kit ב-Claude Code: <strong>File > Open Folder</strong></li>
+          <li>פתח את אותה תיקייה ב-Obsidian: <strong>Open folder as vault</strong></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">⌨️</span> פקודות להעתקה</h3>
+        <div class="cmd-block">
+          <code>Hello! Tell me what you can do.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>What files do you see in this folder?</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>וודא שאתה בטאב <strong>Code</strong>, לא Chat</li>
+          <li>ה-Starter Kit צריך להיות במקום נגיש (שולחן עבודה או Documents)</li>
+          <li>Obsidian ו-Claude Code פותחים את <strong>אותה תיקייה</strong></li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מה ההבדל בין Claude ל-ChatGPT?</div>
+          <div class="faq-a">Claude Code עובד עם קבצים אמיתיים, מתחבר לכלים שלך, וזוכר הכל. ChatGPT רק משוחח.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">למה צריך Obsidian?</div>
+          <div class="faq-a">Obsidian מציג את הזיכרון של דונה בצורה ויזואלית. רואים קשרים בין אנשים, החלטות ופגישות.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">$20 זה הכל?</div>
+          <div class="faq-a">כן. $20 לחודש ל-Claude Pro. זה העלות היחידה אחרי האתגר. Obsidian חינמי.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="0" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Claude Desktop מותקן</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">מנוי Pro פעיל</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">שיחה ראשונה עבדה</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">יודע מה Code tab</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Obsidian מותקן</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="5" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Starter Kit הורד ונפתח ב-Claude Code</span>
+        </div>
+        <div class="check-item" data-day="0" data-idx="6" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Starter Kit פתוח ב-Obsidian</span>
+        </div>
+      </div>
+
+      <div class="section homework">
+        <h3><span class="sec-icon">📝</span> הכנה למחר</h3>
+        <p>מחר נכיר את דונה. אין מה להכין, רק לוודא שהכל עובד.</p>
+      </div>
+
+      <button class="complete-btn" data-day="0" onclick="completeDay(0)">סיימתי יום 0!</button>
+    </div>
+
+    <!-- ==================== DAY 1 ==================== -->
+    <div class="day-content" id="day1">
+      <div class="day-header">
+        <span class="day-number">יום 1</span>
+        <h2 class="day-title">Meet Donna</h2>
+        <p class="day-subtitle">הכרות עם העובדת החדשה שלך</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>מבינים מי דונה, מה היא עושה, ואיך ייראו 5 הימים הבאים</li>
+          <li>קוראים את CLAUDE.md ומבינים את "תעודת הזהות" של דונה</li>
+          <li>מנהלים שיחה ראשונה עם דונה</li>
+          <li>מכירים את מבנה ה-Starter Kit ב-Obsidian</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>פתח Claude Code עם donna-starter-kit (Code tab)</li>
+          <li>צפה בסרטון (למעלה)</li>
+          <li>פתח את CLAUDE.md ותקרא. זו "תעודת הזהות" של דונה. שים לב לאופי שלה.</li>
+          <li>תשאל את Claude:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Who are you? What's your personality?</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="5">
+          <li>פתח Obsidian ותסתכל על המבנה: <strong>brain/, guides/, templates/</strong></li>
+          <li>הבן את ה-5 ימים: היום הכרות > מחר מילוי נתונים > אחר כך חיבורים > סקילס > אוטומציה</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">⌨️</span> פקודות להעתקה</h3>
+        <div class="cmd-block">
+          <code>Who are you? What's your personality?</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>What files are in this starter kit? Give me a quick overview.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>Tell me about your old boss Harvey.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>דונה עוד לא מכירה אותך. זה נורמלי. מחר היא תלמד הכל.</li>
+          <li>אם דונה מדברת בלי אופי (כמו רובוט), תגיד לה: "Read your CLAUDE.md personality section and follow it."</li>
+          <li>שים לב לתיקיית <strong>brain/</strong> באובסידיאן. עכשיו היא ריקה. ביום 5 היא תהיה מלאה.</li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">למה דונה לא מכירה אותי?</div>
+          <div class="faq-a">כי עוד לא מילאת את CLAUDE.md. זה מה שנעשה מחר.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מי זה Harvey?</div>
+          <div class="faq-a">הבוס הקודם של דונה. היא מזכירה אותו לפעמים. זה חלק מהאישיות שלה.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="1" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">צפיתי בסרטון</span>
+        </div>
+        <div class="check-item" data-day="1" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">קראתי את CLAUDE.md</span>
+        </div>
+        <div class="check-item" data-day="1" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">שוחחתי עם דונה</span>
+        </div>
+        <div class="check-item" data-day="1" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">פתחתי Obsidian ובדקתי את המבנה</span>
+        </div>
+        <div class="check-item" data-day="1" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">מבין את מפת 5 הימים</span>
+        </div>
+      </div>
+
+      <div class="section homework">
+        <h3><span class="sec-icon">📝</span> הכנה למחר</h3>
+        <p>מחר תכיר את העסק שלך לדונה. תכין:</p>
+        <ol>
+          <li>תיאור העסק שלך ב-2 משפטים</li>
+          <li>3-5 אנשים מרכזיים (שם + תפקיד)</li>
+          <li>3 עדיפויות לרבעון</li>
+          <li>2-3 מיילים שכתבת שמייצגים את הסגנון שלך</li>
+          <li>איך אתה חותם מיילים</li>
+        </ol>
+      </div>
+
+      <button class="complete-btn" data-day="1" onclick="completeDay(1)">סיימתי יום 1!</button>
+    </div>
+
+    <!-- ==================== DAY 2 ==================== -->
+    <div class="day-content" id="day2">
+      <div class="day-header">
+        <span class="day-number">יום 2</span>
+        <h2 class="day-title">Donna, Meet My Business</h2>
+        <p class="day-subtitle">דונה לומדת הכל על העסק שלך</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>CLAUDE.md מלא עם כל הפרטים על העסק</li>
+          <li>Goals.md עם 3 יעדים לרבעון</li>
+          <li>Style.md עם סגנון הכתיבה שלך</li>
+          <li>דוגמאות כתיבה שדונה תלמד מהן</li>
+          <li>Business One-Pager שדונה תכתוב</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>פתח Claude Code עם donna-starter-kit</li>
+          <li>צפה בסרטון</li>
+          <li>תגיד לדונה:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Open CLAUDE.md and help me fill it in step by step. Ask me questions and fill in my answers.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="4">
+          <li>מלא כל סקשן (דונה תדריך אותך)</li>
+          <li>מלא Goals.md:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Open brain/Business/Goals.md and help me define my top 3 goals for this quarter.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="6">
+          <li>מלא Style.md:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Open brain/Preferences/Style.md and help me define my communication style.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="7">
+          <li>שים דוגמאות מייל ב-samples/:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Save these email examples to the samples/ folder: [PASTE YOUR EMAILS HERE]</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="8">
+          <li>הבדיקה הגדולה:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Donna, what do you know about my business? Summarize everything.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="9">
+          <li>Business One-Pager:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Create a one-page business overview based on everything you know about me. Save it to output/business-one-pager.md</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>לא צריך לכתוב הכל בעצמך. תגיד לדונה "ask me questions" והיא תשאל אותך שאלה אחרי שאלה.</li>
+          <li>אם משהו לא מדויק, פשוט תגיד "that's not right, change it to..."</li>
+          <li>ה-Business One-Pager הוא רגע הוואו. דונה תכתוב סיכום של העסק שלך שיפתיע אותך.</li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מה לכתוב ב-Key People?</div>
+          <div class="faq-a">כל מי שדונה תראה במיילים שלך: שותף, ספק, רואה חשבון, לקוח מרכזי. 3-5 אנשים מספיקים.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מה ההבדל בין Style.md לאופי של דונה?</div>
+          <div class="faq-a">Style.md = איך דונה כותבת בשמך (מיילים). האופי של דונה = איך היא מדברת אליך. שני דברים שונים.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="2" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">CLAUDE.md מלא (כל הסקשנים)</span>
+        </div>
+        <div class="check-item" data-day="2" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Goals.md מלא</span>
+        </div>
+        <div class="check-item" data-day="2" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Style.md מלא</span>
+        </div>
+        <div class="check-item" data-day="2" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">דוגמאות כתיבה ב-samples/</span>
+        </div>
+        <div class="check-item" data-day="2" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">דונה עברה את הבדיקה ("what do you know")</span>
+        </div>
+        <div class="check-item" data-day="2" data-idx="5" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Business One-Pager נוצר</span>
+        </div>
+      </div>
+
+      <div class="section homework">
+        <h3><span class="sec-icon">📝</span> הכנה למחר</h3>
+        <p>מחר נחבר את דונה למיילים, ליומן ולמשימות שלך. וודא שיש לך גישה ל: <strong>Gmail, Google Calendar, Google Drive</strong>. אם יש לך Asana (או כלי משימות אחר), הכן את פרטי ההתחברות.</p>
+      </div>
+
+      <button class="complete-btn" data-day="2" onclick="completeDay(2)">סיימתי יום 2!</button>
+    </div>
+
+    <!-- ==================== DAY 3 ==================== -->
+    <div class="day-content" id="day3">
+      <div class="day-header">
+        <span class="day-number">יום 3</span>
+        <h2 class="day-title">Badge &amp; Access</h2>
+        <p class="day-subtitle">דונה מקבלת גישה לכלים שלך</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>Gmail מחובר. דונה קוראת מיילים.</li>
+          <li>Google Calendar מחובר. דונה רואה את היומן.</li>
+          <li>Google Drive מחובר. דונה מחפשת מסמכים.</li>
+          <li>Asana מחובר (אופציונלי). דונה עוקבת אחרי משימות.</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>פתח Claude Code עם donna-starter-kit</li>
+          <li>צפה בסרטון</li>
+          <li>חבר Gmail: לך ל-<strong>Customize</strong> בסיידבר > <strong>Connectors</strong> > חפש Gmail > התחבר</li>
+          <li>בדוק:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Read my latest 5 emails and categorize them: URGENT / IMPORTANT / FYI / JUNK</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="5">
+          <li>חבר Google Calendar: <strong>Customize > Connectors > Google Calendar</strong> > התחבר</li>
+          <li>בדוק:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>What meetings do I have this week? Include who's attending and what it's about.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="7">
+          <li>חבר Google Drive: <strong>Customize > Connectors > Google Drive</strong> > התחבר</li>
+          <li>בדוק:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Search my Drive for [YOUR SEARCH TERM]</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="9">
+          <li>חבר Asana (אופציונלי): <strong>Customize > Connectors > Asana</strong> > התחבר</li>
+          <li>הדמו הגדול:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Prep me for my next meeting. Pull everything relevant from email, calendar, and Drive.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="11">
+          <li>עוד דמו:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Handle my emails. Read the last 24 hours, categorize them, and draft replies for anything urgent.</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>אם חיבור נכשל, תנסה שוב. לפעמים צריך לאשר הרשאות ב-Google.</li>
+          <li>דונה קוראת בלבד. היא לא שולחת מיילים בלי אישור שלך.</li>
+          <li>"Prep me for my next meeting" הוא הרגע שבו אתה מבין כמה דונה חזקה.</li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Asana חובה?</div>
+          <div class="faq-a">לא. אם אין לך כלי משימות, דונה תעבוד עם מיילים ויומן בלבד. Asana מוסיף שכבה של מעקב משימות.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">דונה יכולה לשלוח מיילים?</div>
+          <div class="faq-a">לא בלי אישור שלך. היא מכינה טיוטות ומחכה שתגיד "שלחי".</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="3" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Gmail מחובר ועובד</span>
+        </div>
+        <div class="check-item" data-day="3" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Calendar מחובר ועובד</span>
+        </div>
+        <div class="check-item" data-day="3" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Drive מחובר ועובד</span>
+        </div>
+        <div class="check-item" data-day="3" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Asana מחובר (אופציונלי)</span>
+        </div>
+        <div class="check-item" data-day="3" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">הרצתי "handle my emails"</span>
+        </div>
+        <div class="check-item" data-day="3" data-idx="5" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">הרצתי "prep me for meeting"</span>
+        </div>
+      </div>
+
+      <div class="section homework">
+        <h3><span class="sec-icon">📝</span> הכנה למחר</h3>
+        <p>מחר נלמד את דונה 10 סקילס (פקודות מוכנות). אין מה להכין. הכל מוכן ב-Starter Kit.</p>
+      </div>
+
+      <button class="complete-btn" data-day="3" onclick="completeDay(3)">סיימתי יום 3!</button>
+    </div>
+
+    <!-- ==================== DAY 4 ==================== -->
+    <div class="day-content" id="day4">
+      <div class="day-header">
+        <span class="day-number">יום 4</span>
+        <h2 class="day-title">Training Day</h2>
+        <p class="day-subtitle">דונה לומדת 10 משימות בפקודה אחת</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>10 סקילס פעילים ומותאמים</li>
+          <li>כל סקיל נבדק והורץ</li>
+          <li>לפחות סקיל אחד מותאם אישית</li>
+          <li>brain/ ב-Obsidian מתחיל להתמלא</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>פתח Claude Code עם donna-starter-kit</li>
+          <li>צפה בסרטון</li>
+          <li>הרץ כל סקיל פעם אחת ובדוק שעובד (הפקודות למטה)</li>
+          <li>בחר סקיל אחד ותתאים אותו:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Open the morning-briefing skill file and show me how to customize it</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="5">
+          <li>פתח Obsidian ותראה מה דונה כתבה ל-<strong>brain/</strong> (Daily Logs, People)</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">⌨️</span> 10 פקודות להעתקה</h3>
+        <div class="cmd-block">
+          <code>/morning-briefing</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/evening-summary</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/draft-reply [name of someone you need to reply to]</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/prep-meeting [name of someone you have a meeting with]</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/tasks</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/accountability</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/forgotten-emails</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/block-time [task you keep postponing]</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/risks</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/weekly-report</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>לא צריך להריץ הכל ביום אחד. הכי חשוב: <strong>morning-briefing, draft-reply, prep-meeting</strong>.</li>
+          <li>אם סקיל לא עובד, וודא שהחיבורים מיום 3 עדיין פעילים.</li>
+          <li>כשמריצים /morning-briefing, דונה כותבת את הפלט ל-<strong>brain/Daily Logs/</strong>. תבדוק ב-Obsidian.</li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מה ההבדל בין סקיל לפקודה רגילה?</div>
+          <div class="faq-a">סקיל הוא קובץ עם הנחיות מפורטות. כשמקלידים /morning-briefing, דונה יודעת בדיוק מה לעשות, באיזה סדר, ובאיזה פורמט. פקודה רגילה ("read my emails") נותנת תוצאה פחות עקבית.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">אפשר ליצור סקילס חדשים?</div>
+          <div class="faq-a">כן. כל קובץ .md בתיקיית .claude/skills/ הופך לסקיל. אבל קודם תשתמש ב-10 שנתנו לך.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="4" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/morning-briefing עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/evening-summary עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/draft-reply עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/prep-meeting עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/tasks עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="5" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/accountability עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="6" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/forgotten-emails עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="7" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/block-time עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="8" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/risks עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="9" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">/weekly-report עובד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="10" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">התאמתי לפחות סקיל אחד</span>
+        </div>
+        <div class="check-item" data-day="4" data-idx="11" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">בדקתי שדונה כתבה ל-brain/ ב-Obsidian</span>
+        </div>
+      </div>
+
+      <div class="section homework">
+        <h3><span class="sec-icon">📝</span> הכנה למחר</h3>
+        <p>מחר דונה הופכת אוטונומית. היא תעבוד לבד לפי שעון. וודא שהמחשב שלך יהיה דלוק מחר ב-9:15 בבוקר.</p>
+      </div>
+
+      <button class="complete-btn" data-day="4" onclick="completeDay(4)">סיימתי יום 4!</button>
+    </div>
+
+    <!-- ==================== DAY 5 ==================== -->
+    <div class="day-content" id="day5">
+      <div class="day-header">
+        <span class="day-number">יום 5</span>
+        <h2 class="day-title">She Works While You Sleep</h2>
+        <p class="day-subtitle">דונה עובדת לבד. גם בלעדיך.</p>
+      </div>
+
+      <div class="video-container">
+        <div class="play-icon"></div>
+        <p>הסרטון יעלה בקרוב</p>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">🏗️</span> מה תבנה היום</h3>
+        <ul>
+          <li>3 משימות מתוזמנות (בוקר, ערב, שבועי)</li>
+          <li>Graph View ב-Obsidian. רואים את הכל מחובר.</li>
+          <li>Graduation. סיימת את האתגר.</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">📋</span> שלבים</h3>
+        <ol>
+          <li>פתח Claude Code עם donna-starter-kit</li>
+          <li>צפה בסרטון</li>
+          <li><strong>Scheduled Task #1 (בריפינג בוקר):</strong> לחץ על <strong>"Scheduled"</strong> בסיידבר השמאלי > New > שם: Morning Briefing > Prompt:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Run /morning-briefing</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: כל יום 9:15</p>
+        <ol start="4">
+          <li><strong>Scheduled Task #2 (סיכום ערב + הכנה לפגישות):</strong> Scheduled > New > שם: Evening Summary > Prompt:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Run /evening-summary and then run /prep-meeting for tomorrow's meetings</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: כל יום 16:00</p>
+        <ol start="5">
+          <li><strong>Scheduled Task #3 (דוח שבועי):</strong> Scheduled > New > שם: Weekly Report > Prompt:</li>
+        </ol>
+        <div class="cmd-block">
+          <code>Run /weekly-report</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: ראשון 9:15</p>
+        <ol start="6">
+          <li>הרץ /weekly-report ו-/accountability ידנית (הסקילס "החושבים")</li>
+        </ol>
+        <div class="cmd-block">
+          <code>/weekly-report</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <div class="cmd-block">
+          <code>/accountability</code>
+          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+        </div>
+        <ol start="7">
+          <li>פתח Obsidian > לחץ על כפתור <strong>Graph View</strong> (או Cmd+G / Ctrl+G) > ראה איך הכל מתחבר</li>
+          <li>עבור על ה-Graduation Checklist: פתח <strong>guides/graduation-checklist.md</strong></li>
+        </ol>
+      </div>
+
+      <div class="section tips">
+        <h3><span class="sec-icon">💡</span> טיפים</h3>
+        <ul>
+          <li>Scheduled Tasks דורשים שהמחשב יהיה דלוק. אם המחשב כבוי, דונה לא תעבוד.</li>
+          <li>Fallback: אם פספסת, פשוט הרץ /morning-briefing ידנית כשפותח את המחשב.</li>
+          <li>Graph View ב-Obsidian הוא ה-wow moment. ככל שדונה עובדת יותר, הגרף גדל.</li>
+        </ul>
+      </div>
+
+      <div class="section faq">
+        <h3><span class="sec-icon">❓</span> שאלות נפוצות</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">מה קורה אם המחשב כבוי?</div>
+          <div class="faq-a">דונה לא תעבוד. כשתפתח את המחשב, הרץ /morning-briefing ידנית. לוקח 5 שניות.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">אפשר להוסיף עוד Scheduled Tasks?</div>
+          <div class="faq-a">כן. כל סקיל יכול להפוך למתוזמן. בקרוב תגלה מה עוד שווה להפוך לאוטומטי.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><span class="sec-icon">✅</span> צ'קליסט</h3>
+        <div class="check-item" data-day="5" data-idx="0" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Scheduled Task בוקר (9:15) מוגדר</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="1" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Scheduled Task ערב (16:00) מוגדר</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="2" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">Scheduled Task שבועי (ראשון 9:15) מוגדר</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="3" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">הרצתי /weekly-report</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="4" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">הרצתי /accountability</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="5" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">ראיתי Graph View ב-Obsidian</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="6" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">עברתי על Graduation Checklist</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="7" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">כל 10 הסקילס עובדים</span>
+        </div>
+        <div class="check-item" data-day="5" data-idx="8" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-label">כל 3 ה-Scheduled Tasks מוגדרים</span>
+        </div>
+      </div>
+
+      <button class="complete-btn" data-day="5" onclick="completeDay(5)">סיימתי יום 5!</button>
+
+      <!-- Graduation Box -->
+      <div class="graduation-box">
+        <div class="grad-icon">🎓</div>
+        <h3>סיימת את האתגר!</h3>
+        <p style="color:var(--dim)">יש לך עובד AI. דונה מכירה אותך, קוראת את המיילים שלך, מכינה אותך לפגישות, עוקבת אחרי ההבטחות שלך, ועובדת כל בוקר וערב אוטומטית.</p>
+        <p class="next-label">מה עכשיו?</p>
+        <p class="next-desc" style="color:var(--dim)">תמשיך להשתמש בדונה כל יום. ככל שתשתמש יותר, היא תלמד יותר. ה-Graph View ב-Obsidian יגדל. וביום אחד תיכנס לבריפינג הבוקר שלה ותבין שהיא יודעת על העסק שלך יותר ממך.</p>
+        <a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" class="share-btn" id="whatsapp-link">שתף בקבוצה: סיימתי את האתגר!</a>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /main-app -->
+
+<script>
+// ===== SUPABASE CONFIG =====
+const SUPABASE_URL = 'https://faqjilunlzljbgrnpcgi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STORAGE_KEY = 'donna-challenge';
+const DAY_NAMES = ['Meet Claude Code','Meet Donna','Donna, Meet My Business','Badge & Access','Training Day','She Works While You Sleep'];
+
+const WHATSAPP_LINKS = {
+  round1: 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS',
+  round2: 'https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB',
+  both: 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS'
+};
+
+// ===== STATE =====
+let state = loadState();
+
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(s && s.completedDays) return s;
+  }catch(e){}
+  return {completedDays:[],checks:{},currentDay:0};
+}
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ===== SCREENS =====
+function hideAllScreens(){
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('notAllowedScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+function showLoginScreen(){
+  hideAllScreens();
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showNotAllowedScreen(email){
+  hideAllScreens();
+  document.getElementById('notAllowedEmail').textContent = email;
+  document.getElementById('notAllowedScreen').style.display = 'flex';
+}
+
+function showLoading(){
+  hideAllScreens();
+  document.getElementById('loadingScreen').style.display = 'flex';
+}
+
+// ===== GOOGLE AUTH =====
+async function signInWithGoogle(){
+  document.getElementById('loginError').textContent = '';
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.href.split('?')[0].split('#')[0]
+    }
+  });
+  if(error){
+    document.getElementById('loginError').textContent = 'שגיאה בהתחברות. נסה שוב.';
+  }
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  localStorage.removeItem('donna-challenge-round');
+  localStorage.removeItem('donna-challenge-email');
+  location.reload();
+}
+
+// ===== AUTH CHECK =====
+async function checkAuth(){
+  showLoading();
+  const { data: { session } } = await sb.auth.getSession();
+
+  if(!session){
+    showLoginScreen();
+    return;
+  }
+
+  const email = session.user.email;
+
+  // Check if email is in allowed_emails table
+  const { data: allowed, error } = await sb
+    .from('allowed_emails')
+    .select('round')
+    .eq('email', email)
+    .single();
+
+  if(error || !allowed){
+    showNotAllowedScreen(email);
+    return;
+  }
+
+  // User is allowed. Store round info and show portal.
+  localStorage.setItem('donna-challenge-round', allowed.round);
+  localStorage.setItem('donna-challenge-email', email);
+
+  // Update WhatsApp link based on round
+  const waLink = document.getElementById('whatsapp-link');
+  if(waLink && WHATSAPP_LINKS[allowed.round]){
+    waLink.href = WHATSAPP_LINKS[allowed.round];
+  }
+
+  // Show user email in header
+  const userEmailEl = document.getElementById('userEmail');
+  if(userEmailEl) userEmailEl.textContent = email;
+
+  showPortal(allowed.round);
+}
+
+// ===== DAY LOCKING =====
+function getDayUnlockDate(dayNum){
+  const round = localStorage.getItem('donna-challenge-round') || 'round1';
+  if(round === 'both') return new Date(0);
+  const round1Start = new Date('2026-04-20T00:00:00');
+  const round2Start = new Date('2026-04-27T00:00:00');
+  const start = round === 'round1' ? round1Start : round2Start;
+  const unlock = new Date(start);
+  unlock.setDate(unlock.getDate() + dayNum);
+  return unlock;
+}
+
+function isDayUnlocked(dayNum){
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  const unlock = getDayUnlockDate(dayNum);
+  return now >= unlock;
+}
+
+function formatDate(d){
+  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  return d.getDate() + ' ' + months[d.getMonth()];
+}
+
+// ===== NAV =====
+function updateNav(){
+  const tabs = document.querySelectorAll('.day-tab');
+  tabs.forEach((tab,i)=>{
+    tab.classList.remove('active','completed','locked');
+    tab.innerHTML = 'יום ' + i;
+
+    if(state.completedDays.includes(i)){
+      tab.classList.add('completed');
+    }
+
+    if(i === state.currentDay){
+      tab.classList.add('active');
+    }
+
+    if(!isDayUnlocked(i)){
+      tab.classList.add('locked');
+      const unlockDate = getDayUnlockDate(i);
+      tab.innerHTML = '<span class="lock-icon">🔒</span> יום ' + i;
+      tab.title = 'נפתח ב-' + formatDate(unlockDate);
+    }
+  });
+}
+
+function switchDay(dayNum){
+  if(!isDayUnlocked(dayNum)) return;
+  state.currentDay = dayNum;
+  saveState();
+  updateNav();
+  showDayContent(dayNum);
+}
+
+function showDayContent(dayNum){
+  document.querySelectorAll('.day-content').forEach(el=>el.classList.remove('active'));
+  const el = document.getElementById('day'+dayNum);
+  if(el){
+    el.classList.remove('active');
+    void el.offsetWidth;
+    el.classList.add('active');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const total = 6;
+  const done = state.completedDays.length;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('progressText').textContent = done + ' מתוך ' + total + ' ימים הושלמו';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ===== COMPLETE DAY =====
+function completeDay(dayNum){
+  if(state.completedDays.includes(dayNum)) return;
+  state.completedDays.push(dayNum);
+  saveState();
+  updateNav();
+  updateProgress();
+  updateCompleteBtns();
+
+  // Auto-advance to next day if unlocked
+  const nextDay = dayNum + 1;
+  if(nextDay <= 5 && isDayUnlocked(nextDay)){
+    setTimeout(()=>switchDay(nextDay),600);
+  }
+}
+
+function updateCompleteBtns(){
+  document.querySelectorAll('.complete-btn').forEach(btn=>{
+    const day = parseInt(btn.dataset.day);
+    if(state.completedDays.includes(day)){
+      btn.classList.add('done');
+      btn.textContent = 'יום ' + day + ' הושלם';
+    }
+  });
+}
+
+// ===== CHECKLIST =====
+function toggleCheck(el){
+  const day = el.dataset.day;
+  const idx = el.dataset.idx;
+  const key = 'donna-challenge-day'+day+'-check'+idx;
+  const isChecked = el.classList.toggle('checked');
+  if(isChecked){
+    state.checks[key] = true;
+  } else {
+    delete state.checks[key];
+  }
+  saveState();
+}
+
+function restoreChecks(){
+  document.querySelectorAll('.check-item').forEach(el=>{
+    const key = 'donna-challenge-day'+el.dataset.day+'-check'+el.dataset.idx;
+    if(state.checks[key]){
+      el.classList.add('checked');
+    }
+  });
+}
+
+// ===== COPY COMMAND =====
+function copyCmd(btn){
+  const code = btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    btn.textContent = 'הועתק!';
+    btn.classList.add('copied');
+    setTimeout(()=>{
+      btn.textContent = 'העתק';
+      btn.classList.remove('copied');
+    },2000);
+  });
+}
+
+// ===== FAQ =====
+function toggleFaq(item){
+  item.classList.toggle('open');
+}
+
+// ===== SHOW PORTAL =====
+function showPortal(round){
+  hideAllScreens();
+  document.getElementById('mainApp').style.display = 'block';
+  updateNav();
+  updateProgress();
+  updateCompleteBtns();
+  restoreChecks();
+
+  // Show first unlocked, non-completed day
+  let startDay = state.currentDay;
+  for(let i=0;i<=5;i++){
+    if(isDayUnlocked(i) && !state.completedDays.includes(i)){
+      startDay = i;
+      break;
+    }
+  }
+  state.currentDay = startDay;
+  saveState();
+  updateNav();
+  showDayContent(startDay);
+}
+
+// ===== AUTH STATE LISTENER =====
+sb.auth.onAuthStateChange((event, session) => {
+  if(event === 'SIGNED_IN'){
+    checkAuth();
+  }
+});
+
+// ===== INIT =====
+checkAuth();
+</script>
+</body>
+</html>
