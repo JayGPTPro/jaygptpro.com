@@ -1640,16 +1640,11 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ===== INIT =====
-// Handle OAuth redirect: if URL has hash with access_token, let Supabase process it first
-(async function init(){
-  // Check if this is an OAuth callback (URL contains access_token or error in hash)
-  if(window.location.hash && window.location.hash.includes('access_token')){
-    // Supabase auto-detects the hash, but we need to wait a moment
-    await new Promise(r => setTimeout(r, 500));
-    // Clean up the URL
-    history.replaceState(null, '', window.location.pathname);
-  }
-  checkAuth();
+// AUTH DISABLED FOR NOW - skip straight to portal
+(function init(){
+  localStorage.setItem('donna-challenge-round', 'both');
+  localStorage.setItem('donna-challenge-email', 'jay@test.com');
+  showPortal('both');
 })();
 </script>
 </body>
