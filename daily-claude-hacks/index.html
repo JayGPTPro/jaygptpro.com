@@ -1113,13 +1113,13 @@ function renderPositionDots() {
   if (filteredHacks.length === 0) { bar.innerHTML = ''; return; }
 
   const upcomingCount = HACKS_DATA.filter(h => h.upcoming).length;
-  let html = `<button class="pos-arrow" onclick="navigate(-1)"${currentIndex <= 0 ? ' disabled' : ''}>&#9664;</button>`;
+  let html = `<button class="pos-arrow" onclick="navigate(-1,true)"${currentIndex <= 0 ? ' disabled' : ''}>&#9664;</button>`;
   html += '<div class="position-dots">';
   filteredHacks.forEach((_, i) => {
     html += `<div class="pos-dot${i === currentIndex ? ' active' : ''}" onclick="goTo(${i})"></div>`;
   });
   html += `</div>`;
-  html += `<button class="pos-arrow" onclick="navigate(1)"${currentIndex >= filteredHacks.length - 1 ? ' disabled' : ''}>&#9654;</button>`;
+  html += `<button class="pos-arrow" onclick="navigate(1,true)"${currentIndex >= filteredHacks.length - 1 ? ' disabled' : ''}>&#9654;</button>`;
   html += `<div class="position-text">${currentIndex + 1} / ${filteredHacks.length}</div>`;
   if (upcomingCount > 0) html += `<div class="position-text" style="color:var(--orange)">${upcomingCount} more coming soon</div>`;
   bar.innerHTML = html;
@@ -1152,14 +1152,15 @@ function render() {
 
 
 // ===== NAVIGATION =====
-function navigate(dir) {
+function navigate(dir, scrollToTop) {
   const next = currentIndex + dir;
   if (next < 0 || next >= filteredHacks.length) return;
   currentIndex = next;
   render();
-  // Scroll to top of the card
-  const strip = document.getElementById('miniStrip');
-  if (strip) strip.scrollIntoView({behavior:'smooth', block:'start'});
+  if (scrollToTop) {
+    const strip = document.getElementById('miniStrip');
+    if (strip) strip.scrollIntoView({behavior:'smooth', block:'start'});
+  }
 }
 
 function goTo(i) {
