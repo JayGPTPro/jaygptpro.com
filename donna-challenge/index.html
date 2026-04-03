@@ -1640,11 +1640,12 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ===== INIT =====
-// AUTH DISABLED FOR NOW - skip straight to portal
-(function init(){
-  localStorage.setItem('donna-challenge-round', 'both');
-  localStorage.setItem('donna-challenge-email', 'jay@test.com');
-  showPortal('both');
+(async function init(){
+  if(window.location.hash && window.location.hash.includes('access_token')){
+    await new Promise(r => setTimeout(r, 500));
+    history.replaceState(null, '', window.location.pathname);
+  }
+  checkAuth();
 })();
 </script>
 </body>
