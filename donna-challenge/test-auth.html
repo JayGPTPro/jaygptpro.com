@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Auth Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family:monospace;padding:40px;background:#111;color:#eee">
+<h2>Supabase Google OAuth Test</h2>
+<button id="loginBtn" onclick="doLogin()" style="padding:12px 24px;font-size:16px;cursor:pointer">Sign in with Google</button>
+<button onclick="doLogout()" style="padding:12px 24px;font-size:16px;cursor:pointer;margin-left:10px">Sign out</button>
+<pre id="output" style="margin-top:20px;background:#222;padding:20px;border-radius:8px;white-space:pre-wrap;max-width:800px;overflow:auto">Loading...</pre>
+
+<script>
+const sb = window.supabase.createClient(
+  'https://faqjilunlzljbgrnpcgi.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0',
+  { auth: { detectSessionInUrl: true, flowType: 'implicit' } }
+);
+
+const out = document.getElementById('output');
+
+function log(msg) {
+  out.textContent += '\n' + new Date().toLocaleTimeString() + ' | ' + msg;
+}
+
+async function doLogin() {
+  log('Starting Google OAuth...');
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href.split('?')[0].split('#')[0] }
+  });
+  if (error) log('ERROR: ' + error.message);
+  else log('Redirecting to Google...');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  log('Signed out');
+  location.reload();
+}
+
+// Check on load
+(async function() {
+  log('Page loaded');
+  log('URL hash: ' + (window.location.hash ? window.location.hash.substring(0, 80) + '...' : 'none'));
+
+  const { data: { session }, error } = await sb.auth.getSession();
+  if (error) {
+    log('getSession error: ' + error.message);
+  } else if (session) {
+    log('SESSION FOUND!');
+    log('Email: ' + session.user.email);
+    log('Provider: ' + session.user.app_metadata.provider);
+    log('Token expires: ' + new Date(session.expires_at * 1000).toLocaleString());
+
+    // Check allowed_emails
+    const { data: allowed, error: dbErr } = await sb
+      .from('allowed_emails')
+      .select('round')
+      .eq('email', session.user.email)
+      .single();
+
+    if (dbErr) log('DB error: ' + dbErr.message);
+    else if (allowed) log('ALLOWED! Round: ' + allowed.round);
+    else log('NOT in allowed_emails table');
+  } else {
+    log('No session');
+  }
+})();
+
+sb.auth.onAuthStateChange((event, session) => {
+  log('Auth event: ' + event);
+  if (session) log('Session email: ' + session.user.email);
+});
+</script>
+</body>
+</html>
