@@ -2903,6 +2903,127 @@ window.showPortal = function(round){
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(updateTabRings, 500);
 });
+
+// ===== ANALYTICS =====
+const ADMIN_EMAIL = 'info@jaygptpro.com';
+
+async function trackEvent(eventType, eventData, dayNumber) {
+  try {
+    const email = localStorage.getItem('donna-challenge-email');
+    const round = localStorage.getItem('donna-challenge-round');
+    if (!email || email === ADMIN_EMAIL) return;
+
+    await sb.from('user_events').insert({
+      user_email: email,
+      event_type: eventType,
+      event_data: eventData || {},
+      day_number: dayNumber,
+      round: round
+    });
+  } catch(e) {
+    // Silent fail. Analytics should never break the portal.
+  }
+}
+
+// Time tracking
+let dayStartTime = Date.now();
+let currentTrackedDay = null;
+
+function startDayTimer(dayNum) {
+  if (currentTrackedDay !== null && currentTrackedDay !== dayNum) {
+    const seconds = Math.round((Date.now() - dayStartTime) / 1000);
+    if (seconds > 2) trackEvent('time_on_day', { seconds }, currentTrackedDay);
+  }
+  dayStartTime = Date.now();
+  currentTrackedDay = dayNum;
+}
+
+// Track time when leaving page
+window.addEventListener('beforeunload', () => {
+  if (currentTrackedDay !== null) {
+    const seconds = Math.round((Date.now() - dayStartTime) / 1000);
+    if (seconds > 2) {
+      trackEvent('time_on_day', { seconds }, currentTrackedDay);
+    }
+  }
+});
+
+// Wrap switchDay
+const _origSwitchDay = switchDay;
+switchDay = function(dayNum) {
+  startDayTimer(dayNum);
+  trackEvent('day_view', {}, dayNum);
+  _origSwitchDay(dayNum);
+};
+
+// Wrap completeDay
+const _origCompleteDay = completeDay;
+completeDay = function(dayNum) {
+  trackEvent('complete_day', {}, dayNum);
+  _origCompleteDay(dayNum);
+};
+
+// Wrap toggleCheck (wraps the already-wrapped version from premium enhancements)
+const _analyticsToggleCheck = window.toggleCheck;
+window.toggleCheck = function(el) {
+  try {
+    const label = el.querySelector('.check-label')?.textContent || '';
+    const day = parseInt(el.dataset.day);
+    const willBeChecked = !el.classList.contains('checked');
+    trackEvent('check_item', { item: label, checked: willBeChecked }, day);
+  } catch(e) {}
+  _analyticsToggleCheck(el);
+};
+
+// Wrap copyCmd (wraps the already-wrapped version from premium enhancements)
+const _analyticsCopyCmd = window.copyCmd;
+window.copyCmd = function(btn) {
+  try {
+    const codeEl = btn.previousElementSibling;
+    const code = codeEl ? codeEl.textContent : '';
+    trackEvent('copy_command', { command: code.substring(0, 100) }, state?.currentDay);
+  } catch(e) {}
+  _analyticsCopyCmd(btn);
+};
+
+// Wrap toggleFaq
+const _origToggleFaq = toggleFaq;
+toggleFaq = function(el) {
+  try {
+    const wasOpen = el.classList.contains('open');
+    if (!wasOpen) {
+      const question = el.querySelector('.faq-q')?.textContent || '';
+      trackEvent('faq_open', { question: question.substring(0, 100) }, state?.currentDay);
+    }
+  } catch(e) {}
+  _origToggleFaq(el);
+};
+
+// Wrap showPortal (wraps the already-wrapped version from premium enhancements)
+const _analyticsShowPortal = window.showPortal;
+window.showPortal = function(round) {
+  trackEvent('login', { round }, null);
+  _analyticsShowPortal(round);
+  startDayTimer(state?.currentDay || 0);
+
+  // Admin button
+  try {
+    const email = localStorage.getItem('donna-challenge-email');
+    if (email === ADMIN_EMAIL) {
+      const bar = document.querySelector('.user-bar');
+      const signoutBtn = document.querySelector('.header-signout');
+      if (bar && signoutBtn && !document.getElementById('adminDashBtn')) {
+        const adminBtn = document.createElement('a');
+        adminBtn.id = 'adminDashBtn';
+        adminBtn.href = 'admin.html';
+        adminBtn.target = '_blank';
+        adminBtn.textContent = 'Admin Dashboard';
+        adminBtn.style.cssText = 'background:var(--orange);color:#fff;padding:6px 16px;border-radius:8px;font-size:0.78em;font-weight:600;text-decoration:none;margin-right:8px';
+        bar.insertBefore(adminBtn, signoutBtn);
+      }
+    }
+  } catch(e) {}
+};
 </script>
 </body>
 </html>
