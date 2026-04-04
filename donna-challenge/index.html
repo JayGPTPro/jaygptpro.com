@@ -2636,20 +2636,31 @@ async function checkAuth(){
 }
 
 // ===== DAY LOCKING =====
+// Day 0 (prep) = always open
+// Day 1 = opens on round start date at 13:00 EST (18:00 UTC)
+// Day 2 = opens day after, same time
+// etc.
+// Admin (round='both') = everything always open
+
 function getDayUnlockDate(dayNum){
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
-  if(round === 'both') return new Date(0);
-  const round1Start = new Date('2026-04-20T00:00:00');
-  const round2Start = new Date('2026-04-27T00:00:00');
+  if(round === 'both') return new Date(0); // Admin: all open
+  if(dayNum === 0) return new Date(0); // Day 0 (prep): always open
+
+  // Round start dates at 13:00 EST (18:00 UTC)
+  const round1Start = new Date('2026-04-20T18:00:00Z'); // Apr 20, 1pm EST
+  const round2Start = new Date('2026-04-27T18:00:00Z'); // Apr 27, 1pm EST
   const start = round === 'round1' ? round1Start : round2Start;
   const unlock = new Date(start);
-  unlock.setDate(unlock.getDate() + dayNum);
+  unlock.setDate(unlock.getDate() + (dayNum - 1)); // Day 1 = start date, Day 2 = start+1, etc.
   return unlock;
 }
 
 function isDayUnlocked(dayNum){
+  if(dayNum === 0) return true; // Prep always open
+  const round = localStorage.getItem('donna-challenge-round') || 'round1';
+  if(round === 'both') return true; // Admin always open
   const now = new Date();
-  now.setHours(0,0,0,0);
   const unlock = getDayUnlockDate(dayNum);
   return now >= unlock;
 }
