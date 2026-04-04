@@ -422,6 +422,15 @@ tr.expandable{cursor:pointer}
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn 0.4s ease forwards}
+
+/* ===== COUNTDOWN CARD ===== */
+.countdown-card{
+  background:linear-gradient(135deg,rgba(232,112,64,0.1),rgba(232,112,64,0.03));
+  border:1px solid rgba(232,112,64,0.2);
+  border-radius:var(--radius);
+  padding:24px;margin-bottom:24px;
+  text-align:center;
+}
 </style>
 </head>
 <body>
@@ -511,6 +520,22 @@ tr.expandable{cursor:pointer}
         <div class="stat-value" id="statPaidNoAccess">0</div>
         <div class="stat-sub">שילמו אבל לא רשומים בפורטל</div>
       </div>
+      <div class="stat-card fade-in">
+        <div class="stat-label">סך הכנסות</div>
+        <div class="stat-value" id="statRevenue">$0</div>
+        <div class="stat-sub">מ-Stripe</div>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-card" id="countdownCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:16px;justify-content:center">
+        <div style="font-size:2.5em;font-weight:800;color:var(--orange)" id="countdownDays">--</div>
+        <div>
+          <div style="font-weight:600;color:var(--text)" id="countdownLabel">ימים לסבב הבא</div>
+          <div style="font-size:0.85em;color:var(--dim)" id="countdownRound"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Funnel -->
@@ -558,6 +583,7 @@ tr.expandable{cursor:pointer}
               <th>שם</th>
               <th>אימייל</th>
               <th>סבב</th>
+              <th>שילם</th>
               <th>יום נוכחי</th>
               <th>% השלמה</th>
               <th>כניסה אחרונה</th>
@@ -592,6 +618,9 @@ tr.expandable{cursor:pointer}
         <div class="stat-value" id="revAvg">$0</div>
       </div>
     </div>
+
+    <div class="section-title">&#128200; ציר זמן הכנסות</div>
+    <div id="revenueTimeline" style="margin-bottom:32px"></div>
 
     <div class="section-title">&#128176; הכנסות לפי קופון</div>
     <div class="stat-grid" id="couponStats" style="margin-bottom:32px"></div>
@@ -695,6 +724,15 @@ tr.expandable{cursor:pointer}
           <button class="btn-primary" onclick="addRound()">הוסף סבב</button>
         </div>
         <div class="form-msg" id="roundMsg"></div>
+      </div>
+    </div>
+
+    <!-- CSV Export -->
+    <div class="mgmt-section">
+      <h3>&#128229; ייצוא נתונים</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="exportCSV('participants')">ייצוא משתתפים CSV</button>
+        <button class="btn-primary" onclick="exportCSV('stripe')">ייצוא עסקאות CSV</button>
       </div>
     </div>
 
@@ -934,6 +972,27 @@ function renderOverview(){
   );
   document.getElementById('statPaidNoAccess').textContent = paidNoAccess.length;
 
+  // Total Revenue
+  const totalRevenueCents = paidCustomers.reduce((s, c) => s + (c.amount_paid || 0), 0);
+  document.getElementById('statRevenue').textContent = '$' + (totalRevenueCents / 100).toLocaleString();
+
+  // Countdown to next round
+  const today2 = new Date();
+  today2.setHours(0,0,0,0);
+  const upcomingRounds = allRounds.filter(r => r.start_date && new Date(r.start_date) > today2)
+    .sort((a,b) => new Date(a.start_date) - new Date(b.start_date));
+  const countdownCard = document.getElementById('countdownCard');
+  if(upcomingRounds.length > 0){
+    const nextRound = upcomingRounds[0];
+    const diffDays = Math.ceil((new Date(nextRound.start_date) - today2) / (1000*60*60*24));
+    document.getElementById('countdownDays').textContent = diffDays;
+    document.getElementById('countdownLabel').textContent = diffDays === 1 ? 'יום לסבב הבא' : 'ימים לסבב הבא';
+    document.getElementById('countdownRound').textContent = nextRound.name + ' . ' + formatDate(nextRound.start_date);
+    countdownCard.style.display = 'block';
+  } else {
+    countdownCard.style.display = 'none';
+  }
+
   // Show stripe sync alert if there are mismatched customers
   const syncAlert = document.getElementById('stripeSyncAlert');
   if(paidNoAccess.length > 0){
@@ -959,17 +1018,21 @@ function renderOverview(){
 }
 
 function renderFunnel(totalRegistered, totalLoggedIn, totalGraduated){
+  // Paid count (excluding TEST)
+  const paidCount = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST').length;
+
   const steps = [
-    { label: 'נרשמו', count: totalRegistered },
+    { label: 'שילמו', count: paidCount },
+    { label: 'נרשמו בפורטל', count: totalRegistered },
     { label: 'התחברו', count: totalLoggedIn }
   ];
 
-  for(let d = 1; d <= 5; d++){
+  for(let d = 0; d <= 5; d++){
     const count = allParticipants.filter(p => {
       const views = allEvents.filter(e => e.email === p.email && (e.event_type === 'day_view' || e.event_type === 'complete_day') && e.day_num >= d);
       return views.length > 0;
     }).length;
-    steps.push({ label: 'יום ' + d, count });
+    steps.push({ label: d === 0 ? 'יום 0' : 'יום ' + d, count });
   }
 
   steps.push({ label: 'בוגרים', count: totalGraduated });
@@ -1024,9 +1087,9 @@ function renderAlerts(){
         <span class="alert-email">${p.email}</span>
         <span class="alert-meta">${daysText} . ${p.round}</span>
       </div>
-      <div class="alert-actions">
-        <a href="https://wa.me/?text=${waMsg}" target="_blank">&#128172; שלח הודעה</a>
-        <a href="mailto:${p.email}?subject=אתגר דונה - מחכים לך!&body=${decodeURIComponent(waMsg)}" target="_blank">&#9993; מייל</a>
+      <div class="alert-actions" style="display:flex;gap:8px;align-items:center">
+        <a href="mailto:${p.email}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; מייל</a>
+        <a href="https://wa.me/?text=${waMsg}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128172; וואטסאפ</a>
       </div>
     </div>`;
   }).join('');
@@ -1081,10 +1144,15 @@ function renderParticipants(){
     const tr = document.createElement('tr');
     tr.className = 'expandable';
     tr.onclick = () => toggleExpand('expand-' + idx);
+    // Cross-reference Stripe payment
+    const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
+    const paidAmount = stripeMatch ? '$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(0) : '';
+
     tr.innerHTML = `
       <td>${name}</td>
       <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${p.email}</td>
       <td>${roundLabel}</td>
+      <td>${paidAmount ? '<span style="color:var(--green);font-weight:600">' + paidAmount + '</span>' : '<span style="color:var(--dim)">---</span>'}</td>
       <td>יום ${currentDay}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -1118,7 +1186,7 @@ function renderParticipants(){
       `).join('') + '</div>';
     }
 
-    expandTr.innerHTML = `<td colspan="7">${timelineHtml}</td>`;
+    expandTr.innerHTML = `<td colspan="8">${timelineHtml}</td>`;
     tbody.appendChild(expandTr);
   });
 }
@@ -1132,6 +1200,17 @@ function toggleExpand(id){
 function renderDayAnalytics(){
   const container = document.getElementById('dayCards');
   container.innerHTML = '';
+
+  if(allEvents.length === 0){
+    container.innerHTML = `
+      <div style="text-align:center;padding:60px;color:var(--dim);grid-column:1/-1">
+        <div style="font-size:3em;margin-bottom:16px">&#128202;</div>
+        <h3 style="color:var(--text);margin-bottom:8px">עדיין אין נתונים</h3>
+        <p>הנתונים יתחילו להופיע כשמשתתפים ייכנסו לפורטל ויתחילו את האתגר.</p>
+      </div>
+    `;
+    return;
+  }
 
   for(let d = 0; d <= 5; d++){
     const dayViews = allEvents.filter(e => e.event_type === 'day_view' && e.day_num === d);
@@ -1223,6 +1302,7 @@ function renderRevenue(){
     document.getElementById('revAvg').textContent = '$0';
     document.getElementById('couponStats').innerHTML = '';
     document.getElementById('countryStats').innerHTML = '';
+    document.getElementById('revenueTimeline').innerHTML = '';
     document.getElementById('revenueBody').innerHTML = `
       <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--dim)">
         אין נתוני Stripe עדיין
@@ -1239,6 +1319,34 @@ function renderRevenue(){
   document.getElementById('revTotal').textContent = '$' + totalDollars.toLocaleString();
   document.getElementById('revCustomers').textContent = realCustomers.length;
   document.getElementById('revAvg').textContent = '$' + avgDollars.toLocaleString();
+
+  // Revenue timeline chart
+  const byDate = {};
+  stripeCustomers.forEach(c => {
+    if((c.coupon_used || '').toUpperCase() === 'TEST') return;
+    const date = (c.created_at || c.payment_date || '').split('T')[0];
+    if(!date) return;
+    if(!byDate[date]) byDate[date] = { count: 0, total: 0 };
+    byDate[date].count++;
+    byDate[date].total += c.amount_paid || 0;
+  });
+
+  const maxTotal = Math.max(...Object.values(byDate).map(d => d.total), 1);
+  let timelineHTML = '';
+  Object.entries(byDate).sort().forEach(([date, data]) => {
+    const pct = (data.total / maxTotal * 100).toFixed(0);
+    timelineHTML += `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div style="width:90px;font-size:0.82em;color:var(--dim);direction:ltr;text-align:left;flex-shrink:0">${date}</div>
+        <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:6px;height:28px;overflow:hidden">
+          <div style="height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-light));border-radius:6px;width:${pct}%;display:flex;align-items:center;padding-right:8px;padding-left:8px;min-width:60px">
+            <span style="font-size:0.75em;font-weight:600;color:#fff">${data.count} x $${(data.total/100).toFixed(0)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('revenueTimeline').innerHTML = timelineHTML || '<p style="color:var(--dim)">אין נתונים</p>';
 
   // Revenue by coupon (include all, including TEST for visibility)
   const coupons = {};
@@ -1454,6 +1562,33 @@ function renderRounds(){
       <td><span class="badge ${r.status === 'active' ? 'badge-green' : 'badge-gray'}">${r.status === 'active' ? 'פעיל' : r.status}</span></td>
     </tr>
   `).join('');
+}
+
+// ===== CSV EXPORT =====
+function exportCSV(type) {
+  let csv = '';
+  let filename = '';
+
+  if (type === 'participants') {
+    csv = 'Name,Email,Round,Status\n';
+    allParticipants.forEach(p => {
+      const info = getStatusInfo(p.email);
+      csv += `"${p.name || ''}","${p.email}","${p.round}","${info.label}"\n`;
+    });
+    filename = 'donna-challenge-participants.csv';
+  } else if (type === 'stripe') {
+    csv = 'Name,Email,Amount,Coupon,Country,Date\n';
+    stripeCustomers.forEach(c => {
+      csv += `"${c.name || ''}","${c.email}","$${(c.amount_paid/100).toFixed(2)}","${c.coupon_used || ''}","${c.country || ''}","${c.created_at || ''}"\n`;
+    });
+    filename = 'donna-challenge-revenue.csv';
+  }
+
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
 }
 
 // ===== TAB NAVIGATION =====
