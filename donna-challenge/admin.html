@@ -351,18 +351,7 @@ tr.expandable{cursor:pointer}
   display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
   gap:16px;margin-bottom:32px;
 }
-.revenue-note{
-  background:rgba(92,160,255,0.06);
-  border:1px solid rgba(92,160,255,0.15);
-  border-radius:var(--radius-sm);
-  padding:16px 20px;margin-bottom:24px;
-  color:var(--blue);font-size:0.88em;
-  display:flex;align-items:center;gap:10px;
-}
-.revenue-note code{
-  background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;
-  font-family:'JetBrains Mono',monospace;font-size:0.9em;
-}
+/* (revenue-note removed, data comes from Supabase now) */
 
 /* ===== MANAGEMENT ===== */
 .mgmt-section{
@@ -512,12 +501,29 @@ tr.expandable{cursor:pointer}
         <div class="stat-value" id="statInactive">0</div>
         <div class="stat-sub">דורשים תשומת לב</div>
       </div>
+      <div class="stat-card fade-in">
+        <div class="stat-label">שילמו (Stripe)</div>
+        <div class="stat-value" id="statPaid">0</div>
+        <div class="stat-sub">מתוך stripe_customers</div>
+      </div>
+      <div class="stat-card fade-in">
+        <div class="stat-label">שילמו ללא גישה</div>
+        <div class="stat-value" id="statPaidNoAccess">0</div>
+        <div class="stat-sub">שילמו אבל לא רשומים בפורטל</div>
+      </div>
     </div>
 
     <!-- Funnel -->
     <div class="funnel-container">
       <div class="section-title">&#128202; משפך התקדמות</div>
       <div class="funnel-steps" id="funnelChart"></div>
+    </div>
+
+    <!-- Stripe sync alert -->
+    <div class="alerts-box" id="stripeSyncAlert" style="display:none;border-color:rgba(245,197,66,0.3);margin-bottom:16px">
+      <h3 style="color:var(--yellow)">&#128176; לקוחות ששילמו ללא גישה לפורטל</h3>
+      <div id="stripeSyncList"></div>
+      <button class="btn-primary" id="addAllStripeBtn" onclick="addMissingStripeCustomers()" style="margin-top:12px">הוסף את כולם ל-allowed_emails</button>
     </div>
 
     <!-- Alerts -->
@@ -571,30 +577,27 @@ tr.expandable{cursor:pointer}
 
   <!-- ===== TAB 4: REVENUE ===== -->
   <div id="tab-revenue" class="tab-content">
-    <div class="revenue-note">
-      &#9432; נתוני הכנסות נטענים ידנית. לרענון, בקש מדונה: <code>/update-admin-revenue</code>
-    </div>
     <div class="stat-grid" id="revenueStats">
       <div class="stat-card">
         <div class="stat-label">סה"כ הכנסות</div>
-        <div class="stat-value" id="revTotal">&#8362;0</div>
+        <div class="stat-value" id="revTotal">$0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">סבב 1</div>
-        <div class="stat-value" id="revRound1">&#8362;0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">סבב 2</div>
-        <div class="stat-value" id="revRound2">&#8362;0</div>
+        <div class="stat-label">סה"כ לקוחות</div>
+        <div class="stat-value" id="revCustomers">0</div>
+        <div class="stat-sub" id="revCustomersSub">ללא TEST</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">ממוצע לעסקה</div>
-        <div class="stat-value" id="revAvg">&#8362;0</div>
+        <div class="stat-value" id="revAvg">$0</div>
       </div>
     </div>
 
-    <div class="section-title">&#128176; עסקאות לפי קופון</div>
+    <div class="section-title">&#128176; הכנסות לפי קופון</div>
     <div class="stat-grid" id="couponStats" style="margin-bottom:32px"></div>
+
+    <div class="section-title">&#127758; לקוחות לפי מדינה</div>
+    <div class="stat-grid" id="countryStats" style="margin-bottom:32px"></div>
 
     <div class="table-wrapper">
       <div class="section-title" style="padding:16px 16px 0">&#128203; פירוט עסקאות</div>
@@ -606,6 +609,7 @@ tr.expandable{cursor:pointer}
               <th>אימייל</th>
               <th>סכום</th>
               <th>קופון</th>
+              <th>מדינה</th>
               <th>תאריך</th>
             </tr>
           </thead>
@@ -617,6 +621,15 @@ tr.expandable{cursor:pointer}
 
   <!-- ===== TAB 5: MANAGEMENT ===== -->
   <div id="tab-manage" class="tab-content">
+    <!-- Stripe Sync Info -->
+    <div class="mgmt-section">
+      <h3>&#128260; סנכרון Stripe</h3>
+      <p style="font-size:0.88em;color:var(--dim);margin-bottom:12px">
+        נתוני Stripe מסתנכרנים אוטומטית דרך webhook. שינוי אחרון: <span id="lastStripeSync" style="color:var(--orange)">טוען...</span>
+      </p>
+      <button class="btn-primary" style="opacity:0.6;cursor:default" disabled>&#9989; Sync פעיל (אוטומטי)</button>
+    </div>
+
     <!-- Add Participant -->
     <div class="mgmt-section">
       <h3>&#10133; הוספת משתתף</h3>
@@ -640,6 +653,7 @@ tr.expandable{cursor:pointer}
         <button class="btn-primary" onclick="addParticipant()">הוסף</button>
       </div>
       <div class="form-msg" id="addMsg"></div>
+      <div class="form-msg" id="addStripeNote"></div>
     </div>
 
     <!-- Rounds -->
@@ -715,7 +729,7 @@ let allParticipants = [];
 let allEvents = [];
 let allRounds = [];
 let authUsers = [];
-let revenueData = null;
+let stripeCustomers = [];
 
 // ===== AUTH =====
 async function signIn(){
@@ -786,11 +800,12 @@ async function loadAllData(){
     allRounds = [];
   }
 
-  // Load revenue data from localStorage (manually populated by /update-admin-revenue)
+  // Fetch Stripe customers from Supabase
   try {
-    revenueData = JSON.parse(localStorage.getItem('donna-admin-revenue'));
+    const { data: stripeData } = await sb.from('stripe_customers').select('*').order('created_at', { ascending: false });
+    stripeCustomers = stripeData || [];
   } catch(e) {
-    revenueData = null;
+    stripeCustomers = [];
   }
 }
 
@@ -907,6 +922,34 @@ function renderOverview(){
   document.getElementById('statCompletionRate').textContent = completionRate + '%';
   document.getElementById('statActiveToday').textContent = activeToday;
   document.getElementById('statInactive').textContent = inactive3;
+
+  // Stripe stats
+  const paidCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
+  document.getElementById('statPaid').textContent = paidCustomers.length;
+
+  // Cross-reference: paid but not in allowed_emails
+  const allowedEmails = new Set(allParticipants.map(p => p.email.toLowerCase()));
+  const paidNoAccess = stripeCustomers.filter(c =>
+    c.email && !allowedEmails.has(c.email.toLowerCase()) && (c.coupon_used || '').toUpperCase() !== 'TEST'
+  );
+  document.getElementById('statPaidNoAccess').textContent = paidNoAccess.length;
+
+  // Show stripe sync alert if there are mismatched customers
+  const syncAlert = document.getElementById('stripeSyncAlert');
+  if(paidNoAccess.length > 0){
+    syncAlert.style.display = 'block';
+    document.getElementById('stripeSyncList').innerHTML = paidNoAccess.map(c => `
+      <div class="alert-row">
+        <div class="alert-info">
+          <span class="alert-name">${c.name || '-'}</span>
+          <span class="alert-email">${c.email}</span>
+          <span class="alert-meta">$${(c.amount_paid / 100).toFixed(0)} . ${c.coupon_used || 'ללא קופון'} . ${c.country || '-'}</span>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    syncAlert.style.display = 'none';
+  }
 
   // Funnel
   renderFunnel(total, loggedIn, graduated);
@@ -1174,58 +1217,82 @@ function renderDayAnalytics(){
 
 // ===== TAB 4: REVENUE =====
 function renderRevenue(){
-  if(!revenueData){
-    // Show sample structure
-    document.getElementById('revTotal').innerHTML = '&#8362;0';
-    document.getElementById('revRound1').innerHTML = '&#8362;0';
-    document.getElementById('revRound2').innerHTML = '&#8362;0';
-    document.getElementById('revAvg').innerHTML = '&#8362;0';
+  if(!stripeCustomers.length){
+    document.getElementById('revTotal').textContent = '$0';
+    document.getElementById('revCustomers').textContent = '0';
+    document.getElementById('revAvg').textContent = '$0';
     document.getElementById('couponStats').innerHTML = '';
+    document.getElementById('countryStats').innerHTML = '';
     document.getElementById('revenueBody').innerHTML = `
-      <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--dim)">
-        אין נתוני הכנסות עדיין. הרץ <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">/update-admin-revenue</code> מדונה
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--dim)">
+        אין נתוני Stripe עדיין
       </td></tr>`;
     return;
   }
 
-  const txns = revenueData.transactions || [];
-  const total = txns.reduce((s, t) => s + (t.amount || 0), 0);
-  const r1 = txns.filter(t => t.round === 'round1').reduce((s, t) => s + (t.amount || 0), 0);
-  const r2 = txns.filter(t => t.round === 'round2').reduce((s, t) => s + (t.amount || 0), 0);
-  const avg = txns.length > 0 ? Math.round(total / txns.length) : 0;
+  // Filter out TEST coupon for totals
+  const realCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
+  const totalCents = realCustomers.reduce((s, c) => s + (c.amount_paid || 0), 0);
+  const totalDollars = totalCents / 100;
+  const avgDollars = realCustomers.length > 0 ? Math.round(totalDollars / realCustomers.length) : 0;
 
-  document.getElementById('revTotal').innerHTML = '&#8362;' + total.toLocaleString();
-  document.getElementById('revRound1').innerHTML = '&#8362;' + r1.toLocaleString();
-  document.getElementById('revRound2').innerHTML = '&#8362;' + r2.toLocaleString();
-  document.getElementById('revAvg').innerHTML = '&#8362;' + avg.toLocaleString();
+  document.getElementById('revTotal').textContent = '$' + totalDollars.toLocaleString();
+  document.getElementById('revCustomers').textContent = realCustomers.length;
+  document.getElementById('revAvg').textContent = '$' + avgDollars.toLocaleString();
 
-  // Coupon breakdown
+  // Revenue by coupon (include all, including TEST for visibility)
   const coupons = {};
-  txns.forEach(t => {
-    const c = t.coupon || 'ללא קופון';
-    if(!coupons[c]) coupons[c] = { count: 0, total: 0 };
-    coupons[c].count++;
-    coupons[c].total += t.amount || 0;
+  stripeCustomers.forEach(c => {
+    const coupon = c.coupon_used || 'ללא קופון';
+    if(!coupons[coupon]) coupons[coupon] = { count: 0, totalCents: 0 };
+    coupons[coupon].count++;
+    coupons[coupon].totalCents += c.amount_paid || 0;
   });
 
   document.getElementById('couponStats').innerHTML = Object.entries(coupons).map(([name, data]) => `
     <div class="stat-card">
       <div class="stat-label">${name}</div>
-      <div class="stat-value" style="font-size:1.4em">&#8362;${data.total.toLocaleString()}</div>
-      <div class="stat-sub">${data.count} עסקאות</div>
+      <div class="stat-value" style="font-size:1.4em">$${(data.totalCents / 100).toLocaleString()}</div>
+      <div class="stat-sub">${data.count} לקוחות</div>
+    </div>
+  `).join('');
+
+  // Revenue by country
+  const countries = {};
+  stripeCustomers.forEach(c => {
+    const country = c.country || 'לא ידוע';
+    if(!countries[country]) countries[country] = 0;
+    countries[country]++;
+  });
+
+  document.getElementById('countryStats').innerHTML = Object.entries(countries)
+    .sort((a,b) => b[1] - a[1])
+    .map(([name, count]) => `
+    <div class="stat-card">
+      <div class="stat-label">${name}</div>
+      <div class="stat-value" style="font-size:1.4em">${count}</div>
+      <div class="stat-sub">לקוחות</div>
     </div>
   `).join('');
 
   // Transaction table
-  document.getElementById('revenueBody').innerHTML = txns.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+  document.getElementById('revenueBody').innerHTML = stripeCustomers.map(c => `
     <tr>
-      <td>${t.name || '-'}</td>
-      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${t.email || '-'}</td>
-      <td>&#8362;${(t.amount || 0).toLocaleString()}</td>
-      <td>${t.coupon || '<span style="color:var(--dim)">-</span>'}</td>
-      <td>${formatDate(t.date)}</td>
+      <td>${c.name || '-'}</td>
+      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${c.email || '-'}</td>
+      <td>$${((c.amount_paid || 0) / 100).toLocaleString()}</td>
+      <td>${c.coupon_used || '<span style="color:var(--dim)">-</span>'}</td>
+      <td>${c.country || '<span style="color:var(--dim)">-</span>'}</td>
+      <td>${formatDate(c.payment_date || c.created_at)}</td>
     </tr>
   `).join('');
+
+  // Update last sync date in management tab
+  if(stripeCustomers.length > 0){
+    const newest = stripeCustomers[0].created_at;
+    const el = document.getElementById('lastStripeSync');
+    if(el) el.textContent = formatDateTime(newest);
+  }
 }
 
 // ===== TAB 5: MANAGEMENT =====
@@ -1253,6 +1320,64 @@ async function addParticipant(){
   msgEl.textContent = name + ' (' + email + ') נוסף בהצלחה';
   document.getElementById('addEmail').value = '';
   document.getElementById('addName').value = '';
+
+  // Check if this email exists in stripe_customers
+  const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+  const noteEl = document.getElementById('addStripeNote');
+  if(stripeMatch){
+    noteEl.className = 'form-msg success';
+    noteEl.textContent = 'נמצא ב-Stripe: שילם $' + ((stripeMatch.amount_paid || 0) / 100) + (stripeMatch.coupon_used ? ' (קופון: ' + stripeMatch.coupon_used + ')' : '');
+  } else {
+    noteEl.className = 'form-msg';
+    noteEl.textContent = 'לא נמצא תשלום ב-Stripe עבור אימייל זה';
+    noteEl.style.color = 'var(--yellow)';
+  }
+
+  await loadAllData();
+  renderAll();
+}
+
+// Add all missing Stripe customers to allowed_emails
+async function addMissingStripeCustomers(){
+  const allowedEmails = new Set(allParticipants.map(p => p.email.toLowerCase()));
+  const missing = stripeCustomers.filter(c =>
+    c.email && !allowedEmails.has(c.email.toLowerCase()) && (c.coupon_used || '').toUpperCase() !== 'TEST'
+  );
+
+  if(!missing.length){
+    alert('כל לקוחות Stripe כבר רשומים בפורטל');
+    return;
+  }
+
+  const btn = document.getElementById('addAllStripeBtn');
+  btn.disabled = true;
+  btn.textContent = 'מוסיף...';
+
+  let added = 0;
+  let errors = 0;
+
+  for(const c of missing){
+    const { error } = await sb.from('allowed_emails').insert({
+      email: c.email,
+      name: c.name || null,
+      round: c.round || 'round1',
+      stripe_payment_id: c.stripe_customer_id || null
+    });
+    if(error){
+      errors++;
+    } else {
+      added++;
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'הוסף את כולם ל-allowed_emails';
+
+  if(errors > 0){
+    alert('נוספו ' + added + ' לקוחות. ' + errors + ' שגיאות (כנראה כפילויות).');
+  } else {
+    alert('נוספו ' + added + ' לקוחות בהצלחה!');
+  }
 
   await loadAllData();
   renderAll();
