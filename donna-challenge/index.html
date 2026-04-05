@@ -609,6 +609,12 @@ body::after{
   animation:none;
 }
 .complete-btn.done:hover{transform:none;box-shadow:none}
+.reset-btn{display:none;width:100%;text-align:center;padding:10px 14px;margin-top:6px;background:transparent;border:1px solid rgba(231,76,60,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.82em;font-weight:500;transition:all 0.2s}
+.reset-btn:hover{background:rgba(231,76,60,0.1);border-color:var(--red)}
+.reset-btn.visible{display:block}
+.reset-all-wrap{text-align:center;padding:20px 0;margin-top:20px;border-top:1px solid var(--border)}
+.reset-all-btn{background:transparent;border:1px solid rgba(231,76,60,0.2);color:var(--dim);padding:8px 20px;border-radius:var(--radius-sm);cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.8em;transition:all 0.2s}
+.reset-all-btn:hover{color:var(--red);border-color:var(--red);background:rgba(231,76,60,0.05)}
 
 /* Graduation box */
 .graduation-box{
@@ -802,6 +808,9 @@ body::after{
       </div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="reset-all-wrap" id="resetAllWrap" style="display:none">
+        <button class="reset-all-btn" onclick="resetAll()">↩ איפוס כל ההתקדמות</button>
       </div>
     </div>
   </div>
@@ -1343,6 +1352,7 @@ donna-starter-kit/<br>
       </div>
 
       <button class="complete-btn" data-day="0" onclick="completeDay(0)">סיימתי את ההכנה! אני מוכן לאתגר 🚀</button>
+      <button class="reset-btn" data-day="0" onclick="resetDay(0)">↩ איפוס יום 0</button>
     </div>
 
     <!-- ==================== DAY 1 ==================== -->
@@ -1587,6 +1597,7 @@ donna-starter-kit/<br>
       </div>
 
       <button class="complete-btn" data-day="1" onclick="completeDay(1)">סיימתי יום 1!</button>
+      <button class="reset-btn" data-day="1" onclick="resetDay(1)">↩ איפוס יום 1</button>
     </div>
 
     <!-- ==================== DAY 2 ==================== -->
@@ -1796,6 +1807,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="2" onclick="completeDay(2)">סיימתי יום 2!</button>
+      <button class="reset-btn" data-day="2" onclick="resetDay(2)">↩ איפוס יום 2</button>
     </div>
 
     <!-- ==================== DAY 3 ==================== -->
@@ -1977,6 +1989,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="3" onclick="completeDay(3)">סיימתי יום 3!</button>
+      <button class="reset-btn" data-day="3" onclick="resetDay(3)">↩ איפוס יום 3</button>
     </div>
 
     <!-- ==================== DAY 4 ==================== -->
@@ -2286,6 +2299,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="4" onclick="completeDay(4)">סיימתי יום 4!</button>
+      <button class="reset-btn" data-day="4" onclick="resetDay(4)">↩ איפוס יום 4</button>
     </div>
 
     <!-- ==================== DAY 5 ==================== -->
@@ -2492,6 +2506,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="5" onclick="completeDay(5)">סיימתי יום 5!</button>
+      <button class="reset-btn" data-day="5" onclick="resetDay(5)">↩ איפוס יום 5</button>
 
       <!-- Graduation Box -->
       <div class="graduation-box">
@@ -2758,8 +2773,59 @@ function updateCompleteBtns(){
     if(state.completedDays.includes(day)){
       btn.classList.add('done');
       btn.textContent = 'יום ' + day + ' הושלם';
+    } else {
+      btn.classList.remove('done');
+      if(day === 0) btn.textContent = 'סיימתי את ההכנה! אני מוכן לאתגר 🚀';
+      else btn.textContent = 'סיימתי יום ' + day + '!';
     }
   });
+  // Show/hide reset buttons
+  document.querySelectorAll('.reset-btn').forEach(btn=>{
+    const day = parseInt(btn.dataset.day);
+    if(state.completedDays.includes(day)){
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+  // Show/hide reset all button
+  const resetAllWrap = document.getElementById('resetAllWrap');
+  if(resetAllWrap){
+    resetAllWrap.style.display = state.completedDays.length > 0 ? 'block' : 'none';
+  }
+}
+
+function resetDay(dayNum){
+  if(!confirm('לאפס את יום ' + dayNum + '? כל הסימונים של היום הזה יימחקו.')) return;
+  state.completedDays = state.completedDays.filter(d => d !== dayNum);
+  // Clear checks for this day
+  Object.keys(state.checks).forEach(key=>{
+    if(key.includes('day'+dayNum+'-check')) delete state.checks[key];
+  });
+  saveState();
+  // Uncheck visual checkboxes for this day
+  document.querySelectorAll('.check-item[data-day="'+dayNum+'"]').forEach(el=>{
+    el.classList.remove('checked');
+  });
+  updateNav();
+  updateProgress();
+  updateCompleteBtns();
+}
+
+function resetAll(){
+  if(!confirm('לאפס את כל ההתקדמות? כל הימים והסימונים יחזרו להתחלה.')) return;
+  state.completedDays = [];
+  state.checks = {};
+  state.currentDay = 0;
+  saveState();
+  // Uncheck all visual checkboxes
+  document.querySelectorAll('.check-item').forEach(el=>{
+    el.classList.remove('checked');
+  });
+  updateNav();
+  updateProgress();
+  updateCompleteBtns();
+  switchDay(0);
 }
 
 // ===== CHECKLIST =====
