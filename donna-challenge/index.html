@@ -2878,12 +2878,15 @@ function showPortal(round){
   updateCompleteBtns();
   restoreChecks();
 
-  // Show first unlocked, non-completed day
+  // Use saved currentDay if it's valid and unlocked. Otherwise find first incomplete.
   let startDay = state.currentDay;
-  for(let i=0;i<=5;i++){
-    if(isDayUnlocked(i) && !state.completedDays.includes(i)){
-      startDay = i;
-      break;
+  if(startDay < 0 || startDay > 5 || !isDayUnlocked(startDay)){
+    startDay = 0;
+    for(let i=0;i<=5;i++){
+      if(isDayUnlocked(i) && !state.completedDays.includes(i)){
+        startDay = i;
+        break;
+      }
     }
   }
   state.currentDay = startDay;
