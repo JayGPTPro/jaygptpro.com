@@ -2590,6 +2590,7 @@ async function signInWithGoogle(){
 async function signOut(){
   await sb.auth.signOut();
   localStorage.removeItem('donna-challenge-round');
+  localStorage.removeItem('donna-challenge-round-check');
   localStorage.removeItem('donna-challenge-email');
   location.reload();
 }
@@ -2620,6 +2621,8 @@ async function checkAuth(){
 
   // User is allowed. Store round info and show portal.
   localStorage.setItem('donna-challenge-round', allowed.round);
+  const roundCheck = btoa(allowed.round + ':donna2026');
+  localStorage.setItem('donna-challenge-round-check', roundCheck);
   localStorage.setItem('donna-challenge-email', email);
 
   // Update WhatsApp link based on round
@@ -2659,6 +2662,14 @@ function getDayUnlockDate(dayNum){
 function isDayUnlocked(dayNum){
   if(dayNum === 0) return true; // Prep always open
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
+  const check = localStorage.getItem('donna-challenge-round-check') || '';
+  const expectedCheck = btoa(round + ':donna2026');
+  // If check doesn't match, someone tampered with localStorage
+  if(check !== expectedCheck) {
+    localStorage.setItem('donna-challenge-round', 'round1');
+    localStorage.setItem('donna-challenge-round-check', btoa('round1:donna2026'));
+    return isDayUnlocked(dayNum);
+  }
   if(round === 'both') return true; // Admin always open
   const now = new Date();
   const unlock = getDayUnlockDate(dayNum);

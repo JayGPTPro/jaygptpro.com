@@ -762,6 +762,14 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 const DAY_NAMES = ['הכנה', 'יום 1', 'יום 2', 'יום 3', 'יום 4', 'יום 5'];
 const DAY_TITLES = ['Meet Claude Code', 'Meet Donna', 'Donna, Meet My Business', 'Badge & Access', 'Training Day', 'She Works While You Sleep'];
 
+// HTML sanitization to prevent XSS
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
 // ===== GLOBAL STATE =====
 let allParticipants = [];
 let allEvents = [];
@@ -1000,9 +1008,9 @@ function renderOverview(){
     document.getElementById('stripeSyncList').innerHTML = paidNoAccess.map(c => `
       <div class="alert-row">
         <div class="alert-info">
-          <span class="alert-name">${c.name || '-'}</span>
-          <span class="alert-email">${c.email}</span>
-          <span class="alert-meta">$${(c.amount_paid / 100).toFixed(0)} . ${c.coupon_used || 'ללא קופון'} . ${c.country || '-'}</span>
+          <span class="alert-name">${esc(c.name) || '-'}</span>
+          <span class="alert-email">${esc(c.email)}</span>
+          <span class="alert-meta">$${(c.amount_paid / 100).toFixed(0)} . ${esc(c.coupon_used) || 'ללא קופון'} . ${esc(c.country) || '-'}</span>
         </div>
       </div>
     `).join('');
@@ -1083,12 +1091,12 @@ function renderAlerts(){
 
     return `<div class="alert-row">
       <div class="alert-info">
-        <span class="alert-name">${name}</span>
-        <span class="alert-email">${p.email}</span>
-        <span class="alert-meta">${daysText} . ${p.round}</span>
+        <span class="alert-name">${esc(name)}</span>
+        <span class="alert-email">${esc(p.email)}</span>
+        <span class="alert-meta">${daysText} . ${esc(p.round)}</span>
       </div>
       <div class="alert-actions" style="display:flex;gap:8px;align-items:center">
-        <a href="mailto:${p.email}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; מייל</a>
+        <a href="mailto:${encodeURI(p.email)}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; מייל</a>
         <a href="https://wa.me/?text=${waMsg}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128172; וואטסאפ</a>
       </div>
     </div>`;
@@ -1149,10 +1157,10 @@ function renderParticipants(){
     const paidAmount = stripeMatch ? '$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(0) : '';
 
     tr.innerHTML = `
-      <td>${name}</td>
-      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${p.email}</td>
-      <td>${roundLabel}</td>
-      <td>${paidAmount ? '<span style="color:var(--green);font-weight:600">' + paidAmount + '</span>' : '<span style="color:var(--dim)">---</span>'}</td>
+      <td>${esc(name)}</td>
+      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(p.email)}</td>
+      <td>${esc(roundLabel)}</td>
+      <td>${paidAmount ? '<span style="color:var(--green);font-weight:600">' + esc(paidAmount) + '</span>' : '<span style="color:var(--dim)">---</span>'}</td>
       <td>יום ${currentDay}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -1163,7 +1171,7 @@ function renderParticipants(){
         </div>
       </td>
       <td>${lastLogin ? formatDateTime(lastLogin) : '<span style="color:var(--dim)">-</span>'}</td>
-      <td><span class="badge ${info.cls}">${info.label}</span></td>
+      <td><span class="badge ${esc(info.cls)}">${esc(info.label)}</span></td>
     `;
     tbody.appendChild(tr);
 
@@ -1180,8 +1188,8 @@ function renderParticipants(){
       timelineHtml = '<div class="timeline">' + events.slice(0, 50).map(e => `
         <div class="timeline-item">
           <span class="tl-time">${formatDateTime(e.created_at)}</span>
-          <span class="tl-type">${e.event_type || '-'}</span>
-          <span class="tl-detail">${e.day_num !== null && e.day_num !== undefined ? 'יום ' + e.day_num : ''} ${e.details || ''}</span>
+          <span class="tl-type">${esc(e.event_type) || '-'}</span>
+          <span class="tl-detail">${e.day_num !== null && e.day_num !== undefined ? 'יום ' + e.day_num : ''} ${esc(e.details) || ''}</span>
         </div>
       `).join('') + '</div>';
     }
@@ -1270,11 +1278,11 @@ function renderDayAnalytics(){
       </div>
       <div class="day-stat-row">
         <span class="day-stat-label">פקודה הכי מועתקת</span>
-        <span class="day-stat-val" style="font-size:0.8em;direction:ltr">${topCmd ? topCmd[0].substring(0, 30) + ' (' + topCmd[1] + ')' : '-'}</span>
+        <span class="day-stat-val" style="font-size:0.8em;direction:ltr">${topCmd ? esc(topCmd[0].substring(0, 30)) + ' (' + topCmd[1] + ')' : '-'}</span>
       </div>
       <div class="day-stat-row">
         <span class="day-stat-label">FAQ הכי נפתח</span>
-        <span class="day-stat-val" style="font-size:0.8em">${topFaq ? topFaq[0].substring(0, 30) + ' (' + topFaq[1] + ')' : '-'}</span>
+        <span class="day-stat-val" style="font-size:0.8em">${topFaq ? esc(topFaq[0].substring(0, 30)) + ' (' + topFaq[1] + ')' : '-'}</span>
       </div>
       ${Object.keys(checkItems).length > 0 ? `
         <div class="checklist-bars" style="margin-top:12px">
@@ -1282,7 +1290,7 @@ function renderDayAnalytics(){
           ${Object.entries(checkItems).map(([item, count]) => {
             const checkPct = started > 0 ? Math.round((count / started) * 100) : 0;
             return `<div class="cl-bar-row">
-              <span class="cl-bar-label">${item.substring(0, 20)}</span>
+              <span class="cl-bar-label">${esc(item.substring(0, 20))}</span>
               <div class="cl-bar-track"><div class="cl-bar-fill" style="width:${checkPct}%"></div></div>
               <span class="cl-bar-pct">${checkPct}%</span>
             </div>`;
@@ -1359,7 +1367,7 @@ function renderRevenue(){
 
   document.getElementById('couponStats').innerHTML = Object.entries(coupons).map(([name, data]) => `
     <div class="stat-card">
-      <div class="stat-label">${name}</div>
+      <div class="stat-label">${esc(name)}</div>
       <div class="stat-value" style="font-size:1.4em">$${(data.totalCents / 100).toLocaleString()}</div>
       <div class="stat-sub">${data.count} לקוחות</div>
     </div>
@@ -1377,7 +1385,7 @@ function renderRevenue(){
     .sort((a,b) => b[1] - a[1])
     .map(([name, count]) => `
     <div class="stat-card">
-      <div class="stat-label">${name}</div>
+      <div class="stat-label">${esc(name)}</div>
       <div class="stat-value" style="font-size:1.4em">${count}</div>
       <div class="stat-sub">לקוחות</div>
     </div>
@@ -1386,11 +1394,11 @@ function renderRevenue(){
   // Transaction table
   document.getElementById('revenueBody').innerHTML = stripeCustomers.map(c => `
     <tr>
-      <td>${c.name || '-'}</td>
-      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${c.email || '-'}</td>
+      <td>${esc(c.name) || '-'}</td>
+      <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(c.email) || '-'}</td>
       <td>$${((c.amount_paid || 0) / 100).toLocaleString()}</td>
-      <td>${c.coupon_used || '<span style="color:var(--dim)">-</span>'}</td>
-      <td>${c.country || '<span style="color:var(--dim)">-</span>'}</td>
+      <td>${esc(c.coupon_used) || '<span style="color:var(--dim)">-</span>'}</td>
+      <td>${esc(c.country) || '<span style="color:var(--dim)">-</span>'}</td>
       <td>${formatDate(c.payment_date || c.created_at)}</td>
     </tr>
   `).join('');
@@ -1555,11 +1563,11 @@ function renderRounds(){
 
   tbody.innerHTML = allRounds.map(r => `
     <tr>
-      <td>${r.name}</td>
+      <td>${esc(r.name)}</td>
       <td>${formatDate(r.start_date)}</td>
       <td>${formatDate(r.end_date)}</td>
-      <td>${r.whatsapp_link ? '<a href="' + r.whatsapp_link + '" target="_blank" style="color:var(--orange)">וואטסאפ</a>' : '-'}</td>
-      <td><span class="badge ${r.status === 'active' ? 'badge-green' : 'badge-gray'}">${r.status === 'active' ? 'פעיל' : r.status}</span></td>
+      <td>${r.whatsapp_link ? '<a href="' + encodeURI(r.whatsapp_link) + '" target="_blank" style="color:var(--orange)">וואטסאפ</a>' : '-'}</td>
+      <td><span class="badge ${r.status === 'active' ? 'badge-green' : 'badge-gray'}">${r.status === 'active' ? 'פעיל' : esc(r.status)}</span></td>
     </tr>
   `).join('');
 }
