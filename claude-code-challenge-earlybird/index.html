@@ -3,97 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-M4RK6H5NMH');
-    </script>
-    <script>
-    // ===== EVENT TRACKING =====
-    document.addEventListener('DOMContentLoaded', function() {
-      // Track CTA clicks (hero, pricing, bottom, sticky)
-      document.querySelectorAll('a[href*="buy.stripe.com"]').forEach(function(link) {
-        link.addEventListener('click', function() {
-          var section = 'unknown';
-          if (link.closest('.hero')) section = 'hero';
-          else if (link.closest('.pricing-card')) section = 'pricing';
-          else if (link.closest('.bottom-cta')) section = 'bottom_cta';
-          else if (link.id === 'stickyCta') section = 'sticky';
-          gtag('event', 'cta_click', { event_category: 'conversion', event_label: section });
-        });
-      });
-
-      // Track FAQ opens
-      document.querySelectorAll('.faq-question').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var q = btn.querySelector('span') ? btn.querySelector('span').textContent.substring(0, 60) : 'unknown';
-          gtag('event', 'faq_open', { event_category: 'engagement', event_label: q });
-        });
-      });
-
-      // Track scroll depth (25%, 50%, 75%, 100%)
-      var scrollMarks = { 25: false, 50: false, 75: false, 100: false };
-      window.addEventListener('scroll', function() {
-        var scrollTop = window.scrollY;
-        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        var percent = Math.round((scrollTop / docHeight) * 100);
-        [25, 50, 75, 100].forEach(function(mark) {
-          if (percent >= mark && !scrollMarks[mark]) {
-            scrollMarks[mark] = true;
-            gtag('event', 'scroll_depth', { event_category: 'engagement', event_label: mark + '%' });
-          }
-        });
-      }, { passive: true });
-
-      // Track section visibility (which sections do users actually see)
-      var sectionNames = {
-        '.hero': 'hero',
-        '.peek-section': 'sneak_peek',
-        '.build-section': 'what_is_this',
-        '.schedule-section': 'schedule',
-        '.features-section': 'features',
-        '.who-section': 'who_is_it_for',
-        '.about-section': 'about',
-        '.pricing-section': 'pricing',
-        '.faq-section': 'faq',
-        '.bottom-cta': 'bottom_cta'
-      };
-      var sectionSeen = {};
-      var sectionObs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            var sel = Object.keys(sectionNames).find(function(s) { return entry.target.matches(s); });
-            if (sel && !sectionSeen[sel]) {
-              sectionSeen[sel] = true;
-              gtag('event', 'section_view', { event_category: 'engagement', event_label: sectionNames[sel] });
-            }
-          }
-        });
-      }, { threshold: 0.3 });
-      Object.keys(sectionNames).forEach(function(sel) {
-        var el = document.querySelector(sel);
-        if (el) sectionObs.observe(el);
-      });
-
-      // Track time on page (30s, 60s, 120s, 300s)
-      [30, 60, 120, 300].forEach(function(sec) {
-        setTimeout(function() {
-          gtag('event', 'time_on_page', { event_category: 'engagement', event_label: sec + 's' });
-        }, sec * 1000);
-      });
-
-      // Track guarantee badge click
-      var badge = document.querySelector('.hero-guarantee-badge');
-      if (badge) {
-        badge.addEventListener('click', function() {
-          gtag('event', 'guarantee_click', { event_category: 'engagement', event_label: 'guarantee_expand' });
-        });
-      }
-    });
-    </script>
     <title>Claude Code Challenge: Your First AI Hire | Early Bird</title>
     <meta name="description" content="5-day hands-on challenge. Learn Claude Code and build your first AI employee. No coding needed. Early bird: $197 (regular $397).">
     <meta property="og:title" content="Claude Code Challenge: Your First AI Hire">
@@ -1285,17 +1194,147 @@
         body.rtl [data-i18n="build1Desc"], body.rtl [data-i18n="build2Desc"], body.rtl [data-i18n="build3Desc"], body.rtl [data-i18n="build4Desc"] { direction: rtl; text-align: right; }
         body.rtl [data-i18n="build1Title"], body.rtl [data-i18n="build2Title"], body.rtl [data-i18n="build3Title"], body.rtl [data-i18n="build4Title"] { text-align: right; }
         body.rtl [data-i18n="bottomCtaDesc"] { direction: rtl; }
+
+        /* ===== STICKY TOP BAR ===== */
+        .sticky-top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(8, 8, 12, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(249, 115, 22, 0.15);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transform: translateY(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sticky-top-bar.visible {
+            transform: translateY(0);
+        }
+        .sticky-top-bar .spots-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        .sticky-top-bar .spots-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 8px;
+            color: var(--red);
+            font-size: 16px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            animation: spots-pulse 2s ease-in-out infinite;
+        }
+        @keyframes spots-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.15); }
+        }
+        .sticky-top-bar .btn-sticky {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+            color: white;
+            border: none;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .sticky-top-bar .btn-sticky:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--orange-glow);
+        }
+        @media (max-width: 640px) {
+            .sticky-top-bar { gap: 10px; padding: 8px 16px; }
+            .sticky-top-bar .spots-text { font-size: 12px; }
+            .sticky-top-bar .spots-number { width: 26px; height: 26px; font-size: 14px; }
+            .sticky-top-bar .btn-sticky { padding: 7px 14px; font-size: 12px; }
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .spots-progress-wrap {
+            max-width: 340px;
+            margin: 0 auto 28px;
+        }
+        .spots-progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .spots-progress-label .spots-taken {
+            color: var(--text-white);
+            font-weight: 700;
+        }
+        .spots-progress-label .spots-remaining {
+            color: var(--red);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            animation: spots-pulse 2s ease-in-out infinite;
+        }
+        .spots-progress-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+        .spots-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange), var(--red));
+            border-radius: 100px;
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            width: 0%;
+        }
+        .spots-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+            border-radius: 0 100px 100px 0;
+            animation: progress-glow 2s ease-in-out infinite;
+        }
+        @keyframes progress-glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Sticky CTA -->
-    <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=EARLYBIRD200" id="stickyCta" class="sticky-cta" style="display: none;">
-        <span data-i18n="stickyCta">Get Early Access</span>
-        <span style="font-weight: 400; opacity: 0.8; margin-left: 8px;">$197</span>
-    </a>
+    <!-- Sticky Top Bar -->
+    <div class="sticky-top-bar" id="stickyTopBar">
+        <div class="spots-text">
+            <span class="spots-number" id="stickySpots">4</span>
+            Early Bird spots left
+        </div>
+        <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=EARLYBIRD200" class="btn-sticky">Get Early Access &rarr;</a>
+    </div>
 
-    <button class="lang-toggle" onclick="toggleLang()" style="display:none;">
+    <button class="lang-toggle" onclick="toggleLang()">
         <span id="langEn" class="active">EN</span>
         <span id="langHe">HE</span>
     </button>
@@ -1317,17 +1356,17 @@
                 <span class="pulse"></span>
                 <span data-i18n="heroBadge">Claude Code Challenge &middot; Pre-Launch &middot; Save $200</span>
             </div>
-            <h1><span data-i18n="heroTitle">Build Your First<br><span class="accent">AI Employee</span><br>with Claude Code</span></h1>
+            <h1><span data-i18n="heroTitle">Build Your First <span class="accent">AI Employee</span><br>with Claude Code</span></h1>
             <div style="margin-bottom: 16px; text-align: center;">
                 <span data-i18n="heroSub2" class="hero-highlight" style="font-size: clamp(18px, 2.5vw, 22px); font-weight: 700; color: var(--orange); display: inline-block; animation: fadeUp 0.7s ease 0.25s both; position: relative;">Register before launch. Save $200.<span class="hero-highlight-line"></span></span>
             </div>
-            <p class="hero-sub" data-i18n="heroSub">A 5-day hands-on challenge. Learn Claude Code from zero, build real AI systems for your business. No coding needed. Full details drop April 14. Early supporters pay $197 instead of $397.</p>
+            <p class="hero-sub" data-i18n="heroSub">A 5-day hands-on challenge. Learn Claude Code from zero, build real AI systems for your business. No coding needed. Full details drop April 9. Early supporters pay $197 instead of $397.</p>
             <div class="hero-cta-group">
                 <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=EARLYBIRD200" class="btn-primary">
                     <span data-i18n="heroCta">Lock In Early Bird Price</span>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
-                <p class="hero-note" data-i18n="heroNote"><strong>$197</strong> for the first 20 to register &middot; Don't wait for launch day</p>
+                <p class="hero-note" data-i18n="heroNote"><strong>$197</strong> &middot; Only <strong style="color: var(--red);" id="heroSpots">4</strong> Early Bird spots left</p>
                 <div class="hero-guarantee-badge" onclick="this.classList.toggle('open')">
                     <div class="hero-guarantee-header">
                         <span>🛡️</span>
@@ -1335,7 +1374,7 @@
                         <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </div>
                     <div class="hero-guarantee-details">
-                        <p data-i18n="heroGuaranteeBody">On <strong>April 14</strong>, the full challenge breakdown goes live. You'll see exactly what's included, day by day. If it doesn't match what you're looking for, you have <strong>48 hours</strong> to request a full refund. No questions, no forms, just send an email to info@jaygptpro.com. Your money back, simple as that.</p>
+                        <p data-i18n="heroGuaranteeBody">On <strong>April 9</strong>, the full challenge breakdown goes live. You'll see exactly what's included, day by day. If it doesn't match what you're looking for, you have <strong>48 hours</strong> to request a full refund. No questions, no forms, just send an email to info@jaygptpro.com. Your money back, simple as that.</p>
                     </div>
                 </div>
             </div>
@@ -1420,16 +1459,16 @@
         <div class="reveal schedule-grid">
             <div style="padding: 28px 24px; background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 16px; text-align: center;">
                 <div style="color: var(--orange); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;" data-i18n="round1Label">Round 1</div>
-                <div style="color: var(--text-white); font-size: 20px; font-weight: 700;" data-i18n="round1Dates">Apr 20 - 24</div>
+                <div style="color: var(--text-white); font-size: 20px; font-weight: 700;" data-i18n="round1Dates">Apr 13 - 17</div>
                 <div style="color: var(--text-muted); font-size: 13px; margin-top: 6px;" data-i18n="round1Spots">50 spots</div>
             </div>
             <div style="padding: 28px 24px; background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 16px; text-align: center;">
                 <div style="color: var(--orange); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;" data-i18n="round2Label">Round 2</div>
-                <div style="color: var(--text-white); font-size: 20px; font-weight: 700;" data-i18n="round2Dates">Apr 27 - May 1</div>
+                <div style="color: var(--text-white); font-size: 20px; font-weight: 700;" data-i18n="round2Dates">Apr 20 - 24</div>
                 <div style="color: var(--text-muted); font-size: 13px; margin-top: 6px;" data-i18n="round2Spots">50 spots</div>
             </div>
         </div>
-        <p class="reveal" style="color: var(--text-muted); font-size: 14px; text-align: center; margin-top: 20px; max-width: 480px; margin-left: auto; margin-right: auto;" data-i18n="scheduleNote">5 days, ~30 min/day. All content is pre-recorded so you can follow at your own pace. Full details drop April 14.</p>
+        <p class="reveal" style="color: var(--text-muted); font-size: 14px; text-align: center; margin-top: 20px; max-width: 480px; margin-left: auto; margin-right: auto;" data-i18n="scheduleNote">5 days, ~30 min/day. All content is pre-recorded so you can follow at your own pace. Full details drop April 9.</p>
     </section>
 
     <div class="section-divider"></div>
@@ -1438,7 +1477,7 @@
     <section class="features-section" style="padding-top: 40px; padding-bottom: 40px;">
         <div class="section-header reveal">
             <div class="section-tag" data-i18n="peekTag">Sneak Peek</div>
-            <h2 data-i18n="peekTitle">5 Days. 5 Outcomes. Full Details April 14.</h2>
+            <h2 data-i18n="peekTitle">5 Days. 5 Outcomes. Full Details April 9.</h2>
         </div>
         <div class="reveal" style="max-width: 520px; margin: 0 auto; padding: 0 24px; display: grid; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 16px; padding: 18px 20px; background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 12px; transition: border-color 0.3s;" onmouseenter="this.style.borderColor='var(--orange)'" onmouseleave="this.style.borderColor='var(--dark-border)'">
@@ -1482,7 +1521,7 @@
                 <div style="font-size: 16px;">🔒</div>
             </div>
         </div>
-        <p class="reveal" style="color: var(--text-muted); font-size: 14px; text-align: center; margin-top: 24px;" data-i18n="peekNote">Each day ends with a real result. Full breakdown revealed April 14.</p>
+        <p class="reveal" style="color: var(--text-muted); font-size: 14px; text-align: center; margin-top: 24px;" data-i18n="peekNote">Each day ends with a real result. Full breakdown revealed April 9.</p>
     </section>
 
     <div class="section-divider"></div>
@@ -1590,7 +1629,17 @@
             <div class="claude-star star-pricing"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M105 122L129.1 108.4L129.6 107L129.1 106.2H127.7L122.8 105.9L106.2 105.4L91.7 104.8L77.7 104.1L74.2 103.3L70.9 99L71.2 96.8L74.2 94.8L78.4 95.2L87.8 95.8L101.9 96.8L112.1 97.4L127.2 99H129.6L129.9 98L129.1 97.4L128.5 96.8L113.9 86.9L98.2 76.5L89.9 70.5L85.5 67.5L83.2 64.6L82.3 58.4L86.3 53.9L91.8 54.3L93.2 54.7L98.7 58.9L110.5 68L125.8 79.3L128.1 81.2L129 80.6L129.1 80.1L128.1 78.4L119.7 63.3L110.8 47.9L106.8 41.6L105.8 37.8C105.4 36.2 105.1 34.9 105.1 33.3L109.7 27L112.3 26.2L118.4 27L121 29.3L124.8 38L131 51.8L140.6 70.5L143.4 76L144.9 81.2L145.5 82.8H146.5V81.9L147.3 71.3L148.7 58.4L150.1 41.7L150.6 37L152.9 31.4L157.5 28.4L161.1 30.1L164.1 34.3L163.7 37.1L161.9 48.5L158.5 66.4L156.2 78.4H157.5L159 76.9L165.1 68.9L175.3 56.1L179.8 51.1L185 45.5L188.4 42.8H194.8L199.5 49.8L197.4 57L190.8 65.3L185.4 72.4L177.6 82.9L172.7 91.3L173.2 92L174.3 91.9L191.9 88.1L201.5 86.4L212.8 84.5L218 86.9L218.5 89.3L216.5 94.3L204.3 97.3L190.1 100.1L168.9 105.1L168.6 105.3L168.9 105.7L178.5 106.6L182.6 106.8H192.6L211.2 108.2L216.1 111.4L219 115.3L218.5 118.3L211 122.1L200.9 119.7L177.3 114.1L169.2 112.1H168.1V112.8L174.8 119.4L187.2 130.5L202.7 145L203.5 148.5L201.5 151.3L199.4 151L185.8 140.8L180.5 136.2L168.7 126.2H167.9V127.2L170.6 131.2L185.1 153L185.8 159.7L184.8 161.8L181 163.1L176.9 162.4L168.4 150.5L159.7 137.1L152.6 125.1L151.8 125.6L147.6 170.4L145.7 172.7L141.2 174.4L137.4 171.5L135.4 166.9L137.4 157.8L139.8 145.9L141.8 136.5L143.5 124.7L144.6 120.8L144.5 120.5L143.7 120.6L134.8 132.8L121.4 151L110.7 162.4L108.2 163.4L103.8 161.1L104.2 157L106.6 153.4L121.4 134.6L130.3 123L136 116.3L136 115.3H135.7L96.5 140.7L89.5 141.6L86.5 138.8L86.9 134.2L88.3 132.7L100.1 124.6L100.1 124.6Z" fill="#d97757"/></svg></div>
             <div class="spots-badge">
                 <span class="dot"></span>
-                <span data-i18n="spotsBadge">$197 for the first 20 registrations only</span>
+                <span data-i18n="spotsBadge"><span id="pricingSpots" style="font-family: 'JetBrains Mono', monospace; font-size: 15px;">4</span> Early Bird spots remaining out of 20</span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="spots-progress-wrap" id="spotsProgress">
+                <div class="spots-progress-label">
+                    <span><span class="spots-taken" id="spotsTaken">16</span> of 20 spots taken</span>
+                    <span class="spots-remaining"><span id="spotsLeft">4</span> left</span>
+                </div>
+                <div class="spots-progress-track">
+                    <div class="spots-progress-fill" id="spotsProgressFill"></div>
+                </div>
             </div>
             <div class="pricing-label" data-i18n="pricingLabel">Early Bird Price</div>
             <div class="pricing-row">
@@ -1610,7 +1659,7 @@
                 <span data-i18n="checkoutBtn">Get Early Access</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
-            <p class="guarantee" data-i18n="guarantee">🛡️ Full refund within <strong>48 hours</strong> of the April 14 breakdown. Zero risk.</p>
+            <p class="guarantee" data-i18n="guarantee">🛡️ Full refund within <strong>48 hours</strong> of the April 9 breakdown. Zero risk.</p>
         </div>
     </section>
 
@@ -1621,7 +1670,7 @@
             <h3 data-i18n="guaranteeTitle">Zero Risk. 100% Money Back.</h3>
             <p data-i18n="guaranteeText">
                 We get it. You're buying before the full details are out. That takes trust.<br><br>
-                Here's the deal: on <span class="guarantee-bold">April 14</span>, the full challenge breakdown drops.
+                Here's the deal: on <span class="guarantee-bold">April 9</span>, the full challenge breakdown drops.
                 You'll see exactly what's included, day by day.
                 If it doesn't excite you, <span class="guarantee-bold">you have 48 hours to request a full refund</span>. No questions asked. No forms. No hassle. Just send an email.<br><br>
                 <span class="guarantee-bold">Your risk is literally zero.</span>
@@ -1653,7 +1702,7 @@
                     <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="faq-answer">
-                    <div class="faq-answer-inner" data-i18n="faq2A">An AI employee that connects to your real tools and works autonomously. Full breakdown drops April 14. You get 48 hours to review. Full refund if it's not a fit.</div>
+                    <div class="faq-answer-inner" data-i18n="faq2A">An AI employee that connects to your real tools and works autonomously. Full breakdown drops April 9. You get 48 hours to review. Full refund if it's not a fit.</div>
                 </div>
             </div>
             <div class="faq-item">
@@ -1689,7 +1738,7 @@
                     <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="faq-answer">
-                    <div class="faq-answer-inner" data-i18n="faq6A">On April 14 the full details drop. You get 48 hours to review everything. If it doesn't excite you, full refund, no questions asked. Zero risk.</div>
+                    <div class="faq-answer-inner" data-i18n="faq6A">On April 9 the full details drop. You get 48 hours to review everything. If it doesn't excite you, full refund, no questions asked. Zero risk.</div>
                 </div>
             </div>
             <div class="faq-item">
@@ -1728,7 +1777,7 @@
     <section class="bottom-cta reveal">
         <div class="bottom-cta-glow"></div>
         <h2 data-i18n="bottomCtaTitle">Save $200. <span style="color: var(--orange)">Lock in $197</span> before launch.</h2>
-        <p data-i18n="bottomCtaDesc">Full details drop April 14. Price goes to $397. Early bird spots are limited.</p>
+        <p data-i18n="bottomCtaDesc">Full details drop April 14. Price goes to $397. Only <strong style="color: var(--red);" id="bottomSpots">4</strong> Early Bird spots left.</p>
         <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=EARLYBIRD200" class="btn-primary" style="position: relative;">
             <span data-i18n="bottomCtaBtn">Get Early Access</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -1776,15 +1825,50 @@
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        // ===== STICKY CTA =====
+        // ===== SPOTS LEFT CONFIG =====
+        // Change this single number to update all spots counters across the page.
+        // 4 -> 3 -> 2 (keep at 2 for a few days)
+        var SPOTS_LEFT = 4;
+        var TOTAL_SPOTS = 20;
+        var SPOTS_TAKEN = TOTAL_SPOTS - SPOTS_LEFT;
+
         (function() {
-            var sticky = document.getElementById('stickyCta');
-            if (!sticky) return;
+            // Update all spots numbers on the page
+            var ids = ['stickySpots', 'heroSpots', 'pricingSpots', 'spotsLeft', 'bottomSpots'];
+            ids.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = SPOTS_LEFT;
+            });
+            var takenEl = document.getElementById('spotsTaken');
+            if (takenEl) takenEl.textContent = SPOTS_TAKEN;
+
+            // Animate progress bar fill on scroll
+            var progressFill = document.getElementById('spotsProgressFill');
+            var progressWrap = document.getElementById('spotsProgress');
+            if (progressFill && progressWrap) {
+                var progressDone = false;
+                var pObserver = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting && !progressDone) {
+                            progressDone = true;
+                            var pct = (SPOTS_TAKEN / TOTAL_SPOTS) * 100;
+                            progressFill.style.width = pct + '%';
+                        }
+                    });
+                }, { threshold: 0.3 });
+                pObserver.observe(progressWrap);
+            }
+        })();
+
+        // ===== STICKY TOP BAR =====
+        (function() {
+            var bar = document.getElementById('stickyTopBar');
+            if (!bar) return;
             window.addEventListener('scroll', function() {
                 if (window.scrollY > 600) {
-                    sticky.style.display = 'block';
+                    bar.classList.add('visible');
                 } else {
-                    sticky.style.display = 'none';
+                    bar.classList.remove('visible');
                 }
             }, { passive: true });
         })();
@@ -1896,21 +1980,21 @@
         const translations = {
             en: {
                 heroBadge: "Claude Code Challenge \u00B7 Pre-Launch \u00B7 Save $200",
-                heroTitle: 'Build Your First<br><span class="accent">AI Employee</span><br>with Claude Code',
-                heroSub: "A 5-day hands-on challenge where you'll learn Claude Code and build your first AI employee. Using the desktop app. No terminal. No coding. Works for beginners and pros. Full details drop April 14.",
+                heroTitle: 'Build Your First <span class="accent">AI Employee</span><br>with Claude Code',
+                heroSub: "A 5-day hands-on challenge where you'll learn Claude Code and build your first AI employee. Using the desktop app. No terminal. No coding. Works for beginners and pros. Full details drop April 9.",
                 heroSub2: "Register before launch. Save $200.",
                 heroCta: "Lock In Early Bird Price",
                 heroNote: '<strong>$197</strong> for the first 20 to register \u00B7 Don\'t wait for launch day',
                 heroGuaranteeTitle: 'Zero risk. 100% money-back guarantee.',
-                heroGuaranteeBody: 'On <strong>April 14</strong>, the full challenge breakdown goes live. You\'ll see exactly what\'s included, day by day. If it doesn\'t match what you\'re looking for, you have <strong>48 hours</strong> to request a full refund. No questions, no forms, just send an email to info@jaygptpro.com. Your money back, simple as that.',
+                heroGuaranteeBody: 'On <strong>April 9</strong>, the full challenge breakdown goes live. You\'ll see exactly what\'s included, day by day. If it doesn\'t match what you\'re looking for, you have <strong>48 hours</strong> to request a full refund. No questions, no forms, just send an email to info@jaygptpro.com. Your money back, simple as that.',
                 timerLabel: "Full details drop in",
                 cdDays: "Days",
                 cdHours: "Hours",
                 cdMins: "Min",
                 cdSecs: "Sec",
                 peekTag: "Sneak Peek",
-                peekTitle: "5 Days. 5 Outcomes. Full Details April 14.",
-                peekNote: "Each day ends with a real result. Full breakdown revealed April 14.",
+                peekTitle: "5 Days. 5 Outcomes. Full Details April 9.",
+                peekNote: "Each day ends with a real result. Full breakdown revealed April 9.",
                 day1Label: "Day 1",
                 day2Label: "Day 2",
                 day3Label: "Day 3",
@@ -1931,12 +2015,12 @@
                 scheduleTag: "Schedule",
                 scheduleTitle: "Claude Code Challenge. Two Rounds.",
                 round1Label: "Round 1",
-                round1Dates: "Apr 20 - 24",
+                round1Dates: "Apr 13 - 17",
                 round1Spots: "50 spots",
                 round2Label: "Round 2",
-                round2Dates: "Apr 27 - May 1",
+                round2Dates: "Apr 20 - 24",
                 round2Spots: "50 spots",
-                scheduleNote: "5 days, ~30 min/day. All content is pre-recorded so you can follow at your own pace. Full details drop April 14.",
+                scheduleNote: "5 days, ~30 min/day. All content is pre-recorded so you can follow at your own pace. Full details drop April 9.",
                 featuresTag: "What's Included",
                 featuresTitle: "Everything You Need to Build, Launch, and Keep",
                 feat1Title: "Pro-Level Video Lessons",
@@ -1980,15 +2064,15 @@
                 priceFeat5: "Day 0 prep session + lifetime access",
                 priceFeat6: "Full refund if the detailed breakdown doesn't excite you",
                 checkoutBtn: "Get Early Access",
-                guarantee: '🛡️ Full refund within <strong>48 hours</strong> of the April 14 breakdown. Zero risk.',
+                guarantee: '🛡️ Full refund within <strong>48 hours</strong> of the April 9 breakdown. Zero risk.',
                 guaranteeTitle: 'Zero Risk. 100% Money Back.',
-                guaranteeText: 'We get it. You\'re buying before the full details are out. That takes trust.<br><br>Here\'s the deal: on <span class="guarantee-bold">April 14</span>, the full challenge breakdown drops. You\'ll see exactly what\'s included, day by day. If it doesn\'t excite you, <span class="guarantee-bold">you have 48 hours to request a full refund</span>. No questions asked. No forms. No hassle. Just send an email.<br><br><span class="guarantee-bold">Your risk is literally zero.</span>',
+                guaranteeText: 'We get it. You\'re buying before the full details are out. That takes trust.<br><br>Here\'s the deal: on <span class="guarantee-bold">April 9</span>, the full challenge breakdown drops. You\'ll see exactly what\'s included, day by day. If it doesn\'t excite you, <span class="guarantee-bold">you have 48 hours to request a full refund</span>. No questions asked. No forms. No hassle. Just send an email.<br><br><span class="guarantee-bold">Your risk is literally zero.</span>',
                 faqTag: "Questions",
                 faqTitle: "Before You Decide",
                 faq1Q: "Do I need to know how to code?",
                 faq1A: "No. Zero coding, zero automation background needed. We use the Claude Code desktop app, not the terminal. You describe what you want, Claude Code builds it.",
                 faq2Q: "What exactly will I build?",
-                faq2A: "An AI employee that connects to your real tools and works autonomously. Full breakdown drops April 14. You get 48 hours to review. Full refund if it's not a fit.",
+                faq2A: "An AI employee that connects to your real tools and works autonomously. Full breakdown drops April 9. You get 48 hours to review. Full refund if it's not a fit.",
                 faq3Q: "How much time do I need per day?",
                 faq3A: "About 30 minutes. All content is pre-recorded, so you follow along at your own pace. Plus a WhatsApp group for support.",
                 faq4Q: "I already use Claude Code. Is this still relevant?",
@@ -1996,7 +2080,7 @@
                 faq5Q: "Why is the early bird price so low?",
                 faq5A: "Because you're getting in before the full details are public. That trust gets rewarded with $200 off. The regular price will be $397.",
                 faq6Q: "What if I register and then decide it's not for me?",
-                faq6A: "On April 14 the full details drop. You get 48 hours to review everything. If it doesn't excite you, full refund, no questions asked. Zero risk.",
+                faq6A: "On April 9 the full details drop. You get 48 hours to review everything. If it doesn't excite you, full refund, no questions asked. Zero risk.",
                 faq7Q: "Do I need to pay for any tools besides the challenge?",
                 faq7A: "You'll need a Claude Pro subscription ($20/month) to get started. That's enough for the challenge. Claude also offers higher-tier plans for heavier usage, but the $20 plan is all you need to follow along and build everything.",
                 faq8Q: "Is this live on Zoom? What time do I need to show up?",
@@ -2004,7 +2088,7 @@
                 faq9Q: "Is this only for eCommerce sellers?",
                 faq9A: "Absolutely relevant for eCommerce sellers, but not only. The challenge teaches you to build an AI employee using Claude Code. That's valuable for any business owner, freelancer, or employee in any field. Real estate, marketing, operations, you name it.",
                 bottomCtaTitle: 'Save $200. <span style="color: var(--orange)">Lock in $197</span> before launch.',
-                bottomCtaDesc: "Full details drop April 14. Price goes to $397. Early bird spots are limited.",
+                bottomCtaDesc: "Full details drop April 9. Price goes to $397. Early bird spots are limited.",
                 bottomCtaBtn: "Get Early Access",
                 stickyCta: "Get Early Access",
                 footerText: 'Built by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" style="color: var(--orange);">Jay Margaliot</a> \u00B7 <a href="mailto:info@jaygptpro.com" style="color: var(--text-muted);">info@jaygptpro.com</a>',
@@ -2031,15 +2115,15 @@
                 scheduleTag: "\u05DC\u05D5\u05D7 \u05D6\u05DE\u05E0\u05D9\u05DD",
                 scheduleTitle: "\u05D0\u05EA\u05D2\u05E8 Claude Code. \u05E9\u05E0\u05D9 \u05E1\u05D1\u05D1\u05D9\u05DD.",
                 round1Label: "\u05E1\u05D1\u05D1 1",
-                round1Dates: "20-24 \u05D1\u05D0\u05E4\u05E8\u05D9\u05DC",
+                round1Dates: "13-17 \u05D1\u05D0\u05E4\u05E8\u05D9\u05DC",
                 round1Spots: "50 \u05DE\u05E7\u05D5\u05DE\u05D5\u05EA",
                 round2Label: "\u05E1\u05D1\u05D1 2",
-                round2Dates: "27 \u05D1\u05D0\u05E4\u05E8\u05D9\u05DC - 1 \u05D1\u05DE\u05D0\u05D9",
+                round2Dates: "20-24 \u05D1\u05D0\u05E4\u05E8\u05D9\u05DC",
                 round2Spots: "50 \u05DE\u05E7\u05D5\u05DE\u05D5\u05EA",
-                scheduleNote: "5 ימים, כ-30 דקות ביום. כל התוכן מוקלט מראש, מתקדמים בקצב שלכם. פרטים מלאים יוצאים ב-14 באפריל.",
+                scheduleNote: "5 ימים, כ-30 דקות ביום. כל התוכן מוקלט מראש, מתקדמים בקצב שלכם. פרטים מלאים יוצאים ב-9 באפריל.",
                 heroNote: '<strong>$197</strong> \u05DC-20 \u05D4\u05E0\u05E8\u05E9\u05DE\u05D9\u05DD \u05D4\u05E8\u05D0\u05E9\u05D5\u05E0\u05D9\u05DD \u00B7 \u05D0\u05DC \u05EA\u05D7\u05DB\u05D5 \u05DC\u05D9\u05D5\u05DD \u05D4\u05D4\u05E9\u05E7\u05D4',
                 heroGuaranteeTitle: 'אפס סיכון. 100% החזר כספי.',
-                heroGuaranteeBody: 'ב-<strong>14 באפריל</strong> יוצא הפירוט המלא של האתגר. תראו בדיוק מה כלול, יום אחרי יום. אם זה לא מתאים לכם, יש לכם <strong>48 שעות</strong> לבקש החזר מלא. בלי שאלות, בלי טפסים, פשוט שלחו מייל ל-info@jaygptpro.com. הכסף חוזר אליכם, פשוט ככה.',
+                heroGuaranteeBody: 'ב-<strong>9 באפריל</strong> יוצא הפירוט המלא של האתגר. תראו בדיוק מה כלול, יום אחרי יום. אם זה לא מתאים לכם, יש לכם <strong>48 שעות</strong> לבקש החזר מלא. בלי שאלות, בלי טפסים, פשוט שלחו מייל ל-info@jaygptpro.com. הכסף חוזר אליכם, פשוט ככה.',
                 timerLabel: "\u05D4\u05E4\u05E8\u05D8\u05D9\u05DD \u05D4\u05DE\u05DC\u05D0\u05D9\u05DD \u05E0\u05D7\u05E9\u05E4\u05D9\u05DD \u05D1\u05E2\u05D5\u05D3",
                 cdDays: "\u05D9\u05DE\u05D9\u05DD",
                 cdHours: "\u05E9\u05E2\u05D5\u05EA",
@@ -2096,15 +2180,15 @@
                 priceFeat5: "\u05DE\u05E4\u05D2\u05E9 \u05D4\u05DB\u05E0\u05D4 \u05DC\u05E4\u05E0\u05D9 \u05D4\u05D0\u05EA\u05D2\u05E8 + \u05D2\u05D9\u05E9\u05D4 \u05DC\u05DB\u05DC \u05D4\u05D7\u05D9\u05D9\u05DD",
                 priceFeat6: "\u05D4\u05D7\u05D6\u05E8 \u05DE\u05DC\u05D0 \u05D0\u05DD \u05D4\u05E4\u05D9\u05E8\u05D5\u05D8 \u05D4\u05DE\u05DC\u05D0 \u05DC\u05D0 \u05DE\u05DC\u05D4\u05D9\u05D1 \u05D0\u05D5\u05EA\u05DA",
                 checkoutBtn: "\u05E7\u05D1\u05DC \u05D2\u05D9\u05E9\u05D4 \u05DE\u05D5\u05E7\u05D3\u05DE\u05EA",
-                guarantee: '🛡️ החזר מלא תוך <strong>48 שעות</strong> מרגע שהפרטים יצאו ב-14 באפריל. אפס סיכון.',
+                guarantee: '🛡️ החזר מלא תוך <strong>48 שעות</strong> מרגע שהפרטים יצאו ב-9 באפריל. אפס סיכון.',
                 guaranteeTitle: 'אפס סיכון. 100% החזר כספי.',
-                guaranteeText: 'אנחנו מבינים. אתה קונה לפני שכל הפרטים בחוץ. זה דורש אמון.<br><br>אז ככה זה עובד: ב-<span class="guarantee-bold">14 באפריל</span> יוצא הפירוט המלא של האתגר. תראה בדיוק מה כלול, יום אחרי יום. אם זה לא מלהיב אותך, <span class="guarantee-bold">יש לך 48 שעות לבקש החזר מלא</span>. בלי שאלות. בלי טפסים. בלי סיפורים. פשוט תשלח מייל.<br><br><span class="guarantee-bold">הסיכון שלך הוא ממש אפס.</span>',
+                guaranteeText: 'אנחנו מבינים. אתה קונה לפני שכל הפרטים בחוץ. זה דורש אמון.<br><br>אז ככה זה עובד: ב-<span class="guarantee-bold">9 באפריל</span> יוצא הפירוט המלא של האתגר. תראה בדיוק מה כלול, יום אחרי יום. אם זה לא מלהיב אותך, <span class="guarantee-bold">יש לך 48 שעות לבקש החזר מלא</span>. בלי שאלות. בלי טפסים. בלי סיפורים. פשוט תשלח מייל.<br><br><span class="guarantee-bold">הסיכון שלך הוא ממש אפס.</span>',
                 faqTag: "\u05E9\u05D0\u05DC\u05D5\u05EA",
                 faqTitle: "\u05DC\u05E4\u05E0\u05D9 \u05E9\u05DE\u05D7\u05DC\u05D9\u05D8\u05D9\u05DD",
                 faq1Q: "\u05E6\u05E8\u05D9\u05DA \u05DC\u05D3\u05E2\u05EA \u05E7\u05D5\u05D3?",
                 faq1A: "\u05DC\u05D0. \u05D0\u05E4\u05E1 \u05E7\u05D5\u05D3, \u05D0\u05E4\u05E1 \u05E8\u05E7\u05E2 \u05D1\u05D0\u05D5\u05D8\u05D5\u05DE\u05E6\u05D9\u05D5\u05EA. \u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05E9\u05EA\u05DE\u05E9\u05D9\u05DD \u05D1\u05D0\u05E4\u05DC\u05D9\u05E7\u05E6\u05D9\u05D4 \u05E9\u05DC Claude Code, \u05DC\u05D0 \u05D1\u05D8\u05E8\u05DE\u05D9\u05E0\u05DC. \u05D0\u05EA\u05D4 \u05DE\u05EA\u05D0\u05E8 \u05DE\u05D4 \u05D0\u05EA\u05D4 \u05E8\u05D5\u05E6\u05D4, \u05D4\u05D5\u05D0 \u05D1\u05D5\u05E0\u05D4.",
                 faq2Q: "\u05DE\u05D4 \u05D1\u05D3\u05D9\u05D5\u05E7 \u05D0\u05D1\u05E0\u05D4?",
-                faq2A: "עובד AI שמתחבר לכלים האמיתיים שלך ועובד עצמאית. פירוט מלא יוצא ב-14 באפריל. יש לך 48 שעות לבדוק. החזר מלא אם לא מתאים.",
+                faq2A: "עובד AI שמתחבר לכלים האמיתיים שלך ועובד עצמאית. פירוט מלא יוצא ב-9 באפריל. יש לך 48 שעות לבדוק. החזר מלא אם לא מתאים.",
                 faq3Q: "\u05DB\u05DE\u05D4 \u05D6\u05DE\u05DF \u05E6\u05E8\u05D9\u05DA \u05D1\u05D9\u05D5\u05DD?",
                 faq3A: "בערך 30 דקות. כל התוכן מוקלט מראש, אז אפשר להתקדם בקצב שלך. פלוס קבוצת WhatsApp לתמיכה.",
                 faq4Q: "\u05D0\u05E0\u05D9 \u05DB\u05D1\u05E8 \u05DE\u05E9\u05EA\u05DE\u05E9 \u05D1-Claude Code. \u05D6\u05D4 \u05E2\u05D3\u05D9\u05D9\u05DF \u05E8\u05DC\u05D5\u05D5\u05E0\u05D8\u05D9?",
@@ -2112,7 +2196,7 @@
                 faq5Q: "\u05DC\u05DE\u05D4 \u05D4\u05DE\u05D7\u05D9\u05E8 \u05D4\u05DE\u05D5\u05E7\u05D3\u05DD \u05DB\u05DC \u05DB\u05DA \u05E0\u05DE\u05D5\u05DA?",
                 faq5A: "\u05DB\u05D9 \u05D0\u05EA\u05D4 \u05E0\u05DB\u05E0\u05E1 \u05DC\u05E4\u05E0\u05D9 \u05E9\u05D4\u05E4\u05E8\u05D8\u05D9\u05DD \u05D4\u05DE\u05DC\u05D0\u05D9\u05DD \u05D9\u05E6\u05D0\u05D5. \u05D4\u05D0\u05DE\u05D5\u05DF \u05D4\u05D6\u05D4 \u05DE\u05E7\u05D1\u05DC \u05EA\u05D2\u05DE\u05D5\u05DC \u05E9\u05DC $200 \u05D4\u05E0\u05D7\u05D4. \u05D4\u05DE\u05D7\u05D9\u05E8 \u05D4\u05E8\u05D2\u05D9\u05DC \u05D9\u05D4\u05D9\u05D4 $397.",
                 faq6Q: "\u05DE\u05D4 \u05D0\u05DD \u05D0\u05E0\u05D9 \u05E0\u05E8\u05E9\u05DD \u05D5\u05D0\u05D6 \u05DE\u05D7\u05DC\u05D9\u05D8 \u05E9\u05D6\u05D4 \u05DC\u05D0 \u05D1\u05E9\u05D1\u05D9\u05DC\u05D9?",
-                faq6A: "ב-14 באפריל יוצא הפירוט המלא. יש לך 48 שעות לעבור על הכל. אם זה לא בשבילך, החזר מלא, בלי שאלות. אפס סיכון.",
+                faq6A: "ב-9 באפריל יוצא הפירוט המלא. יש לך 48 שעות לעבור על הכל. אם זה לא בשבילך, החזר מלא, בלי שאלות. אפס סיכון.",
                 faq7Q: "צריך לשלם על כלים נוספים מלבד האתגר?",
                 faq7A: "צריך מנוי Claude Pro ($20 לחודש) כדי להתחיל. זה מספיק לאתגר. ל-Claude יש גם תוכניות יקרות יותר לשימוש כבד, אבל ה-$20 זה כל מה שצריך כדי לעקוב ולבנות הכל.",
                 faq8Q: "זה לייב בזום? באיזה שעה צריך להיות?",
