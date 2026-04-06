@@ -990,11 +990,11 @@ Max = slower, <strong>dramatically better results.</strong>
 Most people leave it on Medium and <strong>never touch it.</strong> Now you know better. \ud83d\ude09`
   },
   // === UPCOMING HACKS (auto-publish on date) ===
-  { id: 21, date: "2026-04-08", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
-  { id: 22, date: "2026-04-09", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
-  { id: 23, date: "2026-04-10", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
-  { id: 24, date: "2026-04-13", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
-  { id: 25, date: "2026-04-14", title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true }
+  { id: 21, title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 22, title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 23, title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 24, title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true },
+  { id: 25, title: "Coming soon", emoji: "\ud83d\udd12", category: "claude-code", media: null, content: "This hack hasn't been published yet. Check back soon.", upcoming: true }
 ];
 
 // ===== LIKES SYSTEM =====
@@ -1150,9 +1150,9 @@ function render() {
   filteredHacks = getVisibleHacks();
   const track = document.getElementById('carouselTrack');
   const noResults = document.getElementById('noResults');
-  const allVisible = HACKS_DATA.filter(h => h.date <= new Date().toISOString().slice(0, 10));
+  const published = HACKS_DATA.filter(h => !h.upcoming).length;
   const upcoming = HACKS_DATA.filter(h => h.upcoming).length;
-  document.getElementById('hackCount').textContent = allVisible.length + ' of ' + HACKS_DATA.length + ' hacks';
+  document.getElementById('hackCount').textContent = published + ' of ' + HACKS_DATA.length + ' hacks';
 
   if (filteredHacks.length === 0) {
     track.innerHTML = '';
