@@ -998,9 +998,30 @@ Most people leave it on Medium and <strong>never touch it.</strong> Now you know
 ];
 
 // ===== LIKES SYSTEM =====
-// Seed random likes 20-50 per hack
-const BASE_LIKES = {};
-HACKS_DATA.forEach(h => { BASE_LIKES[h.id] = 20 + Math.floor(Math.random() * 31); });
+// Curated likes per hack based on quality/engagement. Upcoming hacks get 0.
+const BASE_LIKES = {
+  1: 52,   // Import memory - solid opener
+  2: 38,   // Cowork - useful
+  3: 45,   // Free course - high value
+  4: 61,   // Chrome extension - wow factor
+  5: 55,   // Record workflow - very useful
+  6: 42,   // Code review agents - technical
+  7: 48,   // Session slow fix - practical
+  8: 67,   // Double usage - everyone loves free
+  9: 35,   // Visual illustrations - nice
+  10: 58,  // Dispatch from phone - impressive
+  11: 53,  // /rc remote control - cool
+  12: 44,  // Channels Telegram - niche
+  13: 72,  // 50 Claude terms dictionary - massive value
+  14: 46,  // Three brains /model - useful
+  15: 63,  // Computer Use from phone - wow
+  16: 78,  // Skills intro - huge reactions
+  17: 88,  // Amazon landing page skill - the best one
+  18: 65,  // Auto-install skills - clever
+  19: 71,  // Free money/credits - everyone loves this
+  20: 43,  // Effort levels - new, still growing
+  21: 0, 22: 0, 23: 0, 24: 0, 25: 0  // upcoming
+};
 function getLikes(id) {
   const extra = localStorage.getItem('like-' + id) ? 1 : 0;
   return BASE_LIKES[id] + extra;
