@@ -760,6 +760,110 @@ section { position: relative; }
     .msg { max-width: 92%; }
 }
 
+/* ===== ROUNDS + COUNTDOWN ===== */
+.rounds-section { padding: 90px 0; background: var(--bg-3); border-top: 1px solid var(--border); }
+.rounds-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    max-width: 560px;
+    margin: 0 auto 40px;
+}
+@media (max-width: 560px) { .rounds-grid { grid-template-columns: 1fr; max-width: 320px; } }
+.round-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px 24px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.round-card:hover { border-color: rgba(249,115,22,0.35); transform: translateY(-3px); box-shadow: var(--shadow); }
+.round-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 12px;
+}
+.round-dates {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+}
+.round-spots {
+    font-size: 13.5px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+/* Countdown */
+.countdown-wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+.countdown-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+}
+[dir="rtl"] .countdown-label { letter-spacing: 0.3px; }
+.countdown-boxes {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+.countdown-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+}
+.countdown-num {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.countdown-unit {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 6px;
+}
+[dir="rtl"] .countdown-unit { letter-spacing: 0.3px; }
+.countdown-sep {
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--text-5);
+    line-height: 1;
+    padding-top: 4px;
+}
+@media (max-width: 480px) {
+    .countdown-num { font-size: 34px; }
+    .countdown-box { min-width: 56px; }
+    .countdown-wrap { padding: 22px 20px; }
+}
+
 /* ===== SKILLS ACCORDION ===== */
 .skills-section { padding: 100px 0; background: var(--bg); }
 .skills-grid {
@@ -2330,6 +2434,13 @@ section { position: relative; }
         <div class="hero-badge">
             <span class="pulse-dot"></span>
             <span data-en="The Claude Code Challenge" data-he="אתגר קלוד קוד">The Claude Code Challenge</span>
+            <span style="color: var(--text-4); margin: 0 6px;">|</span>
+            <span id="heroCdWrap" style="display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.5px; color: var(--orange-dark);">
+                <span id="heroCdDays">00</span>d
+                <span id="heroCdHours">00</span>h
+                <span id="heroCdMins">00</span>m
+                <span id="heroCdSecs">00</span>s
+            </span>
         </div>
 
         <h1>
@@ -2568,6 +2679,53 @@ section { position: relative; }
         <p class="day-bonus">
             <strong data-en="Bottom line:" data-he="בשורה התחתונה:">Bottom line:</strong><span data-en=" after 5 days, you walk away with a working AI Chief of Staff, a full set of skills you can reuse forever, and a system that gets smarter the longer you run it." data-he=" אחרי 5 ימים אתה יוצא עם Chief of Staff מבוסס AI שכבר עובד, סט מלא של מיומנויות לשימוש חוזר, ומערכת שלומדת ומשתפרת ככל שאתה עובד איתה."> after 5 days, you walk away with a working AI Chief of Staff, a full set of skills you can reuse forever, and a system that gets smarter the longer you run it.</span>
         </p>
+    </div>
+</section>
+
+<!-- ===== ROUNDS + COUNTDOWN ===== -->
+<section class="rounds-section">
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag" data-en="When It Happens" data-he="מתי זה קורה">When It Happens</div>
+            <h2><span data-en="Two Rounds. " data-he="שני סבבים. ">Two Rounds. </span><span class="hl" data-en="Pick Yours." data-he="תבחר את שלך.">Pick Yours.</span></h2>
+            <p data-en="Each round is limited to 50 spots so I can personally support everyone." data-he="כל סבב מוגבל ל-50 מקומות כדי שאוכל לתמוך באופן אישי בכל משתתף.">Each round is limited to 50 spots so I can personally support everyone.</p>
+        </div>
+        <div class="rounds-grid reveal">
+            <div class="round-card">
+                <div class="round-label" data-en="Round 1" data-he="סבב 1">Round 1</div>
+                <div class="round-dates">Apr 20 - 24</div>
+                <div class="round-spots" data-en="50 spots" data-he="50 מקומות">50 spots</div>
+            </div>
+            <div class="round-card">
+                <div class="round-label" data-en="Round 2" data-he="סבב 2">Round 2</div>
+                <div class="round-dates">Apr 27 - May 1</div>
+                <div class="round-spots" data-en="50 spots" data-he="50 מקומות">50 spots</div>
+            </div>
+        </div>
+        <div class="countdown-wrap reveal" id="countdownWrap">
+            <div class="countdown-label" data-en="Round 1 starts in" data-he="סבב 1 מתחיל בעוד">Round 1 starts in</div>
+            <div class="countdown-boxes">
+                <div class="countdown-box">
+                    <span class="countdown-num" id="cdDays">00</span>
+                    <span class="countdown-unit" data-en="Days" data-he="ימים">Days</span>
+                </div>
+                <span class="countdown-sep">:</span>
+                <div class="countdown-box">
+                    <span class="countdown-num" id="cdHours">00</span>
+                    <span class="countdown-unit" data-en="Hours" data-he="שעות">Hours</span>
+                </div>
+                <span class="countdown-sep">:</span>
+                <div class="countdown-box">
+                    <span class="countdown-num" id="cdMins">00</span>
+                    <span class="countdown-unit" data-en="Min" data-he="דקות">Min</span>
+                </div>
+                <span class="countdown-sep">:</span>
+                <div class="countdown-box">
+                    <span class="countdown-num" id="cdSecs">00</span>
+                    <span class="countdown-unit" data-en="Sec" data-he="שניות">Sec</span>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -3056,7 +3214,7 @@ section { position: relative; }
                 </div>
 
                 <div class="save-badge">💰 <span data-en="SAVE $150" data-he="חוסך $150">SAVE $150</span></div>
-                <p class="pricing-desc" data-en="One-time payment. Full access. Limited spots per cohort." data-he="תשלום חד-פעמי. גישה מלאה. מקומות מוגבלים לכל מחזור.">One-time payment. Full access. Limited spots per cohort.</p>
+                <p class="pricing-desc" data-en="One-time payment. Full access. After checkout, you'll choose your round: Apr 20-24 or Apr 27-May 1." data-he="תשלום חד-פעמי. גישה מלאה. אחרי הרכישה תבחר את הסבב שלך: 20-24 באפריל או 27 באפריל - 1 במאי.">One-time payment. Full access. After checkout, you'll choose your round: Apr 20-24 or Apr 27-May 1.</p>
 
                 <ul class="pricing-features">
                     <li><span class="check">✓</span> <span data-en="Full 5-day Claude Code Challenge" data-he="אתגר קלוד קוד המלא, 5 ימים">Full 5-day Claude Code Challenge</span></li>
@@ -3262,6 +3420,50 @@ if (pricingCard && priceTheater) {
     }, { threshold: 0.3 });
     priceObserver.observe(pricingCard);
 }
+
+// ===== COUNTDOWN TIMER =====
+function updateCountdown() {
+    const target = new Date('2026-04-20T09:00:00').getTime();
+    const now = Date.now();
+    const diff = target - now;
+    if (diff <= 0) {
+        const wrap = document.getElementById('countdownWrap');
+        if (wrap) {
+            const label = wrap.querySelector('.countdown-label');
+            if (label) label.textContent = document.documentElement.lang === 'he' ? 'סבב 1 התחיל!' : 'Round 1 has started!';
+            document.querySelector('.countdown-boxes').style.display = 'none';
+        }
+        // Also update hero mini countdown
+        const heroCd = document.getElementById('heroCdWrap');
+        if (heroCd) heroCd.style.display = 'none';
+        return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const pad = n => String(n).padStart(2, '0');
+    // Main countdown
+    const cdD = document.getElementById('cdDays');
+    const cdH = document.getElementById('cdHours');
+    const cdM = document.getElementById('cdMins');
+    const cdS = document.getElementById('cdSecs');
+    if (cdD) cdD.textContent = pad(d);
+    if (cdH) cdH.textContent = pad(h);
+    if (cdM) cdM.textContent = pad(m);
+    if (cdS) cdS.textContent = pad(s);
+    // Hero mini countdown
+    const hD = document.getElementById('heroCdDays');
+    const hH = document.getElementById('heroCdHours');
+    const hM = document.getElementById('heroCdMins');
+    const hS = document.getElementById('heroCdSecs');
+    if (hD) hD.textContent = pad(d);
+    if (hH) hH.textContent = pad(h);
+    if (hM) hM.textContent = pad(m);
+    if (hS) hS.textContent = pad(s);
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
 
 // ===== CHAT MOCKUP ANIMATION =====
 const chatWindow = document.querySelector('.chat-window');
