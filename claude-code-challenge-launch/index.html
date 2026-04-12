@@ -669,68 +669,163 @@ section { position: relative; }
     pointer-events: none;
 }
 .solution-inner { position: relative; z-index: 1; }
-.deliverables {
-    max-width: 800px;
+
+/* ===== CHAT MOCKUP ===== */
+.chat-window {
+    max-width: 740px;
     margin: 0 auto;
-    display: grid;
-    gap: 16px;
+    background: #1a1a2e;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(10, 10, 20, 0.25), 0 15px 30px rgba(10, 10, 20, 0.15), 0 0 0 1px rgba(255,255,255,0.06);
     position: relative;
     z-index: 2;
 }
-.deliverable {
+.chat-titlebar {
     display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 22px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.chat-dots { display: flex; gap: 7px; }
+.chat-dots span { width: 12px; height: 12px; border-radius: 50%; }
+.chat-dots span:nth-child(1) { background: #ff5f56; }
+.chat-dots span:nth-child(2) { background: #ffbd2e; }
+.chat-dots span:nth-child(3) { background: #27c93f; }
+.chat-titlebar-text { flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.45); letter-spacing: 0.5px; }
+.chat-titlebar-badge { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); padding: 4px 10px; background: rgba(255,255,255,0.06); border-radius: 100px; letter-spacing: 0.8px; }
+.chat-messages { padding: 28px 22px 32px; display: flex; flex-direction: column; gap: 6px; }
+.chat-time { text-align: center; font-size: 11px; color: rgba(255,255,255,0.25); font-weight: 500; margin-bottom: 16px; letter-spacing: 0.5px; }
+
+.msg {
+    display: flex;
+    gap: 12px;
     align-items: flex-start;
-    gap: 22px;
-    padding: 26px 32px;
+    max-width: 88%;
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.msg.in { opacity: 1; transform: translateX(0); }
+.msg.jay { flex-direction: row-reverse; margin-left: auto; transform: translateX(30px); }
+.msg.jay.in { transform: translateX(0); }
+.msg + .msg.donna-cont { padding-left: 52px; }
+[dir="rtl"] .msg + .msg.donna-cont { padding-left: 0; padding-right: 52px; }
+
+.msg-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); }
+.msg-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.msg.donna-cont .msg-avatar { visibility: hidden; }
+
+.msg-bubble {
+    padding: 15px 20px;
+    border-radius: 18px;
+    font-size: 16.5px;
+    line-height: 1.65;
+    font-weight: 450;
+    color: rgba(255,255,255,0.92);
+}
+.msg.donna .msg-bubble, .msg.donna-cont .msg-bubble { background: rgba(255,255,255,0.07); border-bottom-left-radius: 6px; }
+.msg.donna-cont .msg-bubble { border-top-left-radius: 6px; }
+[dir="rtl"] .msg.donna .msg-bubble, [dir="rtl"] .msg.donna-cont .msg-bubble { border-bottom-left-radius: 18px; border-bottom-right-radius: 6px; }
+[dir="rtl"] .msg.donna-cont .msg-bubble { border-top-left-radius: 18px; border-top-right-radius: 6px; }
+.msg.jay .msg-bubble { background: linear-gradient(135deg, #ea580c, #c2410c); color: white; border-bottom-right-radius: 6px; }
+[dir="rtl"] .msg.jay .msg-bubble { border-bottom-right-radius: 18px; border-bottom-left-radius: 6px; }
+
+.msg-name { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.msg.donna .msg-name { color: #fb923c; }
+.msg.jay .msg-name { color: rgba(255,255,255,0.7); }
+
+.typing-row { display: flex; gap: 12px; align-items: flex-start; opacity: 0; transform: translateX(-20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.typing-row.in { opacity: 1; transform: translateX(0); }
+.typing-row.done { opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease; height: 0; overflow: hidden; padding: 0; margin: 0; gap: 0; }
+.typing-row .msg-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+.typing-dots { display: flex; gap: 5px; padding: 16px 20px; background: rgba(255,255,255,0.07); border-radius: 18px; border-bottom-left-radius: 6px; }
+.typing-dots span { width: 7px; height: 7px; background: rgba(255,255,255,0.35); border-radius: 50%; animation: typingBounce 1.4s infinite ease-in-out; }
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-5px); opacity: 0.9; } }
+
+.msg.final { transform: translateX(-30px) scale(0.95); }
+.msg.final.in { transform: translateX(0) scale(1); }
+
+@media (max-width: 640px) {
+    .chat-window { border-radius: 16px; }
+    .chat-messages { padding: 20px 16px 24px; }
+    .msg-bubble { font-size: 15px; padding: 13px 16px; }
+    .msg-avatar { width: 34px; height: 34px; }
+    .msg + .msg.donna-cont { padding-left: 46px; }
+    [dir="rtl"] .msg + .msg.donna-cont { padding-left: 0; padding-right: 46px; }
+    .msg { max-width: 92%; }
+}
+
+/* ===== SKILLS ACCORDION ===== */
+.skills-section { padding: 100px 0; background: var(--bg); }
+.skills-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    position: relative;
+    z-index: 2;
+}
+@media (max-width: 700px) { .skills-grid { grid-template-columns: 1fr; } }
+.skill-card {
     background: var(--bg-2);
     border: 1px solid var(--border);
-    border-radius: 20px;
-    transition: border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: var(--shadow-sm);
+    cursor: pointer;
 }
-.deliverable:hover {
-    border-color: rgba(22,163,74,0.35);
-    transform: translateX(6px);
-    box-shadow: var(--shadow);
+.skill-card:hover { border-color: rgba(249,115,22,0.3); box-shadow: var(--shadow); }
+.skill-card.open { border-color: rgba(249,115,22,0.4); }
+.skill-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    width: 100%;
 }
-[dir="rtl"] .deliverable:hover { transform: translateX(-6px); }
-.deliverable-icon {
-    flex-shrink: 0;
-    width: 56px; height: 56px;
-    border-radius: 15px;
+.skill-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
     background: linear-gradient(135deg, var(--orange-light), #fff7ed);
-    border: 1px solid rgba(249,115,22,0.22);
+    border: 1px solid rgba(249,115,22,0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 9px;
+    flex-shrink: 0;
+    font-size: 18px;
 }
-.deliverable-icon lord-icon { width: 100%; height: 100%; }
-.deliverable-text h3 {
-    font-size: 18.5px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 5px;
-    letter-spacing: -0.3px;
+.skill-info { flex: 1; text-align: left; }
+[dir="rtl"] .skill-info { text-align: right; }
+.skill-info h4 { font-size: 15.5px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; margin: 0; }
+.skill-info p { font-size: 13px; color: var(--text-3); margin: 2px 0 0; line-height: 1.4; }
+.skill-chevron {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    color: var(--text-4);
+    transition: transform 0.3s ease, color 0.3s ease;
 }
-.deliverable-text p {
-    font-size: 15.5px;
-    color: var(--text-3);
-    line-height: 1.65;
-    margin: 0;
+.skill-card.open .skill-chevron { transform: rotate(180deg); color: var(--orange-dark); }
+.skill-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
 }
-.deliverables-more {
-    max-width: 760px;
-    margin: 32px auto 0;
-    padding: 22px 30px;
-    background: linear-gradient(135deg, #fff7ed, #ffedd5);
-    border: 1px dashed rgba(249,115,22,0.4);
-    border-radius: 16px;
-    text-align: center;
-    font-size: 15px;
+.skill-card.open .skill-detail { max-height: 200px; }
+.skill-detail-inner {
+    padding: 0 22px 20px;
+    font-size: 14.5px;
     color: var(--text-2);
     line-height: 1.7;
-    font-weight: 500;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    margin-top: 0;
 }
 
 /* ===== FORMULA GRAPHIC ===== */
@@ -2283,84 +2378,56 @@ section { position: relative; }
             <div class="section-header wide reveal">
                 <div class="section-tag" data-en="What You'll Build" data-he="מה תבנה">What You'll Build</div>
                 <h2><span data-en="Meet Your First " data-he="תכיר את עובד ה-">Meet Your First </span><span class="hl" data-en="AI Employee" data-he="AI שלך">AI Employee</span></h2>
-                <p data-en="In 5 days, you'll build a real AI Chief of Staff with 10+ ready-to-use skills. A working system that reads your email, knows your business, remembers your goals, and runs your whole operation 24/7. Here are just a few of the things she'll do for you." data-he="בתוך 5 ימים תבנה לעצמך Chief of Staff בגובה העיניים, עם מעל 10 מיומנויות מוכנות לשימוש. מערכת אמיתית שקוראת את המיילים שלך, מכירה את העסק, זוכרת את המטרות, ומריצה את הפעילות שלך 24/7. להלן רק חלק קטן ממה שהיא תעשה בשבילך.">In 5 days, you'll build a real AI Chief of Staff with 10+ ready-to-use skills. A working system that reads your email, knows your business, remembers your goals, and runs your whole operation 24/7. Here are just a few of the things she'll do for you.</p>
+                <p data-en="This is what your morning looks like after the challenge. Every day. Automatically." data-he="ככה נראה הבוקר שלך אחרי האתגר. כל יום. אוטומטית.">This is what your morning looks like after the challenge. Every day. Automatically.</p>
             </div>
 
-            <!-- Formula Graphic: You + AI + System = Unfair Advantage -->
-            <div class="formula-graphic reveal" style="text-align:center;">
-                <span class="formula-label" data-en="The Formula" data-he="הנוסחה">The Formula</span>
-                <div class="formula-equation">
-                    <div class="formula-term">
-                        <span class="term-word" data-en="You" data-he="אתה">You</span>
-                        <span class="term-label" data-en="The Operator" data-he="בעל העסק">The Operator</span>
-                    </div>
-                    <span class="formula-operator">+</span>
-                    <div class="formula-term">
-                        <span class="term-word">AI</span>
-                        <span class="term-label" data-en="Claude Code" data-he="קלוד קוד">Claude Code</span>
-                    </div>
-                    <span class="formula-operator">+</span>
-                    <div class="formula-term">
-                        <span class="term-word" data-en="System" data-he="שיטה">System</span>
-                        <span class="term-label" data-en="The Challenge" data-he="האתגר">The Challenge</span>
-                    </div>
-                    <span class="formula-operator">=</span>
-                    <div class="formula-term formula-result">
-                        <span class="term-word" data-en="Unfair Advantage" data-he="יתרון בלתי הוגן">Unfair Advantage</span>
-                        <span class="term-label" data-en="(but legal)" data-he="(אבל חוקי לגמרי)">(but legal)</span>
-                    </div>
+            <!-- Chat Mockup: Donna conversation -->
+            <div class="chat-window reveal">
+                <div class="chat-titlebar">
+                    <div class="chat-dots"><span></span><span></span><span></span></div>
+                    <div class="chat-titlebar-text">Claude Code Desktop</div>
+                    <div class="chat-titlebar-badge">9:15 AM</div>
                 </div>
-                <p class="formula-subtitle" data-en="A business owner + Claude Code + a trained system you actually own. That's the whole move." data-he="בעל עסק + קלוד קוד + שיטה מוכחת שהיא לגמרי שלך. זה כל הסיפור.">A business owner + Claude Code + a trained system you actually own. That's the whole move.</p>
-            </div>
-
-            <div class="deliverables">
-                <div class="deliverable reveal reveal-delay-1">
-                    <div class="deliverable-icon">
-                        <lord-icon src="https://cdn.lordicon.com/aycieyht.json" trigger="loop" delay="2000" colors="primary:#ea580c,secondary:#fbbf24"></lord-icon>
+                <div class="chat-messages">
+                    <div class="chat-time">Today, 9:15 AM</div>
+                    <div class="msg jay" data-group="1">
+                        <div class="msg-avatar"><img src="jay-photo.jpg" alt="Jay"></div>
+                        <div class="msg-bubble"><span class="msg-name">Jay</span>Good morning, Donna.</div>
                     </div>
-                    <div class="deliverable-text">
-                        <h3 data-en="A Morning Briefing waiting for you at 7am" data-he="תדרוך בוקר מוכן לך ב-7">A Morning Briefing waiting for you at 7am</h3>
-                        <p data-en="Your emails triaged, your calendar previewed, your priority #1 already flagged. Before your first coffee." data-he="המיילים ממוינים, היומן פרוש לפניך, והמשימה הכי חשובה של היום כבר מסומנת. עוד לפני שלקחת את הקפה הראשון.">Your emails triaged, your calendar previewed, your priority #1 already flagged. Before your first coffee.</p>
+                    <div class="typing-row" data-group="2" data-typing="true">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
                     </div>
-                </div>
-                <div class="deliverable reveal reveal-delay-2">
-                    <div class="deliverable-icon">
-                        <lord-icon src="https://cdn.lordicon.com/wfadduyp.json" trigger="loop" delay="2200" colors="primary:#ea580c,secondary:#fbbf24"></lord-icon>
+                    <div class="msg donna" data-group="2" data-after-typing="true" style="display:none;">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="msg-bubble"><span class="msg-name">Donna</span>Morning, Jay. Coffee first, then the briefing. Actually, no. Briefing first.</div>
                     </div>
-                    <div class="deliverable-text">
-                        <h3 data-en="Draft replies that actually sound like you" data-he="טיוטות מיילים שבאמת נשמעות כמוך">Draft replies that actually sound like you</h3>
-                        <p data-en="Your voice. Your tone. Your phrases. Your AI writes drafts that read like you wrote them. You press send." data-he="הסגנון שלך. הטון שלך. הביטויים שלך. היא כותבת טיוטות שקוראים אותן ובטוחים שאתה כתבת. אתה רק לוחץ שלח.">Your voice. Your tone. Your phrases. Your AI writes drafts that read like you wrote them. You press send.</p>
+                    <div class="msg donna-cont" data-group="3">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="msg-bubble">I read your inbox so you don't have to. 4 emails need your attention. I already drafted replies for 2 of them. Say the word and I'll send.</div>
                     </div>
-                </div>
-                <div class="deliverable reveal reveal-delay-3">
-                    <div class="deliverable-icon">
-                        <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="2400" colors="primary:#ea580c,secondary:#fbbf24"></lord-icon>
+                    <div class="msg donna-cont" data-group="4">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="msg-bubble">You have a meeting with your supplier at 2pm. I pulled a summary of your last conversation and a reminder of what you promised him. Show up prepared.</div>
                     </div>
-                    <div class="deliverable-text">
-                        <h3 data-en="Meeting prep done for you, automatically" data-he="הכנה מלאה לפגישות, בלי שביקשת">Meeting prep done for you, automatically</h3>
-                        <p data-en="Who they are. Your history. The promises you made. The questions to ask. Ready before you walk in." data-he="מי הם. מה ההיסטוריה איתם. אילו הבטחות נתת. אילו שאלות לשאול. הכל מוכן עוד לפני שנכנסת לחדר.">Who they are. Your history. The promises you made. The questions to ask. Ready before you walk in.</p>
+                    <div class="msg donna-cont" data-group="5">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="msg-bubble">And that task you know exactly which one I'm talking about? You've been pushing it off for 6 days. I blocked 45 minutes on your calendar this afternoon. Today you're doing it.</div>
                     </div>
-                </div>
-                <div class="deliverable reveal reveal-delay-4">
-                    <div class="deliverable-icon">
-                        <lord-icon src="https://cdn.lordicon.com/ercyvufy.json" trigger="loop" delay="2600" colors="primary:#ea580c,secondary:#fbbf24"></lord-icon>
+                    <div class="msg jay" data-group="6">
+                        <div class="msg-avatar"><img src="jay-photo.jpg" alt="Jay"></div>
+                        <div class="msg-bubble"><span class="msg-name">Jay</span>Thanks Donna, you're awesome. Anything else?</div>
                     </div>
-                    <div class="deliverable-text">
-                        <h3 data-en="A brain that never forgets" data-he="זיכרון שלא דולף">A brain that never forgets</h3>
-                        <p data-en="Commitments, decisions, follow ups, context. Years of memory working in your favor, not evaporating at 5pm." data-he="התחייבויות, החלטות, מעקבים, הקשר. שנים של זיכרון שעובד לטובתך, במקום להתאדות בסוף היום.">Commitments, decisions, follow ups, context. Years of memory working in your favor, not evaporating at 5pm.</p>
+                    <div class="typing-row" data-group="7" data-typing="true">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
                     </div>
-                </div>
-                <div class="deliverable reveal reveal-delay-5">
-                    <div class="deliverable-icon">
-                        <lord-icon src="https://cdn.lordicon.com/aklfruoc.json" trigger="loop" delay="2800" colors="primary:#ea580c,secondary:#fbbf24"></lord-icon>
-                    </div>
-                    <div class="deliverable-text">
-                        <h3 data-en="Work that happens while you sleep" data-he="עבודה שנעשית בזמן שאתה ישן">Work that happens while you sleep</h3>
-                        <p data-en="Scheduled briefings, daily summaries, weekly reviews. You wake up to work already done. On repeat." data-he="תדרוכי בוקר, סיכומי ערב, דוחות שבועיים. הכל מתוזמן, הכל רץ לבד. אתה מתעורר לעבודה שכבר נעשתה.">Scheduled briefings, daily summaries, weekly reviews. You wake up to work already done. On repeat.</p>
+                    <div class="msg donna final" data-group="7" data-after-typing="true" style="display:none;">
+                        <div class="msg-avatar"><img src="donna-avatar.jpg" alt="Donna"></div>
+                        <div class="msg-bubble"><span class="msg-name">Donna</span>Happy anniversary 💐 You might want to leave early today.<br><br>Now go make the big decisions. I'll handle the rest.</div>
                     </div>
                 </div>
             </div>
-            <p class="deliverables-more reveal" data-en="And this is just the start. You'll install 10+ skills that run your email, calendar, tasks, follow ups, meetings, decisions, and weekly reports. Every skill is reusable, trainable, and yours forever." data-he="וזו רק ההתחלה. תתקין יותר מ-10 מיומנויות שמנהלות את המייל, היומן, המשימות, המעקבים, הפגישות, ההחלטות, והדוחות השבועיים. כל מיומנות ניתנת לשימוש חוזר, מתאימה את עצמה אליך, ונשארת שלך לתמיד.">And this is just the start. You'll install 10+ skills that run your email, calendar, tasks, follow ups, meetings, decisions, and weekly reports. Every skill is reusable, trainable, and yours forever.</p>
         </div>
     </div>
 </section>
@@ -2519,6 +2586,129 @@ section { position: relative; }
     </div>
 </section>
 
+<!-- ===== WHAT SHE DOES (Skills Accordion) ===== -->
+<section class="skills-section">
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag" data-en="What She Does" data-he="מה היא עושה">What She Does</div>
+            <h2><span data-en="10 Skills." data-he="10 מיומנויות.">10 Skills.</span> <span class="hl" data-en="One Employee." data-he="עובדת אחת.">One Employee.</span></h2>
+            <p data-en="Every skill is a one-word command that replaces a paragraph of instructions. Click any skill to see what it does." data-he="כל מיומנות היא פקודה של מילה אחת שמחליפה פסקה של הוראות. לחץ על כל מיומנות כדי לראות מה היא עושה.">Every skill is a one-word command that replaces a paragraph of instructions. Click any skill to see what it does.</p>
+        </div>
+        <div class="skills-grid">
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">☀️</div>
+                    <div class="skill-info">
+                        <h4 data-en="Morning Briefing" data-he="תדרוך בוקר">Morning Briefing</h4>
+                        <p data-en="Waiting for you every morning, automatically." data-he="מחכה לך כל בוקר, אוטומטית.">Waiting for you every morning, automatically.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Scans your emails, calendar, and tasks every morning. Categorizes emails by urgency, flags conflicts, identifies your #1 priority for the day. Runs automatically at the time you set." data-he="סורקת את המיילים, היומן, והמשימות שלך כל בוקר. ממיינת מיילים לפי דחיפות, מסמנת התנגשויות, מזהה את העדיפות #1 שלך ליום. רצה אוטומטית בשעה שקבעת.">Scans your emails, calendar, and tasks every morning. Categorizes emails by urgency, flags conflicts, identifies your #1 priority for the day. Runs automatically at the time you set.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">✉️</div>
+                    <div class="skill-info">
+                        <h4 data-en="Draft Replies" data-he="טיוטות מיילים">Draft Replies</h4>
+                        <p data-en="Writes emails in your voice. You just press send." data-he="כותבת מיילים בקול שלך. אתה רק לוחץ שלח.">Writes emails in your voice. You just press send.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Drafts a reply to any email in your personal writing style. Checks your relationship history with the sender, open commitments, and tone preferences. Never sends without your approval." data-he="מנסחת תגובה לכל מייל בסגנון הכתיבה האישי שלך. בודקת את ההיסטוריה שלך עם השולח, התחייבויות פתוחות, והעדפות טון. לעולם לא שולחת בלי אישור שלך.">Drafts a reply to any email in your personal writing style. Checks your relationship history with the sender, open commitments, and tone preferences. Never sends without your approval.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">📋</div>
+                    <div class="skill-info">
+                        <h4 data-en="Meeting Prep" data-he="הכנה לפגישות">Meeting Prep</h4>
+                        <p data-en="Full brief before every meeting. Automatic." data-he="תדריך מלא לפני כל פגישה. אוטומטי.">Full brief before every meeting. Automatic.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Researches who you're meeting by pulling email history, calendar history, and shared documents. Builds a brief with who they are, what you discussed last time, open items, and suggested agenda." data-he="חוקרת את מי שאתה נפגש על ידי משיכת היסטוריית מיילים, יומן, ומסמכים משותפים. בונה תדריך עם מי הם, מה דיברתם בפעם האחרונה, נושאים פתוחים, ואג'נדה מוצעת.">Researches who you're meeting by pulling email history, calendar history, and shared documents. Builds a brief with who they are, what you discussed last time, open items, and suggested agenda.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">🤝</div>
+                    <div class="skill-info">
+                        <h4 data-en="Accountability" data-he="מעקב התחייבויות">Accountability</h4>
+                        <p data-en="Tracks your promises. Calls you out." data-he="עוקבת אחרי ההבטחות שלך. מעירה לך.">Tracks your promises. Calls you out.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Detects promises from your emails and meetings. Tracks them in both directions: what you owe others, and what others owe you. Flags overdue commitments with how many days late. Honest assessment, no sugarcoating." data-he="מזהה הבטחות מהמיילים והפגישות שלך. עוקבת בשני הכיוונים: מה אתה חייב לאחרים, ומה אחרים חייבים לך. מסמנת התחייבויות שעברו את הזמן עם מספר ימי האיחור. הערכה כנה, בלי ציפוי סוכר.">Detects promises from your emails and meetings. Tracks them in both directions: what you owe others, and what others owe you. Flags overdue commitments with how many days late. Honest assessment, no sugarcoating.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">🔍</div>
+                    <div class="skill-info">
+                        <h4 data-en="Forgotten Emails" data-he="מיילים שנשכחו">Forgotten Emails</h4>
+                        <p data-en="Finds what fell through the cracks. Both ways." data-he="מוצאת מה נפל בין הכיסאות. בשני הכיוונים.">Finds what fell through the cracks. Both ways.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Scans your inbox for emails you forgot to answer (3+ days) and emails where others haven't replied to you. Drafts follow-up messages for both. Flags anything involving money or deadlines." data-he="סורקת את תיבת הדואר שלך למיילים שלא ענית עליהם (3+ ימים) ומיילים שאחרים לא ענו לך. מנסחת הודעות מעקב לשני הכיוונים. מסמנת כל מה שכולל כסף או דדליינים.">Scans your inbox for emails you forgot to answer (3+ days) and emails where others haven't replied to you. Drafts follow-up messages for both. Flags anything involving money or deadlines.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">⚠️</div>
+                    <div class="skill-info">
+                        <h4 data-en="Risk Detection" data-he="זיהוי סיכונים">Risk Detection</h4>
+                        <p data-en="Flags problems before they explode." data-he="מסמנת בעיות לפני שהן מתפוצצות.">Flags problems before they explode.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Connects the dots across emails, calendar, tasks, and promises. Deadline approaching + task not started = risk. Multiple overdue items for one client = relationship risk. Financial setup incomplete + launch date = revenue risk." data-he="מחברת נקודות בין מיילים, יומן, משימות, והבטחות. דדליין מתקרב + משימה לא התחילה = סיכון. מספר פריטים באיחור ללקוח אחד = סיכון ליחסים. הגדרה פיננסית לא שלמה + תאריך השקה = סיכון הכנסתי.">Connects the dots across emails, calendar, tasks, and promises. Deadline approaching + task not started = risk. Multiple overdue items for one client = relationship risk. Financial setup incomplete + launch date = revenue risk.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">📅</div>
+                    <div class="skill-info">
+                        <h4 data-en="Block Time" data-he="חסימת זמן">Block Time</h4>
+                        <p data-en="Blocks calendar time for tasks you keep avoiding." data-he="חוסמת זמן ביומן למשימות שאתה דוחה.">Blocks calendar time for tasks you keep avoiding.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="When a task has been postponed 3+ times, she finds a free slot on your calendar and blocks it. No more excuses. She picks the best time based on your meeting load and energy patterns." data-he="כשמשימה נדחתה 3+ פעמים, היא מוצאת חלון פנוי ביומן וחוסמת אותו. בלי עוד תירוצים. היא בוחרת את הזמן הכי טוב על סמך עומס הפגישות ודפוסי האנרגיה שלך.">When a task has been postponed 3+ times, she finds a free slot on your calendar and blocks it. No more excuses. She picks the best time based on your meeting load and energy patterns.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">🌙</div>
+                    <div class="skill-info">
+                        <h4 data-en="Evening Summary" data-he="סיכום ערב">Evening Summary</h4>
+                        <p data-en="End-of-day wrap. What's done, what's not, what's tomorrow." data-he="סיכום סוף יום. מה נעשה, מה לא, מה מחר.">End-of-day wrap. What's done, what's not, what's tomorrow.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Reviews what got done today and what didn't. Checks for new emails since morning. Preps you for tomorrow's meetings. Suggests priorities for the next day. Runs automatically every evening." data-he="סוקרת מה הושלם היום ומה לא. בודקת מיילים חדשים מהבוקר. מכינה אותך לפגישות של מחר. מציעה עדיפויות ליום הבא. רצה אוטומטית כל ערב.">Reviews what got done today and what didn't. Checks for new emails since morning. Preps you for tomorrow's meetings. Suggests priorities for the next day. Runs automatically every evening.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">📊</div>
+                    <div class="skill-info">
+                        <h4 data-en="Weekly Report" data-he="דוח שבועי">Weekly Report</h4>
+                        <p data-en="Every Sunday. Wins, misses, patterns, next week." data-he="כל יום ראשון. ניצחונות, פספוסים, מגמות, שבוע הבא.">Every Sunday. Wins, misses, patterns, next week.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Full weekly analysis: tasks completed vs created, promises kept vs broken, meeting load, patterns, week-over-week comparison, and top 3 priorities for next week. Data-backed, not vague." data-he="ניתוח שבועי מלא: משימות שהושלמו מול שנוצרו, הבטחות שנשמרו מול שנשברו, עומס פגישות, דפוסים, השוואה שבוע-על-שבוע, ו-3 עדיפויות מובילות לשבוע הבא. מבוסס נתונים, לא מעורפל.">Full weekly analysis: tasks completed vs created, promises kept vs broken, meeting load, patterns, week-over-week comparison, and top 3 priorities for next week. Data-backed, not vague.</div></div>
+            </div>
+            <div class="skill-card reveal" onclick="this.classList.toggle('open')">
+                <div class="skill-header">
+                    <div class="skill-icon">🧠</div>
+                    <div class="skill-info">
+                        <h4 data-en="Gets Smarter Daily" data-he="משתפרת כל יום">Gets Smarter Daily</h4>
+                        <p data-en="Every interaction makes her sharper." data-he="כל אינטראקציה עושה אותה חדה יותר.">Every interaction makes her sharper.</p>
+                    </div>
+                    <svg class="skill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="skill-detail"><div class="skill-detail-inner" data-en="Reviews what worked and what didn't. Updates her memory with new patterns, preferences, and corrections. In a month, she knows you better than you know yourself." data-he="סוקרת מה עבד ומה לא. מעדכנת את הזיכרון שלה עם דפוסים חדשים, העדפות, ותיקונים. תוך חודש, היא מכירה אותך טוב יותר ממה שאתה מכיר את עצמך.">Reviews what worked and what didn't. Updates her memory with new patterns, preferences, and corrections. In a month, she knows you better than you know yourself.</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ===== FEATURES ===== -->
 <section class="features-section">
     <div class="wrap">
@@ -2609,6 +2799,37 @@ section { position: relative; }
         <p class="nocode-verdict reveal">
             <span data-en="Here's the truth: " data-he="האמת הפשוטה: ">Here's the truth: </span><strong data-en="you don't need the terminal." data-he="לא צריך את הטרמינל.">you don't need the terminal.</strong><span data-en=" The Claude Code Desktop app feels exactly like ChatGPT. Simple chat interface. But under the hood, it has the insane power to read files, analyze data, and build entire systems for your business. This challenge teaches you the clean, practical way. No developer background required." data-he=" אפליקציית קלוד קוד דסקטופ נראית ומרגישה בדיוק כמו ChatGPT. ממשק צ׳אט פשוט. אבל מתחת לפני השטח יש לה את אותו כוח מטורף לקרוא קבצים, לנתח נתונים, ולבנות מערכות שלמות לעסק. באתגר הזה אתה לומד את הדרך הנקייה והמעשית, בלי להיות מפתח."> The Claude Code Desktop app feels exactly like ChatGPT. Simple chat interface. But under the hood, it has the insane power to read files, analyze data, and build entire systems for your business. This challenge teaches you the clean, practical way. No developer background required.</span>
         </p>
+    </div>
+</section>
+
+<!-- ===== FORMULA GRAPHIC ===== -->
+<section style="padding: 80px 0; background: var(--bg-3); border-top: 1px solid var(--border);">
+    <div class="wrap">
+        <div class="formula-graphic reveal" style="text-align:center;">
+            <span class="formula-label" data-en="The Formula" data-he="הנוסחה">The Formula</span>
+            <div class="formula-equation">
+                <div class="formula-term">
+                    <span class="term-word" data-en="You" data-he="אתה">You</span>
+                    <span class="term-label" data-en="The Operator" data-he="בעל העסק">The Operator</span>
+                </div>
+                <span class="formula-operator">+</span>
+                <div class="formula-term">
+                    <span class="term-word">AI</span>
+                    <span class="term-label" data-en="Claude Code" data-he="קלוד קוד">Claude Code</span>
+                </div>
+                <span class="formula-operator">+</span>
+                <div class="formula-term">
+                    <span class="term-word" data-en="System" data-he="שיטה">System</span>
+                    <span class="term-label" data-en="The Challenge" data-he="האתגר">The Challenge</span>
+                </div>
+                <span class="formula-operator">=</span>
+                <div class="formula-term formula-result">
+                    <span class="term-word" data-en="Unfair Advantage" data-he="יתרון בלתי הוגן">Unfair Advantage</span>
+                    <span class="term-label" data-en="(but legal)" data-he="(אבל חוקי לגמרי)">(but legal)</span>
+                </div>
+            </div>
+            <p class="formula-subtitle" data-en="A business owner + Claude Code + a trained system you actually own. That's the whole move." data-he="בעל עסק + קלוד קוד + שיטה מוכחת שהיא לגמרי שלך. זה כל הסיפור.">A business owner + Claude Code + a trained system you actually own. That's the whole move.</p>
+        </div>
     </div>
 </section>
 
@@ -3041,6 +3262,70 @@ if (pricingCard && priceTheater) {
     }, { threshold: 0.3 });
     priceObserver.observe(pricingCard);
 }
+
+// ===== CHAT MOCKUP ANIMATION =====
+const chatWindow = document.querySelector('.chat-window');
+if (chatWindow) {
+    const chatItems = chatWindow.querySelectorAll('.msg, .typing-row');
+    const chatGroups = {};
+    chatItems.forEach(el => {
+        const g = el.dataset.group;
+        if (g) {
+            if (!chatGroups[g]) chatGroups[g] = [];
+            chatGroups[g].push(el);
+        }
+    });
+    const chatGroupKeys = Object.keys(chatGroups).sort((a, b) => Number(a) - Number(b));
+    let chatCurrentGroup = 0;
+    let chatStarted = false;
+
+    function revealChatGroup() {
+        if (chatCurrentGroup >= chatGroupKeys.length) return;
+        const key = chatGroupKeys[chatCurrentGroup];
+        const items = chatGroups[key];
+        items.forEach(el => {
+            if (el.dataset.typing === 'true') {
+                el.style.display = '';
+                el.classList.add('in');
+                setTimeout(() => {
+                    el.classList.add('done');
+                    items.forEach(afterEl => {
+                        if (afterEl.dataset.afterTyping === 'true') {
+                            afterEl.style.display = '';
+                            setTimeout(() => afterEl.classList.add('in'), 100);
+                        }
+                    });
+                }, 900);
+            } else if (el.dataset.afterTyping !== 'true') {
+                el.style.display = '';
+                el.classList.add('in');
+            }
+        });
+        chatCurrentGroup++;
+    }
+
+    const chatObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !chatStarted) {
+                chatStarted = true;
+                chatObserver.unobserve(entry.target);
+                let delay = 300;
+                for (let i = 0; i < chatGroupKeys.length; i++) {
+                    setTimeout(() => revealChatGroup(), delay);
+                    const items = chatGroups[chatGroupKeys[i]];
+                    const hasTyping = items.some(el => el.dataset.typing === 'true');
+                    delay += hasTyping ? 1600 : 700;
+                }
+            }
+        });
+    }, { threshold: 0.2 });
+    chatObserver.observe(chatWindow);
+}
+
+// ===== SKILLS ACCORDION =====
+document.querySelectorAll('.skill-card').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('open'));
+});
 
 // ===== FAQ TOGGLE =====
 document.querySelectorAll('.faq-question').forEach(btn => {
