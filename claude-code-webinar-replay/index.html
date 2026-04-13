@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code: The Complete Guide (Replay) | Jay Margaliot</title>
+    <meta name="description" content="Watch the full replay of 'Claude Code: The Complete Guide'. Live demos, installation walkthrough, and how to build your first AI employee. Available for a limited time.">
+    <meta property="og:title" content="Claude Code: The Complete Guide (Replay)">
+    <meta property="og:description" content="The full webinar replay. Live demos, installation guide, and the path to your first AI employee. Limited time.">
+    <meta property="og:image" content="https://jaygptpro.com/claude-code-challenge-launch/og-image.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-M4RK6H5NMH');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #f5f5f7;
+    --bg-2: #ffffff;
+    --bg-3: #fafafc;
+    --bg-cream: #fff9f2;
+    --border: #e5e5eb;
+    --text: #0a0a0f;
+    --text-2: #2a2a35;
+    --text-3: #55556a;
+    --text-4: #8a8a98;
+    --text-5: #b0b0ba;
+    --orange: #f97316;
+    --orange-dark: #ea580c;
+    --orange-light: #ffedd5;
+    --claude: #d97757;
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --shadow-sm: 0 1px 3px rgba(20,20,40,0.04);
+    --shadow: 0 4px 12px rgba(20,20,40,0.05);
+    --shadow-lg: 0 20px 50px rgba(20,20,40,0.08);
+    --shadow-orange: 0 20px 50px rgba(249,115,22,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Outfit', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== HERO ===== */
+.hero {
+    padding: 48px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(249,115,22,0.12) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.hero-inner { position: relative; z-index: 2; }
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    padding: 9px 18px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+}
+.hero-badge .pulse-dot {
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--red);
+}
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+
+.hero h1 {
+    font-size: clamp(30px, 5.5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -1.8px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+}
+.hero h1 .hl {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub {
+    font-size: 17px;
+    color: var(--text-3);
+    max-width: 600px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+}
+
+/* Countdown */
+.countdown-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 28px;
+    background: var(--red-soft);
+    border: 1px solid rgba(220,38,38,0.25);
+    border-radius: 14px;
+    margin-bottom: 36px;
+}
+.countdown-bar-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--red);
+}
+.countdown-bar-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+}
+
+/* Video */
+.video-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    position: relative;
+}
+.video-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: radial-gradient(ellipse at center, rgba(249,115,22,0.15) 0%, transparent 65%);
+    filter: blur(30px);
+    pointer-events: none;
+}
+.video-frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, #1a1a2e, #0a0a14);
+    border: 2px solid rgba(249,115,22,0.35);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(249,115,22,0.12);
+}
+.video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+}
+/* Placeholder when no video yet */
+.video-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(255,255,255,0.5);
+}
+.video-placeholder-icon {
+    font-size: 48px;
+    opacity: 0.6;
+}
+.video-placeholder-text {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ===== CHAPTERS ===== */
+.chapters-section {
+    padding: 80px 0;
+    background: var(--bg-3);
+    border-top: 1px solid var(--border);
+}
+.section-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+.section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 14px;
+}
+.section-tag::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: linear-gradient(90deg, var(--orange), transparent);
+}
+.section-header h2 {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+.section-header p {
+    font-size: 16px;
+    color: var(--text-3);
+    line-height: 1.6;
+}
+
+.chapters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+@media (max-width: 640px) { .chapters-grid { grid-template-columns: 1fr; } }
+
+.chapter-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text);
+}
+.chapter-card:hover {
+    border-color: rgba(249,115,22,0.35);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.chapter-num {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--orange-light), #fff7ed);
+    border: 1px solid rgba(249,115,22,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+}
+.chapter-card.wow .chapter-num {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    color: white;
+    border: none;
+    box-shadow: 0 6px 16px rgba(249,115,22,0.3);
+}
+.chapter-info h3 {
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin-bottom: 2px;
+}
+.chapter-info p {
+    font-size: 12.5px;
+    color: var(--text-3);
+    line-height: 1.4;
+    margin: 0;
+}
+.chapter-time {
+    margin-left: auto;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-4);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* ===== RESOURCES ===== */
+.resources-section {
+    padding: 80px 0;
+    background: var(--bg);
+}
+.resources-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+@media (max-width: 640px) { .resources-grid { grid-template-columns: 1fr; } }
+
+.resource-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text);
+}
+.resource-card:hover {
+    border-color: rgba(249,115,22,0.35);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.resource-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--orange-light), #fff7ed);
+    border: 1px solid rgba(249,115,22,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.resource-info h3 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin-bottom: 2px;
+}
+.resource-info p {
+    font-size: 13px;
+    color: var(--text-3);
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ===== CHALLENGE CTA ===== */
+.challenge-section {
+    padding: 90px 0;
+    background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg-cream) 100%);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.challenge-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(249,115,22,0.1) 0%, transparent 65%);
+    pointer-events: none;
+}
+.challenge-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+    margin: 0 auto;
+}
+.challenge-inner h2 {
+    font-size: clamp(28px, 4.5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -1.4px;
+    line-height: 1.1;
+    margin-bottom: 18px;
+}
+.challenge-inner h2 .hl {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.challenge-inner p {
+    font-size: 17px;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 44px;
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    color: white;
+    border-radius: 100px;
+    font-size: 18px;
+    font-weight: 800;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-orange);
+    position: relative;
+    overflow: hidden;
+}
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 26px 60px rgba(249,115,22,0.35);
+}
+.btn-old { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.55); text-decoration: line-through; margin-right: 2px; }
+
+.challenge-note {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+.challenge-note strong { color: var(--orange-dark); font-weight: 700; }
+.challenge-note .old { color: var(--text-5); text-decoration: line-through; margin-right: 4px; }
+
+.challenge-rounds {
+    display: inline-flex;
+    gap: 18px;
+    margin-top: 22px;
+    font-size: 13.5px;
+    color: var(--text-3);
+    font-weight: 600;
+}
+.challenge-rounds span { display: inline-flex; align-items: center; gap: 6px; }
+.challenge-rounds span::before { content: ''; width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
+
+/* ===== FOOTER ===== */
+.footer {
+    padding: 36px 24px 44px;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--text-3);
+    border-top: 1px solid var(--border);
+}
+.footer a { color: var(--orange-dark); font-weight: 600; }
+
+/* Mobile */
+@media (max-width: 640px) {
+    .hero h1 { letter-spacing: -1px; }
+    .countdown-bar { flex-direction: column; gap: 8px; padding: 12px 20px; }
+    .video-frame { border-radius: 14px; }
+    .video-frame iframe { border-radius: 12px; }
+    .btn-primary { padding: 18px 32px; font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="wrap hero-inner">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            <span>Limited Time Replay</span>
+        </div>
+
+        <h1>Claude Code: <span class="hl">The Complete Guide</span></h1>
+        <p class="hero-sub">The full webinar from April 14. Live demos, installation walkthrough, and how to build your first AI employee. Watch before it's taken down.</p>
+
+        <!-- Countdown -->
+        <div class="countdown-bar">
+            <span class="countdown-bar-label">Replay expires in:</span>
+            <span class="countdown-bar-timer" id="replayTimer">00d 00h 00m 00s</span>
+        </div>
+
+        <!-- Video -->
+        <div class="video-wrap">
+            <div class="video-frame">
+                <!-- PLACEHOLDER: Replace with YouTube iframe after webinar -->
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <span class="video-placeholder-icon">🎬</span>
+                    <span class="video-placeholder-text">Replay will be available here after the live event</span>
+                </div>
+                <!-- Uncomment and add YouTube ID after webinar:
+                <iframe
+                    src="https://www.youtube.com/embed/VIDEO_ID_HERE?rel=0&modestbranding=1"
+                    title="Claude Code: The Complete Guide - Full Webinar Replay"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen>
+                </iframe>
+                -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CHAPTERS ===== -->
+<section class="chapters-section">
+    <div class="wrap">
+        <div class="section-header">
+            <div class="section-tag">Jump To</div>
+            <h2>What's Inside</h2>
+            <p>Click any chapter to jump directly to that part of the webinar.</p>
+        </div>
+
+        <div class="chapters-grid">
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">01</div>
+                <div class="chapter-info">
+                    <h3>The Hook</h3>
+                    <p>"Drop me an ASIN" . live build starts</p>
+                </div>
+                <span class="chapter-time">0:00</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">02</div>
+                <div class="chapter-info">
+                    <h3>My Story</h3>
+                    <p>From Amazon seller to AI builder</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">03</div>
+                <div class="chapter-info">
+                    <h3>What is Claude Code</h3>
+                    <p>"ChatGPT talks. Claude Code works."</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card wow" data-time="0">
+                <div class="chapter-num">🎯</div>
+                <div class="chapter-info">
+                    <h3>Landing Page Reveal</h3>
+                    <p>The page built while Jay talked</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">05</div>
+                <div class="chapter-info">
+                    <h3>Install Guide</h3>
+                    <p>Mac + Windows, step by step</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">06</div>
+                <div class="chapter-info">
+                    <h3>First Day Hacks</h3>
+                    <p>Parallel tasks, 3 brains, power moves</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">07</div>
+                <div class="chapter-info">
+                    <h3>The Full Tour</h3>
+                    <p>Settings, Skills, Connectors, Chrome</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">08</div>
+                <div class="chapter-info">
+                    <h3>Memory &amp; Files</h3>
+                    <p>CLAUDE.md, Memory, the "Second Brain"</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card wow" data-time="0">
+                <div class="chapter-num">🎯</div>
+                <div class="chapter-info">
+                    <h3>5 Live Demos</h3>
+                    <p>Chrome, Bright Data, Pricing Tool, AI Photos</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">10</div>
+                <div class="chapter-info">
+                    <h3>Power Moves</h3>
+                    <p>/compact, Plan Mode, Coach Prompt</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card wow" data-time="0">
+                <div class="chapter-num">🎯</div>
+                <div class="chapter-info">
+                    <h3>Meet Donna</h3>
+                    <p>Morning Briefing, live demos, Obsidian brain</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+            <div class="chapter-card" data-time="0">
+                <div class="chapter-num">12</div>
+                <div class="chapter-info">
+                    <h3>The Challenge</h3>
+                    <p>5 days, $247, what you get</p>
+                </div>
+                <span class="chapter-time">--:--</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== RESOURCES ===== -->
+<section class="resources-section">
+    <div class="wrap">
+        <div class="section-header">
+            <div class="section-tag">Your Resources</div>
+            <h2>Everything From Tonight</h2>
+            <p>As promised. All the links, tools, and resources from the webinar.</p>
+        </div>
+
+        <div class="resources-grid">
+            <a href="https://claude.com/download" target="_blank" class="resource-card">
+                <div class="resource-icon">⬇️</div>
+                <div class="resource-info">
+                    <h3>Download Claude Desktop</h3>
+                    <p>Mac and Windows</p>
+                </div>
+            </a>
+            <a href="https://git-scm.com/downloads/win" target="_blank" class="resource-card">
+                <div class="resource-icon">🪟</div>
+                <div class="resource-info">
+                    <h3>Git for Windows</h3>
+                    <p>Required for Windows users (install first)</p>
+                </div>
+            </a>
+            <a href="https://jaygptpro.com/custom-ai-instructions.html" target="_blank" class="resource-card">
+                <div class="resource-icon">📋</div>
+                <div class="resource-info">
+                    <h3>Custom Instructions &amp; Guide</h3>
+                    <p>Jay's exact CLAUDE.md setup</p>
+                </div>
+            </a>
+            <a href="https://jaygptpro.com/claude/claude-memory-import-guide.html" target="_blank" class="resource-card">
+                <div class="resource-icon">🧠</div>
+                <div class="resource-info">
+                    <h3>Memory Import Guide</h3>
+                    <p>Import your ChatGPT memory in 60 seconds</p>
+                </div>
+            </a>
+            <a href="https://jaygptpro.com/daily-claude-hacks" target="_blank" class="resource-card">
+                <div class="resource-icon">⚡</div>
+                <div class="resource-info">
+                    <h3>Full Hacks Library</h3>
+                    <p>Every Claude Code hack in one place</p>
+                </div>
+            </a>
+            <a href="https://jaygptpro.com/claude/amazon-landing-page-skill.html" target="_blank" class="resource-card">
+                <div class="resource-icon">🛍️</div>
+                <div class="resource-info">
+                    <h3>Amazon Landing Page Skill</h3>
+                    <p>Build a page from any ASIN</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CHALLENGE CTA ===== -->
+<section class="challenge-section">
+    <div class="wrap">
+        <div class="challenge-inner">
+            <div class="section-tag">Ready to Build?</div>
+            <h2>Build Your First <span class="hl">AI Employee</span> in 5 Days</h2>
+            <p>Everything you saw tonight? You're building it yourself. Step by step. 30 to 60 minutes a day. No code. Two rounds available. Spots are limited.</p>
+
+            <a href="https://jaygptpro.com/claude-code-challenge-launch/" class="btn-primary">
+                <span>Lock In Your Spot. <span class="btn-old">$397</span> $247</span>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+
+            <p class="challenge-note">
+                <span class="old">$397</span> <strong>$247</strong> promotional price. 50 spots per round. 48-hour refund.
+            </p>
+
+            <div class="challenge-rounds">
+                <span>Round 1: Apr 20-24</span>
+                <span>Round 2: Apr 27-May 1</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div>Built by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">Jay Margaliot</a> · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></div>
+    <div style="margin-top: 6px;">&copy; 2026</div>
+</footer>
+
+<script>
+// Countdown to April 17, 2026 midnight (Israel time, UTC+3)
+function updateReplayTimer() {
+    const target = new Date('2026-04-17T23:59:59+03:00').getTime();
+    const now = Date.now();
+    const diff = target - now;
+    const el = document.getElementById('replayTimer');
+    if (!el) return;
+    if (diff <= 0) {
+        el.textContent = 'Expired';
+        return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const pad = n => String(n).padStart(2, '0');
+    el.textContent = `${pad(d)}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+}
+updateReplayTimer();
+setInterval(updateReplayTimer, 1000);
+
+// Chapter card clicks (will work once timestamps are set and video is embedded)
+document.querySelectorAll('.chapter-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const time = parseInt(card.dataset.time);
+        if (time > 0) {
+            // If YouTube iframe exists, seek to timestamp
+            const iframe = document.querySelector('.video-frame iframe');
+            if (iframe) {
+                const src = iframe.src.split('?')[0];
+                iframe.src = src + '?rel=0&modestbranding=1&start=' + time + '&autoplay=1';
+                document.querySelector('.video-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
