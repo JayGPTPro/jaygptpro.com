@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ייבא את הזיכרון שלך לקלוד | מדריך מלא</title>
+    <meta name="description" content="עוברים מ-ChatGPT לקלוד? לא חייבים להתחיל מאפס. העבירו את כל מה שה-AI הישן למד עליכם. ב-3 שלבים פשוטים.">
+
+    <!-- Open Graph (WhatsApp / Facebook / LinkedIn preview) -->
+    <meta property="og:title" content="ייבא את הזיכרון שלך לקלוד">
+    <meta property="og:description" content="עוברים מ-ChatGPT? לא חייבים להתחיל מאפס. העבירו הכל ב-3 שלבים.">
+    <meta property="og:image" content="https://jaygptpro.com/claude/og-memory-he.png">
+    <meta property="og:url" content="https://jaygptpro.com/claude/claude-memory-import-guide-he.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="he_IL">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ייבא את הזיכרון שלך לקלוד">
+    <meta name="twitter:description" content="עוברים מ-ChatGPT? לא חייבים להתחיל מאפס. העבירו הכל ב-3 שלבים.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e8e8e8;
+            line-height: 1.7;
+        }
+
+        .hero {
+            background: linear-gradient(160deg, #1a1a1a 0%, #0f0f0f 60%, #1a1a1a 100%);
+            padding: 60px 20px 50px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #D97757, #C96040);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #E8845A, #F0A882);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .step {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -14px;
+            right: 24px;
+            background: linear-gradient(135deg, #D97757, #C96040);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .step h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #f0ece8;
+        }
+
+        .step p {
+            color: #a0a0a8;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .prompt-box {
+            background: #111111;
+            border: 1px solid #303030;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #1e1e1e;
+            border-bottom: 1px solid #303030;
+        }
+
+        .prompt-label {
+            font-size: 12px;
+            color: #807060;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .prompt-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            color: #d0d0d8;
+            line-height: 1.6;
+            direction: ltr;
+            text-align: left;
+            background: #0a0a0a;
+            padding: 16px 18px;
+        }
+
+        .copy-btn {
+            background: #D97757;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Heebo', sans-serif;
+            min-height: 36px;
+            touch-action: manipulation;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .copy-btn {
+                padding: 10px 14px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+        }
+
+        .copy-btn:hover {
+            background: #F0A882;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: #4ade80;
+        }
+
+        .screenshot-container {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            background: #1a1a1a;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            max-width: 500px;
+            display: block;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .screenshot-caption {
+            background: #111118;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #808090;
+            text-align: center;
+            border-top: 1px solid #3a2e22;
+        }
+
+        .highlight {
+            color: #D97757;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: #1a1a1a;
+            border: 1px solid #3a2a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .warning-box h3 {
+            color: #D97757;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .warning-box p, .warning-box li {
+            color: #c0a080;
+            font-size: 14px;
+        }
+
+        .tip-box {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .tip-box h3 {
+            color: #E8845A;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .tip-box p, .tip-box li {
+            color: #b0a890;
+            font-size: 14px;
+        }
+
+        .tip-box ul, .warning-box ul {
+            padding-right: 20px;
+            margin-top: 8px;
+        }
+
+        .tip-box li, .warning-box li {
+            margin-bottom: 6px;
+        }
+
+        .path-display {
+            background: #252525;
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            color: #E8845A;
+            display: inline;
+            direction: ltr;
+            unicode-bidi: embed;
+        }
+
+        .steps-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        @media (max-width: 480px) {
+            .steps-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .steps-summary-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .steps-summary-item .emoji {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .steps-summary-item .label {
+            font-size: 13px;
+            color: #a0a0b0;
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1f1f1f 0%, #141414 100%);
+            border-radius: 16px;
+            margin: 32px 0;
+            border: 1px solid #2a2a2a;
+        }
+
+        .cta-section h3 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            color: #a0a0b0;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #D97757, #C96040);
+            color: #0a0a0a;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(217, 119, 87, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #3a2e22;
+        }
+
+        .footer p {
+            color: #606070;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .footer a {
+            color: #D97757;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer .credit {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #1a1a2a;
+        }
+
+        .footer .credit a {
+            color: #808090;
+        }
+
+        .footer .credit a:hover {
+            color: #D97757;
+        }
+
+        .optional-tag {
+            display: inline-block;
+            background: #1a2a1a;
+            color: #80c080;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .privacy-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #909090;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .privacy-note > span:last-child {
+            min-width: 0;
+            word-break: break-word;
+        }
+
+        .privacy-note span {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>ייבא את ה<span>זיכרון</span> שלך לקלוד</h1>
+        <p>עוברים מ-ChatGPT? לא חייבים להתחיל מאפס. תעבירו הכל ב-3 שלבים.</p>
+    </div>
+
+    <div class="container">
+
+        <div class="steps-summary">
+            <div class="steps-summary-item">
+                <span class="emoji">📤</span>
+                <span class="label">ייצוא מה-AI הישן</span>
+            </div>
+            <div class="steps-summary-item">
+                <span class="emoji">📋</span>
+                <span class="label">העתקה</span>
+            </div>
+            <div class="steps-summary-item">
+                <span class="emoji">📥</span>
+                <span class="label">ייבוא לקלוד</span>
+            </div>
+        </div>
+
+        <!-- שלב 1 -->
+        <div class="step" id="step-1">
+            <div class="step-number">1</div>
+            <h2>ייצא את הזיכרון מ-ChatGPT (או כל AI אחר)</h2>
+            <p>היכנסו ל-ChatGPT, ל-Gemini, או לכל AI אחר שהשתמשתם בו, והדביקו את הפרומפט הבא. הוא מתוכנן לשלוף <span class="highlight">הכל מה שהוא יודע עליכם</span> בפעולה אחת:</p>
+
+            <div class="privacy-note">
+                <span>🔒</span>
+                <span>המידע נשאר בחשבון שלכם בלבד. הפרומפט מייצא מה-AI הישן אל הטקסט שלכם. אתם בוחרים מה לייבא ומה להשאיר בחוץ.</span>
+            </div>
+
+            <div class="prompt-box">
+                <div class="prompt-header">
+                    <span class="prompt-label">prompt</span>
+                    <button class="copy-btn" onclick="copyPrompt(this, 'prompt1')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        העתק
+                    </button>
+                </div>
+                <pre id="prompt1">I'm moving to another service and need to export my data. List every memory you have stored about me, as well as any context you've learned about me from past conversations. Output everything in a single code block so I can easily copy it. Format each entry as: [date saved, if available] - memory content. Make sure to cover all of the following. Preserve my words verbatim where possible: Instructions I've given you about how to respond (tone, format, style, 'always do X', 'never do Y'). Personal details: name, location, job, family, interests. Projects, goals, and recurring topics. Tools, languages, and frameworks I use. Preferences and corrections I've made to your behavior. Any other stored context not covered above. Do not summarize, group, or omit any entries. After the code block, confirm whether that is the complete set or if any remain.</pre>
+            </div>
+
+            <p>תקבלו בלוק טקסט עם כל מה שה-AI יודע עליכם. <span class="highlight">העתיקו הכל.</span></p>
+        </div>
+
+        <!-- שלב 2 -->
+        <div class="step">
+            <div class="step-number">2</div>
+            <h2>פתחו את תהליך הייבוא בקלוד</h2>
+            <p>יש שתי דרכים להגיע לשם:</p>
+            <p><strong>אפשרות א:</strong> לכו להגדרות דרך <span class="path-display"><bdi>Settings › Capabilities › Memory › Start Import</bdi></span></p>
+            <p><strong>אפשרות ב:</strong> במסך הבית של קלוד, לחצו על הכרטיסייה <span class="highlight">"Import memory to Claude"</span></p>
+
+            <div class="screenshot-container">
+                <img src="https://jaygptpro.com/claude/screenshot-import-dialog.png" alt="תיבת הדיאלוג של ייבוא זיכרון בקלוד" onerror="this.parentElement.style.display='none'">
+                <div class="screenshot-caption">תיבת ייבוא הזיכרון בקלוד. כאן מדביקים את הטקסט משלב 1</div>
+            </div>
+        </div>
+
+        <!-- שלב 3 -->
+        <div class="step">
+            <div class="step-number">3</div>
+            <h2>הדבק וייבא</h2>
+            <p>הדביקו את הטקסט שהעתקתם בשלב 1 לתוך תיבת הטקסט ולחצו על <span class="highlight">"Add to memory"</span>.</p>
+            <p>קלוד ישלוף את המידע הרלוונטי וישמור אותו כרשומות זיכרון נפרדות. ניתן לבדוק מה נשמר על ידי לחיצה על <span class="highlight">"Manage edits"</span>.</p>
+        </div>
+
+        <!-- אימות (אופציונלי) -->
+        <div class="step">
+            <div class="step-number">✓</div>
+            <h2>ודא שזה עבד <span class="optional-tag">אופציונלי</span></h2>
+            <p>כדאי לבדוק, כי לפעמים קלוד שומר את המידע אבל לא בדיוק שולף אותו נכון. שאלה אחת בשיחה חדשה תגלה את זה מיד:</p>
+
+            <div class="prompt-box">
+                <div class="prompt-header">
+                    <span class="prompt-label">prompt</span>
+                    <button class="copy-btn" onclick="copyPrompt(this, 'prompt2')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        העתק
+                    </button>
+                </div>
+                <pre id="prompt2">What do you know about me?</pre>
+            </div>
+
+            <p>אם קלוד עונה עם ההעדפות שלכם, הקשר המקצועי, וסגנון העבודה שלכם, הכל עבד. אם משהו חסר, תמיד אפשר להוסיף ידנית דרך <span class="path-display"><bdi>Settings › Capabilities › View and edit your memory</bdi></span>.</p>
+        </div>
+
+        <!-- טיפים -->
+        <div class="tip-box">
+            <h3>💡 טיפים מקצועיים</h3>
+            <ul>
+                <li>אם ה-AI שלכם תומך ביצירת קבצים, בקשו ממנו לייצא את הזיכרון כקובץ <strong>Markdown</strong> לגיבוי</li>
+                <li>ניתן <strong>לערוך את הטקסט לפני הייבוא</strong>. הסירו כל מידע רגיש או לא רלוונטי</li>
+            </ul>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <h3>רוצה עוד טיפים כאלה?</h3>
+            <p style="color: #E8845A; font-size: 18px; font-weight: 700; margin-bottom: 8px;">בינה לעסקים</p>
+            <p>המקום ללמוד איך להשתמש ב-AI כדי לעבוד חכם יותר. כלים, רעיונות ושיטות שמייצרים פרודוקטיביות אמיתית.</p>
+            <p style="color: #a09080; font-size: 14px; margin-bottom: 20px; margin-top: -10px;">מנדי קוריץ וג'יי מרגליות, מומחי AI יישומי לעסקים</p>
+            <a href="https://chat.whatsapp.com/IXSr3uTsb3U0fzqey6A9fK" class="cta-btn">הצטרף לקבוצה &larr;</a>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>מקור: <a href="https://support.claude.com/en/articles/12123587-importing-and-exporting-your-memory-from-claude" target="_blank">תיעוד רשמי של קלוד &larr;</a></p>
+        <div class="credit">
+            <p>הדף נבנה בפרומפט אחד ב-Claude Code על ידי <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a></p>
+        </div>
+    </div>
+
+    <script>
+        function copyPrompt(btn, id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> הועתק!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> העתק';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+
+</body>
+</html>
