@@ -2553,6 +2553,83 @@ section { position: relative; }
 </head>
 <body>
 
+<!-- Price Urgency Banner -->
+<div id="urgency-banner" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: linear-gradient(90deg, #e85d04, #f48c06);
+  color: #fff;
+  text-align: center;
+  padding: 10px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(232,93,4,0.3);
+">
+  <span style="font-size:16px">⏰</span>
+  <span id="banner-text">Price goes up this weekend. Lock in <strong>$247</strong> and save $150 before it's gone.</span>
+  <a href="#pricing" id="banner-cta" style="
+    background: #fff;
+    color: #e85d04;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Lock In $247 →</a>
+  <button onclick="document.getElementById('urgency-banner').style.display='none'" style="
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+    position: absolute;
+    right: 12px;
+  ">×</button>
+</div>
+<script>
+  // Push body down so banner doesn't overlap content
+  document.addEventListener('DOMContentLoaded', function() {
+    const banner = document.getElementById('urgency-banner');
+    function adjustBody() {
+      if (banner.style.display !== 'none') {
+        document.body.style.paddingTop = banner.offsetHeight + 'px';
+      } else {
+        document.body.style.paddingTop = '0';
+      }
+    }
+    adjustBody();
+    const observer = new MutationObserver(adjustBody);
+    observer.observe(banner, { attributes: true, attributeFilter: ['style'] });
+    window.addEventListener('resize', adjustBody);
+    // Hook into setLanguage to update banner text
+    const bannerTexts = {
+      en: { text: 'Price goes up this weekend. Lock in <strong>$247</strong> and save $150 before it\'s gone.', cta: 'Lock In $247 →' },
+      he: { text: 'המחיר עולה בסופ"ש. שריין את מקומך ב-<strong>$247</strong> וחסוך $150 לפני שייגמר.', cta: '← שריין ב-$247' }
+    };
+    const origSetLanguage = window.setLanguage;
+    window.setLanguage = function(lang) {
+      if (origSetLanguage) origSetLanguage(lang);
+      const t = bannerTexts[lang] || bannerTexts.en;
+      document.getElementById('banner-text').innerHTML = t.text;
+      document.getElementById('banner-cta').textContent = t.cta;
+      document.getElementById('banner-cta').style.direction = lang === 'he' ? 'rtl' : 'ltr';
+    };
+  });
+</script>
+
 <!-- Claude Star SVG symbol (reused throughout) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
