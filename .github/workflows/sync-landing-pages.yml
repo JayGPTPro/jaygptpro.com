@@ -1,0 +1,26 @@
+name: Sync Landing Page Variants
+
+on:
+  push:
+    paths:
+      - 'claude-code-challenge-launch/index.html'
+
+jobs:
+  generate-variants:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate all variant pages
+        run: python3 scripts/generate-variants.py
+
+      - name: Commit and push variants
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-sync landing page variants"
+          git push
