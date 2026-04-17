@@ -3119,14 +3119,11 @@ async function checkAuth(){
   const userEmailEl = document.getElementById('userEmail');
   if(userEmailEl) userEmailEl.textContent = email;
 
-  // If user hasn't picked a round yet, show a friendly pick-round screen
-  // (still grants Day 0 access via the portal, but Days 1-5 are locked until they pick).
-  if(allowed.round === 'unknown'){
-    showPickRoundScreen(email);
-    return;
-  }
-
-  showPortal(allowed.round);
+  // No pick-round screen anymore. Default to round2 for any unknowns
+  // (Round 1 fills first, so anyone who didn't pick lands in Round 2).
+  // The DB-side cleanup migrates older rows; this just guards the runtime path.
+  const effectiveRound = (allowed.round === 'unknown' || !allowed.round) ? 'round2' : allowed.round;
+  showPortal(effectiveRound);
 }
 
 // ===== DAY LOCKING =====
