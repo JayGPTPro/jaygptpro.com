@@ -912,7 +912,7 @@ body::after{
         <div class="progress-fill" id="progressFill" style="width:0%"></div>
       </div>
       <div class="reset-all-wrap" id="resetAllWrap" style="display:none">
-        <button class="reset-all-btn" onclick="resetAll()" data-en="\u21a9 Reset all progress" data-he="\u21a9 \u05d0\u05d9\u05e4\u05d5\u05e1 \u05db\u05dc \u05d4\u05d4\u05ea\u05e7\u05d3\u05de\u05d5\u05ea">\u21a9 Reset all progress</button>
+        <button class="reset-all-btn" onclick="resetAll()" data-en="↩ Reset all progress" data-he="↩ איפוס כל ההתקדמות">↩ Reset all progress</button>
       </div>
     </div>
   </header>
@@ -930,11 +930,11 @@ body::after{
   <!-- Countdown to next unlock -->
   <div id="unlockCountdown" class="unlock-countdown" style="display:none" aria-live="polite"></div>
 
-  <!-- Content Language Notice (only shows when lang=en) -->
+  <!-- Content Language Notice (only shows when lang=en and user is on a Hebrew-only day) -->
   <div id="contentLangNotice" class="content-lang-notice" style="display:none">
     <div>
-      <strong>\u2139\ufe0f Lesson content is still being translated.</strong><br>
-      The chrome (navigation, buttons, email automations) is in English, but day-by-day lesson pages are currently in Hebrew. Fresh English content will be added before the challenge starts. Use your browser's built-in translation in the meantime, or switch the portal to Hebrew if that's easier.
+      <strong>ℹ️ Fresh English content on the way.</strong><br>
+      The portal chrome is in English, but this day's lesson text is still in Hebrew while we finalize the rewrite. You can use your browser's translate feature, or click <strong>עברית</strong> at the top to view the original. We'll push the English version before your round starts.
     </div>
   </div>
 
@@ -2702,8 +2702,8 @@ Show me what you learned about my writing style.</code>
     <span class="support-icon">?</span>
   </button>
   <div id="supportMenu" class="support-menu" role="menu" aria-hidden="true">
-    <a id="supportWA" href="#" target="_blank" role="menuitem" data-en="Ask in WhatsApp group" data-he="שאל בקבוצת וואטסאפ">\ud83d\udcac Ask in WhatsApp group</a>
-    <a href="mailto:info@jaygptpro.com?subject=Claude%20Code%20Challenge" role="menuitem" data-en="Email Jay" data-he="שלח מייל לג'יי">\u2709\ufe0f Email Jay</a>
+    <a id="supportWA" href="#" target="_blank" role="menuitem" data-en="💬 Ask in WhatsApp group" data-he="💬 שאל בקבוצת וואטסאפ">💬 Ask in WhatsApp group</a>
+    <a href="mailto:info@jaygptpro.com?subject=Claude%20Code%20Challenge" role="menuitem" data-en="✉️ Email Jay" data-he="✉️ שלח מייל לג'יי">✉️ Email Jay</a>
   </div>
 </div><!-- /main-app -->
 
@@ -3164,9 +3164,8 @@ function showDayContent(dayNum){
     void el.offsetWidth;
     el.classList.add('active');
   }
-  // Scroll to content area, not top of page
-  const contentArea = document.querySelector('.content-area');
-  if(contentArea) contentArea.scrollIntoView({behavior:'smooth',block:'start'});
+  // Do NOT scroll. Users want a seamless switch between days so they can
+  // compare sections, glance back, etc. The new content just appears in place.
 }
 
 // ===== PROGRESS =====
@@ -3482,16 +3481,20 @@ function showPortal(round){
   restoreChecks();
   startUnlockPolling();
 
-  // Use saved currentDay if it's valid and unlocked. Otherwise find first incomplete.
+  // URL ?day=N override (e.g., from daily email link). Only if that day is unlocked.
   let startDay = state.currentDay;
-  if(startDay < 0 || startDay > 5 || !isDayUnlocked(startDay)){
-    startDay = 0;
-    for(let i=0;i<=5;i++){
-      if(isDayUnlocked(i) && !state.completedDays.includes(i)){
-        startDay = i;
-        break;
+  try {
+    const urlDay = parseInt(new URLSearchParams(window.location.search).get('day') || '', 10);
+    if(!isNaN(urlDay) && urlDay >= 0 && urlDay <= 5 && isDayUnlocked(urlDay)){
+      startDay = urlDay;
+    } else if(startDay < 0 || startDay > 5 || !isDayUnlocked(startDay)){
+      startDay = 0;
+      for(let i=0;i<=5;i++){
+        if(isDayUnlocked(i) && !state.completedDays.includes(i)){ startDay = i; break; }
       }
     }
+  } catch(e){
+    if(startDay < 0 || startDay > 5 || !isDayUnlocked(startDay)) startDay = 0;
   }
   state.currentDay = startDay;
   saveState();
