@@ -852,6 +852,7 @@ tr.expandable{cursor:pointer}
         </select>
         <select id="filterDataMissing" onchange="renderParticipants()">
           <option value="all">כל הנתונים</option>
+          <option value="round_unconfirmed">סבב לא מאושר</option>
           <option value="no_welcome_email">לא קיבלו מייל welcome</option>
           <option value="email_failed">מייל נכשל</option>
           <option value="no_phone">חסר טלפון</option>
@@ -1592,8 +1593,10 @@ function renderActionQueue(){
     const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
     return stripeMatch && stripeMatch.refunded;
   }).length;
+  const roundUnconfirmed = active.filter(p => p.round_confirmed === false).length;
 
   const items = [
+    { count: roundUnconfirmed, label: 'סבב לא מאושר', icon: '&#10067;', cls: roundUnconfirmed > 0 ? 'warn' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='round_unconfirmed'; renderParticipants(); } },
     { count: noWelcomeEmail, label: 'לא קיבלו מייל welcome', icon: '&#128231;', cls: noWelcomeEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_welcome_email'; renderParticipants(); } },
     { count: failedEmail, label: 'מייל נכשל', icon: '&#10060;', cls: failedEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='email_failed'; renderParticipants(); } },
     { count: noRound, label: 'ללא סבב', icon: '&#127919;', cls: noRound > 0 ? 'urgent' : 'zero', filter: () => filterToRound('unknown') },
@@ -1864,6 +1867,7 @@ function renderParticipants(){
       const hasPhone = !!(p.phone || (stripeMatch && stripeMatch.phone));
       const wa = p.in_whatsapp || 'unknown';
       if(dataFilter === 'no_phone' && hasPhone) return false;
+      if(dataFilter === 'round_unconfirmed' && p.round_confirmed !== false) return false;
       if(dataFilter === 'wa_unknown' && wa !== 'unknown') return false;
       if(dataFilter === 'wa_none' && wa !== 'none') return false;
       if(dataFilter === 'wa_wrong'){
@@ -1973,10 +1977,16 @@ function renderParticipants(){
       welcomeBtn = `<button class="row-action-btn welcome welcome-sent" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="נשלח: ${formatDateTime(p.welcome_email_sent_at)}. לחץ לשליחה חוזרת">&#128190;</button>`;
     }
 
+    // Unconfirmed-round badge: round was auto-assigned, Jay hasn't verified.
+    // Click to mark as confirmed (Jay will use this after confirming with each person via WhatsApp).
+    const unconfirmedBadge = (p.round_confirmed === false)
+      ? ` <span style="display:inline-block;background:rgba(255,193,7,0.18);color:#ffc107;font-size:0.7em;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;cursor:pointer" title="לחץ לאשר את הסבב הזה" onclick="confirmRound('${esc(p.id)}', '${esc(p.email)}')">?</span>`
+      : '';
+
     tr.innerHTML = `
       <td>${esc(name)}${aliasBadge}</td>
       <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(p.email)}</td>
-      <td>${esc(roundLabel)}</td>
+      <td>${esc(roundLabel)}${unconfirmedBadge}</td>
       <td>${paidCell}</td>
       <td>${phoneCell}</td>
       <td>${waCell}</td>
@@ -2378,6 +2388,16 @@ async function sendWelcomeNow(participantId, email){
   } catch(err){
     alert('שגיאת רשת: ' + err.message);
   }
+  await loadAllData();
+  renderAll();
+}
+
+async function confirmRound(participantId, email){
+  if(!confirm('לאשר שהסבב של ' + email + ' נכון?\n\n(לחץ אוקיי רק אם וידאת ב-WhatsApp או ישירות.)')) return;
+  const { error } = await sb.from('allowed_emails').update({
+    round_confirmed: true
+  }).eq('id', participantId);
+  if(error){ alert('שגיאה: ' + error.message); return; }
   await loadAllData();
   renderAll();
 }
