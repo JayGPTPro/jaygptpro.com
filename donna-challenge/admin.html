@@ -423,6 +423,47 @@ tr.expandable{cursor:pointer}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn 0.4s ease forwards}
 
+/* ===== PHONE INPUT WITH COUNTRY CODE ===== */
+.phone-input-wrap{position:relative;display:flex;gap:6px;align-items:stretch}
+.cc-trigger{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg);border:1px solid var(--glass-border);
+  color:var(--text);padding:0 12px;border-radius:8px;
+  font-family:inherit;font-size:0.88em;cursor:pointer;
+  min-width:110px;transition:0.2s;
+}
+.cc-trigger:hover{border-color:var(--orange)}
+.cc-trigger #ccFlag{font-size:1.1em}
+.cc-trigger .cc-arrow{margin-left:auto;color:var(--dim);font-size:0.7em}
+.phone-input-wrap input[type="tel"]{flex:1}
+.cc-dropdown{
+  position:absolute;top:calc(100% + 4px);right:0;left:0;
+  background:var(--card-solid);
+  border:1px solid var(--glass-border);
+  border-radius:10px;
+  max-height:300px;display:flex;flex-direction:column;
+  box-shadow:0 12px 32px rgba(0,0,0,0.5);
+  z-index:100;overflow:hidden;
+}
+.cc-search{
+  width:100%;
+  background:var(--bg);border:none;border-bottom:1px solid var(--glass-border);
+  color:var(--text);padding:10px 14px;
+  font-family:inherit;font-size:0.88em;outline:none;
+}
+.cc-list{overflow-y:auto;max-height:240px}
+.cc-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 14px;cursor:pointer;
+  font-size:0.85em;color:var(--text);
+  transition:0.15s;
+}
+.cc-item:hover{background:rgba(232,112,64,0.1);color:var(--orange)}
+.cc-item .cc-flag{font-size:1.2em;width:24px}
+.cc-item .cc-name{flex:1}
+.cc-item .cc-dial{color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:0.85em;direction:ltr}
+.cc-item:hover .cc-dial{color:var(--orange)}
+
 /* ===== ROW ACTIONS ===== */
 .row-actions{display:flex;gap:6px;flex-wrap:nowrap}
 .row-action-btn{
@@ -729,8 +770,21 @@ tr.expandable{cursor:pointer}
           </select>
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>טלפון (פורמט בינלאומי, למשל +972...)</label>
-          <input type="tel" id="editPhone" placeholder="+1 555 123 4567" dir="ltr">
+          <label>טלפון</label>
+          <div class="phone-input-wrap">
+            <button type="button" class="cc-trigger" id="ccTrigger" onclick="toggleCcDropdown()">
+              <span id="ccFlag">🌐</span>
+              <span id="ccCode">קוד</span>
+              <span class="cc-arrow">▾</span>
+            </button>
+            <input type="tel" id="editPhoneLocal" placeholder="555 123 4567" dir="ltr" oninput="syncPhoneFromParts()">
+            <input type="hidden" id="editPhone">
+            <div class="cc-dropdown" id="ccDropdown" style="display:none">
+              <input type="text" class="cc-search" id="ccSearch" placeholder="חיפוש מדינה או קוד..." oninput="filterCcList()" dir="rtl">
+              <div class="cc-list" id="ccList"></div>
+            </div>
+          </div>
+          <div style="font-size:0.72em;color:var(--dim);margin-top:4px">פורמט מלא נשמר אוטומטית. למשל +972 50 1234567</div>
         </div>
         <div class="form-group" style="margin-bottom:14px">
           <label>סטטוס בקבוצת וואטסאפ</label>
@@ -1494,6 +1548,144 @@ function renderParticipants(){
   });
 }
 
+// ===== COUNTRY CODE LIST =====
+// name (he), code (alpha-2), dial (e.164 prefix), flag (emoji)
+const COUNTRY_CODES = [
+  {name:'ישראל',en:'Israel',code:'IL',dial:'+972',flag:'🇮🇱'},
+  {name:'ארה"ב',en:'United States',code:'US',dial:'+1',flag:'🇺🇸'},
+  {name:'קנדה',en:'Canada',code:'CA',dial:'+1',flag:'🇨🇦'},
+  {name:'בריטניה',en:'United Kingdom',code:'GB',dial:'+44',flag:'🇬🇧'},
+  {name:'אוסטרליה',en:'Australia',code:'AU',dial:'+61',flag:'🇦🇺'},
+  {name:'גרמניה',en:'Germany',code:'DE',dial:'+49',flag:'🇩🇪'},
+  {name:'צרפת',en:'France',code:'FR',dial:'+33',flag:'🇫🇷'},
+  {name:'ספרד',en:'Spain',code:'ES',dial:'+34',flag:'🇪🇸'},
+  {name:'איטליה',en:'Italy',code:'IT',dial:'+39',flag:'🇮🇹'},
+  {name:'הולנד',en:'Netherlands',code:'NL',dial:'+31',flag:'🇳🇱'},
+  {name:'בלגיה',en:'Belgium',code:'BE',dial:'+32',flag:'🇧🇪'},
+  {name:'שוויץ',en:'Switzerland',code:'CH',dial:'+41',flag:'🇨🇭'},
+  {name:'אוסטריה',en:'Austria',code:'AT',dial:'+43',flag:'🇦🇹'},
+  {name:'אירלנד',en:'Ireland',code:'IE',dial:'+353',flag:'🇮🇪'},
+  {name:'דנמרק',en:'Denmark',code:'DK',dial:'+45',flag:'🇩🇰'},
+  {name:'שוודיה',en:'Sweden',code:'SE',dial:'+46',flag:'🇸🇪'},
+  {name:'נורבגיה',en:'Norway',code:'NO',dial:'+47',flag:'🇳🇴'},
+  {name:'פינלנד',en:'Finland',code:'FI',dial:'+358',flag:'🇫🇮'},
+  {name:'פולין',en:'Poland',code:'PL',dial:'+48',flag:'🇵🇱'},
+  {name:'פורטוגל',en:'Portugal',code:'PT',dial:'+351',flag:'🇵🇹'},
+  {name:'יוון',en:'Greece',code:'GR',dial:'+30',flag:'🇬🇷'},
+  {name:'צ\'כיה',en:'Czechia',code:'CZ',dial:'+420',flag:'🇨🇿'},
+  {name:'הונגריה',en:'Hungary',code:'HU',dial:'+36',flag:'🇭🇺'},
+  {name:'רומניה',en:'Romania',code:'RO',dial:'+40',flag:'🇷🇴'},
+  {name:'בולגריה',en:'Bulgaria',code:'BG',dial:'+359',flag:'🇧🇬'},
+  {name:'אוקראינה',en:'Ukraine',code:'UA',dial:'+380',flag:'🇺🇦'},
+  {name:'רוסיה',en:'Russia',code:'RU',dial:'+7',flag:'🇷🇺'},
+  {name:'טורקיה',en:'Turkey',code:'TR',dial:'+90',flag:'🇹🇷'},
+  {name:'איחוד האמירויות',en:'United Arab Emirates',code:'AE',dial:'+971',flag:'🇦🇪'},
+  {name:'ערב הסעודית',en:'Saudi Arabia',code:'SA',dial:'+966',flag:'🇸🇦'},
+  {name:'מצרים',en:'Egypt',code:'EG',dial:'+20',flag:'🇪🇬'},
+  {name:'דרום אפריקה',en:'South Africa',code:'ZA',dial:'+27',flag:'🇿🇦'},
+  {name:'הודו',en:'India',code:'IN',dial:'+91',flag:'🇮🇳'},
+  {name:'סין',en:'China',code:'CN',dial:'+86',flag:'🇨🇳'},
+  {name:'יפן',en:'Japan',code:'JP',dial:'+81',flag:'🇯🇵'},
+  {name:'דרום קוריאה',en:'South Korea',code:'KR',dial:'+82',flag:'🇰🇷'},
+  {name:'הונג קונג',en:'Hong Kong',code:'HK',dial:'+852',flag:'🇭🇰'},
+  {name:'סינגפור',en:'Singapore',code:'SG',dial:'+65',flag:'🇸🇬'},
+  {name:'תאילנד',en:'Thailand',code:'TH',dial:'+66',flag:'🇹🇭'},
+  {name:'מלזיה',en:'Malaysia',code:'MY',dial:'+60',flag:'🇲🇾'},
+  {name:'אינדונזיה',en:'Indonesia',code:'ID',dial:'+62',flag:'🇮🇩'},
+  {name:'פיליפינים',en:'Philippines',code:'PH',dial:'+63',flag:'🇵🇭'},
+  {name:'וייטנאם',en:'Vietnam',code:'VN',dial:'+84',flag:'🇻🇳'},
+  {name:'מקסיקו',en:'Mexico',code:'MX',dial:'+52',flag:'🇲🇽'},
+  {name:'ברזיל',en:'Brazil',code:'BR',dial:'+55',flag:'🇧🇷'},
+  {name:'ארגנטינה',en:'Argentina',code:'AR',dial:'+54',flag:'🇦🇷'},
+  {name:'צ\'ילה',en:'Chile',code:'CL',dial:'+56',flag:'🇨🇱'},
+  {name:'קולומביה',en:'Colombia',code:'CO',dial:'+57',flag:'🇨🇴'},
+  {name:'פרו',en:'Peru',code:'PE',dial:'+51',flag:'🇵🇪'},
+  {name:'ניו זילנד',en:'New Zealand',code:'NZ',dial:'+64',flag:'🇳🇿'},
+  {name:'ניגריה',en:'Nigeria',code:'NG',dial:'+234',flag:'🇳🇬'},
+  {name:'קניה',en:'Kenya',code:'KE',dial:'+254',flag:'🇰🇪'},
+  {name:'מרוקו',en:'Morocco',code:'MA',dial:'+212',flag:'🇲🇦'}
+];
+
+let selectedCountryCode = null;
+
+function renderCcList(filter = ''){
+  const list = document.getElementById('ccList');
+  const term = filter.toLowerCase().trim();
+  const items = COUNTRY_CODES.filter(c => {
+    if(!term) return true;
+    return c.name.toLowerCase().includes(term)
+      || c.en.toLowerCase().includes(term)
+      || c.code.toLowerCase().includes(term)
+      || c.dial.includes(term);
+  });
+  list.innerHTML = items.length === 0
+    ? '<div style="padding:14px;color:var(--dim);text-align:center;font-size:0.85em">לא נמצאו מדינות</div>'
+    : items.map(c => `
+      <div class="cc-item" onclick="pickCountryCode('${c.code}')">
+        <span class="cc-flag">${c.flag}</span>
+        <span class="cc-name">${esc(c.name)}</span>
+        <span class="cc-dial">${esc(c.dial)}</span>
+      </div>
+    `).join('');
+}
+
+function filterCcList(){
+  renderCcList(document.getElementById('ccSearch').value);
+}
+
+function toggleCcDropdown(){
+  const dd = document.getElementById('ccDropdown');
+  const open = dd.style.display !== 'none';
+  dd.style.display = open ? 'none' : 'block';
+  if(!open){
+    document.getElementById('ccSearch').value = '';
+    renderCcList();
+    setTimeout(() => document.getElementById('ccSearch').focus(), 50);
+  }
+}
+
+function pickCountryCode(code){
+  const c = COUNTRY_CODES.find(x => x.code === code);
+  if(!c) return;
+  selectedCountryCode = c;
+  document.getElementById('ccFlag').textContent = c.flag;
+  document.getElementById('ccCode').textContent = c.dial;
+  document.getElementById('ccDropdown').style.display = 'none';
+  syncPhoneFromParts();
+  document.getElementById('editPhoneLocal').focus();
+}
+
+function syncPhoneFromParts(){
+  const local = document.getElementById('editPhoneLocal').value.trim();
+  const dial = selectedCountryCode ? selectedCountryCode.dial : '';
+  document.getElementById('editPhone').value = local
+    ? (dial + ' ' + local).trim()
+    : '';
+}
+
+// Parse "+972 50 1234567" or "+1 555..." into {country, local}
+function parsePhoneIntoParts(fullPhone){
+  if(!fullPhone) return { country: null, local: '' };
+  const trimmed = fullPhone.trim();
+  // Sort by dial length descending so +972 matches before +9
+  const sorted = COUNTRY_CODES.slice().sort((a,b) => b.dial.length - a.dial.length);
+  for(const c of sorted){
+    if(trimmed.startsWith(c.dial)){
+      return { country: c, local: trimmed.slice(c.dial.length).trim() };
+    }
+  }
+  return { country: null, local: trimmed };
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrap = e.target.closest('.phone-input-wrap');
+  if(!wrap){
+    const dd = document.getElementById('ccDropdown');
+    if(dd) dd.style.display = 'none';
+  }
+});
+
 // ===== EDIT PARTICIPANT MODAL =====
 function openEditModal(participantId){
   const p = allParticipants.find(x => x.id === participantId);
@@ -1502,7 +1694,21 @@ function openEditModal(participantId){
   document.getElementById('editEmailDisplay').value = p.email;
   document.getElementById('editName').value = p.name || '';
   document.getElementById('editRound').value = p.round || 'round1';
+
+  // Parse phone into country code + local
+  const parsed = parsePhoneIntoParts(p.phone || '');
+  if(parsed.country){
+    selectedCountryCode = parsed.country;
+    document.getElementById('ccFlag').textContent = parsed.country.flag;
+    document.getElementById('ccCode').textContent = parsed.country.dial;
+  } else {
+    selectedCountryCode = null;
+    document.getElementById('ccFlag').textContent = '🌐';
+    document.getElementById('ccCode').textContent = 'קוד';
+  }
+  document.getElementById('editPhoneLocal').value = parsed.local;
   document.getElementById('editPhone').value = p.phone || '';
+
   document.getElementById('editWhatsapp').value = p.in_whatsapp || 'unknown';
   document.getElementById('editNotes').value = p.notes || '';
   document.getElementById('editMsg').textContent = '';
@@ -1512,10 +1718,14 @@ function openEditModal(participantId){
 
 function closeEditModal(){
   document.getElementById('editModal').style.display = 'none';
+  const dd = document.getElementById('ccDropdown');
+  if(dd) dd.style.display = 'none';
 }
 
 async function saveParticipantEdit(){
   const id = document.getElementById('editParticipantId').value;
+  // Make sure the hidden phone field reflects the latest parts
+  syncPhoneFromParts();
   const updates = {
     name: document.getElementById('editName').value.trim() || null,
     round: document.getElementById('editRound').value,
