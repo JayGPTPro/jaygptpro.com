@@ -1263,12 +1263,17 @@ function eventDataObj(e){ return e.event_data || {}; }
 
 function getParticipantEvents(email){
   const lower = (email || '').toLowerCase();
-  return allEvents.filter(e => eventEmail(e) === lower);
+  // Include events from any alias whose primary_email points to this email
+  const aliasEmails = (allAliases || [])
+    .filter(a => (a.primary_email || '').toLowerCase() === lower)
+    .map(a => (a.email || '').toLowerCase());
+  const allEmails = new Set([lower, ...aliasEmails]);
+  return allEvents.filter(e => allEmails.has(eventEmail(e)));
 }
 
 function getLastLogin(email){
-  const lower = (email || '').toLowerCase();
-  const logins = allEvents.filter(e => eventEmail(e) === lower && e.event_type === 'login');
+  // Use getParticipantEvents so aliases are included
+  const logins = getParticipantEvents(email).filter(e => e.event_type === 'login');
   if(!logins.length) return null;
   return logins.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0].created_at;
 }
@@ -1280,26 +1285,23 @@ function getLastEvent(email){
 }
 
 function getCompletedDays(email){
-  const lower = (email || '').toLowerCase();
-  return allEvents
-    .filter(e => eventEmail(e) === lower && e.event_type === 'complete_day')
-    .map(e => eventDay(e))
-    .filter(d => d !== undefined && d !== null);
+  return getParticipantEvents(email)
+    .filter(e => e.event_type === 'complete_day')
+    .map(e => Number(eventDay(e)))
+    .filter(d => !isNaN(d) && d !== null && d !== undefined);
 }
 
 function getCurrentDay(email){
-  const lower = (email || '').toLowerCase();
-  const views = allEvents
-    .filter(e => eventEmail(e) === lower && e.event_type === 'day_view')
-    .map(e => eventDay(e))
-    .filter(d => d !== undefined && d !== null);
+  const views = getParticipantEvents(email)
+    .filter(e => e.event_type === 'day_view')
+    .map(e => Number(eventDay(e)))
+    .filter(d => !isNaN(d) && d !== null && d !== undefined);
   return views.length ? Math.max(...views) : 0;
 }
 
 function getChecklistProgress(email){
-  const lower = (email || '').toLowerCase();
   // Portal emits 'check_item' with event_data.checked boolean. Count current "checked" items only.
-  const checks = allEvents.filter(e => eventEmail(e) === lower && e.event_type === 'check_item');
+  const checks = getParticipantEvents(email).filter(e => e.event_type === 'check_item');
   // De-dupe: keep only the latest event per item, then count only those still checked.
   const latestByItem = {};
   checks.sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).forEach(e => {
@@ -1511,14 +1513,16 @@ function renderActionQueue(){
     .filter(p => !p.access_revoked_at)
     .filter(p => (p.customer_type || 'paid') === 'paid');
 
-  // Counts of action items
+  // Counts of action items.
+  // Exclude 'unknown' round from WA-related counts: we can't judge WA fit until they pick a round.
   const noRound = active.filter(p => p.round === 'unknown').length;
-  const wrongWA = active.filter(p =>
+  const withRound = active.filter(p => p.round === 'round1' || p.round === 'round2');
+  const wrongWA = withRound.filter(p =>
     (p.round === 'round1' && p.in_whatsapp === 'round2') ||
     (p.round === 'round2' && p.in_whatsapp === 'round1')
   ).length;
-  const inBoth = active.filter(p => p.in_whatsapp === 'both' && p.round !== 'both').length;
-  const noWA = active.filter(p => p.round !== 'both' && (!p.in_whatsapp || p.in_whatsapp === 'unknown')).length;
+  const inBoth = withRound.filter(p => p.in_whatsapp === 'both').length;
+  const noWA = withRound.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown').length;
   const noPhone = active.filter(p => {
     const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
     return !p.phone && !(stripeMatch && stripeMatch.phone);
@@ -1823,7 +1827,10 @@ function renderParticipants(){
     const progress = getChecklistProgress(p.email);
     const pctDone = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
     const name = p.name || p.email.split('@')[0];
-    const roundLabel = p.round === 'round1' ? 'סבב 1' : p.round === 'round2' ? 'סבב 2' : 'שניהם';
+    const roundLabel = p.round === 'round1' ? 'סבב 1'
+      : p.round === 'round2' ? 'סבב 2'
+      : p.round === 'both' ? 'אדמין'
+      : 'לא ידוע';
 
     // Main row
     const tr = document.createElement('tr');
@@ -1863,13 +1870,19 @@ function renderParticipants(){
     const waCell = `<span class="wa-cell wa-${waStatus}">${esc(waLabel)}</span>`;
 
     // Action buttons
-    const emailHref = `mailto:${encodeURI(p.email)}?subject=${encodeURIComponent('Claude Code Challenge')}&body=${encodeURIComponent('Hi ' + name + ',\n\n')}`;
-    const waHref = phone
-      ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}`
-      : '';
+    const emailHref = `mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent('Claude Code Challenge')}&body=${encodeURIComponent('Hi ' + name + ',\n\n')}`;
+    // WhatsApp link: needs digits only, prefer one with country code (any phone with 10+ digits qualifies)
+    const phoneDigits = (phone || '').replace(/[^0-9]/g, '');
+    const stripeCountry = stripeMatch && stripeMatch.country ? stripeMatch.country.toUpperCase() : '';
+    const looksInternational = phoneDigits.length >= 10 && (phone || '').trim().startsWith('+');
+    let waPhone = phoneDigits;
+    if(!looksInternational && phoneDigits.length === 10 && stripeCountry === 'US'){
+      waPhone = '1' + phoneDigits; // US 10-digit local -> +1
+    }
+    const waHref = waPhone.length >= 10 ? `https://wa.me/${waPhone}` : '';
     const waBtn = waHref
       ? `<a class="row-action-btn wa" href="${esc(waHref)}" target="_blank" title="פתח וואטסאפ" onclick="event.stopPropagation()">&#128172;</a>`
-      : `<button class="row-action-btn wa" disabled style="opacity:0.4;cursor:not-allowed" title="חסר טלפון">&#128172;</button>`;
+      : `<button class="row-action-btn wa" disabled style="opacity:0.4;cursor:not-allowed" title="${phone ? 'מספר ללא קוד מדינה. ערוך והוסף' : 'חסר טלפון'}">&#128172;</button>`;
     const revokeBtn = p.access_revoked_at
       ? `<button class="row-action-btn restore" onclick="restoreAccess('${esc(p.id)}','${esc(p.email)}')" title="שחזר גישה לפורטל">&#9989;</button>`
       : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="בטל גישה לפורטל">&#128683;</button>`;
@@ -2264,7 +2277,19 @@ async function revokeAccess(participantId, email){
 }
 
 async function restoreAccess(participantId, email){
-  if(!confirm('לשחזר את הגישה של ' + email + ' לפורטל?')) return;
+  // Warn if Stripe shows this customer is still refunded with no active payment
+  const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === (email || '').toLowerCase());
+  let warn = '';
+  if(stripeMatch && stripeMatch.refunded){
+    const hasActive = stripeCustomers.some(c =>
+      c.email && c.email.toLowerCase() === (email || '').toLowerCase()
+      && !c.refunded && (c.coupon_used || '').toUpperCase() !== 'TEST'
+    );
+    if(!hasActive){
+      warn = '\n\n⚠️ שים לב: לקוח זה מסומן refunded ב-Stripe ואין לו תשלום פעיל אחר. אם webhook יקבל אירוע refund נוסף בעתיד, הגישה תיחסם שוב אוטומטית.';
+    }
+  }
+  if(!confirm('לשחזר את הגישה של ' + email + ' לפורטל?' + warn)) return;
   const { error } = await sb.from('allowed_emails').update({
     access_revoked_at: null,
     access_revoked_reason: null
@@ -2569,7 +2594,7 @@ function renderRevenue(){
 
 // ===== TAB 5: MANAGEMENT =====
 async function addParticipant(){
-  const email = document.getElementById('addEmail').value.trim();
+  const email = document.getElementById('addEmail').value.trim().toLowerCase();
   const name = document.getElementById('addName').value.trim();
   const round = document.getElementById('addRound').value;
   const phone = document.getElementById('addPhone').value.trim();
@@ -2585,7 +2610,7 @@ async function addParticipant(){
 
   if(error){
     msgEl.className = 'form-msg error';
-    msgEl.textContent = error.message.includes('duplicate') ? 'האימייל כבר קיים' : 'שגיאה: ' + error.message;
+    msgEl.textContent = (error.code === '23505' || (error.message || '').includes('duplicate')) ? 'האימייל כבר קיים' : 'שגיאה: ' + error.message;
     return;
   }
 
@@ -2632,9 +2657,9 @@ async function addMissingStripeCustomers(){
 
   for(const c of missing){
     const { error } = await sb.from('allowed_emails').insert({
-      email: c.email,
+      email: (c.email || '').toLowerCase(),
       name: c.name || null,
-      round: c.round || 'round1',
+      round: 'unknown',
       phone: c.phone || null,
       stripe_payment_id: c.stripe_customer_id || null
     });
@@ -2676,7 +2701,7 @@ async function addRound(){
     start_date: start,
     end_date: end || null,
     whatsapp_link: wa || null,
-    status: 'active'
+    status: 'upcoming'
   });
 
   if(error){
@@ -2700,19 +2725,19 @@ function renderRounds(){
   const tbody = document.getElementById('roundsBody');
 
   if(allRounds.length === 0){
-    // Show hardcoded rounds if table doesn't exist yet
+    // Show hardcoded rounds if table doesn't exist yet (corrected dates)
     tbody.innerHTML = `
       <tr>
         <td>סבב 1</td>
         <td>20/04/2026</td>
-        <td>25/04/2026</td>
+        <td>24/04/2026</td>
         <td><a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" style="color:var(--orange)">וואטסאפ</a></td>
         <td><span class="badge badge-green">פעיל</span></td>
       </tr>
       <tr>
         <td>סבב 2</td>
         <td>27/04/2026</td>
-        <td>02/05/2026</td>
+        <td>01/05/2026</td>
         <td><a href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank" style="color:var(--orange)">וואטסאפ</a></td>
         <td><span class="badge badge-green">פעיל</span></td>
       </tr>

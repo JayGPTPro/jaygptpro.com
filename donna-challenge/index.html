@@ -2699,18 +2699,31 @@ async function checkAuth(){
     return;
   }
 
-  const email = session.user.email;
+  const email = (session.user.email || '').toLowerCase();
 
-  // Check if email is in allowed_emails table
-  const { data: allowed, error } = await sb
+  // Check if email is in allowed_emails table (case-insensitive)
+  const { data: allowedRow, error } = await sb
     .from('allowed_emails')
-    .select('round, access_revoked_at, access_revoked_reason')
-    .eq('email', email)
-    .single();
+    .select('round, access_revoked_at, access_revoked_reason, primary_email')
+    .ilike('email', email)
+    .maybeSingle();
 
-  if(error || !allowed){
+  if(error || !allowedRow){
     showNotAllowedScreen(email);
     return;
+  }
+
+  // If this is an alias, follow primary_email to get authoritative round/access status
+  let allowed = allowedRow;
+  if(allowedRow.primary_email){
+    const { data: primaryRow } = await sb
+      .from('allowed_emails')
+      .select('round, access_revoked_at, access_revoked_reason')
+      .ilike('email', allowedRow.primary_email.toLowerCase())
+      .maybeSingle();
+    if(primaryRow){
+      allowed = primaryRow;
+    }
   }
 
   // Access revoked (e.g., after Stripe refund)
@@ -2740,7 +2753,7 @@ async function checkAuth(){
 
 // ===== DAY LOCKING =====
 // Day 0 (prep) = always open
-// Day 1 = opens on round start date at 13:00 EST (18:00 UTC)
+// Day 1 = opens on round start date at 14:00 EST (19:00 UTC during DST)
 // Day 2 = opens day after, same time
 // etc.
 // Admin (round='both') = everything always open
@@ -2750,9 +2763,9 @@ function getDayUnlockDate(dayNum){
   if(round === 'both') return new Date(0); // Admin: all open
   if(dayNum === 0) return new Date(0); // Day 0 (prep): always open
 
-  // Round start dates at 13:00 EST (18:00 UTC)
-  const round1Start = new Date('2026-04-20T18:00:00Z'); // Apr 20, 1pm EST
-  const round2Start = new Date('2026-04-27T18:00:00Z'); // Apr 27, 1pm EST
+  // Round start dates at 14:00 EST = 19:00 UTC (during EDT in April/May)
+  const round1Start = new Date('2026-04-20T19:00:00Z'); // Apr 20, 2pm EST
+  const round2Start = new Date('2026-04-27T19:00:00Z'); // Apr 27, 2pm EST
   const start = round === 'round1' ? round1Start : round2Start;
   const unlock = new Date(start);
   unlock.setDate(unlock.getDate() + (dayNum - 1)); // Day 1 = start date, Day 2 = start+1, etc.
