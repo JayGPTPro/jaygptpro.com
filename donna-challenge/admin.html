@@ -587,6 +587,13 @@ tr.expandable{cursor:pointer}
 .row-action-btn.revoke:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 .row-action-btn.restore{border-color:rgba(61,214,140,0.4);color:var(--green);background:var(--green-bg)}
 .row-action-btn.restore:hover{border-color:var(--green);background:rgba(61,214,140,0.25)}
+.row-action-btn.welcome-sent{color:var(--green);border-color:rgba(61,214,140,0.3)}
+.row-action-btn.welcome-sent:hover{background:var(--green-bg);border-color:var(--green)}
+.row-action-btn.welcome-pending{color:var(--yellow);border-color:rgba(245,197,66,0.5);background:rgba(245,197,66,0.08)}
+.row-action-btn.welcome-pending:hover{background:var(--yellow-bg);border-color:var(--yellow)}
+.row-action-btn.welcome-failed{color:var(--red);border-color:rgba(255,92,92,0.5);background:rgba(255,92,92,0.08);animation:pulseRed 2s ease infinite}
+.row-action-btn.welcome-failed:hover{background:var(--red-bg);border-color:var(--red);animation:none}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,92,92,0)}50%{box-shadow:0 0 0 4px rgba(255,92,92,0.15)}}
 
 .wa-cell{display:inline-flex;align-items:center;gap:4px;font-size:0.78em;padding:3px 8px;border-radius:4px}
 .wa-unknown{background:rgba(152,152,168,0.12);color:var(--dim)}
@@ -762,6 +769,11 @@ tr.expandable{cursor:pointer}
         <div class="stat-sub">לא יכולים להיכנס לפורטל</div>
       </div>
       <div class="stat-card fade-in">
+        <div class="stat-label">קיבלו מייל welcome</div>
+        <div class="stat-value" id="statWelcomeSent" style="color:var(--green)">0</div>
+        <div class="stat-sub" id="statWelcomeSentSub">מתוך משלמים</div>
+      </div>
+      <div class="stat-card fade-in">
         <div class="stat-label">סך הכנסות (גרוס)</div>
         <div class="stat-value" id="statRevenue">$0</div>
         <div class="stat-sub">מ-Stripe</div>
@@ -840,6 +852,8 @@ tr.expandable{cursor:pointer}
         </select>
         <select id="filterDataMissing" onchange="renderParticipants()">
           <option value="all">כל הנתונים</option>
+          <option value="no_welcome_email">לא קיבלו מייל welcome</option>
+          <option value="email_failed">מייל נכשל</option>
           <option value="no_phone">חסר טלפון</option>
           <option value="wa_unknown">וואטסאפ לא ידוע</option>
           <option value="wa_none">לא בקבוצת וואטסאפ</option>
@@ -1523,6 +1537,9 @@ function renderActionQueue(){
   ).length;
   const inBoth = withRound.filter(p => p.in_whatsapp === 'both').length;
   const noWA = withRound.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown').length;
+  // Welcome email never sent (or failed). Most urgent.
+  const noWelcomeEmail = active.filter(p => !p.welcome_email_sent_at).length;
+  const failedEmail = active.filter(p => p.welcome_email_error).length;
   const noPhone = active.filter(p => {
     const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
     return !p.phone && !(stripeMatch && stripeMatch.phone);
@@ -1533,6 +1550,8 @@ function renderActionQueue(){
   }).length;
 
   const items = [
+    { count: noWelcomeEmail, label: 'לא קיבלו מייל welcome', icon: '&#128231;', cls: noWelcomeEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_welcome_email'; renderParticipants(); } },
+    { count: failedEmail, label: 'מייל נכשל', icon: '&#10060;', cls: failedEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='email_failed'; renderParticipants(); } },
     { count: noRound, label: 'ללא סבב', icon: '&#127919;', cls: noRound > 0 ? 'urgent' : 'zero', filter: () => filterToRound('unknown') },
     { count: wrongWA, label: 'בקבוצה הלא נכונה', icon: '&#9888;&#65039;', cls: wrongWA > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='wa_wrong'; renderParticipants(); } },
     { count: inBoth, label: 'בשתי קבוצות', icon: '&#8644;', cls: inBoth > 0 ? 'warn' : 'zero', filter: null },
@@ -1608,6 +1627,19 @@ function renderOverview(){
   document.getElementById('statNoPhone').textContent = noPhone;
   document.getElementById('statUnknownWA').textContent = unknownWA;
   document.getElementById('statRevokedAccess').textContent = allParticipants.filter(p => p.access_revoked_at).length;
+
+  // Welcome email stats (paid only)
+  const paidActive = paidParticipants.filter(p => !p.access_revoked_at);
+  const welcomeSent = paidActive.filter(p => p.welcome_email_sent_at).length;
+  const welcomeStatEl = document.getElementById('statWelcomeSent');
+  if(welcomeStatEl){
+    welcomeStatEl.textContent = welcomeSent;
+    document.getElementById('statWelcomeSentSub').textContent =
+      welcomeSent + ' מתוך ' + paidActive.length + ' משלמים פעילים';
+    if(welcomeSent < paidActive.length){
+      welcomeStatEl.style.color = 'var(--yellow)';
+    }
+  }
 
   // Stripe stats (exclude TEST coupon and refunded for "active paid")
   const paidCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
@@ -1791,11 +1823,12 @@ function renderParticipants(){
       if(dataFilter === 'wa_unknown' && wa !== 'unknown') return false;
       if(dataFilter === 'wa_none' && wa !== 'none') return false;
       if(dataFilter === 'wa_wrong'){
-        // In WA but in the wrong room (round1 user in round2 group, etc.)
         const isWrong = (p.round === 'round1' && wa === 'round2') || (p.round === 'round2' && wa === 'round1');
         if(!isWrong) return false;
       }
       if(dataFilter === 'refunded' && !(stripeMatch && stripeMatch.refunded)) return false;
+      if(dataFilter === 'no_welcome_email' && p.welcome_email_sent_at) return false;
+      if(dataFilter === 'email_failed' && !p.welcome_email_error) return false;
     }
 
     if(search){
@@ -1886,6 +1919,15 @@ function renderParticipants(){
     const revokeBtn = p.access_revoked_at
       ? `<button class="row-action-btn restore" onclick="restoreAccess('${esc(p.id)}','${esc(p.email)}')" title="שחזר גישה לפורטל">&#9989;</button>`
       : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="בטל גישה לפורטל">&#128683;</button>`;
+    // Welcome email resend button
+    let welcomeBtn;
+    if(p.welcome_email_error){
+      welcomeBtn = `<button class="row-action-btn welcome welcome-failed" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="שליחה נכשלה: ${esc(p.welcome_email_error.substring(0,80))}. לחץ לנסיון חוזר">&#10071;</button>`;
+    } else if(!p.welcome_email_sent_at){
+      welcomeBtn = `<button class="row-action-btn welcome welcome-pending" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="לא נשלח מייל welcome. לחץ לשליחה">&#128231;</button>`;
+    } else {
+      welcomeBtn = `<button class="row-action-btn welcome welcome-sent" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="נשלח: ${formatDateTime(p.welcome_email_sent_at)}. לחץ לשליחה חוזרת">&#128190;</button>`;
+    }
 
     tr.innerHTML = `
       <td>${esc(name)}${aliasBadge}</td>
@@ -1908,7 +1950,8 @@ function renderParticipants(){
       <td onclick="event.stopPropagation()">
         <div class="row-actions">
           <button class="row-action-btn edit" onclick="openEditModal('${esc(p.id)}')" title="ערוך">&#9998;</button>
-          <a class="row-action-btn email" href="${esc(emailHref)}" title="שלח מייל">&#128231;</a>
+          ${welcomeBtn}
+          <a class="row-action-btn email" href="${esc(emailHref)}" title="פתח Gmail עם נמען מוכן">&#9993;&#65039;</a>
           ${waBtn}
           ${revokeBtn}
         </div>
@@ -2261,6 +2304,36 @@ async function waImportApply(){
   document.getElementById('waImportList').value = '';
   document.getElementById('waImportResults').innerHTML = '';
   waImportPending = [];
+  await loadAllData();
+  renderAll();
+}
+
+// ===== SEND WELCOME EMAIL (manual / resend) =====
+const FORM_SECRET_PUBLIC_FOR_WELCOME = 'donna_form_sync_2026_x7K9pQ4mN8vR3jL5wT2bZ';
+const SEND_WELCOME_URL = 'https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/send-welcome-email';
+
+async function sendWelcomeNow(participantId, email){
+  const p = allParticipants.find(x => x.id === participantId);
+  if(!p) return;
+  const isResend = !!p.welcome_email_sent_at;
+  const verb = isResend ? 'לשלוח שוב' : 'לשלוח עכשיו';
+  if(!confirm(verb + ' מייל welcome ל-' + email + '?\n\nהמייל יבחר אוטומטית בגרסה הנכונה לפי סטטוס הסבבים כרגע.')) return;
+
+  try{
+    const res = await fetch(SEND_WELCOME_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-form-secret': FORM_SECRET_PUBLIC_FOR_WELCOME },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(res.ok){
+      alert('נשלח בהצלחה! מצב: ' + (data.mode || '?'));
+    } else {
+      alert('שגיאה: ' + (data.error || res.status) + (data.detail?.message ? '\n' + data.detail.message : ''));
+    }
+  } catch(err){
+    alert('שגיאת רשת: ' + err.message);
+  }
   await loadAllData();
   renderAll();
 }
