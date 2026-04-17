@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>אתגר דונה . פורטל משתתפים</title>
+<title>Claude Code Challenge . Participant Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -52,6 +52,70 @@ body::after{
   background-image:repeating-conic-gradient(rgba(255,255,255,0.08) 0% 25%,transparent 0% 50%);
   background-size:4px 4px;
 }
+
+/* Support shortcut floating button */
+.support-shortcut{
+  position:fixed;bottom:24px;right:24px;z-index:9998;
+  width:52px;height:52px;border-radius:50%;display:none;
+  background:linear-gradient(135deg,var(--orange),var(--orange-light));
+  color:#fff;border:none;cursor:pointer;
+  box-shadow:0 8px 24px rgba(232,112,64,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;
+  transition:transform 0.2s ease;
+}
+.support-shortcut:hover{transform:translateY(-2px) scale(1.05)}
+.support-shortcut .support-icon{line-height:1}
+.support-menu{
+  position:fixed;bottom:88px;right:24px;z-index:9998;
+  background:rgba(18,18,31,0.98);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);
+  border-radius:12px;padding:8px;
+  min-width:220px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  display:none;flex-direction:column;gap:2px;
+}
+.support-menu.open{display:flex;animation:supMenuIn 0.2s ease}
+@keyframes supMenuIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.support-menu a{
+  color:var(--text);text-decoration:none;
+  padding:10px 14px;border-radius:8px;
+  font-size:0.9em;font-weight:500;
+  transition:background 0.15s ease;
+}
+.support-menu a:hover{background:rgba(232,112,64,0.12)}
+@media(max-width:700px){
+  .support-shortcut{bottom:16px;right:16px;width:48px;height:48px}
+  .support-menu{bottom:76px;right:16px}
+}
+
+/* Countdown banner above content */
+.unlock-countdown{
+  max-width:860px;margin:18px auto 0;padding:14px 20px;
+  background:linear-gradient(135deg,rgba(232,112,64,0.12),rgba(232,112,64,0.04));
+  border:1px solid rgba(232,112,64,0.3);
+  border-radius:12px;
+  color:var(--bright);font-size:0.95em;line-height:1.5;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+}
+.unlock-countdown .count-icon{font-size:1.4em}
+.unlock-countdown .count-num{font-weight:800;color:var(--orange);letter-spacing:0.3px}
+@media(max-width:700px){
+  .unlock-countdown{font-size:0.85em;padding:12px 16px}
+}
+
+/* Content language notice (shows only in EN mode until content translated) */
+.content-lang-notice{
+  max-width:860px;margin:20px auto 0;padding:0 20px;
+}
+.content-lang-notice > div{
+  background:linear-gradient(135deg,rgba(232,112,64,0.08),rgba(240,147,94,0.04));
+  border:1px solid rgba(232,112,64,0.25);
+  border-radius:12px;padding:16px 20px;
+  color:var(--text);font-size:0.9em;line-height:1.7;
+}
+.content-lang-notice strong{color:var(--orange)}
 
 /* ===== MOBILE RESPONSIVE ===== */
 .mobile-block{display:none}
@@ -767,39 +831,63 @@ body::after{
 <div class="login-screen" id="loginScreen" style="display:none">
   <div class="login-card">
     <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="1500" colors="primary:#e87040,secondary:#f0935e" style="width:64px;height:64px;display:block;margin:0 auto 16px"></lord-icon>
-    <h1>אתגר דונה<br><span style="color:var(--orange);font-size:0.6em;font-weight:400">5 ימים לבנות עובד AI</span></h1>
-    <p class="subtitle">התחבר עם חשבון Google שלך</p>
+    <h1><span data-en="Claude Code Challenge" data-he="אתגר דונה">Claude Code Challenge</span><br><span style="color:var(--orange);font-size:0.6em;font-weight:400" data-en="5 days to build your AI employee" data-he="5 ימים לבנות עובד AI">5 days to build your AI employee</span></h1>
+    <p class="subtitle" data-en="Sign in with the Google account you used to register" data-he="התחבר עם חשבון Google שרשמת איתו">Sign in with the Google account you used to register</p>
     <button class="google-btn" id="googleBtn" onclick="signInWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      התחבר עם Google
+      <span data-en="Sign in with Google" data-he="התחבר עם Google">Sign in with Google</span>
     </button>
-    <p class="login-note">רק חשבונות שרשומים לאתגר יכולים להיכנס</p>
+    <p class="login-note" data-en="Only accounts registered for the challenge can sign in" data-he="רק חשבונות שרשומים לאתגר יכולים להיכנס">Only accounts registered for the challenge can sign in</p>
     <div class="login-error" id="loginError"></div>
+    <button id="langToggle" onclick="toggleLanguage()" style="margin-top:20px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--dim);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">עברית</button>
   </div>
 </div>
 
 <!-- NOT ALLOWED SCREEN -->
 <div class="login-screen" id="notAllowedScreen" style="display:none">
   <div class="not-allowed-card">
-    <h2>המייל הזה לא רשום לאתגר</h2>
+    <h2 data-en="This email isn't registered for the challenge" data-he="המייל הזה לא רשום לאתגר">This email isn't registered for the challenge</h2>
     <div class="email-display" id="notAllowedEmail"></div>
-    <p>If you paid and see this message, email Jay and we'll fix it:</p>
-    <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Issue&body=Hi+Jay%2C%0A%0AI+paid+for+the+Donna+Challenge+but+I+can%27t+access+the+portal+with+my+Google+account.%0A%0AMy+email%3A+%0APayment+date%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4">Email Jay (info@jaygptpro.com)</a>
+    <p data-en="If you paid and see this message, email Jay and we'll fix it:" data-he="אם שילמת וזה מה שאתה רואה, שלח מייל לג'יי ונטפל:">If you paid and see this message, email Jay and we'll fix it:</p>
+    <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Issue&body=Hi+Jay%2C%0A%0AI+paid+for+the+Claude+Code+Challenge+but+I+can%27t+access+the+portal+with+my+Google+account.%0A%0AMy+email%3A+%0APayment+date%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4" data-en="Email Jay (info@jaygptpro.com)" data-he="שלח מייל לג'יי">Email Jay (info@jaygptpro.com)</a>
     <br>
-    <button class="signout-btn" onclick="signOut()">התנתק ונסה מייל אחר</button>
+    <button class="signout-btn" onclick="signOut()" data-en="Sign out and try a different email" data-he="התנתק ונסה מייל אחר">Sign out and try a different email</button>
   </div>
 </div>
 
 <!-- ACCESS REVOKED SCREEN (after refund) -->
 <div class="login-screen" id="revokedScreen" style="display:none">
   <div class="not-allowed-card">
-    <h2>Access to the challenge has ended</h2>
+    <h2 data-en="Access to the challenge has ended" data-he="הגישה לאתגר הסתיימה">Access to the challenge has ended</h2>
     <div class="email-display" id="revokedEmail"></div>
-    <p style="margin-top:16px">Our records show this account was refunded, so portal access has been closed.<br><br>
+    <p style="margin-top:16px" data-en="Our records show this account was refunded, so portal access has been closed. If this is a mistake, or if you'd like to rejoin a future round, please get in touch:" data-he="הרישומים שלנו מראים שהחשבון הזה קיבל החזר, ולכן הגישה לפורטל נסגרה. אם זו טעות, או שתרצה להצטרף לסבב עתידי, צור קשר:">Our records show this account was refunded, so portal access has been closed.<br><br>
     If this is a mistake, or if you'd like to rejoin a future round, please get in touch:</p>
-    <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Question&body=Hi+Jay%2C%0A%0AMy+account+shows+as+refunded+but+I+believe+I+should+still+have+access.%0A%0AMy+email%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4">Email Jay (info@jaygptpro.com)</a>
+    <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Question&body=Hi+Jay%2C%0A%0AMy+account+shows+as+refunded+but+I+believe+I+should+still+have+access.%0A%0AMy+email%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4" data-en="Email Jay (info@jaygptpro.com)" data-he="שלח מייל לג'יי">Email Jay (info@jaygptpro.com)</a>
     <br>
-    <button class="signout-btn" onclick="signOut()">Sign out</button>
+    <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
+  </div>
+</div>
+
+<!-- TRY AGAIN SCREEN (when Supabase unreachable) -->
+<div class="login-screen" id="tryAgainScreen" style="display:none">
+  <div class="not-allowed-card">
+    <h2 data-en="Something went wrong" data-he="משהו השתבש">Something went wrong</h2>
+    <p style="margin-top:16px" data-en="We couldn't reach the server to check your access. This is usually temporary. Please try again in a moment." data-he="לא הצלחנו להתחבר לשרת לבדוק את הגישה שלך. זה בדרך כלל זמני. נסה שוב בעוד רגע.">We couldn't reach the server to check your access. This is usually temporary. Please try again in a moment.</p>
+    <button onclick="location.reload()" class="whatsapp-link" style="background:#4285f4;margin-top:20px;border:none;cursor:pointer" data-en="Try again" data-he="נסה שוב">Try again</button>
+    <br>
+    <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
+  </div>
+</div>
+
+<!-- PICK YOUR ROUND SCREEN (round=unknown) -->
+<div class="login-screen" id="pickRoundScreen" style="display:none">
+  <div class="not-allowed-card">
+    <h2 data-en="Pick your round to get started" data-he="בחר את הסבב שלך כדי להתחיל">Pick your round to get started</h2>
+    <div class="email-display" id="pickRoundEmail"></div>
+    <p style="margin-top:16px" data-en="Your spot is confirmed. One last step: pick which 5-day round works for your schedule." data-he="המקום שלך מובטח. צעד אחרון: בחר איזה סבב של 5 ימים מתאים לך.">Your spot is confirmed. One last step: pick which 5-day round works for your schedule.</p>
+    <div id="pickRoundOptions" style="display:flex;flex-direction:column;gap:10px;margin-top:20px"></div>
+    <p style="margin-top:20px;font-size:0.85em;color:var(--dim)" data-en="After you pick, refresh this page and you're in." data-he="אחרי שתבחר, רענן את הדף והכל מוכן.">After you pick, refresh this page and you're in.</p>
+    <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
   </div>
 </div>
 
@@ -807,39 +895,51 @@ body::after{
 <div class="main-app" id="mainApp">
 
   <!-- Header -->
-  <div class="app-header">
+  <header class="app-header">
     <div class="user-bar">
+      <button id="langToggleMain" onclick="toggleLanguage()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--dim);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:8px">עברית</button>
       <span class="user-email" id="userEmail"></span>
-      <button class="header-signout" onclick="signOut()">התנתק</button>
+      <button class="header-signout" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
     </div>
-    <h1>אתגר דונה</h1>
-    <p class="header-sub"><span>Your First AI Hire</span> . אתגר 5 ימים לבנות עובד AI</p>
+    <h1 data-en="Claude Code Challenge" data-he="אתגר דונה">Claude Code Challenge</h1>
+    <p class="header-sub"><span>Your First AI Hire</span> . <span data-en="5-day challenge to build your AI employee" data-he="אתגר 5 ימים לבנות עובד AI">5-day challenge to build your AI employee</span></p>
     <div class="progress-wrap">
       <div class="progress-label">
-        <span id="progressText">0 מתוך 5 ימים הושלמו</span>
+        <span id="progressText">0 of 5 days complete</span>
         <span id="progressPct">0%</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill" style="width:0%"></div>
       </div>
       <div class="reset-all-wrap" id="resetAllWrap" style="display:none">
-        <button class="reset-all-btn" onclick="resetAll()">↩ איפוס כל ההתקדמות</button>
+        <button class="reset-all-btn" onclick="resetAll()" data-en="\u21a9 Reset all progress" data-he="\u21a9 \u05d0\u05d9\u05e4\u05d5\u05e1 \u05db\u05dc \u05d4\u05d4\u05ea\u05e7\u05d3\u05de\u05d5\u05ea">\u21a9 Reset all progress</button>
       </div>
+    </div>
+  </header>
+
+  <!-- Day Navigation -->
+  <nav class="day-nav" id="dayNav" role="tablist" aria-label="Challenge days">
+    <button class="day-tab" data-day="0" onclick="switchDay(0)" role="tab" aria-label="Prep day, always unlocked" data-en="Prep" data-he="הכנה" style="border-left:2px solid rgba(255,255,255,0.06)">Prep</button>
+    <button class="day-tab" data-day="1" onclick="switchDay(1)" role="tab" data-en="Day 1" data-he="יום 1">Day 1</button>
+    <button class="day-tab" data-day="2" onclick="switchDay(2)" role="tab" data-en="Day 2" data-he="יום 2">Day 2</button>
+    <button class="day-tab" data-day="3" onclick="switchDay(3)" role="tab" data-en="Day 3" data-he="יום 3">Day 3</button>
+    <button class="day-tab" data-day="4" onclick="switchDay(4)" role="tab" data-en="Day 4" data-he="יום 4">Day 4</button>
+    <button class="day-tab" data-day="5" onclick="switchDay(5)" role="tab" data-en="Day 5" data-he="יום 5">Day 5</button>
+  </nav>
+
+  <!-- Countdown to next unlock -->
+  <div id="unlockCountdown" class="unlock-countdown" style="display:none" aria-live="polite"></div>
+
+  <!-- Content Language Notice (only shows when lang=en) -->
+  <div id="contentLangNotice" class="content-lang-notice" style="display:none">
+    <div>
+      <strong>\u2139\ufe0f Lesson content is still being translated.</strong><br>
+      The chrome (navigation, buttons, email automations) is in English, but day-by-day lesson pages are currently in Hebrew. Fresh English content will be added before the challenge starts. Use your browser's built-in translation in the meantime, or switch the portal to Hebrew if that's easier.
     </div>
   </div>
 
-  <!-- Day Navigation -->
-  <div class="day-nav" id="dayNav">
-    <button class="day-tab" data-day="0" onclick="switchDay(0)" style="border-left:2px solid var(--border)">הכנה</button>
-    <button class="day-tab" data-day="1" onclick="switchDay(1)">יום 1</button>
-    <button class="day-tab" data-day="2" onclick="switchDay(2)">יום 2</button>
-    <button class="day-tab" data-day="3" onclick="switchDay(3)">יום 3</button>
-    <button class="day-tab" data-day="4" onclick="switchDay(4)">יום 4</button>
-    <button class="day-tab" data-day="5" onclick="switchDay(5)">יום 5</button>
-  </div>
-
   <!-- Content Area -->
-  <div class="content-area">
+  <main class="content-area" role="main">
 
     <!-- ==================== DAY 0 ==================== -->
     <div class="day-content" id="day0">
@@ -1056,7 +1156,7 @@ body::after{
         <p style="color:var(--dim);margin-top:8px">תנסה עכשיו:</p>
         <div class="cmd-block">
           <code>/help</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:8px;padding:12px;margin-top:12px">
           <p style="color:var(--orange);font-size:0.85em;font-weight:600">מתוך סדרת ההאקים שלי: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #7: Session Getting Slow? Here's How to Fix It</a></p>
@@ -1084,14 +1184,14 @@ body::after{
         <p style="color:var(--text);font-weight:600;margin-top:16px;margin-bottom:8px">תנסה עכשיו. בנה מחשבון:</p>
         <div class="cmd-block">
           <code>Build me a simple HTML profit calculator. I enter the product cost and selling price, and it shows me the profit margin as a percentage. Make it clean and modern looking. Save it as calculator.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);margin-top:8px">Claude יבנה את הכלי וישמור אותו. תפתח את הקובץ בדפדפן ותראה מחשבון עובד.</p>
 
         <p style="color:var(--text);font-weight:600;margin-top:16px;margin-bottom:8px">עכשיו תנסה דשבורד:</p>
         <div class="cmd-block">
           <code>Build me a beautiful dark-mode dashboard that shows today's date, a to-do list I can add items to, and a motivational quote. Save as dashboard.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);margin-top:8px">שחק עם זה. תנסה דברים. אי אפשר לשבור כלום. זה הזמן להתנסות.</p>
       </div>
@@ -1103,15 +1203,15 @@ body::after{
         <p style="color:var(--dim);margin-bottom:12px">אחרי שתראו את הסרטון, תנסו בעצמכם. הנה כמה רעיונות:</p>
         <div class="cmd-block">
           <code>Build me a beautiful dark-mode dashboard that shows today's date, a to-do list I can add items to, and a motivational quote. Save as dashboard.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <div class="cmd-block">
           <code>Build me a modern landing page for a product called "SuperJuice". It's a health drink. Include a hero section, 3 benefits, testimonials, and a buy button. Save as landing-page.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <div class="cmd-block">
           <code>Build me a simple expense tracker where I can add expenses with a name, amount, and category. Show a total at the bottom and a pie chart. Save as expenses.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);margin-top:12px">אין חובה לעשות את זה. אבל אם תנסו, תבינו כמה Claude חזק. וזה עוד לפני שלימדנו אותו מי אתם ומה העסק שלכם.</p>
       </div>
@@ -1173,7 +1273,7 @@ body::after{
         <h3><span class="sec-icon">📦</span> שלב 17: הורדת ה-Starter Kit</h3>
         <p style="color:var(--dim);margin-bottom:12px">ה-Starter Kit זו תיקייה עם כל מה שדונה צריכה: זהות, זיכרון, סקילס, טמפלייטים, ומדריכים.</p>
         <ol>
-          <li>הורד את ה-Starter Kit: <a href="[LINK]" target="_blank" class="link">לחץ כאן להורדה</a></li>
+          <li>הורד את ה-Starter Kit: <a href="https://jaygptpro.com/donna-challenge/donna-starter-kit.zip" target="_blank" class="link" download>לחץ כאן להורדה</a></li>
           <li>פתח את קובץ ה-ZIP (לחיצה כפולה)</li>
           <li>שים את התיקייה <strong>donna-starter-kit</strong> במקום נגיש (שולחן עבודה או Documents). לא בתוך תיקיות מקוננות.</li>
         </ol>
@@ -1206,7 +1306,7 @@ donna-starter-kit/<br>
         </ol>
         <div class="cmd-block">
           <code>What files do you see in this folder?</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);margin-top:8px">Claude צריך לראות: CLAUDE.md, brain/, templates/, guides/ ועוד.</p>
 
@@ -1399,7 +1499,7 @@ donna-starter-kit/<br>
       </div>
 
       <button class="complete-btn" data-day="0" onclick="completeDay(0)">סיימתי את ההכנה! אני מוכן לאתגר 🚀</button>
-      <button class="reset-btn" data-day="0" onclick="resetDay(0)">↩ איפוס יום 0</button>
+      <button class="reset-btn" data-day="0" onclick="resetDay(0)"data-en="↩ Reset Day 0" data-he="↩ איפוס יום 0">↩ Reset Day 0</button>
     </div>
 
     <!-- ==================== DAY 1 ==================== -->
@@ -1514,7 +1614,7 @@ donna-starter-kit/<br>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">אחרי שפתחת, שלח את הפרומפט הזה כדי להכיר את מבנה התיקיות:</p>
         <div class="cmd-block">
           <code>What files and folders do you see? Give me a quick overview of each.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 16px;padding-right:20px">דונה תציג לך את כל הקבצים ותסביר מה כל אחד עושה.</p>
 
@@ -1559,17 +1659,17 @@ donna-starter-kit/<br>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">דונה עדיין לא מכירה אותך (את זה נשנה מחר), אבל כבר אפשר לדבר איתה ולהרגיש את האופי. נסה:</p>
         <div class="cmd-block">
           <code>Who are you? Tell me about yourself.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 8px;padding-right:20px">בודק שדונה מציגה את עצמה עם אופי, לא כרובוט.</p>
         <div class="cmd-block">
           <code>What would you do if I asked you to handle my emails?</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 8px;padding-right:20px">בודק שהיא מבינה את התפקיד שלה ויודעת לתאר מה היא עושה.</p>
         <div class="cmd-block">
           <code>Tell me about your old boss Harvey.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 8px;padding-right:20px">בודק שהאישיות של דונה פעילה. היא אמורה להגיב עם הומור יבש.</p>
         <div style="background:rgba(61,214,140,0.08);border:1px solid rgba(61,214,140,0.2);border-radius:10px;padding:14px;margin:12px 0">
@@ -1652,7 +1752,7 @@ donna-starter-kit/<br>
       </div>
 
       <button class="complete-btn" data-day="1" onclick="completeDay(1)">סיימתי יום 1!</button>
-      <button class="reset-btn" data-day="1" onclick="resetDay(1)">↩ איפוס יום 1</button>
+      <button class="reset-btn" data-day="1" onclick="resetDay(1)"data-en="↩ Reset Day 1" data-he="↩ איפוס יום 1">↩ Reset Day 1</button>
     </div>
 
     <!-- ==================== DAY 2 ==================== -->
@@ -1748,7 +1848,7 @@ Use my answers to fill in brain/Business/my-business.md with all the relevant de
 Also update brain/Business/Goals.md based on my priorities from Part 4.
 
 Show me a summary of what you learned and what you updated.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 16px;padding-right:20px">דונה תקרא את מה שכתבת ותמלא את my-business.md. תראה אותה עובדת בזמן אמת.</p>
 
@@ -1769,7 +1869,7 @@ Update brain/Preferences/Style.md with what you learned. Be specific.
 Then save the email samples as separate files in the samples/ folder.
 
 Show me what you learned about my writing style.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
 
         <!-- Prompt 3 -->
@@ -1780,7 +1880,7 @@ Show me what you learned about my writing style.</code>
         </div>
         <div class="cmd-block">
           <code>Donna, what do you know about my business? Summarize everything: who I am, what I do, who my customers are, who my key people are, and what my priorities are.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 16px;padding-right:20px">אם דונה יודעת לענות על הכל, עברת. אם משהו חסר, תגיד לה מה לתקן.</p>
 
@@ -1792,7 +1892,7 @@ Show me what you learned about my writing style.</code>
         </div>
         <div class="cmd-block">
           <code>Create a one-page business overview based on everything you know about me. Include: what I do, key numbers, products/services, key people, goals, current challenges, and your first impression. Save it to output/business-one-pager.md</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
           <p style="color:var(--orange);font-weight:700;font-size:1.05em;margin-bottom:6px">זה הרגע.</p>
@@ -1862,7 +1962,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="2" onclick="completeDay(2)">סיימתי יום 2!</button>
-      <button class="reset-btn" data-day="2" onclick="resetDay(2)">↩ איפוס יום 2</button>
+      <button class="reset-btn" data-day="2" onclick="resetDay(2)"data-en="↩ Reset Day 2" data-he="↩ איפוס יום 2">↩ Reset Day 2</button>
     </div>
 
     <!-- ==================== DAY 3 ==================== -->
@@ -1938,7 +2038,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Read my latest 5 emails and categorize them: URGENT / IMPORTANT / FYI / JUNK</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="5">
           <li><strong>חבר Google Calendar:</strong> <strong>Customize > Connectors > Google Calendar</strong> > התחבר</li>
@@ -1946,7 +2046,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>What meetings do I have this week? Include who's attending and what it's about.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="7">
           <li><strong>חבר Google Drive:</strong> <strong>Customize > Connectors > Google Drive</strong> > התחבר</li>
@@ -1954,7 +2054,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Search my Drive for [YOUR SEARCH TERM]</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="9">
           <li><strong>חבר את כלי המשימות שלך (אופציונלי):</strong> לך ל-<strong>Customize > Connectors</strong> וחפש את שם הכלי (Asana, Monday, ClickUp, או Notion). אם אין לך כלי משימות, דלג על השלב הזה.</li>
@@ -1966,14 +2066,14 @@ Show me what you learned about my writing style.</code>
         </div>
         <div class="cmd-block">
           <code>Prep me for my next meeting. Pull everything relevant from email, calendar, and Drive.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="11">
           <li><strong>עוד דמו: טיפול במיילים</strong></li>
         </ol>
         <div class="cmd-block">
           <code>Handle my emails. Read the last 24 hours, categorize them, and draft replies for anything urgent.</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
       </div>
 
@@ -2044,7 +2144,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="3" onclick="completeDay(3)">סיימתי יום 3!</button>
-      <button class="reset-btn" data-day="3" onclick="resetDay(3)">↩ איפוס יום 3</button>
+      <button class="reset-btn" data-day="3" onclick="resetDay(3)"data-en="↩ Reset Day 3" data-he="↩ איפוס יום 3">↩ Reset Day 3</button>
     </div>
 
     <!-- ==================== DAY 4 ==================== -->
@@ -2093,7 +2193,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Open the morning-briefing skill file and show me how to customize it</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="5">
           <li><strong>פתח Obsidian</strong> ותראה מה דונה כתבה ל-<strong>brain/</strong> (Daily Logs, People)</li>
@@ -2113,7 +2213,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">סורקת מיילים, יומן ומשימות. מכינה בריפינג אחד מסודר עם סדרי עדיפויות וסיכונים.</p>
           <div class="cmd-block">
             <code>/morning-briefing</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: דוח של ~200 מילים עם מיילים מסווגים, פגישות, משימות, והעדיפות #1 שלך.</p>
         </div>
@@ -2127,7 +2227,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">סוגרת את היום. מה נעשה, מה לא, מה דחוף למחר.</p>
           <div class="cmd-block">
             <code>/evening-summary</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: סיכום של היום עם רשימת מה שהושלם, מה שנשאר פתוח, ומשימות למחר.</p>
         </div>
@@ -2141,7 +2241,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">כותבת טיוטת תשובה למייל בסגנון שלך. מחפשת את המייל, קוראת, ומכינה תשובה.</p>
           <div class="cmd-block">
             <code>/draft-reply [name of someone you need to reply to]</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: טיוטת מייל בסגנון הכתיבה שלך (מ-Style.md), מוכנה לשליחה.</p>
         </div>
@@ -2155,7 +2255,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">מכינה תדריך לפגישה. מושכת מידע ממייל, יומן, ו-Key People.</p>
           <div class="cmd-block">
             <code>/prep-meeting [name of someone you have a meeting with]</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: תדריך עם רקע על האדם, נושאים להעלות, מיילים אחרונים, ונקודות פעולה.</p>
         </div>
@@ -2169,7 +2269,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">מראה משימות פתוחות, מוסיפה חדשות, מתריעה על תקועות.</p>
           <div class="cmd-block">
             <code>/tasks</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: רשימת משימות מעודכנת עם סטטוס, דדליין, ודגלים על משימות שנתקעו.</p>
         </div>
@@ -2183,7 +2283,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">עוקבת אחרי הבטחות שנתת. כנות, בלי סוכר.</p>
           <div class="cmd-block">
             <code>/accountability</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: רשימת הבטחות פתוחות, למי הבטחת, ומתי. דונה לא תעגל פינות.</p>
         </div>
@@ -2197,7 +2297,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">מיילים שנשכחו. בשני כיוונים: מיילים שלא ענית, ואנשים שלא ענו לך.</p>
           <div class="cmd-block">
             <code>/forgotten-emails</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: שתי רשימות. "מחכים לך" ו"אתה מחכה להם". עם תאריכים וקישורים.</p>
         </div>
@@ -2211,7 +2311,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">חוסמת זמן ביומן למשימות שנדחות. מוצאת חלון פנוי ומכניסה אירוע.</p>
           <div class="cmd-block">
             <code>/block-time [task you keep postponing]</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: אירוע חדש ביומן Google עם שם המשימה, בזמן פנוי שדונה מצאה.</p>
         </div>
@@ -2225,7 +2325,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">מזהה סיכונים לפני שמתפוצצים. דדליינים קרובים, הבטחות שלא קוימו, אנשים שנשתקו.</p>
           <div class="cmd-block">
             <code>/risks</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: רשימת סיכונים מדורגת לפי חומרה, עם הצעות פעולה לכל אחד.</p>
         </div>
@@ -2239,7 +2339,7 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">דוח שבועי: ניצחונות, פספוסים, מספרים, ומה צריך לקרות בשבוע הבא.</p>
           <div class="cmd-block">
             <code>/weekly-report</code>
-            <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+            <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
           </div>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: סיכום שבועי עם הישגים, נקודות כשל, והמלצות לשבוע הבא.</p>
         </div>
@@ -2254,7 +2354,7 @@ Show me what you learned about my writing style.</code>
         <p style="color:var(--text);font-size:0.92em;margin-bottom:10px;line-height:1.7"><strong>תקוע? יש שאלה?</strong> במקום לחכות לתשובה בווצאפ, תגיד לדונה לשאול את ג'יי. היא בודקת את כל מאגר הידע שג'יי בנה לתוך המערכת ועונה בשמו. אם היא לא מצאה תשובה, היא מנסחת לך את השאלה בצורה ברורה שתוכל לשלוח ישירות לקבוצת הווצאפ.</p>
         <div class="cmd-block">
           <code>/ask-jay Why isn't my morning briefing running?</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.82em;margin-top:6px;font-style:italic">מה לצפות: דונה בודקת את ה-guides ועונה. אם היא לא בטוחה, היא מכינה לך הודעה מנוסחת לקבוצה.</p>
       </div>
@@ -2368,7 +2468,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="4" onclick="completeDay(4)">סיימתי יום 4!</button>
-      <button class="reset-btn" data-day="4" onclick="resetDay(4)">↩ איפוס יום 4</button>
+      <button class="reset-btn" data-day="4" onclick="resetDay(4)"data-en="↩ Reset Day 4" data-he="↩ איפוס יום 4">↩ Reset Day 4</button>
     </div>
 
     <!-- ==================== DAY 5 ==================== -->
@@ -2415,7 +2515,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Run /morning-briefing</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: כל יום 9:15</p>
         <ol start="4">
@@ -2423,7 +2523,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Run /evening-summary and then run /prep-meeting for tomorrow's meetings</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: כל יום 16:00</p>
         <ol start="5">
@@ -2431,7 +2531,7 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>Run /weekly-report</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.88em;margin:-6px 0 12px;padding-right:20px">Schedule: ראשון 9:15</p>
         <ol start="6">
@@ -2439,11 +2539,11 @@ Show me what you learned about my writing style.</code>
         </ol>
         <div class="cmd-block">
           <code>/weekly-report</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <div class="cmd-block">
           <code>/accountability</code>
-          <button class="copy-btn" onclick="copyCmd(this)">העתק</button>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <ol start="7">
           <li><strong>פתח Obsidian > Graph View</strong><br><span style="color:var(--dim);font-size:0.88em">לחץ Cmd+G (Mac) או Ctrl+G (Windows). תראה גרף שבו כל נקודה היא קובץ וכל קו הוא חיבור. ככל שדונה עובדת יותר, הגרף גדל ונהיה צפוף יותר. זה המוח שלה.</span></li>
@@ -2575,7 +2675,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <button class="complete-btn" data-day="5" onclick="completeDay(5)">סיימתי יום 5!</button>
-      <button class="reset-btn" data-day="5" onclick="resetDay(5)">↩ איפוס יום 5</button>
+      <button class="reset-btn" data-day="5" onclick="resetDay(5)"data-en="↩ Reset Day 5" data-he="↩ איפוס יום 5">↩ Reset Day 5</button>
 
       <!-- Graduation Box -->
       <div class="graduation-box">
@@ -2595,7 +2695,16 @@ Show me what you learned about my writing style.</code>
       </div>
     </div>
 
-  </div><!-- /content-area -->
+  </main><!-- /content-area -->
+
+  <!-- Support shortcut (floating, only in main app) -->
+  <button id="supportShortcut" class="support-shortcut" onclick="toggleSupportMenu(event)" aria-label="Get help" data-en-title="Need help?" data-he-title="צריך עזרה?">
+    <span class="support-icon">?</span>
+  </button>
+  <div id="supportMenu" class="support-menu" role="menu" aria-hidden="true">
+    <a id="supportWA" href="#" target="_blank" role="menuitem" data-en="Ask in WhatsApp group" data-he="שאל בקבוצת וואטסאפ">\ud83d\udcac Ask in WhatsApp group</a>
+    <a href="mailto:info@jaygptpro.com?subject=Claude%20Code%20Challenge" role="menuitem" data-en="Email Jay" data-he="שלח מייל לג'יי">\u2709\ufe0f Email Jay</a>
+  </div>
 </div><!-- /main-app -->
 
 <script>
@@ -2611,6 +2720,57 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 const STORAGE_KEY = 'donna-challenge';
 const DAY_NAMES = ['Meet Claude Code','Meet Donna','Donna, Meet My Business','Badge & Access','Training Day','She Works While You Sleep'];
+
+// ===== LANGUAGE (EN default, HE toggle) =====
+// Elements with data-en="..." data-he="..." swap innerText. Elements with data-lang-attr-X
+// swap attributes. Preference saved to localStorage.
+const LANG_KEY = 'donna-challenge-lang';
+function getLang(){
+  const saved = localStorage.getItem(LANG_KEY);
+  return (saved === 'he' || saved === 'en') ? saved : 'en';
+}
+function applyLanguage(lang){
+  localStorage.setItem(LANG_KEY, lang);
+  const html = document.documentElement;
+  html.lang = lang;
+  html.dir = (lang === 'he') ? 'rtl' : 'ltr';
+  // Swap innerText on any element that carries both attrs
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if(val != null){
+      // Preserve child elements: only swap if element has no element children
+      if(el.children.length === 0){
+        el.textContent = val;
+      }
+    }
+  });
+  // Swap placeholders
+  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+    el.placeholder = el.getAttribute('data-' + lang + '-placeholder') || '';
+  });
+  // Swap titles / aria-labels
+  document.querySelectorAll('[data-en-title]').forEach(el => {
+    el.title = el.getAttribute('data-' + lang + '-title') || '';
+  });
+  // Update toggle button text
+  document.querySelectorAll('#langToggle, #langToggleMain').forEach(tog => {
+    tog.textContent = lang === 'en' ? 'עברית' : 'English';
+  });
+  // Show content-language notice only when EN (content still in Hebrew)
+  const notice = document.getElementById('contentLangNotice');
+  if(notice) notice.style.display = lang === 'en' ? 'block' : 'none';
+  // Refresh dynamic UI that reads lang
+  try { if(typeof updateNav === 'function') updateNav(); } catch(e){}
+  try { if(typeof updateProgress === 'function') updateProgress(); } catch(e){}
+  try { if(typeof updateCompleteBtns === 'function') updateCompleteBtns(); } catch(e){}
+}
+function toggleLanguage(){
+  applyLanguage(getLang() === 'en' ? 'he' : 'en');
+}
+// Apply on load ASAP
+(function(){
+  try { applyLanguage(getLang()); } catch(e) {}
+})();
 
 const WHATSAPP_LINKS = {
   round1: 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS',
@@ -2635,12 +2795,15 @@ function saveState(){
 
 // ===== SCREENS =====
 function hideAllScreens(){
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('notAllowedScreen').style.display = 'none';
-  const rev = document.getElementById('revokedScreen');
-  if(rev) rev.style.display = 'none';
-  document.getElementById('mainApp').style.display = 'none';
+  const ids = ['loadingScreen','loginScreen','notAllowedScreen','revokedScreen','tryAgainScreen','pickRoundScreen','mainApp'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const sup = document.getElementById('supportShortcut');
+  if(sup) sup.style.display = 'none';
+  const supMenu = document.getElementById('supportMenu');
+  if(supMenu){ supMenu.classList.remove('open'); supMenu.setAttribute('aria-hidden','true'); }
 }
 
 function showRevokedScreen(email){
@@ -2648,6 +2811,46 @@ function showRevokedScreen(email){
   const el = document.getElementById('revokedEmail');
   if(el) el.textContent = email;
   const screen = document.getElementById('revokedScreen');
+  if(screen) screen.style.display = 'flex';
+}
+
+function showTryAgainScreen(email){
+  hideAllScreens();
+  const screen = document.getElementById('tryAgainScreen');
+  if(screen) screen.style.display = 'flex';
+}
+
+const PICK_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf3cpKBxC_Bkd_-zfsfb7dgN756QGOvlqEKK3ilY-75uePpvg/viewform';
+
+async function showPickRoundScreen(email){
+  hideAllScreens();
+  const emailEl = document.getElementById('pickRoundEmail');
+  if(emailEl) emailEl.textContent = email;
+  // Render available rounds based on current Supabase state
+  let rounds = [];
+  try {
+    const { data } = await sb.from('rounds').select('id,name,start_date,end_date,status').in('id',['round1','round2']);
+    rounds = data || [];
+  } catch(e){}
+  const r1 = rounds.find(r => r.id==='round1');
+  const r2 = rounds.find(r => r.id==='round2');
+  const r1Open = r1 && (r1.status==='upcoming' || r1.status==='active');
+  const r2Open = r2 && (r2.status==='upcoming' || r2.status==='active');
+  const monthsEn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmt(s,e){
+    if(!s || !e) return '';
+    const [sy,sm,sd] = s.split('-').map(Number);
+    const [ey,em,ed] = e.split('-').map(Number);
+    return monthsEn[sm-1]+' '+sd+' to '+monthsEn[em-1]+' '+ed;
+  }
+  const opts = document.getElementById('pickRoundOptions');
+  if(!opts) return;
+  let html = '';
+  if(r1Open && r1) html += `<a href="${PICK_FORM_URL}" target="_blank" class="whatsapp-link" style="background:#4285f4;text-align:center">\ud83d\udfe6 Round 1 (${fmt(r1.start_date,r1.end_date)})</a>`;
+  if(r2Open && r2) html += `<a href="${PICK_FORM_URL}" target="_blank" class="whatsapp-link" style="background:#e87040;text-align:center">\ud83d\udfe7 Round 2 (${fmt(r2.start_date,r2.end_date)})</a>`;
+  if(!r1Open && !r2Open) html += `<p style="color:var(--dim)">Both rounds are currently full. Email info@jaygptpro.com for the next round.</p>`;
+  opts.innerHTML = html;
+  const screen = document.getElementById('pickRoundScreen');
   if(screen) screen.style.display = 'flex';
 }
 
@@ -2702,13 +2905,30 @@ async function checkAuth(){
   const email = (session.user.email || '').toLowerCase();
 
   // Check if email is in allowed_emails table (case-insensitive)
-  const { data: allowedRow, error } = await sb
-    .from('allowed_emails')
-    .select('round, access_revoked_at, access_revoked_reason, primary_email')
-    .ilike('email', email)
-    .maybeSingle();
+  let allowedRow = null;
+  let lookupFailed = false;
+  try {
+    const res = await sb
+      .from('allowed_emails')
+      .select('round, access_revoked_at, access_revoked_reason, primary_email')
+      .ilike('email', email)
+      .maybeSingle();
+    if(res.error){
+      // Distinguish "no row" (legit not-allowed) vs actual network/DB error
+      lookupFailed = res.error.code && res.error.code !== 'PGRST116';
+    } else {
+      allowedRow = res.data;
+    }
+  } catch (netErr) {
+    lookupFailed = true;
+  }
 
-  if(error || !allowedRow){
+  if(lookupFailed){
+    showTryAgainScreen(email);
+    return;
+  }
+
+  if(!allowedRow){
     showNotAllowedScreen(email);
     return;
   }
@@ -2738,6 +2958,9 @@ async function checkAuth(){
   localStorage.setItem('donna-challenge-round-check', roundCheck);
   localStorage.setItem('donna-challenge-email', email);
 
+  // Refresh round start_dates from rounds table (non-blocking)
+  refreshRoundDates();
+
   // Update WhatsApp link based on round
   const waLink = document.getElementById('whatsapp-link');
   if(waLink && WHATSAPP_LINKS[allowed.round]){
@@ -2748,28 +2971,86 @@ async function checkAuth(){
   const userEmailEl = document.getElementById('userEmail');
   if(userEmailEl) userEmailEl.textContent = email;
 
+  // If user hasn't picked a round yet, show a friendly pick-round screen
+  // (still grants Day 0 access via the portal, but Days 1-5 are locked until they pick).
+  if(allowed.round === 'unknown'){
+    showPickRoundScreen(email);
+    return;
+  }
+
   showPortal(allowed.round);
 }
 
 // ===== DAY LOCKING =====
 // Day 0 (prep) = always open
-// Day 1 = opens on round start date at 14:00 EST (19:00 UTC during DST)
-// Day 2 = opens day after, same time
-// etc.
+// Day 1 = opens on round start date at 14:00 New York time (America/New_York, DST-aware)
+// Day 2 = opens the day after, same NY time, and so on
 // Admin (round='both') = everything always open
+//
+// Round start_date comes from Supabase rounds table (single source of truth).
+// Cached in localStorage as 'donna-challenge-round-dates' = {round1:'2026-04-20', round2:'2026-04-27'}.
+// Hardcoded fallback used only if Supabase is unreachable on first load.
+
+const FALLBACK_ROUND_DATES = { round1: '2026-04-20', round2: '2026-04-27' };
+
+function getCachedRoundDates(){
+  try{
+    const raw = localStorage.getItem('donna-challenge-round-dates');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.round1 && parsed.round2) return parsed;
+    }
+  }catch(e){}
+  return FALLBACK_ROUND_DATES;
+}
+
+// Refresh round start_date from Supabase (called on login). Non-blocking.
+async function refreshRoundDates(){
+  try{
+    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['round1','round2']);
+    if(error || !data) return;
+    const out = {};
+    data.forEach(r => { if(r.id && r.start_date) out[r.id] = r.start_date; });
+    if(out.round1 && out.round2){
+      localStorage.setItem('donna-challenge-round-dates', JSON.stringify(out));
+    }
+  }catch(e){ /* keep cached */ }
+}
+
+// Build the unlock Date for a given round id + day number.
+// NY time 14:00. EDT (Mar-Nov) = UTC-4 → 18:00Z. EST (Nov-Mar) = UTC-5 → 19:00Z.
+// We do the math at 12:00Z first, then shift to 14:00 NY using Intl.
+function buildUnlockDate(startDateStr, dayNum){
+  // startDateStr is YYYY-MM-DD. Day 1 = startDateStr itself; Day N = startDateStr + (N-1) days
+  const [y,m,d] = startDateStr.split('-').map(Number);
+  // Work in UTC to avoid local-timezone drift during arithmetic
+  const base = new Date(Date.UTC(y, m-1, d, 12, 0, 0));
+  base.setUTCDate(base.getUTCDate() + (dayNum - 1));
+  // Compute the right UTC hour for 14:00 in America/New_York on that date (DST-safe).
+  // Strategy: format `base` as NY time, get the UTC-offset diff, and resolve.
+  const nyFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', hour12: false, timeZoneName: 'short'
+  });
+  const parts = nyFormatter.formatToParts(base);
+  const tzn = (parts.find(p => p.type === 'timeZoneName')||{}).value || 'EDT';
+  // Determine UTC offset for NY at this date. EDT=-4, EST=-5.
+  const offsetHours = tzn === 'EST' ? 5 : 4;
+  const unlock = new Date(Date.UTC(y, m-1, d, 0, 0, 0));
+  unlock.setUTCDate(unlock.getUTCDate() + (dayNum - 1));
+  unlock.setUTCHours(14 + offsetHours, 0, 0, 0); // 14:00 NY → (14+offset):00 UTC
+  return unlock;
+}
 
 function getDayUnlockDate(dayNum){
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
   if(round === 'both') return new Date(0); // Admin: all open
   if(dayNum === 0) return new Date(0); // Day 0 (prep): always open
 
-  // Round start dates at 14:00 EST = 19:00 UTC (during EDT in April/May)
-  const round1Start = new Date('2026-04-20T19:00:00Z'); // Apr 20, 2pm EST
-  const round2Start = new Date('2026-04-27T19:00:00Z'); // Apr 27, 2pm EST
-  const start = round === 'round1' ? round1Start : round2Start;
-  const unlock = new Date(start);
-  unlock.setDate(unlock.getDate() + (dayNum - 1)); // Day 1 = start date, Day 2 = start+1, etc.
-  return unlock;
+  const dates = getCachedRoundDates();
+  const startDateStr = dates[round] || FALLBACK_ROUND_DATES[round] || FALLBACK_ROUND_DATES.round1;
+  return buildUnlockDate(startDateStr, dayNum);
 }
 
 function isDayUnlocked(dayNum){
@@ -2777,13 +3058,13 @@ function isDayUnlocked(dayNum){
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
   const check = localStorage.getItem('donna-challenge-round-check') || '';
   const expectedCheck = btoa(round + ':donna2026');
-  // If check doesn't match, someone tampered with localStorage
+  // If check doesn't match, someone tampered with localStorage.
+  // Don't silently downgrade to round1 (could wrongly demote round2 user). Show "pick round" instead.
   if(check !== expectedCheck) {
-    localStorage.setItem('donna-challenge-round', 'round1');
-    localStorage.setItem('donna-challenge-round-check', btoa('round1:donna2026'));
-    return isDayUnlocked(dayNum);
+    return false;
   }
   if(round === 'both') return true; // Admin always open
+  if(round === 'unknown') return false; // Not picked a round yet
   const now = new Date();
   const unlock = getDayUnlockDate(dayNum);
   return now >= unlock;
@@ -2796,10 +3077,16 @@ function formatDate(d){
 
 // ===== NAV =====
 function updateNav(){
+  const lang = getLang();
   const tabs = document.querySelectorAll('.day-tab');
+  const dayLabel = (i) => {
+    if(i === 0) return lang === 'he' ? 'הכנה' : 'Prep';
+    return lang === 'he' ? ('יום ' + i) : ('Day ' + i);
+  };
   tabs.forEach((tab,i)=>{
     tab.classList.remove('active','completed','locked');
-    tab.innerHTML = 'יום ' + i;
+    tab.removeAttribute('aria-selected');
+    tab.innerHTML = dayLabel(i);
 
     if(state.completedDays.includes(i)){
       tab.classList.add('completed');
@@ -2807,23 +3094,66 @@ function updateNav(){
 
     if(i === state.currentDay){
       tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
     }
 
     if(!isDayUnlocked(i)){
       tab.classList.add('locked');
+      tab.setAttribute('aria-disabled', 'true');
       const unlockDate = getDayUnlockDate(i);
-      tab.innerHTML = '<span class="lock-icon">🔒</span> יום ' + i;
-      tab.title = 'נפתח ב-' + formatDate(unlockDate);
+      tab.innerHTML = '<span class="lock-icon">🔒</span> ' + dayLabel(i);
+      // Format unlock in user's local timezone
+      try {
+        const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        const fmt = new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : 'en-US', {
+          timeZone: userTz, weekday: 'short', month: 'short', day: 'numeric',
+          hour: 'numeric', minute: '2-digit', hour12: lang !== 'he'
+        }).format(unlockDate);
+        tab.title = (lang === 'he' ? 'נפתח ב-' : 'Opens ') + fmt;
+      } catch(e){
+        tab.title = (lang === 'he' ? 'נפתח ב-' : 'Opens ') + unlockDate.toLocaleString();
+      }
+    } else {
+      tab.removeAttribute('aria-disabled');
     }
   });
 }
 
 function switchDay(dayNum){
-  if(!isDayUnlocked(dayNum)) return;
+  if(!isDayUnlocked(dayNum)){
+    showLockedToast(dayNum);
+    return;
+  }
   state.currentDay = dayNum;
   saveState();
   updateNav();
   showDayContent(dayNum);
+  saveProgressToServer(dayNum);
+}
+
+// Toast shown when user clicks a locked day tab.
+function showLockedToast(dayNum){
+  const unlock = getDayUnlockDate(dayNum);
+  const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const localStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: userTz, weekday: 'short', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true
+  }).format(unlock);
+  const msg = 'Day ' + dayNum + ' opens ' + localStr + ' (your time)';
+  let t = document.getElementById('locked-toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'locked-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(18,18,31,0.95);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,0.4);transition:all 0.3s ease;opacity:0;border:1px solid rgba(232,112,64,0.3);backdrop-filter:blur(8px)';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)'; });
+  clearTimeout(window._lockedToastTimer);
+  window._lockedToastTimer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 4000);
 }
 
 function showDayContent(dayNum){
@@ -2844,7 +3174,11 @@ function updateProgress(){
   const total = 5;
   const done = state.completedDays.filter(d => d >= 1).length; // Only count days 1-5, not prep
   const pct = Math.round((done/total)*100);
-  document.getElementById('progressText').textContent = done + ' מתוך ' + total + ' ימים הושלמו';
+  const lang = getLang();
+  const label = lang === 'he'
+    ? (done + ' מתוך ' + total + ' ימים הושלמו')
+    : (done + ' of ' + total + ' days complete');
+  document.getElementById('progressText').textContent = label;
   document.getElementById('progressPct').textContent = pct + '%';
   document.getElementById('progressFill').style.width = pct + '%';
 }
@@ -2857,6 +3191,7 @@ function completeDay(dayNum){
   updateNav();
   updateProgress();
   updateCompleteBtns();
+  saveProgressToServer(dayNum);
 
   // Auto-advance to next day if unlocked
   const nextDay = dayNum + 1;
@@ -2866,15 +3201,21 @@ function completeDay(dayNum){
 }
 
 function updateCompleteBtns(){
+  const lang = getLang();
   document.querySelectorAll('.complete-btn').forEach(btn=>{
     const day = parseInt(btn.dataset.day);
     if(state.completedDays.includes(day)){
       btn.classList.add('done');
-      btn.textContent = 'יום ' + day + ' הושלם';
+      btn.textContent = lang === 'he'
+        ? ('יום ' + day + ' הושלם')
+        : (day === 0 ? 'Prep complete' : ('Day ' + day + ' complete'));
     } else {
       btn.classList.remove('done');
-      if(day === 0) btn.textContent = 'סיימתי את ההכנה! אני מוכן לאתגר 🚀';
-      else btn.textContent = 'סיימתי יום ' + day + '!';
+      if(day === 0){
+        btn.textContent = lang === 'he' ? 'סיימתי את ההכנה! אני מוכן לאתגר 🚀' : "I'm ready for the challenge \ud83d\ude80";
+      } else {
+        btn.textContent = lang === 'he' ? ('סיימתי יום ' + day + '!') : ('Mark Day ' + day + ' complete');
+      }
     }
   });
   // Show/hide reset buttons
@@ -2894,7 +3235,11 @@ function updateCompleteBtns(){
 }
 
 function resetDay(dayNum){
-  if(!confirm('לאפס את יום ' + dayNum + '? כל הסימונים של היום הזה יימחקו.')) return;
+  const lang = getLang();
+  const msg = lang === 'he'
+    ? ('לאפס את יום ' + dayNum + '? כל הסימונים של היום הזה יימחקו.')
+    : ('Reset Day ' + dayNum + '? All checkboxes for this day will be cleared.');
+  if(!confirm(msg)) return;
   state.completedDays = state.completedDays.filter(d => d !== dayNum);
   // Clear checks for this day
   Object.keys(state.checks).forEach(key=>{
@@ -2911,7 +3256,11 @@ function resetDay(dayNum){
 }
 
 function resetAll(){
-  if(!confirm('לאפס את כל ההתקדמות? כל הימים והסימונים יחזרו להתחלה.')) return;
+  const lang = getLang();
+  const msg = lang === 'he'
+    ? 'לאפס את כל ההתקדמות? כל הימים והסימונים יחזרו להתחלה.'
+    : 'Reset all progress? All days and checkboxes will be cleared.';
+  if(!confirm(msg)) return;
   state.completedDays = [];
   state.checks = {};
   state.currentDay = 0;
@@ -2938,6 +3287,7 @@ function toggleCheck(el){
     delete state.checks[key];
   }
   saveState();
+  saveProgressToServer(parseInt(day));
 }
 
 function restoreChecks(){
@@ -2952,11 +3302,12 @@ function restoreChecks(){
 // ===== COPY COMMAND =====
 function copyCmd(btn){
   const code = btn.previousElementSibling.textContent;
+  const lang = getLang();
   navigator.clipboard.writeText(code).then(()=>{
-    btn.textContent = 'הועתק!';
+    btn.textContent = lang === 'he' ? 'הועתק!' : 'Copied!';
     btn.classList.add('copied');
     setTimeout(()=>{
-      btn.textContent = 'העתק';
+      btn.textContent = lang === 'he' ? 'העתק' : 'Copy';
       btn.classList.remove('copied');
     },2000);
   });
@@ -2967,14 +3318,169 @@ function toggleFaq(item){
   item.classList.toggle('open');
 }
 
+// ===== SUPPORT MENU =====
+function toggleSupportMenu(ev){
+  if(ev) ev.stopPropagation();
+  const menu = document.getElementById('supportMenu');
+  if(!menu) return;
+  const isOpen = menu.classList.contains('open');
+  // Update WA link based on user's round
+  const waLink = document.getElementById('supportWA');
+  if(waLink){
+    const round = localStorage.getItem('donna-challenge-round') || 'round1';
+    waLink.href = WHATSAPP_LINKS[round] || WHATSAPP_LINKS.round1;
+  }
+  if(isOpen){
+    menu.classList.remove('open');
+    menu.setAttribute('aria-hidden', 'true');
+  } else {
+    menu.classList.add('open');
+    menu.setAttribute('aria-hidden', 'false');
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', closeSupportMenuOnce, { once: true });
+    }, 0);
+  }
+}
+function closeSupportMenuOnce(){
+  const menu = document.getElementById('supportMenu');
+  if(menu){ menu.classList.remove('open'); menu.setAttribute('aria-hidden','true'); }
+}
+
+// ===== NEXT-UNLOCK COUNTDOWN =====
+function findNextLockedDay(){
+  for(let i = 1; i <= 5; i++){
+    if(!isDayUnlocked(i)) return i;
+  }
+  return null;
+}
+function updateCountdown(){
+  const el = document.getElementById('unlockCountdown');
+  if(!el) return;
+  const nextDay = findNextLockedDay();
+  if(nextDay === null){ el.style.display = 'none'; return; }
+  const unlock = getDayUnlockDate(nextDay);
+  const diffMs = unlock.getTime() - Date.now();
+  if(diffMs <= 0){ el.style.display = 'none'; return; }
+  const days = Math.floor(diffMs / (24*3600*1000));
+  const hours = Math.floor((diffMs / (3600*1000)) % 24);
+  const mins = Math.floor((diffMs / (60*1000)) % 60);
+  const lang = getLang();
+  let human;
+  if(days > 0) human = (lang === 'he') ? `${days} ימים, ${hours} שעות` : `${days}d ${hours}h`;
+  else if(hours > 0) human = (lang === 'he') ? `${hours} שעות, ${mins} דקות` : `${hours}h ${mins}m`;
+  else human = (lang === 'he') ? `${mins} דקות` : `${mins}m`;
+  const prefix = (lang === 'he') ? `יום ${nextDay} נפתח בעוד` : `Day ${nextDay} opens in`;
+  el.innerHTML = `<span class="count-icon">\u23f3</span><span>${prefix} <span class="count-num">${human}</span></span>`;
+  el.style.display = 'flex';
+}
+
+// Auto-unlock polling: re-check day lock status every 60s so users sitting on the
+// tab at 13:59 NY see Day N unlock at 14:00 without needing to refresh.
+let _unlockPollInterval = null;
+function startUnlockPolling(){
+  if(_unlockPollInterval) return;
+  updateCountdown();
+  _unlockPollInterval = setInterval(() => {
+    try {
+      updateNav();
+      updateCountdown();
+    } catch(e) {}
+  }, 60000);
+}
+function stopUnlockPolling(){
+  if(_unlockPollInterval){ clearInterval(_unlockPollInterval); _unlockPollInterval = null; }
+}
+
+// ===== SERVER-SIDE PROGRESS SYNC =====
+// Source of truth: Supabase user_progress table.
+// localStorage remains as a cache for instant UX; we reconcile on login.
+async function loadProgressFromServer(email, round){
+  try {
+    const { data, error } = await sb
+      .from('user_progress')
+      .select('day_num, completed_at, checks, last_viewed_at')
+      .ilike('user_email', email)
+      .eq('round', round);
+    if(error || !data) return;
+    // Merge server state into local state
+    const completed = new Set(state.completedDays || []);
+    data.forEach(row => {
+      if(row.completed_at) completed.add(row.day_num);
+      // Merge checks: server stores 'checkN' keys, local uses 'donna-challenge-dayM-checkN'
+      if(row.checks && typeof row.checks === 'object'){
+        Object.entries(row.checks).forEach(([item, checked]) => {
+          if(checked === true){
+            const key = 'donna-challenge-day' + row.day_num + '-' + item;
+            if(!state.checks) state.checks = {};
+            state.checks[key] = true;
+          }
+        });
+      }
+    });
+    state.completedDays = Array.from(completed).filter(d => d >= 0 && d <= 5);
+    saveState();
+  } catch(e){ /* cached state remains */ }
+}
+
+// Debounced per-day save queue. Avoids write-spam on checklist mashing.
+const _pendingSaves = {};
+function saveProgressToServer(dayNum){
+  const email = localStorage.getItem('donna-challenge-email');
+  const round = localStorage.getItem('donna-challenge-round');
+  if(!email || !round || round === 'unknown' || round === 'both') return;
+  if(_pendingSaves[dayNum]) clearTimeout(_pendingSaves[dayNum]);
+  _pendingSaves[dayNum] = setTimeout(async () => {
+    try {
+      // Build checks object for this day from state.
+      // state.checks uses key format 'donna-challenge-dayN-checkM' = true.
+      const dayChecks = {};
+      const prefix = 'donna-challenge-day' + dayNum + '-check';
+      Object.entries(state.checks || {}).forEach(([key, val]) => {
+        if(key.startsWith(prefix) && val === true){
+          const idx = key.substring(prefix.length);
+          dayChecks['check' + idx] = true;
+        }
+      });
+      const payload = {
+        user_email: email,
+        round: round,
+        day_num: dayNum,
+        completed_at: state.completedDays.includes(dayNum) ? new Date().toISOString() : null,
+        checks: dayChecks,
+        last_viewed_at: dayNum === state.currentDay ? new Date().toISOString() : undefined
+      };
+      // Strip undefined
+      Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+      await sb.from('user_progress').upsert(payload, { onConflict: 'user_email,round,day_num' });
+    } catch(e){ /* next interaction will retry */ }
+    delete _pendingSaves[dayNum];
+  }, 800);
+}
+
 // ===== SHOW PORTAL =====
 function showPortal(round){
   hideAllScreens();
   document.getElementById('mainApp').style.display = 'block';
+  const sup = document.getElementById('supportShortcut');
+  if(sup) sup.style.display = 'flex';
+
+  // Load server-side progress into state before initial render (best effort)
+  const email = localStorage.getItem('donna-challenge-email');
+  if(email && round !== 'unknown' && round !== 'both'){
+    loadProgressFromServer(email, round).then(() => {
+      updateNav();
+      updateProgress();
+      updateCompleteBtns();
+      restoreChecks();
+    });
+  }
+
   updateNav();
   updateProgress();
   updateCompleteBtns();
   restoreChecks();
+  startUnlockPolling();
 
   // Use saved currentDay if it's valid and unlocked. Otherwise find first incomplete.
   let startDay = state.currentDay;
