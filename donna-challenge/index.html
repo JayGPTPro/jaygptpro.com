@@ -790,6 +790,19 @@ body::after{
   </div>
 </div>
 
+<!-- ACCESS REVOKED SCREEN (after refund) -->
+<div class="login-screen" id="revokedScreen" style="display:none">
+  <div class="not-allowed-card">
+    <h2>Access to the challenge has ended</h2>
+    <div class="email-display" id="revokedEmail"></div>
+    <p style="margin-top:16px">Our records show this account was refunded, so portal access has been closed.<br><br>
+    If this is a mistake, or if you'd like to rejoin a future round, please get in touch:</p>
+    <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Question&body=Hi+Jay%2C%0A%0AMy+account+shows+as+refunded+but+I+believe+I+should+still+have+access.%0A%0AMy+email%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4">Email Jay (info@jaygptpro.com)</a>
+    <br>
+    <button class="signout-btn" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
 <!-- MAIN APP -->
 <div class="main-app" id="mainApp">
 
@@ -2625,7 +2638,17 @@ function hideAllScreens(){
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('notAllowedScreen').style.display = 'none';
+  const rev = document.getElementById('revokedScreen');
+  if(rev) rev.style.display = 'none';
   document.getElementById('mainApp').style.display = 'none';
+}
+
+function showRevokedScreen(email){
+  hideAllScreens();
+  const el = document.getElementById('revokedEmail');
+  if(el) el.textContent = email;
+  const screen = document.getElementById('revokedScreen');
+  if(screen) screen.style.display = 'flex';
 }
 
 function showLoginScreen(){
@@ -2681,12 +2704,18 @@ async function checkAuth(){
   // Check if email is in allowed_emails table
   const { data: allowed, error } = await sb
     .from('allowed_emails')
-    .select('round')
+    .select('round, access_revoked_at, access_revoked_reason')
     .eq('email', email)
     .single();
 
   if(error || !allowed){
     showNotAllowedScreen(email);
+    return;
+  }
+
+  // Access revoked (e.g., after Stripe refund)
+  if(allowed.access_revoked_at){
+    showRevokedScreen(email);
     return;
   }
 

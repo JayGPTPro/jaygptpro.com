@@ -478,6 +478,9 @@ tr.expandable{cursor:pointer}
 .row-action-btn.edit:hover{border-color:var(--orange);color:var(--orange);background:rgba(232,112,64,0.1)}
 .row-action-btn.email:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
 .row-action-btn.wa:hover{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.row-action-btn.revoke:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.row-action-btn.restore{border-color:rgba(61,214,140,0.4);color:var(--green);background:var(--green-bg)}
+.row-action-btn.restore:hover{border-color:var(--green);background:rgba(61,214,140,0.25)}
 
 .wa-cell{display:inline-flex;align-items:center;gap:4px;font-size:0.78em;padding:3px 8px;border-radius:4px}
 .wa-unknown{background:rgba(152,152,168,0.12);color:var(--dim)}
@@ -648,6 +651,11 @@ tr.expandable{cursor:pointer}
         <div class="stat-sub">צריך לבדוק ידנית</div>
       </div>
       <div class="stat-card fade-in">
+        <div class="stat-label">גישה בוטלה</div>
+        <div class="stat-value" id="statRevokedAccess" style="color:var(--red)">0</div>
+        <div class="stat-sub">לא יכולים להיכנס לפורטל</div>
+      </div>
+      <div class="stat-card fade-in">
         <div class="stat-label">סך הכנסות (גרוס)</div>
         <div class="stat-value" id="statRevenue">$0</div>
         <div class="stat-sub">מ-Stripe</div>
@@ -710,6 +718,7 @@ tr.expandable{cursor:pointer}
           <option value="inactive">לא פעילים</option>
           <option value="never">לא התחברו</option>
           <option value="completed">השלימו</option>
+          <option value="revoked">גישה בוטלה</option>
         </select>
         <select id="filterDataMissing" onchange="renderParticipants()">
           <option value="all">כל הנתונים</option>
@@ -1156,6 +1165,10 @@ function daysSince(dateStr){
 }
 
 function getStatusInfo(email){
+  // Revoked access takes precedence over everything else
+  const p = allParticipants.find(x => x.email && x.email.toLowerCase() === (email || '').toLowerCase());
+  if(p && p.access_revoked_at) return { status: 'revoked', label: 'גישה בוטלה', cls: 'badge-red' };
+
   const lastEvent = getLastEvent(email);
   const lastLogin = getLastLogin(email);
   const completedDays = getCompletedDays(email);
@@ -1219,12 +1232,13 @@ function renderOverview(){
     return daysSince(last) >= 3;
   }).length;
 
-  // No phone / unknown WhatsApp counts
-  const noPhone = allParticipants.filter(p => {
+  // No phone / unknown WhatsApp counts (skip revoked)
+  const activeParticipants = allParticipants.filter(p => !p.access_revoked_at);
+  const noPhone = activeParticipants.filter(p => {
     const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
     return !p.phone && !(stripeMatch && stripeMatch.phone);
   }).length;
-  const unknownWA = allParticipants.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown').length;
+  const unknownWA = activeParticipants.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown').length;
 
   document.getElementById('statRegistered').textContent = total;
   document.getElementById('statLoggedIn').textContent = loggedIn;
@@ -1234,6 +1248,7 @@ function renderOverview(){
   document.getElementById('statInactive').textContent = inactive3;
   document.getElementById('statNoPhone').textContent = noPhone;
   document.getElementById('statUnknownWA').textContent = unknownWA;
+  document.getElementById('statRevokedAccess').textContent = allParticipants.filter(p => p.access_revoked_at).length;
 
   // Stripe stats (exclude TEST coupon and refunded for "active paid")
   const paidCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
@@ -1398,6 +1413,7 @@ function renderParticipants(){
     if(statusFilter === 'inactive' && info.status !== 'inactive') return false;
     if(statusFilter === 'never' && info.status !== 'never') return false;
     if(statusFilter === 'completed' && info.status !== 'completed') return false;
+    if(statusFilter === 'revoked' && info.status !== 'revoked') return false;
 
     // Data-quality filter
     if(dataFilter !== 'all'){
@@ -1485,6 +1501,9 @@ function renderParticipants(){
     const waBtn = waHref
       ? `<a class="row-action-btn wa" href="${esc(waHref)}" target="_blank" title="פתח וואטסאפ" onclick="event.stopPropagation()">&#128172;</a>`
       : `<button class="row-action-btn wa" disabled style="opacity:0.4;cursor:not-allowed" title="חסר טלפון">&#128172;</button>`;
+    const revokeBtn = p.access_revoked_at
+      ? `<button class="row-action-btn restore" onclick="restoreAccess('${esc(p.id)}','${esc(p.email)}')" title="שחזר גישה לפורטל">&#9989;</button>`
+      : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="בטל גישה לפורטל">&#128683;</button>`;
 
     tr.innerHTML = `
       <td>${esc(name)}</td>
@@ -1509,6 +1528,7 @@ function renderParticipants(){
           <button class="row-action-btn edit" onclick="openEditModal('${esc(p.id)}')" title="ערוך">&#9998;</button>
           <a class="row-action-btn email" href="${esc(emailHref)}" title="שלח מייל">&#128231;</a>
           ${waBtn}
+          ${revokeBtn}
         </div>
       </td>
     `;
@@ -1720,6 +1740,28 @@ function closeEditModal(){
   document.getElementById('editModal').style.display = 'none';
   const dd = document.getElementById('ccDropdown');
   if(dd) dd.style.display = 'none';
+}
+
+async function revokeAccess(participantId, email){
+  if(!confirm('לבטל את הגישה של ' + email + ' לפורטל?\n\n(אפשר תמיד לשחזר. ההיסטוריה והנתונים נשמרים.)')) return;
+  const { error } = await sb.from('allowed_emails').update({
+    access_revoked_at: new Date().toISOString(),
+    access_revoked_reason: 'Manual revoke (admin)'
+  }).eq('id', participantId);
+  if(error){ alert('שגיאה: ' + error.message); return; }
+  await loadAllData();
+  renderAll();
+}
+
+async function restoreAccess(participantId, email){
+  if(!confirm('לשחזר את הגישה של ' + email + ' לפורטל?')) return;
+  const { error } = await sb.from('allowed_emails').update({
+    access_revoked_at: null,
+    access_revoked_reason: null
+  }).eq('id', participantId);
+  if(error){ alert('שגיאה: ' + error.message); return; }
+  await loadAllData();
+  renderAll();
 }
 
 async function saveParticipantEdit(){
@@ -2187,15 +2229,16 @@ function exportCSV(type) {
   const csvEsc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
 
   if (type === 'participants') {
-    csv = 'Name,Email,Round,Phone,WhatsApp,Paid,Refunded,Current Day,Last Login,Status,Notes\n';
+    csv = 'Name,Email,Round,Phone,WhatsApp,Paid,Refunded,Access Revoked,Current Day,Last Login,Status,Notes\n';
     allParticipants.forEach(p => {
       const info = getStatusInfo(p.email);
       const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
       const phone = p.phone || (stripeMatch && stripeMatch.phone) || '';
       const paid = stripeMatch ? '$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(2) : '';
       const refunded = stripeMatch && stripeMatch.refunded ? 'Yes' : '';
+      const revoked = p.access_revoked_at || '';
       const lastLogin = getLastLogin(p.email);
-      csv += [p.name, p.email, p.round, phone, p.in_whatsapp || 'unknown', paid, refunded,
+      csv += [p.name, p.email, p.round, phone, p.in_whatsapp || 'unknown', paid, refunded, revoked,
               getCurrentDay(p.email), lastLogin || '', info.label, p.notes || ''].map(csvEsc).join(',') + '\n';
     });
     filename = 'donna-challenge-participants.csv';
