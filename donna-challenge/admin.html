@@ -972,6 +972,34 @@ tr.expandable{cursor:pointer}
       </div>
     </div>
 
+    <!-- WhatsApp Bulk Import -->
+    <div class="mgmt-section">
+      <h3>&#128172; ייבוא חברי קבוצת וואטסאפ</h3>
+      <p style="font-size:0.85em;color:var(--dim);margin-bottom:12px;line-height:1.6">
+        פתח את קבוצת הוואטסאפ → Group info → Members → העתק את השמות/מספרים. הדבק כאן ובחר באיזו קבוצה הם.<br>
+        המערכת מחפשת התאמה לפי מספר טלפון או שם ומסמנת אוטומטית.
+      </p>
+      <div class="form-row">
+        <div class="form-group" style="flex:1">
+          <label>קבוצה</label>
+          <select id="waImportGroup">
+            <option value="round1">קבוצת סבב 1</option>
+            <option value="round2">קבוצת סבב 2</option>
+            <option value="both">שתי הקבוצות</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label>הדבק רשימה (כל שורה: מספר טלפון או שם או שניהם)</label>
+        <textarea id="waImportList" rows="6" placeholder="+1 555 123 4567&#10;Bruce Kernan&#10;+972 50 1234567 Andrea Butter&#10;..." style="width:100%;background:var(--bg);border:1px solid var(--glass-border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:inherit;font-size:0.88em;direction:ltr;text-align:left"></textarea>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="waImportPreview()">&#128269; מצא התאמות</button>
+        <button onclick="document.getElementById('waImportList').value=''" style="background:none;border:1px solid var(--glass-border);color:var(--dim);padding:10px 16px;border-radius:8px;font-family:inherit;cursor:pointer">נקה</button>
+      </div>
+      <div id="waImportResults" style="margin-top:16px"></div>
+    </div>
+
     <!-- CSV Export -->
     <div class="mgmt-section">
       <h3>&#128229; ייצוא נתונים</h3>
@@ -1016,11 +1044,18 @@ function esc(str) {
 }
 
 // ===== GLOBAL STATE =====
-let allParticipants = [];
+let allParticipants = []; // primary accounts only (no aliases)
+let allAliases = [];      // alias rows (primary_email is set)
 let allEvents = [];
 let allRounds = [];
 let authUsers = [];
 let stripeCustomers = [];
+
+// Get aliases for a primary email
+function getAliases(primaryEmail){
+  const lower = (primaryEmail || '').toLowerCase();
+  return allAliases.filter(a => (a.primary_email || '').toLowerCase() === lower);
+}
 
 // ===== AUTH =====
 async function signIn(){
@@ -1071,9 +1106,11 @@ async function checkAuth(){
 
 // ===== DATA LOADING =====
 async function loadAllData(){
-  // Fetch participants (required)
+  // Fetch all rows from allowed_emails, then split primaries from aliases.
   const participantsRes = await sb.from('allowed_emails').select('*');
-  allParticipants = participantsRes.data || [];
+  const rows = participantsRes.data || [];
+  allParticipants = rows.filter(r => !r.primary_email);
+  allAliases = rows.filter(r => r.primary_email);
 
   // Fetch events (table may not exist yet)
   try {
@@ -1482,6 +1519,12 @@ function renderParticipants(){
       ? `<span class="phone-cell has-phone">${esc(phone)}</span>`
       : `<span class="phone-cell">חסר</span>`;
 
+    // Aliases (additional emails this person can log in with)
+    const aliases = getAliases(p.email);
+    const aliasBadge = aliases.length > 0
+      ? `<span style="display:inline-block;margin-right:6px;font-size:0.7em;background:rgba(92,160,255,0.12);color:var(--blue);padding:1px 6px;border-radius:4px" title="${aliases.length} מייל נוסף לכניסה">+${aliases.length}</span>`
+      : '';
+
     // WhatsApp status
     const waStatus = p.in_whatsapp || 'unknown';
     const waLabel = {
@@ -1506,7 +1549,7 @@ function renderParticipants(){
       : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="בטל גישה לפורטל">&#128683;</button>`;
 
     tr.innerHTML = `
-      <td>${esc(name)}</td>
+      <td>${esc(name)}${aliasBadge}</td>
       <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(p.email)}</td>
       <td>${esc(roundLabel)}</td>
       <td>${paidCell}</td>
@@ -1542,8 +1585,15 @@ function renderParticipants(){
     const events = getParticipantEvents(p.email).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
     let timelineHtml = '';
+    // Aliases section above the timeline
+    if(aliases.length > 0){
+      timelineHtml += '<div style="padding:14px 20px;background:rgba(92,160,255,0.06);border-bottom:1px solid var(--glass-border)">'
+        + '<div style="font-size:0.78em;color:var(--blue);font-weight:600;margin-bottom:8px">&#128231; מיילים נוספים לכניסה לפורטל</div>'
+        + aliases.map(a => `<div style="font-size:0.85em;color:var(--text);direction:ltr;text-align:right;padding:2px 0">${esc(a.email)}<span style="color:var(--dim);font-size:0.78em;margin-right:8px">${esc(a.notes ? a.notes.split('\n')[0] : '')}</span></div>`).join('')
+        + '</div>';
+    }
     if(events.length === 0){
-      timelineHtml = '<div style="padding:16px;color:var(--dim);font-size:0.88em">אין אירועים מתועדים עדיין</div>';
+      timelineHtml += '<div style="padding:16px;color:var(--dim);font-size:0.88em">אין אירועים מתועדים עדיין</div>';
     } else {
       timelineHtml = '<div class="timeline">' + events.slice(0, 50).map(e => {
         const data = eventDataObj(e);
@@ -1740,6 +1790,140 @@ function closeEditModal(){
   document.getElementById('editModal').style.display = 'none';
   const dd = document.getElementById('ccDropdown');
   if(dd) dd.style.display = 'none';
+}
+
+// ===== WHATSAPP BULK IMPORT =====
+function normalizePhone(p){
+  return (p || '').replace(/[^0-9]/g, '');
+}
+
+function parseImportLine(line){
+  const trimmed = line.trim();
+  if(!trimmed) return null;
+  // Extract phone (digits + leading +)
+  const phoneMatch = trimmed.match(/(\+?[0-9][\s\-0-9]{6,}[0-9])/);
+  const phone = phoneMatch ? normalizePhone(phoneMatch[1]) : null;
+  // Whatever's left (excluding phone) is the name
+  let name = trimmed;
+  if(phoneMatch) name = trimmed.replace(phoneMatch[0], '').trim();
+  name = name.replace(/[~,\u200E\u200F]/g, '').trim();
+  return { raw: trimmed, phone, name };
+}
+
+function findParticipantMatch(parsed){
+  if(!parsed) return null;
+  // Try phone match first (last 7-9 digits)
+  if(parsed.phone){
+    const phoneTail = parsed.phone.slice(-9);
+    const byPhone = allParticipants.find(p => {
+      const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
+      const pPhone = normalizePhone(p.phone || (stripeMatch && stripeMatch.phone) || '');
+      if(!pPhone) return false;
+      return pPhone.slice(-9) === phoneTail || pPhone.slice(-7) === parsed.phone.slice(-7);
+    });
+    if(byPhone) return { participant: byPhone, matchedBy: 'phone' };
+  }
+  // Try name match
+  if(parsed.name && parsed.name.length >= 3){
+    const lowerName = parsed.name.toLowerCase();
+    const byName = allParticipants.find(p => {
+      const pName = (p.name || '').toLowerCase();
+      if(!pName) return false;
+      return pName === lowerName || pName.includes(lowerName) || lowerName.includes(pName);
+    });
+    if(byName) return { participant: byName, matchedBy: 'name' };
+  }
+  return null;
+}
+
+let waImportPending = []; // [{participant, parsed, matchedBy, currentWA, newWA}]
+
+function waImportPreview(){
+  const text = document.getElementById('waImportList').value;
+  const group = document.getElementById('waImportGroup').value;
+  const lines = text.split('\n').map(parseImportLine).filter(Boolean);
+  if(lines.length === 0){
+    document.getElementById('waImportResults').innerHTML = '<div style="color:var(--dim)">הדבק לפחות שורה אחת</div>';
+    return;
+  }
+
+  const matched = [];
+  const unmatched = [];
+  const seenIds = new Set();
+
+  lines.forEach(parsed => {
+    const m = findParticipantMatch(parsed);
+    if(m && !seenIds.has(m.participant.id)){
+      seenIds.add(m.participant.id);
+      const current = m.participant.in_whatsapp || 'unknown';
+      // Determine new WA status: if currently in the OTHER group, mark 'both'
+      let newWA = group;
+      if(group === 'round1' && current === 'round2') newWA = 'both';
+      else if(group === 'round2' && current === 'round1') newWA = 'both';
+      else if(current === 'both') newWA = 'both';
+      matched.push({ participant: m.participant, parsed, matchedBy: m.matchedBy, currentWA: current, newWA });
+    } else if(!m){
+      unmatched.push(parsed);
+    }
+  });
+
+  waImportPending = matched;
+
+  let html = `<div style="background:rgba(61,214,140,0.06);border:1px solid rgba(61,214,140,0.2);border-radius:8px;padding:14px;margin-bottom:10px">
+    <div style="font-weight:600;color:var(--green);margin-bottom:10px">&#9989; נמצאו ${matched.length} התאמות</div>`;
+
+  if(matched.length > 0){
+    html += '<table style="width:100%;font-size:0.82em"><thead><tr><th style="text-align:right;padding:6px;color:var(--dim)">שורת קלט</th><th style="text-align:right;padding:6px;color:var(--dim)">שם במערכת</th><th style="text-align:right;padding:6px;color:var(--dim)">סבב</th><th style="text-align:right;padding:6px;color:var(--dim)">WA נוכחי</th><th style="text-align:right;padding:6px;color:var(--dim)">→ חדש</th><th style="padding:6px;color:var(--dim)">התאמה לפי</th></tr></thead><tbody>';
+    matched.forEach(m => {
+      const p = m.participant;
+      const roundLabel = p.round === 'round1' ? 'סבב 1' : p.round === 'round2' ? 'סבב 2' : p.round === 'both' ? 'אדמין' : 'לא ידוע';
+      const isWrongGroup = (p.round === 'round1' && group === 'round2' && m.newWA !== 'both') ||
+                           (p.round === 'round2' && group === 'round1' && m.newWA !== 'both');
+      const wrongFlag = isWrongGroup ? ' <span style="color:var(--red);font-size:0.85em" title="הוא בקבוצה הלא נכונה">⚠️</span>' : '';
+      html += `<tr>
+        <td style="padding:6px;direction:ltr;text-align:right;color:var(--dim)">${esc(m.parsed.raw.substring(0, 30))}</td>
+        <td style="padding:6px">${esc(p.name || p.email)}</td>
+        <td style="padding:6px">${roundLabel}${wrongFlag}</td>
+        <td style="padding:6px;color:var(--dim)">${esc(m.currentWA)}</td>
+        <td style="padding:6px;color:var(--green)">${esc(m.newWA)}</td>
+        <td style="padding:6px;color:var(--dim);font-size:0.78em">${m.matchedBy === 'phone' ? '☎ טלפון' : '👤 שם'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    html += `<button class="btn-primary" style="margin-top:12px" onclick="waImportApply()">&#128190; שמור ${matched.length} עדכונים</button>`;
+  }
+  html += '</div>';
+
+  if(unmatched.length > 0){
+    html += `<div style="background:rgba(245,197,66,0.06);border:1px solid rgba(245,197,66,0.2);border-radius:8px;padding:14px">
+      <div style="font-weight:600;color:var(--yellow);margin-bottom:8px">&#9888;&#65039; ${unmatched.length} לא נמצאו במערכת</div>
+      <div style="font-size:0.82em;color:var(--dim);line-height:1.8">`;
+    unmatched.forEach(u => {
+      html += '<div>' + esc(u.raw) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  document.getElementById('waImportResults').innerHTML = html;
+}
+
+async function waImportApply(){
+  if(!waImportPending.length) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'שומר...';
+  let ok = 0, fail = 0;
+  for(const m of waImportPending){
+    const { error } = await sb.from('allowed_emails').update({ in_whatsapp: m.newWA }).eq('id', m.participant.id);
+    if(error) fail++; else ok++;
+  }
+  btn.disabled = false;
+  alert(`הושלם. ${ok} עודכנו${fail > 0 ? ', ' + fail + ' נכשלו' : ''}.`);
+  document.getElementById('waImportList').value = '';
+  document.getElementById('waImportResults').innerHTML = '';
+  waImportPending = [];
+  await loadAllData();
+  renderAll();
 }
 
 async function revokeAccess(participantId, email){
