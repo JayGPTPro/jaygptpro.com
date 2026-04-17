@@ -263,10 +263,10 @@
                     <div style="width: 32px; height: 32px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0;">1</div>
                     <span style="font-size: 16px; font-weight: 600;">Pick your round</span>
                 </div>
-                <a href="https://docs.google.com/forms/d/18s4J4ar-XRvdRZt9U3qvvcSQ_axIkPkQRdKybrCdIJs/viewform" target="_blank" class="round-card" style="text-align: center; border-color: var(--orange); padding: 28px 24px;">
-                    <div class="round-spots" style="margin-bottom: 16px;">Round 1 (Apr 20-24) or Round 2 (Apr 27 - May 1)</div>
+                <a href="https://docs.google.com/forms/d/18s4J4ar-XRvdRZt9U3qvvcSQ_axIkPkQRdKybrCdIJs/viewform" target="_blank" class="round-card" id="step1-card" style="text-align: center; border-color: var(--orange); padding: 28px 24px;">
+                    <div class="round-spots" id="step1-text" style="margin-bottom: 16px;">Round 1 (Apr 20-24) or Round 2 (Apr 27 - May 1)</div>
                     <div style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: var(--orange); color: white; border-radius: 100px; font-size: 15px; font-weight: 700;">
-                        Choose Round
+                        <span id="step1-cta">Choose Round</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </div>
                 </a>
@@ -279,8 +279,8 @@
                     <span style="font-size: 16px; font-weight: 600;">Join the WhatsApp support group</span>
                 </div>
                 <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">Join now! The group is quiet for now (messages are muted until a few days before your round), but I'll post important updates there. Once the challenge kicks off, this is where I'll answer questions and support you live.</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" class="round-card" style="text-align: center; padding: 20px 16px;">
+                <div id="wa-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" class="round-card" id="wa-r1-card" style="text-align: center; padding: 20px 16px;">
                         <div style="font-size: 13px; color: #25D366; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Round 1</div>
                         <div style="color: var(--text-white); font-size: 15px; font-weight: 600; margin-bottom: 12px;">Apr 20-24</div>
                         <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #25D366; color: white; border-radius: 100px; font-size: 13px; font-weight: 600;">
@@ -304,10 +304,11 @@
         <div class="expect-section">
             <h3>What happens next</h3>
             <ul class="expect-list">
-                <li><span class="icon">1.</span> Full challenge details drop on <strong>April 9</strong></li>
-                <li><span class="icon">2.</span> You'll receive a <strong>Day 0 prep guide</strong> by email about a week before your round</li>
-                <li><span class="icon">3.</span> The WhatsApp group opens a few days before the challenge with updates and direct access to me</li>
-                <li><span class="icon">4.</span> Questions? Email <a href="mailto:info@jaygptpro.com" style="color: var(--orange);">info@jaygptpro.com</a></li>
+                <li><span class="icon">1.</span> A welcome email with everything you need is on its way to your inbox</li>
+                <li><span class="icon">2.</span> You'll get a <strong>Day 0 prep guide</strong> on the Sunday before your round starts</li>
+                <li><span class="icon">3.</span> The WhatsApp group opens for live chat a few days before kickoff</li>
+                <li><span class="icon">4.</span> Daily content unlocks at <strong>2pm New York time</strong> (about 30 min video + 30 min hands-on)</li>
+                <li><span class="icon">5.</span> Questions? Email <a href="mailto:info@jaygptpro.com" style="color: var(--orange);">info@jaygptpro.com</a></li>
             </ul>
         </div>
 
@@ -316,5 +317,56 @@
             Questions? Email <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>
         </p>
     </div>
+
+<!-- Dynamic round-status: hide full rounds based on Supabase rounds.status -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function() {
+  try {
+    const SUPABASE_URL = 'https://faqjilunlzljbgrnpcgi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const { data: rounds, error } = await sb
+      .from('rounds')
+      .select('id, status')
+      .in('id', ['round1', 'round2']);
+
+    if (error || !rounds) return;
+
+    const r1 = rounds.find(r => r.id === 'round1');
+    const r2 = rounds.find(r => r.id === 'round2');
+    const r1Open = r1 && (r1.status === 'upcoming' || r1.status === 'active');
+    const r2Open = r2 && (r2.status === 'upcoming' || r2.status === 'active');
+
+    // Update Step 1 (pick round) text + remove Round 1 WA card if R1 is full
+    const step1Text = document.getElementById('step1-text');
+    const step1Cta = document.getElementById('step1-cta');
+    const waR1 = document.getElementById('wa-r1-card');
+    const waGrid = document.getElementById('wa-grid');
+
+    if (r1Open && r2Open) {
+      // both open - default text already correct
+    } else if (r2Open && !r1Open) {
+      if (step1Text) step1Text.textContent = "You're locked into Round 2 (Apr 27 - May 1). Round 1 is full.";
+      if (step1Cta) step1Cta.textContent = 'Confirm spot in Round 2';
+      if (waR1) waR1.style.display = 'none';
+      if (waGrid) waGrid.style.gridTemplateColumns = '1fr';
+    } else if (r1Open && !r2Open) {
+      if (step1Text) step1Text.textContent = "You're locked into Round 1 (Apr 20-24). Round 2 is full.";
+      if (step1Cta) step1Cta.textContent = 'Confirm spot in Round 1';
+      const waR2Card = waGrid ? waGrid.querySelectorAll('.round-card')[1] : null;
+      if (waR2Card) waR2Card.style.display = 'none';
+      if (waGrid) waGrid.style.gridTemplateColumns = '1fr';
+    } else {
+      if (step1Text) step1Text.textContent = 'Both rounds are currently full. I\u2019ll email you when the next round opens.';
+      if (step1Cta) step1Cta.textContent = "Got it";
+    }
+  } catch (e) {
+    // Network/Supabase failure: keep static defaults (both rounds shown). Safe fallback.
+    console.warn('round-status check failed:', e);
+  }
+})();
+</script>
 </body>
 </html>
