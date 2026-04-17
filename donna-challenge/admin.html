@@ -1179,6 +1179,7 @@ function esc(str) {
 let allParticipants = []; // primary accounts only (no aliases)
 let allAliases = [];      // alias rows (primary_email is set)
 let allEvents = [];
+let allProgress = [];     // user_progress rows (server-side completion + checks per day)
 let allRounds = [];
 let authUsers = [];
 let stripeCustomers = [];
@@ -1252,6 +1253,14 @@ async function loadAllData(){
     allEvents = [];
   }
 
+  // Fetch user_progress (server-side source of truth for completion + checklist)
+  try {
+    const progressRes = await sb.from('user_progress').select('*');
+    allProgress = progressRes.data || [];
+  } catch(e) {
+    allProgress = [];
+  }
+
   // Fetch rounds (table may not exist yet)
   try {
     const roundsRes = await sb.from('rounds').select('*');
@@ -1298,7 +1307,23 @@ function getLastEvent(email){
   return events.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0].created_at;
 }
 
+// Get user_progress rows for an email + its aliases (server-side source of truth)
+function getProgressRows(email){
+  const lower = (email || '').toLowerCase();
+  const aliasEmails = (allAliases || [])
+    .filter(a => (a.primary_email || '').toLowerCase() === lower)
+    .map(a => (a.email || '').toLowerCase());
+  const allEmails = new Set([lower, ...aliasEmails]);
+  return allProgress.filter(p => allEmails.has((p.user_email || '').toLowerCase()));
+}
+
 function getCompletedDays(email){
+  // Prefer server-side user_progress; fall back to user_events for legacy.
+  const fromProgress = getProgressRows(email)
+    .filter(p => p.completed_at)
+    .map(p => Number(p.day_num))
+    .filter(d => !isNaN(d) && d !== null && d !== undefined);
+  if(fromProgress.length > 0) return fromProgress;
   return getParticipantEvents(email)
     .filter(e => e.event_type === 'complete_day')
     .map(e => Number(eventDay(e)))
@@ -1306,6 +1331,13 @@ function getCompletedDays(email){
 }
 
 function getCurrentDay(email){
+  // Prefer last_viewed_at from user_progress; fall back to events
+  const progress = getProgressRows(email).filter(p => p.last_viewed_at);
+  if(progress.length > 0){
+    progress.sort((a,b) => new Date(b.last_viewed_at) - new Date(a.last_viewed_at));
+    const d = Number(progress[0].day_num);
+    if(!isNaN(d)) return d;
+  }
   const views = getParticipantEvents(email)
     .filter(e => e.event_type === 'day_view')
     .map(e => Number(eventDay(e)))
@@ -1314,16 +1346,28 @@ function getCurrentDay(email){
 }
 
 function getChecklistProgress(email){
-  // Portal emits 'check_item' with event_data.checked boolean. Count current "checked" items only.
+  // Prefer server-side user_progress.checks ({ "check0": true, ... } per day)
+  const rows = getProgressRows(email);
+  if(rows.length > 0){
+    let done = 0;
+    rows.forEach(p => {
+      if(p.checks && typeof p.checks === 'object'){
+        Object.values(p.checks).forEach(v => { if(v === true) done++; });
+      }
+    });
+    const totalPerDay = {0:16, 1:6, 2:6, 3:6, 4:12, 5:9};
+    const total = Object.values(totalPerDay).reduce((a,b) => a+b, 0);
+    return { done, total };
+  }
+  // Fall back: events-based count
   const checks = getParticipantEvents(email).filter(e => e.event_type === 'check_item');
-  // De-dupe: keep only the latest event per item, then count only those still checked.
   const latestByItem = {};
   checks.sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).forEach(e => {
     const item = (eventDataObj(e).item || '') + '|' + (eventDay(e) ?? '');
     latestByItem[item] = eventDataObj(e).checked === true;
   });
   const done = Object.values(latestByItem).filter(Boolean).length;
-  const totalPerDay = {0:4, 1:5, 2:5, 3:5, 4:5, 5:5};
+  const totalPerDay = {0:16, 1:6, 2:6, 3:6, 4:12, 5:9};
   const total = Object.values(totalPerDay).reduce((a,b) => a+b, 0);
   return { done, total };
 }

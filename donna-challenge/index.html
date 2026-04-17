@@ -53,6 +53,55 @@ body::after{
   background-size:4px 4px;
 }
 
+/* Day completion celebration modal */
+.celebration-modal{
+  position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;opacity:0;
+  transition:opacity 0.25s ease;
+}
+.celebration-modal.open{opacity:1}
+.celeb-card{
+  background:linear-gradient(135deg,#1a1a2e 0%,#2a1a3e 100%);
+  border:1px solid rgba(232,112,64,0.35);
+  border-radius:20px;padding:36px 32px;
+  max-width:440px;width:100%;text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  transform:scale(0.92) translateY(12px);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.celebration-modal.open .celeb-card{transform:scale(1) translateY(0)}
+.celeb-card h2{
+  font-size:1.7em;font-weight:800;color:var(--bright);
+  margin:8px 0 12px;letter-spacing:-0.4px;line-height:1.25;
+}
+.celeb-card p{color:var(--dim);font-size:1em;line-height:1.6;margin:0 0 24px}
+.celeb-confetti{font-size:1.6em;letter-spacing:6px;margin-bottom:8px;animation:celebPop 0.6s ease}
+@keyframes celebPop{
+  0%{transform:scale(0.5);opacity:0}
+  60%{transform:scale(1.15);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+.celeb-actions{display:flex;flex-direction:column;gap:10px}
+.celeb-primary{
+  background:linear-gradient(135deg,var(--orange),var(--orange-light));
+  color:#fff;border:none;cursor:pointer;
+  padding:14px 24px;border-radius:50px;
+  font-family:inherit;font-size:1em;font-weight:700;letter-spacing:0.2px;
+  transition:transform 0.15s ease,box-shadow 0.15s ease;
+}
+.celeb-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,112,64,0.35)}
+.celeb-secondary{
+  background:transparent;color:var(--dim);
+  border:1px solid var(--glass-border);cursor:pointer;
+  padding:12px 24px;border-radius:50px;
+  font-family:inherit;font-size:0.9em;font-weight:500;
+  transition:color 0.15s ease,border-color 0.15s ease;
+}
+.celeb-secondary:hover{color:var(--text);border-color:var(--orange)}
+
 /* Support shortcut floating button */
 .support-shortcut{
   position:fixed;bottom:24px;right:24px;z-index:9998;
@@ -1257,18 +1306,7 @@ body::after{
         <p style="color:var(--dim);margin-top:8px">באתגר אנחנו עובדים רק מ-Claude Desktop (טאב Code). אבל כדאי לדעת שיש גם אפשרויות אחרות שתוכלו לחקור אחרי האתגר.</p>
       </div>
 
-      <!-- Step 16: Obsidian -->
-      <div class="section">
-        <h3><span class="sec-icon">🟣</span> שלב 16: התקנת Obsidian</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Obsidian זו אפליקציה חינמית שמציגה קבצי טקסט בצורה ויזואלית. אנחנו משתמשים בה כדי לראות את הזיכרון של דונה. כשדונה כותבת סיכום, מתעדת החלטה, או שומרת מידע על אנשים, Obsidian מציג את הכל בצורה מסודרת עם קשרים ביניהם.</p>
-        <ol>
-          <li>לך ל-<a href="https://obsidian.md" target="_blank" class="link">obsidian.md</a> והורד (חינמי, Mac/Windows/Linux)</li>
-          <li>התקן כמו כל אפליקציה</li>
-        </ol>
-        <p style="color:var(--dim);margin-top:8px">נחבר את Obsidian אחרי שנוריד את ה-Starter Kit בשלב הבא.</p>
-      </div>
-
-      <!-- Step 17: Starter Kit -->
+      <!-- Step 17: Starter Kit (Obsidian step moved to Day 1) -->
       <div class="section">
         <h3><span class="sec-icon">📦</span> שלב 17: הורדת ה-Starter Kit</h3>
         <p style="color:var(--dim);margin-bottom:12px">ה-Starter Kit זו תיקייה עם כל מה שדונה צריכה: זהות, זיכרון, סקילס, טמפלייטים, ומדריכים.</p>
@@ -1633,9 +1671,20 @@ donna-starter-kit/<br>
         </div>
       </div>
 
-      <!-- Step 4: Meet Obsidian -->
+      <!-- Step 4a: Install Obsidian (moved here from Day 0) -->
       <div class="section">
-        <h3><span class="sec-icon">🧠</span> שלב 4: מכירים את Obsidian</h3>
+        <h3><span class="sec-icon">🟣</span> שלב 4: התקנת Obsidian</h3>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Obsidian זו אפליקציה חינמית שמציגה קבצי טקסט בצורה ויזואלית. אנחנו משתמשים בה כדי לראות את הזיכרון של דונה. כשדונה כותבת סיכום, מתעדת החלטה, או שומרת מידע על אנשים, Obsidian מציג את הכל בצורה מסודרת עם קשרים ביניהם.</p>
+        <ol>
+          <li>לך ל-<a href="https://obsidian.md" target="_blank" class="link">obsidian.md</a> והורד (חינמי, Mac/Windows/Linux)</li>
+          <li>התקן כמו כל אפליקציה</li>
+        </ol>
+        <p style="color:var(--dim);margin-top:8px">בשלב הבא נחבר את Obsidian לתיקיית brain/ של ה-Starter Kit.</p>
+      </div>
+
+      <!-- Step 5: Meet Obsidian (the brain) -->
+      <div class="section">
+        <h3><span class="sec-icon">🧠</span> שלב 5: מכירים את Obsidian (המוח של דונה)</h3>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Obsidian הוא המוח של דונה. כל מה שהיא לומדת, שומרת, וזוכרת, נמצא כאן כקבצי Markdown שאפשר לקרוא ולערוך.</p>
         <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:14px 16px;margin-bottom:14px">
           <p style="color:var(--orange);font-weight:600;font-size:0.9em;margin-bottom:4px">מה זה Vault?</p>
@@ -2871,17 +2920,44 @@ function showLoading(){
 }
 
 // ===== GOOGLE AUTH =====
+let _signingIn = false;
 async function signInWithGoogle(){
+  if(_signingIn) return;
+  _signingIn = true;
   document.getElementById('loginError').textContent = '';
-  const { data, error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.href.split('?')[0].split('#')[0]
-    }
-  });
-  if(error){
-    document.getElementById('loginError').textContent = 'שגיאה בהתחברות. נסה שוב.';
+  const btn = document.getElementById('googleBtn');
+  const lang = getLang();
+  if(btn){
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'wait';
+    btn.innerHTML = `<span class="g-spinner" style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,0.2);border-top-color:#3c4043;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:10px;vertical-align:middle"></span>${lang === 'he' ? 'מתחבר...' : 'Signing in...'}`;
   }
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href.split('?')[0].split('#')[0] }
+    });
+    if(error){
+      document.getElementById('loginError').textContent = lang === 'he' ? 'שגיאה בהתחברות. נסה שוב.' : 'Sign-in failed. Please try again.';
+      resetSignInButton();
+    }
+    // On success, the page redirects to OAuth - no need to reset button
+  } catch (e) {
+    document.getElementById('loginError').textContent = lang === 'he' ? 'בעיית רשת. נסה שוב.' : 'Network issue. Please try again.';
+    resetSignInButton();
+  }
+}
+
+function resetSignInButton(){
+  _signingIn = false;
+  const btn = document.getElementById('googleBtn');
+  if(!btn) return;
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+  const lang = getLang();
+  btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span data-en="Sign in with Google" data-he="התחבר עם Google">${lang === 'he' ? 'התחבר עם Google' : 'Sign in with Google'}</span>`;
 }
 
 async function signOut(){
@@ -3191,12 +3267,70 @@ function completeDay(dayNum){
   updateProgress();
   updateCompleteBtns();
   saveProgressToServer(dayNum);
+  showCelebration(dayNum);
+}
 
-  // Auto-advance to next day if unlocked
+function showCelebration(dayNum){
+  const lang = getLang();
   const nextDay = dayNum + 1;
-  if(nextDay <= 5 && isDayUnlocked(nextDay)){
-    setTimeout(()=>switchDay(nextDay),600);
+  const nextUnlocked = nextDay <= 5 && isDayUnlocked(nextDay);
+  const isGraduation = dayNum === 5;
+  const isPrep = dayNum === 0;
+
+  let title, subtitle, primaryLabel, primaryAction, secondaryLabel;
+  if(isGraduation){
+    title = lang === 'he' ? '🎓 סיימת את האתגר!' : '🎓 You graduated!';
+    subtitle = lang === 'he' ? 'בנית עובדת AI שעובדת בשבילך. דונה כאן להישאר.' : 'You built a working AI employee. Donna is here to stay.';
+    primaryLabel = lang === 'he' ? 'שתף בוואטסאפ' : 'Share in WhatsApp';
+    const round = localStorage.getItem('donna-challenge-round') || 'round1';
+    const waLink = (window.WHATSAPP_LINKS || {})[round] || 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS';
+    primaryAction = `window.open('${waLink}','_blank');closeCelebration()`;
+    secondaryLabel = lang === 'he' ? 'סגור' : 'Close';
+  } else if(isPrep){
+    title = lang === 'he' ? '🚀 מוכן לאתגר!' : '🚀 You\u2019re ready for the challenge!';
+    subtitle = lang === 'he' ? `יום 1 ייפתח ב-2pm NY ביום הראשון של הסבב שלך.` : `Day 1 opens at 2pm NY on the first day of your round.`;
+    primaryLabel = nextUnlocked ? (lang === 'he' ? 'בוא נתחיל יום 1' : `Let's start Day 1`) : (lang === 'he' ? 'מצוין' : 'Got it');
+    primaryAction = nextUnlocked ? `closeCelebration();switchDay(1)` : 'closeCelebration()';
+    secondaryLabel = lang === 'he' ? 'סגור' : 'Close';
+  } else {
+    title = lang === 'he' ? `✅ יום ${dayNum} הושלם` : `✅ Day ${dayNum} complete`;
+    subtitle = nextUnlocked
+      ? (lang === 'he' ? `יופי. יום ${nextDay} מחכה.` : `Nice work. Day ${nextDay} is waiting.`)
+      : (lang === 'he' ? `יום ${nextDay} ייפתח מחר ב-2pm NY.` : `Day ${nextDay} opens tomorrow at 2pm NY.`);
+    primaryLabel = nextUnlocked
+      ? (lang === 'he' ? `המשך ליום ${nextDay}` : `Continue to Day ${nextDay}`)
+      : (lang === 'he' ? 'מצוין' : 'Got it');
+    primaryAction = nextUnlocked ? `closeCelebration();switchDay(${nextDay})` : 'closeCelebration()';
+    secondaryLabel = lang === 'he' ? 'הישאר על היום הזה' : 'Stay on this day';
   }
+
+  let modal = document.getElementById('celebrationModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'celebrationModal';
+    modal.className = 'celebration-modal';
+    modal.setAttribute('role','dialog');
+    modal.setAttribute('aria-modal','true');
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `<div class="celeb-card">
+    <div class="celeb-confetti">${'\u2728'.repeat(6)}</div>
+    <h2>${title}</h2>
+    <p>${subtitle}</p>
+    <div class="celeb-actions">
+      <button class="celeb-primary" onclick="${primaryAction}">${primaryLabel}</button>
+      <button class="celeb-secondary" onclick="closeCelebration()">${secondaryLabel}</button>
+    </div>
+  </div>`;
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function closeCelebration(){
+  const modal = document.getElementById('celebrationModal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  setTimeout(() => { modal.style.display = 'none'; }, 200);
 }
 
 function updateCompleteBtns(){
