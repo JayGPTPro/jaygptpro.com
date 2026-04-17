@@ -53,6 +53,16 @@ body::after{
   background-size:4px 4px;
 }
 
+/* Language mini-toggle (used on auth/error screens) */
+.lang-mini{
+  display:block;margin:18px auto 0;
+  background:transparent;border:1px solid rgba(255,255,255,0.1);
+  color:var(--dim);padding:6px 14px;border-radius:6px;
+  font-size:12px;cursor:pointer;font-family:inherit;
+  transition:color 0.2s ease,border-color 0.2s ease;
+}
+.lang-mini:hover{color:var(--orange);border-color:var(--orange)}
+
 /* Day completion celebration modal */
 .celebration-modal{
   position:fixed;inset:0;z-index:99999;
@@ -171,6 +181,11 @@ body::after{
 @media(max-width:700px){
   .header h1{font-size:1.4em}
   .header-sub{font-size:0.82em}
+  .app-header h1{font-size:1.5em}
+  .app-header .header-sub{font-size:0.82em}
+  .user-bar{flex-wrap:wrap;gap:6px;padding:0 8px}
+  .user-bar > *{flex-shrink:0}
+  .user-email{font-size:0.72em;flex:1;min-width:0;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .day-nav{
     flex-wrap:nowrap;gap:6px;padding:10px 12px;
     overflow-x:auto;-webkit-overflow-scrolling:touch;
@@ -187,6 +202,10 @@ body::after{
   .progress-wrap{padding:0 10px}
   .content-area{padding:24px 16px 60px}
   .login-card,.not-allowed-card{padding:32px 20px}
+  .celeb-card{padding:28px 22px}
+  .celeb-card h2{font-size:1.4em}
+  .celeb-card p{font-size:0.92em}
+  .unlock-countdown{font-size:0.85em;padding:10px 14px}
 }
 
 /* ===== SCROLL REVEAL ===== */
@@ -901,6 +920,7 @@ body::after{
     <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Issue&body=Hi+Jay%2C%0A%0AI+paid+for+the+Claude+Code+Challenge+but+I+can%27t+access+the+portal+with+my+Google+account.%0A%0AMy+email%3A+%0APayment+date%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4" data-en="Email Jay (info@jaygptpro.com)" data-he="שלח מייל לג'יי">Email Jay (info@jaygptpro.com)</a>
     <br>
     <button class="signout-btn" onclick="signOut()" data-en="Sign out and try a different email" data-he="התנתק ונסה מייל אחר">Sign out and try a different email</button>
+    <button class="lang-mini" onclick="toggleLanguage()">עברית</button>
   </div>
 </div>
 
@@ -914,6 +934,7 @@ body::after{
     <a href="https://mail.google.com/mail/?view=cm&to=info@jaygptpro.com&su=Donna+Challenge+-+Access+Question&body=Hi+Jay%2C%0A%0AMy+account+shows+as+refunded+but+I+believe+I+should+still+have+access.%0A%0AMy+email%3A+%0A%0AThanks!" target="_blank" class="whatsapp-link" style="background:#4285f4" data-en="Email Jay (info@jaygptpro.com)" data-he="שלח מייל לג'יי">Email Jay (info@jaygptpro.com)</a>
     <br>
     <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
+    <button class="lang-mini" onclick="toggleLanguage()">עברית</button>
   </div>
 </div>
 
@@ -925,6 +946,7 @@ body::after{
     <button onclick="location.reload()" class="whatsapp-link" style="background:#4285f4;margin-top:20px;border:none;cursor:pointer" data-en="Try again" data-he="נסה שוב">Try again</button>
     <br>
     <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
+    <button class="lang-mini" onclick="toggleLanguage()">עברית</button>
   </div>
 </div>
 
@@ -937,6 +959,7 @@ body::after{
     <div id="pickRoundOptions" style="display:flex;flex-direction:column;gap:10px;margin-top:20px"></div>
     <p style="margin-top:20px;font-size:0.85em;color:var(--dim)" data-en="After you pick, refresh this page and you're in." data-he="אחרי שתבחר, רענן את הדף והכל מוכן.">After you pick, refresh this page and you're in.</p>
     <button class="signout-btn" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
+    <button class="lang-mini" onclick="toggleLanguage()">עברית</button>
   </div>
 </div>
 
@@ -2801,8 +2824,8 @@ function applyLanguage(lang){
   document.querySelectorAll('[data-en-title]').forEach(el => {
     el.title = el.getAttribute('data-' + lang + '-title') || '';
   });
-  // Update toggle button text
-  document.querySelectorAll('#langToggle, #langToggleMain').forEach(tog => {
+  // Update all toggle button text (login card, header, mini buttons on every screen)
+  document.querySelectorAll('#langToggle, #langToggleMain, .lang-mini').forEach(tog => {
     tog.textContent = lang === 'en' ? 'עברית' : 'English';
   });
   // Show content-language notice only when EN (content still in Hebrew)
