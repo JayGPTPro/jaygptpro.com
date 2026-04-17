@@ -558,6 +558,18 @@ tr.expandable{cursor:pointer}
 .cc-item .cc-dial{color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:0.85em;direction:ltr}
 .cc-item:hover .cc-dial{color:var(--orange)}
 
+/* ===== ROUND STATUS TOGGLE ===== */
+.round-toggle{
+  display:inline-block;margin-top:8px;
+  padding:6px 12px;border-radius:6px;
+  font-family:inherit;font-size:0.78em;font-weight:600;
+  cursor:pointer;transition:0.18s;border:1px solid;
+}
+.btn-toggle-close{background:rgba(255,92,92,0.08);color:var(--red);border-color:rgba(255,92,92,0.3)}
+.btn-toggle-close:hover{background:var(--red-bg);border-color:var(--red)}
+.btn-toggle-open{background:var(--green-bg);color:var(--green);border-color:rgba(61,214,140,0.4)}
+.btn-toggle-open:hover{background:rgba(61,214,140,0.2);border-color:var(--green)}
+
 /* ===== ROW ACTIONS ===== */
 .row-actions{display:flex;gap:6px;flex-wrap:nowrap}
 .row-action-btn{
@@ -1362,6 +1374,11 @@ function renderRoundCards(){
   function buildCard(roundKey, title, dates, cssClass){
     const inRound = active.filter(p => p.round === roundKey);
     const total = inRound.length;
+    const roundRow = (allRounds || []).find(r => r.id === roundKey);
+    const isFull = roundRow && roundRow.status === 'full';
+    const fullBadge = isFull
+      ? '<span style="display:inline-block;margin-right:8px;font-size:0.65em;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:1px;vertical-align:middle">FULL</span>'
+      : '';
     // Confidence breakdown
     const confirmed = inRound.filter(p => p.in_whatsapp === roundKey).length;
     const inBothWA = inRound.filter(p => p.in_whatsapp === 'both').length;
@@ -1375,8 +1392,8 @@ function renderRoundCards(){
     const softPct = total > 0 ? ((inBothWA + noWA) / total) * 100 : 0;
 
     return `
-      <div class="round-card ${cssClass}" onclick="filterToRound('${roundKey}')">
-        <div class="round-card-title">${title}</div>
+      <div class="round-card ${cssClass}" onclick="filterToRound('${roundKey}')" style="${isFull ? 'opacity:0.85' : ''}">
+        <div class="round-card-title">${title}${fullBadge}</div>
         <div class="round-card-num">${total}</div>
         <div class="round-card-dates">${dates}</div>
         <div class="conf-bar">
@@ -2703,15 +2720,45 @@ function renderRounds(){
     return;
   }
 
+  // Helper for status badge + toggle
+  const statusUI = (r) => {
+    const isOpen = r.status === 'upcoming' || r.status === 'active';
+    const isFull = r.status === 'full';
+    const isCompleted = r.status === 'completed';
+    let badge;
+    if(isFull) badge = '<span class="badge badge-red">&#128308; מלא</span>';
+    else if(isCompleted) badge = '<span class="badge badge-gray">הסתיים</span>';
+    else if(r.status === 'active') badge = '<span class="badge badge-green">פעיל</span>';
+    else badge = '<span class="badge badge-blue">&#128994; פתוח להרשמה</span>';
+
+    let toggleBtn = '';
+    if(!isCompleted){
+      const newStatus = isFull ? 'upcoming' : 'full';
+      const label = isFull ? '&#128994; פתח להרשמה' : '&#128308; סמן כמלא';
+      const cls = isFull ? 'btn-toggle-open' : 'btn-toggle-close';
+      toggleBtn = `<button class="round-toggle ${cls}" onclick="toggleRoundStatus('${esc(r.id)}','${newStatus}')">${label}</button>`;
+    }
+    return badge + (toggleBtn ? '<br>' + toggleBtn : '');
+  };
+
   tbody.innerHTML = allRounds.map(r => `
     <tr>
       <td>${esc(r.name)}</td>
       <td>${formatDate(r.start_date)}</td>
       <td>${formatDate(r.end_date)}</td>
       <td>${r.whatsapp_link ? '<a href="' + encodeURI(r.whatsapp_link) + '" target="_blank" style="color:var(--orange)">וואטסאפ</a>' : '-'}</td>
-      <td><span class="badge ${r.status === 'active' ? 'badge-green' : 'badge-gray'}">${r.status === 'active' ? 'פעיל' : esc(r.status)}</span></td>
+      <td>${statusUI(r)}</td>
     </tr>
   `).join('');
+}
+
+async function toggleRoundStatus(roundId, newStatus){
+  const action = newStatus === 'full' ? 'לסמן כמלא' : 'לפתוח להרשמה';
+  if(!confirm('בטוח ' + action + ' את הסבב? המייל האוטומטי לנרשמים חדשים יתעדכן בהתאם.')) return;
+  const { error } = await sb.from('rounds').update({ status: newStatus }).eq('id', roundId);
+  if(error){ alert('שגיאה: ' + error.message); return; }
+  await loadAllData();
+  renderAll();
 }
 
 // ===== CSV EXPORT =====
