@@ -466,6 +466,23 @@ tr.expandable{cursor:pointer}
 .round-card .conf-list .num.yellow{color:var(--yellow)}
 .round-card .conf-list .num.red{color:var(--red)}
 
+/* ===== FAMILY STRIP ===== */
+.family-strip{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+}
+.family-strip-item{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:10px 16px;
+  background:rgba(232,112,64,0.06);
+  border:1px dashed rgba(232,112,64,0.25);
+  border-radius:10px;cursor:pointer;
+  transition:0.2s;
+}
+.family-strip-item:hover{background:rgba(232,112,64,0.12);border-style:solid}
+.family-strip-item .family-icon{font-size:1.2em}
+.family-strip-item .family-num{font-size:1.2em;font-weight:800;color:var(--bright)}
+.family-strip-item .family-label{font-size:0.85em;color:var(--dim)}
+
 /* ===== ACTION QUEUE ===== */
 .action-queue{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -750,8 +767,11 @@ tr.expandable{cursor:pointer}
     </div>
 
     <!-- ROUND STATUS CARDS -->
-    <div class="section-title" style="margin-top:8px">&#127919; מצב הסבבים</div>
+    <div class="section-title" style="margin-top:8px">&#127919; מצב הסבבים (משלמים)</div>
     <div class="round-cards" id="roundCards"></div>
+
+    <!-- FAMILY / ADMIN STRIP -->
+    <div class="family-strip" id="familyStrip"></div>
 
     <!-- ACTION QUEUE -->
     <div class="action-queue" id="actionQueue"></div>
@@ -1333,8 +1353,10 @@ function renderRoundCards(){
   const container = document.getElementById('roundCards');
   if(!container) return;
 
-  // Active participants only (no aliases, no revoked)
-  const active = allParticipants.filter(p => !p.access_revoked_at);
+  // Active participants only (no aliases, no revoked, no family/admin in main counts)
+  const active = allParticipants
+    .filter(p => !p.access_revoked_at)
+    .filter(p => p.customer_type === 'paid' || !p.customer_type);
 
   // Helper: build a single round card
   function buildCard(roundKey, title, dates, cssClass){
@@ -1399,6 +1421,45 @@ function renderRoundCards(){
     buildCard('round1', 'סבב 1', 'Apr 20-24', 'r1') +
     buildCard('round2', 'סבב 2', 'Apr 27 - May 1', 'r2') +
     unknownCard;
+
+  // Family / admin section (separate, doesn't affect paid counts)
+  const family = allParticipants.filter(p => p.customer_type === 'family');
+  const admin = allParticipants.filter(p => p.customer_type === 'admin');
+  const familyEl = document.getElementById('familyStrip');
+  if(familyEl){
+    if(family.length === 0 && admin.length === 0){
+      familyEl.style.display = 'none';
+    } else {
+      familyEl.style.display = 'flex';
+      familyEl.innerHTML = `
+        <div class="family-strip-item" onclick="filterToCustomerType('family')">
+          <span class="family-icon">&#129489;&#8205;&#129489;&#8205;&#129489;&#8205;&#129489;</span>
+          <span class="family-num">${family.length}</span>
+          <span class="family-label">משפחה / אורחים (חינם)</span>
+        </div>
+        <div class="family-strip-item" onclick="filterToCustomerType('admin')">
+          <span class="family-icon">&#128737;&#65039;</span>
+          <span class="family-num">${admin.length}</span>
+          <span class="family-label">אדמין</span>
+        </div>
+      `;
+    }
+  }
+}
+
+function filterToCustomerType(type){
+  switchTab('participants');
+  // Add option if not exists
+  const sel = document.getElementById('filterRound');
+  let opt = Array.from(sel.options).find(o => o.value === '__type_' + type);
+  if(!opt){
+    opt = document.createElement('option');
+    opt.value = '__type_' + type;
+    opt.textContent = type === 'family' ? 'משפחה' : 'אדמין';
+    sel.appendChild(opt);
+  }
+  sel.value = '__type_' + type;
+  renderParticipants();
 }
 
 function filterToRound(round){
@@ -1428,7 +1489,10 @@ function filterToRound(round){
 function renderActionQueue(){
   const container = document.getElementById('actionQueue');
   if(!container) return;
-  const active = allParticipants.filter(p => !p.access_revoked_at);
+  // Action items only count paying customers (family/admin don't need attention)
+  const active = allParticipants
+    .filter(p => !p.access_revoked_at)
+    .filter(p => (p.customer_type || 'paid') === 'paid');
 
   // Counts of action items
   const noRound = active.filter(p => p.round === 'unknown').length;
@@ -1477,7 +1541,9 @@ function actionItemClick(i){
 
 // ===== TAB 1: OVERVIEW =====
 function renderOverview(){
-  const total = allParticipants.length;
+  // Only paying customers count toward main stats
+  const paidParticipants = allParticipants.filter(p => (p.customer_type || 'paid') === 'paid');
+  const total = paidParticipants.length;
 
   // Unique emails that have at least one event
   const loggedInEmails = new Set(allEvents.map(e => eventEmail(e)).filter(Boolean));
@@ -1678,7 +1744,15 @@ function renderParticipants(){
   const search = document.getElementById('searchInput').value.toLowerCase();
 
   let filtered = allParticipants.filter(p => {
-    if(roundFilter !== 'all' && p.round !== roundFilter) return false;
+    // Customer type filter (encoded as __type_X in the round dropdown)
+    if(roundFilter && roundFilter.startsWith('__type_')){
+      const wantedType = roundFilter.substring(7);
+      if((p.customer_type || 'paid') !== wantedType) return false;
+    } else {
+      // Default: hide family/admin from regular round views (they have their own strip)
+      if(roundFilter === 'all' && (p.customer_type === 'family' || p.customer_type === 'admin')) return false;
+      if(roundFilter !== 'all' && !roundFilter.startsWith('__type_') && p.round !== roundFilter) return false;
+    }
 
     const info = getStatusInfo(p.email);
     if(statusFilter === 'active' && info.status !== 'active') return false;
