@@ -105,31 +105,31 @@ body::before{
   display:inline-block;
 }
 
-/* Video watermark overlay (anti-piracy: shows viewer's email, rotates corners) */
+/* Video watermark overlay (anti-piracy: shows viewer's email in right corners only) */
 .video-watermark{
   position:absolute;
   z-index:10;
   pointer-events:none;
-  color:rgba(255,255,255,0.45);
+  color:rgba(255,255,255,0.35);
   font-family:'JetBrains Mono','SF Mono',monospace;
-  font-size:12px;
+  font-size:9px;
   font-weight:500;
-  padding:6px 10px;
-  letter-spacing:0.3px;
-  text-shadow:0 1px 3px rgba(0,0,0,0.7);
-  transition:top 1.5s ease,bottom 1.5s ease,left 1.5s ease,right 1.5s ease,opacity 0.5s ease;
+  padding:3px 6px;
+  letter-spacing:0.2px;
+  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+  transition:top 1.2s ease,bottom 1.2s ease,opacity 0.4s ease;
   user-select:none;
   white-space:nowrap;
+  right:10px;
 }
 .video-watermark::before{
   content:attr(data-email);
 }
-.video-watermark.pos-tl{top:12px;left:14px;right:auto;bottom:auto}
-.video-watermark.pos-tr{top:12px;right:14px;left:auto;bottom:auto}
-.video-watermark.pos-bl{bottom:40px;left:14px;right:auto;top:auto}
-.video-watermark.pos-br{bottom:40px;right:14px;left:auto;top:auto}
+.video-watermark.pos-tr{top:10px;bottom:auto}
+.video-watermark.pos-br{bottom:42px;top:auto}
 @media(max-width:700px){
-  .video-watermark{font-size:10px;padding:4px 7px}
+  .video-watermark{font-size:8px;padding:2px 5px}
+  .video-watermark.pos-br{bottom:36px}
 }
 
 /* Language mini-toggle (used on auth/error screens) */
@@ -3819,9 +3819,9 @@ function initVideoWatermarks(){
     }).catch(() => {});
   }
   if(email) applyWatermarkEmail(email);
-  // Start rotating positions (every 18s)
+  // Start rotating positions (every 18s) - right corners only (left has presenter's face)
   if(_watermarkRotator) clearInterval(_watermarkRotator);
-  const positions = ['pos-tl','pos-tr','pos-br','pos-bl'];
+  const positions = ['pos-tr','pos-br'];
   let idx = Math.floor(Math.random() * positions.length);
   const rotate = () => {
     document.querySelectorAll('.video-watermark').forEach(w => {
