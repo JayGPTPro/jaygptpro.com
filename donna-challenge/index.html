@@ -6,51 +6,103 @@
 <title>Claude Code Challenge . Participant Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Assistant:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.lordicon.com/lordicon.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#08080c;
-  --card:rgba(18,18,31,0.7);
-  --card-solid:#12121f;
-  --card-hover:#181830;
-  --orange:#e87040;
-  --orange-light:#f0935e;
-  --orange-dark:#c55a30;
-  --text:#e8e8ed;
-  --dim:#9898a8;
-  --bright:#ffffff;
-  --green:#3dd68c;
-  --green-bg:rgba(61,214,140,0.12);
-  --red:#ff5c5c;
-  --glass:rgba(255,255,255,0.04);
-  --glass-border:rgba(255,255,255,0.08);
+  /* Light theme palette - matches claude-code-challenge-launch */
+  --bg:#f5f5f7;
+  --bg-2:#ffffff;
+  --bg-3:#fafafc;
+  --bg-soft:#eeeef2;
+  --bg-cream:#fff9f2;
+  --card:#ffffff;
+  --card-solid:#ffffff;
+  --card-hover:#fafafc;
+  --orange:#f97316;
+  --orange-light:#fb923c;
+  --orange-dark:#ea580c;
+  --orange-darker:#c2410c;
+  --orange-faint:#ffedd5;
+  --orange-soft:rgba(249,115,22,0.08);
+  --orange-glow:rgba(249,115,22,0.2);
+  --claude:#d97757;
+  --text:#0a0a0f;
+  --text-2:#2a2a35;
+  --text-3:#55556a;
+  --dim:#55556a;
+  --bright:#0a0a0f;
+  --green:#16a34a;
+  --green-bg:#dcfce7;
+  --red:#dc2626;
+  --red-bg:#fee2e2;
+  --glass:#fafafc;
+  --glass-border:#e5e5eb;
+  --border:#e5e5eb;
+  --border-hi:#d4d4dc;
   --radius:18px;
   --radius-sm:10px;
+  --shadow-sm:0 1px 3px rgba(20,20,40,0.04),0 1px 2px rgba(20,20,40,0.03);
+  --shadow:0 4px 12px rgba(20,20,40,0.05),0 2px 4px rgba(20,20,40,0.04);
+  --shadow-lg:0 20px 50px rgba(20,20,40,0.08),0 8px 20px rgba(20,20,40,0.04);
+  --shadow-xl:0 40px 80px rgba(20,20,40,0.1),0 15px 30px rgba(20,20,40,0.06);
+  --shadow-orange:0 20px 50px rgba(249,115,22,0.25),0 10px 20px rgba(249,115,22,0.15);
 }
 html{scroll-behavior:smooth}
 body{
-  font-family:'Rubik','Heebo',sans-serif;
+  font-family:'Outfit','Assistant',-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
   color:var(--text);
-  line-height:1.7;
+  line-height:1.65;
   overflow-x:hidden;
   min-height:100vh;
   font-weight:400;
+  -webkit-font-smoothing:antialiased;
 }
-/* Atmosphere: radial gradient + noise overlay */
+/* Atmosphere: soft orange glow at top */
 body::before{
   content:'';position:fixed;inset:0;z-index:-2;
-  background:radial-gradient(ellipse at 50% 0%,rgba(232,112,64,0.04) 0%,#08080c 60%);
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%,rgba(249,115,22,0.10) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 35% at 15% 35%,rgba(251,191,36,0.05) 0%,transparent 55%),
+    var(--bg);
   pointer-events:none;
 }
-body::after{
-  content:'';position:fixed;inset:0;z-index:-1;
-  opacity:0.025;pointer-events:none;
-  background-image:repeating-conic-gradient(rgba(255,255,255,0.08) 0% 25%,transparent 0% 50%);
-  background-size:4px 4px;
+
+/* Claude star decorations (subtle peach-colored, float gently) */
+@keyframes floatStar{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-18px) rotate(8deg)}
+  75%{transform:translateY(12px) rotate(-6deg)}
+}
+.claude-star{
+  position:absolute;
+  pointer-events:none;
+  color:var(--claude);
+  opacity:0.08;
+  z-index:0;
+}
+.claude-star.cs-header-1{top:-30px;right:-40px;width:220px;height:220px;animation:floatStar 14s ease-in-out infinite;opacity:0.09}
+.claude-star.cs-header-2{top:20%;left:-50px;width:150px;height:150px;animation:floatStar 12s ease-in-out infinite 1.5s;opacity:0.07}
+.claude-star.cs-content-1{top:6%;right:-70px;width:200px;height:200px;animation:floatStar 16s ease-in-out infinite 2s;opacity:0.05}
+.claude-star.cs-content-2{top:42%;left:-60px;width:180px;height:180px;animation:floatStar 13s ease-in-out infinite 0.5s;opacity:0.06}
+.claude-star.cs-content-3{top:75%;right:-40px;width:160px;height:160px;animation:floatStar 18s ease-in-out infinite 1s;opacity:0.05}
+.claude-star.cs-login{top:-80px;right:-80px;width:320px;height:320px;animation:floatStar 20s ease-in-out infinite;opacity:0.06}
+@media(max-width:760px){
+  .claude-star.cs-content-1,.claude-star.cs-content-2,.claude-star.cs-content-3{display:none}
+  .claude-star.cs-header-1{width:140px;height:140px;top:-20px;right:-30px;opacity:0.07}
+  .claude-star.cs-header-2{display:none}
+}
+
+/* Gradient accent for headings (black + orange gradient, matches launch page) */
+.accent{
+  background:linear-gradient(135deg,var(--orange-dark),var(--orange),#fbbf24);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  display:inline-block;
 }
 
 /* Language mini-toggle (used on auth/error screens) */
@@ -62,6 +114,82 @@ body::after{
   transition:color 0.2s ease,border-color 0.2s ease;
 }
 .lang-mini:hover{color:var(--orange);border-color:var(--orange)}
+/* Language toggle hidden for English-only rollout. Kept in DOM for easy re-enable. */
+#langToggle,#langToggleMain,.lang-mini{display:none !important}
+
+/* Collapsible sections (optional content, collapsed by default) */
+details.collapsible{
+  list-style:none;
+}
+details.collapsible > summary{
+  cursor:pointer;
+  list-style:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  user-select:none;
+  padding:0;
+}
+details.collapsible > summary::-webkit-details-marker,
+details.collapsible > summary::marker{display:none}
+details.collapsible > summary h3{
+  margin:0;
+  flex:1;
+}
+details.collapsible > summary .collapse-hint{
+  color:var(--dim);
+  font-size:0.78em;
+  font-weight:500;
+  padding:4px 10px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:20px;
+  white-space:nowrap;
+  transition:color 0.2s ease,border-color 0.2s ease;
+}
+details.collapsible > summary:hover .collapse-hint{
+  color:var(--orange);
+  border-color:var(--orange);
+}
+details.collapsible > summary::after{
+  content:'▸';
+  color:var(--orange);
+  font-size:0.9em;
+  transition:transform 0.25s ease;
+  display:inline-block;
+}
+details.collapsible[open] > summary::after{
+  transform:rotate(90deg);
+}
+details.collapsible[open] > summary .collapse-hint{display:none}
+details.collapsible > summary + *{margin-top:14px}
+/* Nested collapsible (smaller, inline) */
+details.mini-collapse{
+  margin-top:10px;
+  border-top:1px solid var(--glass-border);
+  padding-top:10px;
+}
+details.mini-collapse > summary{
+  cursor:pointer;
+  list-style:none;
+  color:var(--orange);
+  font-weight:600;
+  font-size:0.9em;
+  user-select:none;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+details.mini-collapse > summary::-webkit-details-marker,
+details.mini-collapse > summary::marker{display:none}
+details.mini-collapse > summary::before{
+  content:'▸';
+  display:inline-block;
+  transition:transform 0.2s ease;
+  font-size:0.85em;
+}
+details.mini-collapse[open] > summary::before{transform:rotate(90deg)}
 
 /* Day completion celebration modal */
 .celebration-modal{
@@ -74,20 +202,20 @@ body::after{
 }
 .celebration-modal.open{opacity:1}
 .celeb-card{
-  background:linear-gradient(135deg,#1a1a2e 0%,#2a1a3e 100%);
-  border:1px solid rgba(232,112,64,0.35);
+  background:var(--bg-2);
+  border:1px solid rgba(249,115,22,0.25);
   border-radius:20px;padding:36px 32px;
   max-width:440px;width:100%;text-align:center;
-  box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  box-shadow:var(--shadow-xl);
   transform:scale(0.92) translateY(12px);
   transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
 .celebration-modal.open .celeb-card{transform:scale(1) translateY(0)}
 .celeb-card h2{
-  font-size:1.7em;font-weight:800;color:var(--bright);
+  font-size:1.7em;font-weight:800;color:var(--text);
   margin:8px 0 12px;letter-spacing:-0.4px;line-height:1.25;
 }
-.celeb-card p{color:var(--dim);font-size:1em;line-height:1.6;margin:0 0 24px}
+.celeb-card p{color:var(--text-3);font-size:1em;line-height:1.6;margin:0 0 24px}
 .celeb-confetti{font-size:1.6em;letter-spacing:6px;margin-bottom:8px;animation:celebPop 0.6s ease}
 @keyframes celebPop{
   0%{transform:scale(0.5);opacity:0}
@@ -102,7 +230,7 @@ body::after{
   font-family:inherit;font-size:1em;font-weight:700;letter-spacing:0.2px;
   transition:transform 0.15s ease,box-shadow 0.15s ease;
 }
-.celeb-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,112,64,0.35)}
+.celeb-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(249,115,22,0.35)}
 .celeb-secondary{
   background:transparent;color:var(--dim);
   border:1px solid var(--glass-border);cursor:pointer;
@@ -118,7 +246,7 @@ body::after{
   width:52px;height:52px;border-radius:50%;display:none;
   background:linear-gradient(135deg,var(--orange),var(--orange-light));
   color:#fff;border:none;cursor:pointer;
-  box-shadow:0 8px 24px rgba(232,112,64,0.4);
+  box-shadow:0 8px 24px rgba(249,115,22,0.4);
   display:flex;align-items:center;justify-content:center;
   font-size:24px;font-weight:800;
   transition:transform 0.2s ease;
@@ -127,12 +255,11 @@ body::after{
 .support-shortcut .support-icon{line-height:1}
 .support-menu{
   position:fixed;bottom:88px;right:24px;z-index:9998;
-  background:rgba(18,18,31,0.98);
-  backdrop-filter:blur(12px);
-  border:1px solid var(--glass-border);
+  background:var(--bg-2);
+  border:1px solid var(--border);
   border-radius:12px;padding:8px;
   min-width:220px;
-  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  box-shadow:var(--shadow-lg);
   display:none;flex-direction:column;gap:2px;
 }
 .support-menu.open{display:flex;animation:supMenuIn 0.2s ease}
@@ -143,7 +270,7 @@ body::after{
   font-size:0.9em;font-weight:500;
   transition:background 0.15s ease;
 }
-.support-menu a:hover{background:rgba(232,112,64,0.12)}
+.support-menu a:hover{background:rgba(249,115,22,0.12)}
 @media(max-width:700px){
   .support-shortcut{bottom:16px;right:16px;width:48px;height:48px}
   .support-menu{bottom:76px;right:16px}
@@ -152,14 +279,14 @@ body::after{
 /* Countdown banner above content */
 .unlock-countdown{
   max-width:860px;margin:18px auto 0;padding:14px 20px;
-  background:linear-gradient(135deg,rgba(232,112,64,0.12),rgba(232,112,64,0.04));
-  border:1px solid rgba(232,112,64,0.3);
+  background:linear-gradient(135deg,rgba(249,115,22,0.10),rgba(249,115,22,0.03));
+  border:1px solid rgba(249,115,22,0.3);
   border-radius:12px;
-  color:var(--bright);font-size:0.95em;line-height:1.5;
+  color:var(--text-2);font-size:0.95em;line-height:1.5;font-weight:500;
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
 }
 .unlock-countdown .count-icon{font-size:1.4em}
-.unlock-countdown .count-num{font-weight:800;color:var(--orange);letter-spacing:0.3px}
+.unlock-countdown .count-num{font-weight:800;color:var(--orange-dark);letter-spacing:0.3px}
 @media(max-width:700px){
   .unlock-countdown{font-size:0.85em;padding:12px 16px}
 }
@@ -169,8 +296,8 @@ body::after{
   max-width:860px;margin:20px auto 0;padding:0 20px;
 }
 .content-lang-notice > div{
-  background:linear-gradient(135deg,rgba(232,112,64,0.08),rgba(240,147,94,0.04));
-  border:1px solid rgba(232,112,64,0.25);
+  background:linear-gradient(135deg,rgba(249,115,22,0.08),rgba(251,146,60,0.04));
+  border:1px solid rgba(249,115,22,0.25);
   border-radius:12px;padding:16px 20px;
   color:var(--text);font-size:0.9em;line-height:1.7;
 }
@@ -225,12 +352,11 @@ body::after{
   min-height:100vh;padding:40px;
 }
 .login-card{
-  background:var(--card);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid var(--glass-border);
+  background:var(--bg-2);
+  border:1px solid var(--border);
   border-radius:var(--radius);padding:48px 40px;
   max-width:440px;width:100%;text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  box-shadow:var(--shadow-lg);
   position:relative;overflow:hidden;
 }
 /* Animated gradient border on login card */
@@ -239,15 +365,15 @@ body::after{
   border-radius:var(--radius);
   background:conic-gradient(from 0deg,var(--orange),transparent 40%,transparent 60%,var(--orange-dark));
   animation:borderSpin 8s linear infinite;
-  opacity:0.4;
+  opacity:0.5;
 }
 @keyframes borderSpin{to{transform:rotate(360deg)}}
 .login-card h1{
-  font-size:1.6em;font-weight:800;color:var(--bright);
+  font-size:1.6em;font-weight:800;color:var(--text);
   margin-bottom:8px;line-height:1.4;letter-spacing:-0.01em;
 }
 .login-card .subtitle{
-  color:var(--dim);font-size:0.9em;margin-bottom:32px;
+  color:var(--text-3);font-size:0.9em;margin-bottom:32px;
 }
 .google-btn{
   display:inline-flex;align-items:center;justify-content:center;gap:12px;
@@ -275,24 +401,24 @@ body::after{
 
 /* Not Allowed Screen */
 .not-allowed-card{
-  background:var(--card);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--glass-border);
+  background:var(--bg-2);
+  border:1px solid var(--border);
   border-radius:var(--radius);padding:48px 40px;
   max-width:480px;width:100%;text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  box-shadow:var(--shadow-lg);
 }
 .not-allowed-card h2{
   color:var(--red);font-size:1.3em;font-weight:700;margin-bottom:12px;
 }
 .not-allowed-card .email-display{
-  color:var(--bright);font-size:0.95em;
-  background:rgba(255,255,255,0.06);
+  color:var(--text);font-size:0.95em;font-weight:500;
+  background:var(--bg-soft);
+  border:1px solid var(--border);
   padding:10px 16px;border-radius:8px;
   margin:16px 0;direction:ltr;
 }
 .not-allowed-card p{
-  color:var(--dim);font-size:0.9em;line-height:1.7;margin-bottom:8px;
+  color:var(--text-3);font-size:0.9em;line-height:1.7;margin-bottom:8px;
 }
 .not-allowed-card .whatsapp-link{
   display:inline-block;margin-top:16px;padding:12px 28px;
@@ -305,12 +431,12 @@ body::after{
 }
 .signout-btn{
   display:inline-block;margin-top:16px;padding:10px 24px;
-  background:transparent;color:var(--dim);
-  border:1px solid var(--glass-border);border-radius:var(--radius-sm);
+  background:transparent;color:var(--text-3);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
   font-size:0.88em;font-weight:600;font-family:inherit;
   cursor:pointer;transition:all 0.3s;
 }
-.signout-btn:hover{color:var(--text);border-color:var(--text)}
+.signout-btn:hover{color:var(--text);border-color:var(--text);background:var(--bg-soft)}
 
 /* User info bar in header */
 .user-bar{
@@ -319,16 +445,16 @@ body::after{
   padding:0 4px;
 }
 .user-email{
-  color:var(--dim);font-size:0.82em;
+  color:var(--text-3);font-size:0.82em;
   direction:ltr;
 }
 .header-signout{
-  background:transparent;color:var(--dim);
-  border:1px solid var(--glass-border);border-radius:8px;
+  background:var(--bg-2);color:var(--text-3);
+  border:1px solid var(--border);border-radius:8px;
   padding:6px 16px;font-size:0.78em;font-weight:600;
   font-family:inherit;cursor:pointer;transition:all 0.2s;
 }
-.header-signout:hover{color:var(--text);border-color:var(--text)}
+.header-signout:hover{color:var(--text);border-color:var(--text-3);background:var(--bg-soft)}
 
 /* Loading spinner */
 .login-loading{
@@ -337,10 +463,10 @@ body::after{
 }
 .spinner{
   width:40px;height:40px;
-  border:3px solid rgba(255,255,255,0.08);
+  border:3px solid var(--border);
   border-top-color:var(--orange);border-radius:50%;
   animation:spin 0.8s linear infinite;
-  box-shadow:0 0 20px rgba(232,112,64,0.15);
+  box-shadow:0 0 20px rgba(249,115,22,0.15);
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -350,17 +476,17 @@ body::after{
 /* Header */
 .app-header{
   text-align:center;padding:48px 24px 24px;
-  border-bottom:1px solid var(--glass-border);
-  background:linear-gradient(180deg,rgba(232,112,64,0.06) 0%,transparent 100%);
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(249,115,22,0.08) 0%,transparent 100%);
 }
 .app-header h1{
-  font-size:2.2em;font-weight:800;color:var(--bright);
+  font-size:2.2em;font-weight:800;color:var(--text);
   margin-bottom:4px;letter-spacing:-0.02em;
 }
 .app-header .header-sub{
-  color:var(--dim);font-size:1em;margin-bottom:24px;font-weight:400;
+  color:var(--text-3);font-size:1em;margin-bottom:24px;font-weight:500;
 }
-.app-header .header-sub span{color:var(--orange)}
+.app-header .header-sub span{color:var(--orange-dark);font-weight:700}
 
 /* Progress bar */
 .progress-wrap{
@@ -371,9 +497,10 @@ body::after{
   font-size:0.8em;color:var(--dim);margin-bottom:6px;font-weight:500;
 }
 .progress-bar{
-  height:10px;background:rgba(255,255,255,0.06);
+  height:10px;background:var(--bg-soft);
   border-radius:5px;overflow:hidden;
   position:relative;
+  border:1px solid var(--border);
 }
 .progress-fill{
   height:100%;
@@ -391,32 +518,34 @@ body::after{
 /* Nav tabs */
 .day-nav{
   position:sticky;top:0;z-index:100;
-  background:rgba(8,8,12,0.88);
+  background:rgba(245,245,247,0.85);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--glass-border);
-  border-top:1px solid rgba(232,112,64,0.08);
+  border-bottom:1px solid var(--border);
   padding:12px 24px;
   display:flex;justify-content:center;gap:8px;
   flex-wrap:wrap;
 }
 .day-tab{
   padding:10px 20px;border-radius:var(--radius-sm);
-  border:1px solid var(--glass-border);
-  background:var(--glass);color:var(--dim);
+  border:1px solid var(--border);
+  background:var(--bg-2);color:var(--text-3);
   font-family:inherit;font-size:0.88em;font-weight:600;
   cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
   display:flex;align-items:center;gap:6px;
   white-space:nowrap;position:relative;
+  box-shadow:var(--shadow-sm);
 }
 .day-tab:hover:not(.locked){
-  background:var(--card-hover);color:var(--text);
+  background:var(--bg-cream);color:var(--text);
   transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  box-shadow:var(--shadow);
+  border-color:var(--orange-light);
 }
 .day-tab.active{
-  background:transparent;color:var(--orange);
-  border-color:var(--orange);
-  box-shadow:0 2px 16px rgba(232,112,64,0.2),inset 0 -2px 0 var(--orange);
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;
+  border-color:var(--orange-dark);
+  box-shadow:0 4px 16px rgba(249,115,22,0.35);
 }
 /* Tab progress ring */
 .day-tab .tab-ring{
@@ -427,16 +556,17 @@ body::after{
   transform:rotate(-90deg);
   transform-origin:center;
 }
-.day-tab .tab-ring .ring-bg{stroke:rgba(255,255,255,0.1)}
+.day-tab .tab-ring .ring-bg{stroke:rgba(10,10,15,0.1)}
 .day-tab .tab-ring .ring-fill{
   stroke:var(--green);
   transition:stroke-dashoffset 0.5s ease;
 }
-.day-tab.active .tab-ring .ring-fill{stroke:var(--orange)}
-/* Separator after "Prep" tab */
+.day-tab.active .tab-ring .ring-bg{stroke:rgba(255,255,255,0.3)}
+.day-tab.active .tab-ring .ring-fill{stroke:#fff}
+/* Separator after Day 0 tab */
 .day-tab[data-day="0"]{
   margin-left:4px;
-  border-left:2px solid rgba(255,255,255,0.06);
+  border-left:2px solid var(--border);
   padding-left:20px;
 }
 .day-tab.completed::after{
@@ -470,14 +600,15 @@ body::after{
   display:inline-block;
   background:linear-gradient(135deg,var(--orange),var(--orange-dark));
   color:#fff;padding:6px 16px;border-radius:20px;
-  font-size:0.82em;font-weight:700;margin-bottom:12px;
-  box-shadow:0 2px 10px rgba(232,112,64,0.2);
+  font-size:0.82em;font-weight:800;margin-bottom:12px;
+  letter-spacing:0.6px;
+  box-shadow:0 4px 14px rgba(249,115,22,0.25);
 }
 .day-title{
-  font-size:2em;font-weight:800;color:var(--bright);
+  font-size:2em;font-weight:800;color:var(--text);
   margin-bottom:6px;letter-spacing:-0.02em;line-height:1.25;
 }
-.day-subtitle{color:var(--dim);font-size:1em;font-weight:400}
+.day-subtitle{color:var(--text-3);font-size:1em;font-weight:500}
 /* Decorative line under subtitle */
 .day-subtitle::after{
   content:'';display:block;
@@ -488,37 +619,31 @@ body::after{
 
 /* Video placeholder */
 .video-container{
-  background:rgba(8,8,12,0.8);
-  border:1px solid var(--glass-border);
-  border-radius:var(--radius);
+  background:linear-gradient(135deg,#1a1a2e 0%,#0a0a14 55%,#1a1a2e 100%);
+  border:2px solid rgba(249,115,22,0.45);
+  border-radius:22px;
   aspect-ratio:16/9;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   margin-bottom:32px;
   position:relative;overflow:hidden;
+  box-shadow:var(--shadow-xl),0 0 80px rgba(249,115,22,0.18);
+  cursor:pointer;
+  transition:transform 0.4s cubic-bezier(0.2,0.8,0.2,1),box-shadow 0.4s ease;
 }
-/* Animated gradient border for video */
-.video-container::before{
-  content:'';position:absolute;inset:-1px;z-index:0;
-  border-radius:var(--radius);
-  background:conic-gradient(from 180deg,rgba(232,112,64,0.2),transparent 30%,transparent 70%,rgba(232,112,64,0.1));
-  animation:borderSpin 12s linear infinite;
-}
-.video-container::after{
-  content:'';position:absolute;inset:1px;z-index:0;
-  border-radius:calc(var(--radius) - 1px);
-  background:rgba(8,8,12,0.95);
+.video-container:hover{
+  box-shadow:var(--shadow-xl),0 0 100px rgba(249,115,22,0.28);
 }
 .play-icon{
   width:72px;height:72px;border-radius:50%;
-  background:rgba(232,112,64,0.12);
+  background:rgba(249,115,22,0.12);
   display:flex;align-items:center;justify-content:center;
   margin-bottom:12px;position:relative;z-index:1;
   animation:playPulse 2.5s ease-in-out infinite;
 }
 @keyframes playPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(232,112,64,0.2)}
-  50%{box-shadow:0 0 0 16px rgba(232,112,64,0)}
+  0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,0.2)}
+  50%{box-shadow:0 0 0 16px rgba(249,115,22,0)}
 }
 .play-icon::after{
   content:'';display:block;
@@ -546,83 +671,79 @@ body::after{
 
 /* Sections */
 .section{
-  background:var(--card);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--glass-border);
+  background:var(--bg-2);
+  border:1px solid var(--border);
   border-radius:var(--radius);padding:28px;
   margin-bottom:20px;
   position:relative;
   transition:transform 0.3s ease,box-shadow 0.3s ease;
+  box-shadow:var(--shadow-sm);
 }
 .section:hover{
   transform:translateY(-1px);
-  box-shadow:0 8px 30px rgba(0,0,0,0.15);
-}
-/* Gradient border effect via pseudo */
-.section::before{
-  content:'';position:absolute;inset:-1px;z-index:-1;
-  border-radius:var(--radius);
-  background:linear-gradient(135deg,rgba(232,112,64,0.08),transparent 50%,rgba(255,255,255,0.03));
-  pointer-events:none;
+  box-shadow:var(--shadow);
 }
 .section h3{
-  color:var(--orange);font-size:1.15em;font-weight:700;
+  color:var(--text);font-size:1.15em;font-weight:700;
   margin-bottom:16px;display:flex;align-items:center;gap:8px;
-  padding-right:12px;
-  border-right:3px solid var(--orange);
+  padding-inline-start:12px;
+  border-inline-start:3px solid var(--orange);
+  letter-spacing:-0.01em;
 }
 .section h3 .sec-icon{font-size:1.1em}
 .section ul{list-style:none;padding:0}
 .section ul li{
-  padding:8px 0;padding-right:20px;position:relative;
-  color:var(--text);font-size:0.95em;
+  padding:8px 0;padding-inline-start:20px;position:relative;
+  color:var(--text-2);font-size:0.95em;line-height:1.7;
 }
 .section ul li::before{
-  content:'';position:absolute;right:0;top:16px;
+  content:'';position:absolute;inset-inline-start:0;top:17px;
   width:6px;height:6px;border-radius:50%;
   background:var(--orange);
 }
-.section ol{padding-right:20px;counter-reset:none}
+.section ol{padding-inline-start:28px;counter-reset:none}
 .section ol li{
-  padding:10px 0;color:var(--text);font-size:0.95em;
-  border-bottom:1px solid rgba(255,255,255,0.04);
+  padding:10px 4px;color:var(--text-2);font-size:0.95em;line-height:1.7;
+  border-bottom:1px solid var(--border);
 }
+.section ol li::marker{color:var(--orange);font-weight:700}
 .section ol li:last-child{border-bottom:none}
-.section ol li a{color:var(--orange);text-decoration:none}
+.section ol li a{color:var(--orange-dark);text-decoration:none;font-weight:600}
 .section ol li a:hover{text-decoration:underline}
-.section ol li strong{color:var(--bright)}
+.section ol li strong{color:var(--text)}
 
-/* Code blocks with copy */
+/* Code blocks with copy (kept dark for code readability) */
 .cmd-block{
-  background:rgba(0,0,0,0.35);
-  border:1px solid rgba(255,255,255,0.06);
-  border-right:3px solid rgba(232,112,64,0.4);
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-inline-start:3px solid var(--orange);
   border-radius:var(--radius-sm);padding:14px 18px;
   margin:10px 0;display:flex;align-items:center;
   justify-content:space-between;gap:12px;
   direction:ltr;text-align:left;
-  transition:border-color 0.3s ease;
+  transition:border-color 0.3s ease,box-shadow 0.3s ease;
 }
 .cmd-block:hover{
-  border-right-color:var(--orange);
+  border-inline-start-color:var(--orange-light);
+  box-shadow:var(--shadow);
 }
 .cmd-block code{
   font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
-  font-size:0.88em;color:#5ae89e;
+  font-size:0.88em;color:#86efac;
   word-break:break-all;flex:1;
   line-height:1.6;
 }
 .copy-btn{
-  background:rgba(255,255,255,0.08);border:none;
-  color:var(--dim);padding:8px 18px;border-radius:8px;
+  background:rgba(255,255,255,0.1);border:none;
+  color:#cbd5e1;padding:8px 18px;border-radius:8px;
   font-size:0.8em;font-family:inherit;font-weight:600;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
-  white-space:nowrap;direction:rtl;
+  white-space:nowrap;
   min-width:60px;text-align:center;
 }
 .copy-btn:hover{background:var(--orange);color:#fff;transform:scale(1.03)}
 .copy-btn.copied{
-  background:var(--green);color:#000;
+  background:var(--green);color:#fff;
   animation:copyFlash 0.3s ease;
 }
 @keyframes copyFlash{
@@ -633,14 +754,14 @@ body::after{
 
 /* Tips section */
 .section.tips{
-  border-color:rgba(232,112,64,0.2);
-  background:linear-gradient(135deg,rgba(232,112,64,0.06),var(--card));
+  border-color:rgba(249,115,22,0.25);
+  background:linear-gradient(135deg,var(--bg-cream),var(--bg-2));
 }
-.section.tips h3{color:var(--orange-light)}
+.section.tips h3{color:var(--orange-dark)}
 
 /* FAQ accordion */
 .faq-item{
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  border-bottom:1px solid var(--border);
   padding:0;
 }
 .faq-item:last-child{border-bottom:none}
@@ -650,46 +771,46 @@ body::after{
   font-weight:600;color:var(--text);font-size:0.95em;
   user-select:none;
 }
-/* Chevron instead of +/- */
-.faq-q::before{
+/* Chevron at end of question (LTR convention) */
+.faq-q::after{
   content:'';
   width:10px;height:10px;flex-shrink:0;
-  border-left:2px solid var(--orange);
+  border-right:2px solid var(--orange);
   border-bottom:2px solid var(--orange);
-  transform:rotate(-45deg);
+  transform:rotate(45deg);
   transition:transform 0.35s ease;
-  margin-left:12px;
+  margin-inline-start:12px;margin-top:-4px;
 }
-.faq-item.open .faq-q::before{
-  transform:rotate(135deg);
+.faq-item.open .faq-q::after{
+  transform:rotate(-135deg);margin-top:4px;
 }
 .faq-a{
   max-height:0;overflow:hidden;
   transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1),padding 0.4s ease;
-  color:var(--dim);font-size:0.9em;line-height:1.7;
-  padding-right:16px;
+  color:var(--text-3);font-size:0.9em;line-height:1.7;
 }
 .faq-item.open .faq-a{max-height:600px;padding-bottom:14px}
 
 /* Checklist */
 .check-item{
   display:flex;align-items:center;gap:12px;
-  padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  padding:12px 8px;border-bottom:1px solid var(--border);
   cursor:pointer;user-select:none;
-  transition:background 0.2s ease;
+  transition:background 0.2s ease;border-radius:8px;
 }
-.check-item:hover{background:rgba(255,255,255,0.01);border-radius:8px}
+.check-item:hover{background:var(--orange-soft)}
 .check-item:last-child{border-bottom:none}
 .check-box{
   width:22px;height:22px;border-radius:6px;
-  border:2px solid rgba(255,255,255,0.12);
+  border:2px solid var(--border-hi);
+  background:var(--bg-2);
   display:flex;align-items:center;justify-content:center;
   transition:all 0.3s cubic-bezier(0.4,0,0.2,1);flex-shrink:0;
 }
 .check-item.checked .check-box{
   background:var(--green);border-color:var(--green);
   animation:checkBounce 0.35s ease;
-  box-shadow:0 0 10px rgba(61,214,140,0.25);
+  box-shadow:0 0 10px rgba(22,163,74,0.25);
 }
 @keyframes checkBounce{
   0%{transform:scale(1)}
@@ -699,59 +820,58 @@ body::after{
 .check-item.checked .check-box::after{
   content:'';display:block;
   width:6px;height:10px;
-  border:solid #000;border-width:0 2px 2px 0;
+  border:solid #fff;border-width:0 2px 2px 0;
   transform:rotate(45deg);margin-top:-2px;
 }
 .check-item.checked .check-label{
   color:var(--dim);text-decoration:line-through;
 }
-.check-label{font-size:0.92em;color:var(--text)}
+.check-label{font-size:0.92em;color:var(--text-2);font-weight:500}
 
 /* Homework section */
 .section.homework{
-  border-color:rgba(61,214,140,0.15);
-  background:linear-gradient(135deg,rgba(61,214,140,0.04),var(--card));
+  border-color:rgba(22,163,74,0.25);
+  background:linear-gradient(135deg,#f0fdf4,var(--bg-2));
 }
-.section.homework h3{color:var(--green)}
+.section.homework h3{color:#15803d;border-right-color:var(--green)}
 
 /* Complete button */
 .complete-btn{
   display:block;width:100%;padding:18px;margin-top:28px;
-  background:linear-gradient(135deg,var(--orange),#d45e2e,var(--orange-dark));
-  background-size:200% 200%;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
   color:#fff;border:none;border-radius:var(--radius);
-  font-size:1.1em;font-weight:700;font-family:inherit;
+  font-size:1.1em;font-weight:800;font-family:inherit;letter-spacing:0.2px;
   cursor:pointer;transition:all 0.3s;
-  box-shadow:0 8px 30px rgba(232,112,64,0.25);
+  box-shadow:var(--shadow-orange);
   position:relative;
   animation:btnGlow 3s ease-in-out infinite;
 }
 @keyframes btnGlow{
-  0%,100%{box-shadow:0 8px 30px rgba(232,112,64,0.25)}
-  50%{box-shadow:0 8px 40px rgba(232,112,64,0.4),0 0 60px rgba(232,112,64,0.1)}
+  0%,100%{box-shadow:var(--shadow-orange)}
+  50%{box-shadow:0 24px 60px rgba(249,115,22,0.35),0 12px 24px rgba(249,115,22,0.2)}
 }
 .complete-btn:hover{
   transform:translateY(-3px);
-  box-shadow:0 12px 44px rgba(232,112,64,0.4);
+  box-shadow:0 26px 60px rgba(249,115,22,0.35),0 10px 20px rgba(249,115,22,0.2);
 }
 .complete-btn.done{
-  background:var(--green-bg);color:var(--green);
-  border:1px solid rgba(61,214,140,0.2);
+  background:var(--green-bg);color:#15803d;
+  border:1px solid rgba(22,163,74,0.3);
   box-shadow:none;cursor:default;
   animation:none;
 }
 .complete-btn.done:hover{transform:none;box-shadow:none}
-.reset-btn{display:none;width:100%;text-align:center;padding:10px 14px;margin-top:6px;background:transparent;border:1px solid rgba(231,76,60,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.82em;font-weight:500;transition:all 0.2s}
-.reset-btn:hover{background:rgba(231,76,60,0.1);border-color:var(--red)}
+.reset-btn{display:none;width:100%;text-align:center;padding:10px 14px;margin-top:6px;background:transparent;border:1px solid rgba(220,38,38,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-size:0.82em;font-weight:500;transition:all 0.2s}
+.reset-btn:hover{background:var(--red-bg);border-color:var(--red)}
 .reset-btn.visible{display:block}
 .reset-all-wrap{text-align:center;padding:20px 0;margin-top:20px;border-top:1px solid var(--border)}
-.reset-all-btn{background:transparent;border:1px solid rgba(231,76,60,0.2);color:var(--dim);padding:8px 20px;border-radius:var(--radius-sm);cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.8em;transition:all 0.2s}
-.reset-all-btn:hover{color:var(--red);border-color:var(--red);background:rgba(231,76,60,0.05)}
+.reset-all-btn{background:transparent;border:1px solid var(--border);color:var(--text-3);padding:8px 20px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-size:0.8em;transition:all 0.2s}
+.reset-all-btn:hover{color:var(--red);border-color:var(--red);background:var(--red-bg)}
 
 /* Graduation box */
 .graduation-box{
   text-align:center;padding:36px;margin-top:20px;
-  background:linear-gradient(135deg,rgba(232,112,64,0.18),rgba(232,112,64,0.06),rgba(255,215,0,0.04));
+  background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(249,115,22,0.06),rgba(255,215,0,0.04));
   border:2px solid var(--orange);border-radius:var(--radius);
   position:relative;overflow:hidden;
 }
@@ -801,8 +921,8 @@ body::after{
 .graduation-box .share-btn:hover{background:var(--orange-light);transform:translateY(-1px)}
 
 /* Links */
-.link{color:var(--orange);text-decoration:none}
-.link:hover{text-decoration:underline}
+.link{color:var(--orange-dark);text-decoration:none;font-weight:600}
+.link:hover{text-decoration:underline;color:var(--orange-darker)}
 
 /* Smooth transitions for day switching */
 .day-content{animation:fadeIn 0.4s ease}
@@ -812,13 +932,13 @@ body::after{
 }
 
 /* Scrollbar */
-::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+::-webkit-scrollbar-thumb{background:rgba(10,10,15,0.15);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(10,10,15,0.25)}
 
 /* Selection */
-::selection{background:rgba(232,112,64,0.3);color:var(--bright)}
+::selection{background:rgba(249,115,22,0.25);color:var(--text)}
 
 /* Day header centering for icons */
 .day-header {
@@ -849,7 +969,7 @@ body::after{
 
 /* Subtle hover glow on sections */
 .section:hover {
-  border-color: rgba(232, 112, 64, 0.15);
+  border-color: rgba(249, 115, 22, 0.25);
   transition: border-color 0.4s ease;
 }
 
@@ -887,6 +1007,15 @@ body::after{
 </head>
 <body>
 
+<!-- Claude Star SVG symbol (reused throughout as decorative background) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="claude-star" viewBox="0 0 1200 1200">
+      <path d="M 233.959793 800.214905 L 468.644287 668.536987 L 472.590637 657.100647 L 468.644287 650.738403 L 457.208069 650.738403 L 417.986633 648.322144 L 283.892639 644.69812 L 167.597321 639.865845 L 54.926208 633.825623 L 26.577238 627.785339 L 3.3e-05 592.751709 L 2.73832 575.27533 L 26.577238 559.248352 L 60.724873 562.228149 L 136.187973 567.382629 L 249.422867 575.194763 L 331.570496 580.026978 L 453.261841 592.671082 L 472.590637 592.671082 L 475.328857 584.859009 L 468.724915 580.026978 L 463.570557 575.194763 L 346.389313 495.785217 L 219.543671 411.865906 L 153.100723 363.543762 L 117.181267 339.060425 L 99.060455 316.107361 L 91.248367 266.01355 L 123.865784 230.093994 L 167.677887 233.073853 L 178.872513 236.053772 L 223.248367 270.201477 L 318.040283 343.570496 L 441.825592 434.738342 L 459.946411 449.798706 L 467.194672 444.64447 L 468.080597 441.020203 L 459.946411 427.409485 L 392.617493 305.718323 L 320.778564 181.932983 L 288.80542 130.630859 L 280.348999 99.865845 C 277.369171 87.221436 275.194641 76.590698 275.194641 63.624268 L 312.322174 13.20813 L 332.8591 6.604126 L 382.389313 13.20813 L 403.248352 31.328979 L 434.013519 101.71814 L 483.865753 212.537048 L 561.181274 363.221497 L 583.812134 407.919434 L 595.892639 449.315491 L 600.40271 461.959839 L 608.214783 461.959839 L 608.214783 454.711609 L 614.577271 369.825623 L 626.335632 265.61084 L 637.771851 131.516846 L 641.718201 93.745117 L 660.402832 48.483276 L 697.530334 24.000122 L 726.52356 37.852417 L 750.362549 72 L 747.060486 94.067139 L 732.886047 186.201416 L 705.100708 330.52356 L 686.979919 427.167847 L 697.530334 427.167847 L 709.61084 415.087341 L 758.496704 350.174561 L 840.644348 247.490051 L 876.885925 206.738342 L 919.167847 161.71814 L 946.308838 140.29541 L 997.61084 140.29541 L 1035.38269 196.429626 L 1018.469849 254.416199 L 965.637634 321.422852 L 921.825562 378.201538 L 859.006714 462.765259 L 819.785278 530.41626 L 823.409424 535.812073 L 832.75177 534.92627 L 974.657776 504.724915 L 1051.328979 490.872559 L 1142.818848 475.167786 L 1184.214844 494.496582 L 1188.724854 514.147644 L 1172.456421 554.335693 L 1074.604126 578.496765 L 959.838989 601.449829 L 788.939636 641.879272 L 786.845764 643.409485 L 789.261841 646.389343 L 866.255127 653.637634 L 899.194702 655.409424 L 979.812134 655.409424 L 1129.932861 666.604187 L 1169.154419 692.537109 L 1192.671265 724.268677 L 1188.724854 748.429688 L 1128.322144 779.194641 L 1046.818848 759.865845 L 856.590759 714.604126 L 791.355774 698.335754 L 782.335693 698.335754 L 782.335693 703.731567 L 836.69812 756.885986 L 936.322205 846.845581 L 1061.073975 962.81897 L 1067.436279 991.490112 L 1051.409424 1014.120911 L 1034.496704 1011.704712 L 924.885986 929.234924 L 882.604126 892.107544 L 786.845764 811.48999 L 780.483276 811.48999 L 780.483276 819.946289 L 802.550415 852.241699 L 919.087341 1027.409424 L 925.127625 1081.127686 L 916.671204 1098.604126 L 886.469849 1109.154419 L 853.288696 1103.114136 L 785.073914 1007.355835 L 714.684631 899.516785 L 657.906067 802.872498 L 650.979858 806.81897 L 617.476624 1167.704834 L 601.771851 1186.147705 L 565.530212 1200 L 535.328857 1177.046997 L 519.302124 1139.919556 L 535.328857 1066.550537 L 554.657776 970.792053 L 570.362488 894.68457 L 584.536926 800.134277 L 592.993347 768.724976 L 592.429626 766.630859 L 585.503479 767.516968 L 514.22821 865.369263 L 405.825531 1011.865906 L 320.053711 1103.677979 L 299.516815 1111.812256 L 263.919525 1093.369263 L 267.221497 1060.429688 L 287.114136 1031.114136 L 405.825531 880.107361 L 477.422913 786.52356 L 523.651062 732.483276 L 523.328918 724.671265 L 520.590698 724.671265 L 205.288605 929.395935 L 149.154434 936.644409 L 124.993355 914.01355 L 127.973183 876.885986 L 139.409409 864.80542 L 234.201385 799.570435 L 233.879227 799.8927 Z" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
 <!-- MOBILE BLOCK -->
 <!-- Mobile block removed - portal works on mobile too -->
 
@@ -896,10 +1025,11 @@ body::after{
 </div>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen" style="display:none">
+<div class="login-screen" id="loginScreen" style="display:none;position:relative;overflow:hidden">
+  <svg class="claude-star cs-login"><use href="#claude-star"/></svg>
   <div class="login-card">
-    <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="1500" colors="primary:#e87040,secondary:#f0935e" style="width:64px;height:64px;display:block;margin:0 auto 16px"></lord-icon>
-    <h1><span data-en="Claude Code Challenge" data-he="אתגר דונה">Claude Code Challenge</span><br><span style="color:var(--orange);font-size:0.6em;font-weight:400" data-en="5 days to build your AI employee" data-he="5 ימים לבנות עובד AI">5 days to build your AI employee</span></h1>
+    <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="1500" colors="primary:#f97316,secondary:#fb923c" style="width:64px;height:64px;display:block;margin:0 auto 16px"></lord-icon>
+    <h1>Claude <span class="accent">Code Challenge</span><br><span style="color:var(--orange-dark);font-size:0.6em;font-weight:500">5 days to build your AI employee</span></h1>
     <p class="subtitle" data-en="Sign in with the Google account you used to register" data-he="התחבר עם חשבון Google שרשמת איתו">Sign in with the Google account you used to register</p>
     <button class="google-btn" id="googleBtn" onclick="signInWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -927,11 +1057,11 @@ body::after{
 <!-- COMING SOON SCREEN (shown after login for any non-admin email until launch) -->
 <div class="login-screen" id="comingSoonScreen" style="display:none">
   <div class="login-card" style="max-width:560px;text-align:center">
-    <div style="display:inline-block;background:linear-gradient(135deg,#e87040,#f0935e);color:#fff;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:8px 18px;border-radius:50px;margin-bottom:24px;box-shadow:0 4px 16px rgba(232,112,64,0.3)" data-en="Opens Sunday" data-he="נפתח ביום ראשון">Opens Sunday</div>
+    <div style="display:inline-block;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:8px 18px;border-radius:50px;margin-bottom:24px;box-shadow:0 4px 16px rgba(249,115,22,0.3)" data-en="Opens Sunday" data-he="נפתח ביום ראשון">Opens Sunday</div>
     <h1 style="font-size:30px;font-weight:800;margin:0 0 18px;line-height:1.25;letter-spacing:-0.4px;color:var(--bright)" data-en="The Claude Code Challenge portal" data-he="פורטל אתגר קלוד">The Claude Code Challenge portal</h1>
     <p style="font-size:17px;line-height:1.65;color:var(--text);margin:0 0 14px;font-weight:500" data-en="If you're already signed up, the portal goes live this Sunday." data-he="אם כבר נרשמת, הפורטל עולה ביום ראשון.">If you're already signed up, the portal goes live this Sunday.</p>
     <p style="font-size:15px;line-height:1.7;color:var(--dim);margin:0 0 24px" data-en="Day 1 starts Monday at 2pm New York time. Everything you need will be inside the portal when it opens, and a daily email will land in your inbox each day with the link." data-he="יום 1 מתחיל ביום שני ב-14:00 שעון ניו יורק. כל מה שתצטרך יהיה בפורטל ביום הפתיחה, ובכל יום יישלח אליך מייל עם הקישור.">Day 1 starts Monday at 2pm New York time. Everything you need will be inside the portal when it opens, and a daily email will land in your inbox each day with the link.</p>
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(232,112,64,0.4),transparent);margin:24px 0"></div>
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(249,115,22,0.4),transparent);margin:24px 0"></div>
     <p style="font-size:13px;color:var(--dim);margin:0 0 8px;line-height:1.6" data-en="Signed in as" data-he="מחובר כ">Signed in as</p>
     <div class="email-display" id="comingSoonEmail" style="margin-bottom:18px"></div>
     <p style="font-size:13px;color:var(--dim);margin:0 0 18px;line-height:1.6" data-en="Questions? Reply to your welcome email or message Jay on WhatsApp." data-he="שאלות? ענה למייל הברוכים הבאים או שלח הודעה ל-Jay ב-WhatsApp.">Questions? Reply to your welcome email or message Jay on WhatsApp.</p>
@@ -983,14 +1113,16 @@ body::after{
 <div class="main-app" id="mainApp">
 
   <!-- Header -->
-  <header class="app-header">
+  <header class="app-header" style="position:relative;overflow:hidden">
+    <svg class="claude-star cs-header-1"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-header-2"><use href="#claude-star"/></svg>
     <div class="user-bar">
       <button id="langToggleMain" onclick="toggleLanguage()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--dim);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:8px">עברית</button>
       <span class="user-email" id="userEmail"></span>
       <button class="header-signout" onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
     </div>
-    <h1 data-en="Claude Code Challenge" data-he="אתגר דונה">Claude Code Challenge</h1>
-    <p class="header-sub"><span>Your First AI Hire</span> . <span data-en="5-day challenge to build your AI employee" data-he="אתגר 5 ימים לבנות עובד AI">5-day challenge to build your AI employee</span></p>
+    <h1 style="position:relative;z-index:2">Claude <span class="accent">Code Challenge</span></h1>
+    <p class="header-sub" style="position:relative;z-index:2"><span>Your First AI Hire</span> . <span>5-day challenge to build your AI employee</span></p>
     <div class="progress-wrap">
       <div class="progress-label">
         <span id="progressText">0 of 5 days complete</span>
@@ -1007,7 +1139,7 @@ body::after{
 
   <!-- Day Navigation -->
   <nav class="day-nav" id="dayNav" role="tablist" aria-label="Challenge days">
-    <button class="day-tab" data-day="0" onclick="switchDay(0)" role="tab" aria-label="Prep day, always unlocked" data-en="Prep" data-he="הכנה" style="border-left:2px solid rgba(255,255,255,0.06)">Prep</button>
+    <button class="day-tab" data-day="0" onclick="switchDay(0)" role="tab" aria-label="Day 0, always unlocked" data-en="Day 0" data-he="יום 0">Day 0</button>
     <button class="day-tab" data-day="1" onclick="switchDay(1)" role="tab" data-en="Day 1" data-he="יום 1">Day 1</button>
     <button class="day-tab" data-day="2" onclick="switchDay(2)" role="tab" data-en="Day 2" data-he="יום 2">Day 2</button>
     <button class="day-tab" data-day="3" onclick="switchDay(3)" role="tab" data-en="Day 3" data-he="יום 3">Day 3</button>
@@ -1018,451 +1150,434 @@ body::after{
   <!-- Countdown to next unlock -->
   <div id="unlockCountdown" class="unlock-countdown" style="display:none" aria-live="polite"></div>
 
-  <!-- Content Language Notice (only shows when lang=en and user is on a Hebrew-only day) -->
-  <div id="contentLangNotice" class="content-lang-notice" style="display:none">
-    <div>
-      <strong>ℹ️ Fresh English content on the way.</strong><br>
-      The portal chrome is in English, but this day's lesson text is still in Hebrew while we finalize the rewrite. You can use your browser's translate feature, or click <strong>עברית</strong> at the top to view the original. We'll push the English version before your round starts.
-    </div>
-  </div>
-
   <!-- Content Area -->
-  <main class="content-area" role="main">
+  <main class="content-area" role="main" style="position:relative">
+    <svg class="claude-star cs-content-1"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-content-2"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-content-3"><use href="#claude-star"/></svg>
 
     <!-- ==================== DAY 0 ==================== -->
     <div class="day-content" id="day0">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/wloilxuq.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
-        <span class="day-number" style="background:var(--dim)" data-en="Prep" data-he="הכנה">Prep</span>
-        <h2 class="day-title">The Complete Guide to Claude Code</h2>
-        <p class="day-subtitle">המדריך המלא לקלוד קוד. קח את הזמן, יש לך שבוע שלם. עבור שלב שלב, אין לחץ.</p>
+        <lord-icon src="https://cdn.lordicon.com/wloilxuq.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <span class="day-number" style="background:linear-gradient(135deg,var(--orange),var(--orange-dark))">Day 0</span>
+        <h2 class="day-title">The Complete Guide to <span class="accent">Claude Code</span></h2>
       </div>
 
       <div class="video-container">
         <div class="play-icon"></div>
-        <p>הסרטון יעלה בקרוב</p>
+        <p>Video coming soon</p>
       </div>
 
       <div style="text-align:center;margin:28px 0;opacity:0.3">
         <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:0 auto"></div>
       </div>
 
+      <!-- Resources card -->
+      <div class="section" style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.25)">
+        <h3><span class="sec-icon">🔗</span> Resources from the video</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Every link I mention in the video, in one place.</p>
+        <div style="display:grid;gap:8px">
+          <a href="https://claude.com/download" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">Download Claude Desktop</strong> <span style="color:var(--dim);font-size:0.85em">. Mac & Windows</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+          <a href="https://git-scm.com/downloads/win" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">Git for Windows</strong> <span style="color:var(--dim);font-size:0.85em">. install this first if you're on Windows</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+          <a href="https://jaygptpro.com/custom-ai-instructions.html" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">My Custom Instructions & Guide</strong> <span style="color:var(--dim);font-size:0.85em">. copy the exact set I use</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+          <a href="https://jaygptpro.com/claude/claude-memory-import-guide.html" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">Memory Import Guide</strong> <span style="color:var(--dim);font-size:0.85em">. bring your ChatGPT memory into Claude</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+          <a href="https://jaygptpro.com/daily-claude-hacks" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">Claude Hacks Library</strong> <span style="color:var(--dim);font-size:0.85em">. 20+ tips and shortcuts</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+          <a href="https://jaygptpro.com/claude/amazon-landing-page-skill.html" target="_blank" class="link" style="padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;text-decoration:none">
+            <span><strong style="color:var(--text)">Amazon Landing Page Skill</strong> <span style="color:var(--dim);font-size:0.85em">. turn any Amazon URL into a full landing page</span></span>
+            <span style="color:var(--orange);font-size:1.2em">→</span>
+          </a>
+        </div>
+      </div>
+
       <!-- Step 1: What is Claude Code -->
       <div class="section">
-        <h3><span class="sec-icon">🧠</span> שלב 1: מה זה Claude Code ולמה הוא שונה</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">כנראה השתמשת ב-ChatGPT או ב-Google Gemini. הם צ'אטבוטים: אתה שואל, הם עונים, הם שוכחים. כל שיחה מתחילה מאפס.</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Claude Code זה משהו אחר לגמרי. זה לא צ'אטבוט. זה סביבת עבודה שלמה.</p>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:16px;margin:12px 0">
-          <p style="color:var(--orange);font-weight:700;margin-bottom:10px">שלושה הבדלים מרכזיים:</p>
-          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">1. הוא זוכר.</strong> יש קובץ בשם CLAUDE.md שהוא קורא לפני כל שיחה. מה שתכתוב שם, הוא ידע. תמיד.</p>
-          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">2. הוא מתחבר.</strong> אפשר לחבר אותו למייל שלך, ליומן, לדרייב, לאסנה. הוא באמת קורא את המיילים שלך. לא מיילים דמיוניים.</p>
-          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">3. הוא עובד לבד.</strong> אפשר להגדיר משימות שרצות לפי לוח זמנים. "כל בוקר ב-9:15, תקרא את המיילים שלי ותכין לי סיכום." הוא עושה את זה. אוטומטית.</p>
+        <h3><span class="sec-icon">🧠</span> Step 1: What Claude Code is (and why it's different)</h3>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">You've probably used ChatGPT or Gemini. They're chatbots: you ask, they answer, they forget. Every conversation starts from zero.</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Claude Code is something completely different. It's not a chatbot. It's a full work environment.</p>
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:16px;margin:12px 0">
+          <p style="color:var(--orange);font-weight:700;margin-bottom:10px">Three key differences:</p>
+          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">1. Reach.</strong> It lives inside your computer. It reads your files, opens your apps, uses your browser. It plugs into Gmail, Calendar, Drive, Slack . the tools you already use.</p>
+          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">2. Action.</strong> Chatbots explain. Claude Code does. You tell it what you want. It finds a way and hands back finished work, not instructions.</p>
+          <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">3. Autonomy.</strong> It runs on a schedule, in the background, while you're in a meeting or the kids are sleeping. The work doesn't stop when you stop.</p>
         </div>
-        <p style="color:var(--dim);line-height:1.8;margin-top:12px">במשפט אחד: <strong style="color:var(--text)">ChatGPT מדבר איתך. Claude Code עובד בשבילך.</strong></p>
+        <p style="color:var(--dim);line-height:1.8;margin-top:12px">One sentence: <strong style="color:var(--text)">ChatGPT talks to you. Claude Code works for you.</strong></p>
+        <p style="color:var(--orange);line-height:1.8;margin-top:14px;font-weight:600">Throughout this challenge we work only from the Code tab. Not Chat, not Cowork. Code.</p>
       </div>
 
       <!-- Step 2: Install Claude Desktop -->
       <div class="section">
-        <h3><span class="sec-icon">💻</span> שלב 2: התקנת Claude Desktop</h3>
-        <p style="color:var(--dim);margin-bottom:12px">Claude Code רץ בתוך אפליקציה שנקראת Claude Desktop. לא בדפדפן, לא בטרמינל. אפליקציה על המחשב.</p>
+        <h3><span class="sec-icon">💻</span> Step 2: Install Claude Desktop</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Claude Code runs inside an app called Claude Desktop. Not in a browser, not in a terminal. A real app on your computer.</p>
 
         <p style="color:var(--text);font-weight:600;margin-bottom:8px">Mac:</p>
         <ol>
-          <li>לך ל-<a href="https://claude.ai/download" target="_blank" class="link">claude.ai/download</a></li>
-          <li>הורד את קובץ ה-.dmg</li>
-          <li>פתח אותו וגרור את Claude לתיקיית Applications</li>
+          <li>Go to <a href="https://claude.com/download" target="_blank" class="link">claude.com/download</a></li>
+          <li>Download the .dmg file</li>
+          <li>Open it and drag Claude into your Applications folder</li>
         </ol>
 
         <p style="color:var(--text);font-weight:600;margin-top:14px;margin-bottom:8px">Windows:</p>
         <ol>
-          <li>לך ל-<a href="https://claude.ai/download" target="_blank" class="link">claude.ai/download</a></li>
-          <li>הורד את ה-installer, לחץ Next עד הסוף</li>
+          <li>Install Git first (see red box below). Claude will refuse to run without it.</li>
+          <li>Go to <a href="https://claude.com/download" target="_blank" class="link">claude.com/download</a></li>
+          <li>Download the installer and click Next until the end</li>
         </ol>
 
-        <div style="background:rgba(231,76,60,0.08);border:2px solid rgba(231,76,60,0.3);border-radius:10px;padding:14px;margin:14px 0">
-          <p style="color:#e74c3c;font-weight:700;font-size:1em;margin-bottom:8px">Windows בלבד: חובה להתקין Git</p>
-          <p style="color:var(--dim);line-height:1.8">Claude Code משתמש ב-Git ברקע. בלי Git, Claude Code לא יעבוד על Windows. זה חינמי ולוקח דקה.</p>
+        <div style="background:rgba(220,38,38,0.08);border:2px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px;margin:14px 0">
+          <p style="color:#dc2626;font-weight:700;font-size:1em;margin-bottom:8px">Windows only: Git is required</p>
+          <p style="color:var(--dim);line-height:1.8">Claude uses Git in the background to keep track of your files so it can roll back its own changes. Without Git, Claude Code won't run on Windows. Git is free and takes a minute to install.</p>
           <ol style="color:var(--dim);line-height:2">
-            <li>לך ל-<a href="https://git-scm.com/download/win" target="_blank" class="link">git-scm.com/download/win</a></li>
-            <li>הורד והתקן (Next Next Finish)</li>
-            <li>חשוב: וודא שהאפשרות <strong>"Add Git to PATH"</strong> מסומנת (היא מסומנת כברירת מחדל)</li>
-            <li><strong>לוודא שעובד:</strong> פתח CMD (חפש "cmd" בסטארט) וכתוב: <code style="background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.9em;direction:ltr">git --version</code>. אם מופיע מספר גרסה, הכל עובד.</li>
+            <li>Go to <a href="https://git-scm.com/downloads/win" target="_blank" class="link">git-scm.com/downloads/win</a></li>
+            <li>Download and install (Next → Next → Finish)</li>
+            <li>Make sure <strong>"Add Git to PATH"</strong> stays checked (it's the default)</li>
+            <li><strong>Verify:</strong> open CMD (search "cmd" in Start) and type <code style="background:var(--bg-soft);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.9em;direction:ltr;color:var(--text)">git --version</code>. If you see a version number, you're good.</li>
           </ol>
-          <p style="color:var(--dim);margin-top:6px">Mac לא צריך שום דבר נוסף. Git כבר מותקן ברקע.</p>
+          <p style="color:var(--dim);margin-top:6px">Mac users: skip this. Git is already built in.</p>
         </div>
 
-        <p style="color:var(--dim);margin-top:12px">אחרי ההתקנה, פתח את Claude Desktop בפעם הראשונה. הוא יבקש ממך להתחבר או ליצור חשבון. עקוב אחרי ההוראות על המסך.</p>
+        <p style="color:var(--dim);margin-top:12px">Once installed, open Claude Desktop for the first time. It will ask you to sign in or create an account. Follow the on-screen prompts.</p>
       </div>
 
-      <!-- Step 3: Pro Plan -->
+      <!-- Step 3: Pick your plan -->
       <div class="section">
-        <h3><span class="sec-icon">💳</span> שלב 3: מנוי Pro ($20/חודש)</h3>
-        <p style="color:var(--dim);margin-bottom:12px">הגרסה החינמית מוגבלת מדי לצרכים שלנו. מנוי Pro פותח את כל מה שצריך באתגר: Skills, Scheduled Tasks, Connectors.</p>
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">איך לשדרג:</p>
-        <ol>
-          <li>פתח את Claude Desktop</li>
-          <li>לחץ על האייקון של הפרופיל שלך (פינה שמאלית תחתונה)</li>
-          <li>בחר <strong>Upgrade</strong> או <strong>Subscribe</strong></li>
-          <li>בחר את תוכנית <strong>Pro</strong> ב-$20/חודש</li>
-          <li>הכנס כרטיס אשראי ואשר</li>
-        </ol>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;margin:12px 0">
-          <p style="color:var(--orange);font-weight:700;margin-bottom:6px">על הקרדיטים</p>
-          <p style="color:var(--dim);line-height:1.8">תוכנית Pro מגיעה עם כמות מוגבלת של קרדיטים (שימושים). ככל שתשתמש יותר, תבחין שהם נגמרים מהר יותר. כשזה קורה, יש תוכנית Max ב-$100/חודש עם הרבה יותר קרדיטים. אבל לאתגר ולהתחלה, Pro מספיק.</p>
-        </div>
-        <p style="color:var(--dim);margin-top:8px">מומלץ להשתמש במודל Sonnet כברירת מחדל כדי לחסוך קרדיטים. נסביר על המודלים בשלב 8.</p>
-      </div>
-
-      <!-- Step 4: Three Modes -->
-      <div class="section">
-        <h3><span class="sec-icon">🔀</span> שלב 4: שלושת המצבים (Chat, Cowork, Code)</h3>
-        <p style="color:var(--dim);margin-bottom:12px">ב-Claude Desktop יש 3 טאבים למעלה. זה הדבר הכי חשוב להבין לפני שמתחילים:</p>
+        <h3><span class="sec-icon">💳</span> Step 3: Pick your plan (start on Pro, upgrade to Max when you're hooked)</h3>
+        <p style="color:var(--dim);margin-bottom:12px">The free tier doesn't unlock Claude Code. You need a paid plan. Three options matter:</p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0">
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--glass-border);border-radius:10px;padding:14px;text-align:center">
-            <div style="font-size:1.5em;margin-bottom:6px">💬</div>
-            <strong style="color:var(--dim)">Chat</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">זה המקבילה של ChatGPT. שאלה, תשובה. בלי גישה לקבצים או כלים.</p>
+            <strong style="color:var(--dim)">Free</strong>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Not enough. Claude Code features are locked.</p>
+          </div>
+          <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px;text-align:center">
+            <strong style="color:var(--orange)">Pro . $20/month</strong>
+            <p style="color:var(--orange);font-size:0.82em;margin-top:6px;font-weight:600">The starting point for this challenge. Unlocks Skills, Routines, Connectors.</p>
           </div>
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--glass-border);border-radius:10px;padding:14px;text-align:center">
-            <div style="font-size:1.5em;margin-bottom:6px">🤝</div>
-            <strong style="color:var(--dim)">Cowork</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">ממשק נוח יותר לעבודה עם קבצים. Claude רואה ויכול לערוך. טוב לעריכת מסמכים.</p>
-          </div>
-          <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px;text-align:center">
-            <div style="font-size:1.5em;margin-bottom:6px">⚡</div>
-            <strong style="color:var(--orange)">Code</strong>
-            <p style="color:var(--orange);font-size:0.82em;margin-top:6px;font-weight:600">הטרמינל הידידותי. כאן Claude מריץ Skills, Scheduled Tasks, מתחבר לכלים. כאן דונה חיה. כאן אנחנו עובדים.</p>
+            <strong style="color:var(--text)">Max . $100/month</strong>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Where most people end up after a week. More credits, unlocks Auto Mode (see Step 8).</p>
           </div>
         </div>
-        <p style="color:var(--orange);font-weight:700;margin-top:8px">כלל: תמיד לעבוד מ-Code. לא Chat, לא Cowork. Code.</p>
+        <p style="color:var(--text);font-weight:600;margin-top:14px;margin-bottom:8px">How to upgrade:</p>
+        <ol>
+          <li>Open Claude Desktop</li>
+          <li>Click your profile icon (bottom-left corner)</li>
+          <li>Pick <strong>Upgrade</strong> or <strong>Subscribe</strong></li>
+          <li>Choose <strong>Pro</strong> (or <strong>Max</strong> if you already know you want the headroom)</li>
+          <li>Enter your card and confirm</li>
+        </ol>
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;margin:12px 0">
+          <p style="color:var(--orange);font-weight:700;margin-bottom:6px">A word on credits</p>
+          <p style="color:var(--dim);line-height:1.8">Every plan has a credit budget that resets on a rolling window. The more you use Claude, the faster you'll feel the ceiling. If Pro starts to feel tight, Max gives you roughly 5× more room. My honest take: once you see what Claude Code can actually do, the upgrade pays for itself. Don't try to save on the one tool that will save you hundreds of hours.</p>
+        </div>
+        <p style="color:var(--dim);margin-top:8px">Tip: set <strong>Sonnet</strong> as your default model to stretch your credits. Full model breakdown in Step 7.</p>
       </div>
 
-      <!-- Step 5: Claude works with folders -->
+      <!-- Step 4: Claude works with folders -->
       <div class="section">
-        <h3><span class="sec-icon">📁</span> שלב 5: Claude עובד עם תיקיות</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">זה קונספט חשוב שצריך להבין. Claude Code לא עובד "באוויר". הוא מתחבר לתיקייה ספציפית על המחשב שלך.</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">לפני כל סשן עבודה, אתה בוחר תיקייה (File > Open Folder). Claude קורא את הקבצים בתיקייה הזו, כותב אליה, ומשתמש בקובץ CLAUDE.md שנמצא בה.</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">זו הסיבה שדונה "חיה" בתיקייה ספציפית (donna-starter-kit). כשתפתח את התיקייה הזו ב-Claude Code, דונה תדע מי היא ומה היא יודעת לעשות. כשתפתח תיקייה אחרת, Claude לא יכיר את דונה.</p>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;margin:12px 0">
-          <p style="color:var(--orange);font-weight:700">בקיצור:</p>
-          <p style="color:var(--dim);line-height:1.8;margin-top:4px">תיקייה = פרויקט. תיקייה אחרת = פרויקט אחר. CLAUDE.md בתיקייה = ההוראות שלך ל-Claude באותו פרויקט.</p>
+        <h3><span class="sec-icon">📁</span> Step 4: Claude works with folders</h3>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">This is the single most important concept to grasp. Claude Code doesn't work "in the air." It connects to a specific folder on your computer.</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Before every work session you pick a folder (File → Open Folder). Claude reads the files in it, writes to it, and loads the <strong>CLAUDE.md</strong> sitting inside.</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">That's why Donna "lives" in a specific folder (donna-starter-kit). Open that folder in Claude Code and Donna knows who she is and what she can do. Open a different folder and Claude won't recognize her at all.</p>
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;margin:12px 0">
+          <p style="color:var(--orange);font-weight:700">In short:</p>
+          <p style="color:var(--dim);line-height:1.8;margin-top:4px">Folder = project. Different folder = different project. The CLAUDE.md inside the folder is your instructions to Claude for that project.</p>
+        </div>
+        <p style="color:var(--dim);margin-top:8px">Rule I live by: one folder per project. A folder for my business, a folder for each product launch, and one for Donna. Don't mix topics inside the same folder.</p>
+      </div>
+
+      <!-- Step 5: Sidebar Tour -->
+      <div class="section">
+        <h3><span class="sec-icon">🗂️</span> Step 5: Tour of the Claude Desktop sidebar</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Inside the Code tab, the left sidebar holds everything you'll touch daily. The pieces worth knowing:</p>
+        <div style="background:var(--bg-soft);border:1px solid var(--border);padding:14px;border-radius:8px;margin:8px 0">
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">New session</strong> . opens a fresh conversation. Claude doesn't remember past chats, but it always reloads CLAUDE.md. Every new session starts clean with the memory from that file.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Pinned sessions</strong> . drag any session to pin it. Useful for a few important threads you keep returning to. The rest can be grouped by date or project.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Routines</strong> . this is where you schedule recurring tasks (morning briefing, evening summary, weekly report). Anthropic just overhauled this feature in the latest release. We configure three of them on Day 5.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Customize</strong> . settings, Skills, Connectors, Plugins. We open this next.</p>
         </div>
       </div>
 
-      <!-- Step 6: Sidebar Tour -->
+      <!-- Step 6: Settings -->
       <div class="section">
-        <h3><span class="sec-icon">🗂️</span> שלב 6: הכרת הסיידבר של Claude Desktop</h3>
-        <p style="color:var(--dim);margin-bottom:12px">בצד שמאל של Claude Desktop (בטאב Code) יש סיידבר. כדאי להכיר מה יש בו:</p>
-        <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;margin:8px 0">
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">New session</strong> - פותח שיחה חדשה. דונה לא זוכרת שיחות קודמות, אבל כן קוראת את CLAUDE.md מחדש. כל שיחה מתחילה "נקייה" עם הזיכרון מהקובץ.</p>
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Search</strong> - חיפוש בשיחות קודמות. שימושי כשאתה רוצה למצוא משהו שביקשת בעבר.</p>
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Scheduled</strong> - כאן רואים ומגדירים משימות מתוזמנות שרצות אוטומטית (נלמד ביום 5).</p>
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Customize</strong> - הגדרות, חיבור כלים חיצוניים (Connectors), והגדרות מודל. נכנס לזה בשלב הבא.</p>
-        </div>
+        <h3><span class="sec-icon">⚙️</span> Step 6: Settings worth knowing</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Get familiar with Settings before you start working. Open them via <strong>Customize</strong> in the sidebar, or your profile icon in the bottom-left corner.</p>
+
+        <p style="color:var(--text);font-weight:600;margin-top:8px;margin-bottom:6px">The must-do:</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:4px">Set <strong>Sonnet</strong> as your default model. Smart enough for almost everything and saves credits. Full model breakdown in the next step.</p>
+
+        <details class="mini-collapse">
+          <summary>Custom Instructions (recommended)</summary>
+          <p style="color:var(--dim);line-height:1.8;margin:8px 0">Your global style guide that Claude follows for you. Things like "no em-dashes," "break complex tasks into steps," "answer in the language I'm writing in." I've published the exact set I use . copy it if you want a solid starting point:</p>
+          <p style="color:var(--dim)">→ <a href="https://jaygptpro.com/custom-ai-instructions.html" target="_blank" class="link">My Custom Instructions & Guide</a></p>
+        </details>
+
+        <details class="mini-collapse">
+          <summary>Usage & Billing (good to know)</summary>
+          <p style="color:var(--dim);line-height:1.8;margin:8px 0">Shows how many credits you've burned this cycle and when they reset. Check it every few days until you get a feel for your rhythm. If you enable "extra use" (pay-per-credit), be careful . it can rack up fast if you forget about it. You can also toggle it off entirely for peace of mind.</p>
+        </details>
       </div>
 
-      <!-- Step 7: Settings -->
+      <!-- Step 7: Models -->
       <div class="section">
-        <h3><span class="sec-icon">⚙️</span> שלב 7: הגדרות חשובות</h3>
-        <p style="color:var(--dim);margin-bottom:12px">כדאי להכיר את ההגדרות לפני שמתחילים לעבוד.</p>
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">איך להגיע להגדרות:</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">לחצו על <strong>Customize</strong> בסיידבר (בצד שמאל), או על אייקון הפרופיל בפינה השמאלית התחתונה.</p>
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">הגדרה חשובה: בחירת מודל</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Claude מגיע עם כמה מודלים (גרסאות) שונים. המודל קובע כמה חכם וכמה קרדיטים הוא צורך. מומלץ להגדיר את <strong>Sonnet</strong> כברירת מחדל כדי לחסוך קרדיטים. נסביר על ההבדלים בשלב הבא.</p>
-        <p style="color:var(--dim);line-height:1.8">את בחירת המודל אפשר לשנות גם מתוך שיחה: לחצו על שם המודל בפינה העליונה של חלון השיחה.</p>
-      </div>
-
-      <!-- Step 8: Models -->
-      <div class="section">
-        <h3><span class="sec-icon">🤖</span> שלב 8: המודלים של Claude</h3>
-        <p style="color:var(--dim);margin-bottom:12px">Claude מגיע בכמה "גרסאות" שנקראות מודלים. כל מודל שונה ברמת החוכמה, המהירות, וכמות הקרדיטים שהוא צורך:</p>
+        <h3><span class="sec-icon">🤖</span> Step 7: The Claude models</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Claude ships in a few model tiers. Each one balances intelligence, speed, and credit cost differently:</p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0">
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--glass-border);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.3em;margin-bottom:6px">🐇</div>
             <strong style="color:var(--dim)">Haiku</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">מהיר, קל, זול. טוב למשימות פשוטות כמו תרגום, סיכום קצר, או שאלה מהירה.</p>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Fast, light, cheap. Good for simple tasks like translation, a quick summary, or a one-shot question.</p>
           </div>
-          <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px;text-align:center">
+          <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.3em;margin-bottom:6px">⚡</div>
             <strong style="color:var(--orange)">Sonnet</strong>
-            <p style="color:var(--orange);font-size:0.82em;margin-top:6px;font-weight:600">מאוזן. מומלץ לאתגר. חכם מספיק לרוב המשימות, חוסך קרדיטים.</p>
+            <p style="color:var(--orange);font-size:0.82em;margin-top:6px;font-weight:600">The balanced pick. Recommended default for this challenge. Handles 90% of what you'll do, easy on credits.</p>
           </div>
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--glass-border);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.3em;margin-bottom:6px">🧠</div>
-            <strong style="color:var(--dim)">Opus</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">הכי חזק. צורך יותר קרדיטים. שמרו לניתוח מורכב או עבודה שדורשת חשיבה מעמיקה.</p>
+            <strong style="color:var(--dim)">Opus 4.7</strong>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">The strongest. Brand new release. Burns credits fast. Save it for heavy analysis, complex writing, or when Sonnet gets stuck.</p>
           </div>
         </div>
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">איך לשנות מודל:</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:8px">הקלידו <code style="color:var(--green)">/model</code> בתוך שיחה, או לחצו על שם המודל בפינה העליונה של חלון השיחה, או שנו בהגדרות (Customize).</p>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;margin:12px 0">
-          <p style="color:var(--orange);font-weight:700">כדי לחסוך קרדיטים, השתמשו ב-Sonnet כברירת מחדל.</p>
-          <p style="color:var(--dim);line-height:1.8;margin-top:4px">Sonnet חכם מספיק ל-90% מהמשימות. תעברו ל-Opus רק כשצריכים ניתוח עמוק או כתיבה מורכבת.</p>
+        <p style="color:var(--dim);line-height:1.8;margin-top:12px;margin-bottom:8px">To switch: type <code style="color:var(--green)">/model</code> in a session, click the model name at the top of the chat, or change it in Customize → Settings.</p>
+
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;margin:12px 0">
+          <p style="color:var(--orange);font-weight:700">Default to Sonnet to save credits.</p>
+          <p style="color:var(--dim);line-height:1.8;margin-top:4px">Sonnet handles 90% of tasks. Move to Opus 4.7 only for deep analysis or complex writing.</p>
         </div>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:8px;padding:12px;margin-top:12px">
-          <p style="color:var(--orange);font-size:0.85em;font-weight:600">מתוך סדרת ההאקים שלי: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #14: Three Brains, One Claude</a></p>
+
+        <details class="mini-collapse">
+          <summary>Effort setting (optional read)</summary>
+          <p style="color:var(--dim);line-height:1.8;margin:8px 0">Next to the model picker there's an effort setting (low / medium / high). Low is fine for quick questions. High is for anything that needs real thinking: "analyze these 100 products," "refactor this skill," "plan a product launch."</p>
+        </details>
+
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px;margin-top:12px">
+          <p style="color:var(--orange);font-size:0.85em;font-weight:600">From my hacks series: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #14: Three Brains, One Claude</a></p>
         </div>
       </div>
 
-      <!-- Step 9: Permissions -->
+      <!-- Step 8: Permissions -->
       <div class="section">
-        <h3><span class="sec-icon">🔐</span> שלב 9: מצבי אישורים</h3>
-        <p style="color:var(--dim);margin-bottom:12px">כשClaude רוצה לעשות משהו (לערוך קובץ, להריץ פקודה), הוא מבקש אישור. יש 4 מצבים:</p>
+        <h3><span class="sec-icon">🔐</span> Step 8: Permission modes (now with Auto Mode)</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Every time Claude wants to do something (edit a file, run a command, send data somewhere), it asks for permission . unless you've told it not to. Five modes to know:</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--border);border-radius:10px;padding:14px">
             <strong style="color:var(--text)">✋ Ask permissions</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude שואל לפני כל שינוי. הכי בטוח. טוב למתחילים שרוצים לראות מה קורה לפני שמאשרים.</p>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude asks before every change. Safest. Good for day one when you want to see each step before approving.</p>
           </div>
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--border);border-radius:10px;padding:14px">
             <strong style="color:var(--text)">&lt;/&gt; Auto accept edits</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude עורך קבצים בלי לשאול, אבל עדיין שואל לפני הרצת פקודות. אמצע הדרך.</p>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude edits files without asking, but still pauses before running commands. A solid middle ground.</p>
           </div>
           <div style="background:rgba(136,136,136,0.08);border:1px solid var(--border);border-radius:10px;padding:14px">
             <strong style="color:var(--text)">📋 Plan mode</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude מתכנן לפני שעושה. מציג תכנית ומחכה לאישור. טוב למשימות גדולות שרוצים לראות תכנית לפני ביצוע.</p>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude plans before it acts. Shows you the plan, waits for approval. Good for big tasks you want mapped out first.</p>
           </div>
-          <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px">
-            <strong style="color:var(--orange)">⚠️ Bypass permissions</strong>
-            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude עושה הכל בלי לשאול. הכי מהיר. מומלץ למי שכבר מרגיש בנוח עם Claude ורוצה שהעבודה תזרום בלי עצירות.</p>
+          <div style="background:rgba(136,136,136,0.08);border:1px solid var(--border);border-radius:10px;padding:14px">
+            <strong style="color:var(--text)">⚠️ Bypass permissions</strong>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px">Claude runs without asking. Fastest, but no safety net. Only use it when you know exactly what you're doing.</p>
+          </div>
+          <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:14px;grid-column:span 2">
+            <strong style="color:var(--orange)">✨ Auto Mode . my recommended default (new)</strong>
+            <p style="color:var(--dim);font-size:0.82em;margin-top:6px;line-height:1.7">Claude runs without asking, but a separate classifier checks every action first and blocks anything risky . production deploys, sensitive data leaving your machine, mass deletions, forced git pushes. You get Bypass-level speed with a safety net. Anthropic added this in late March 2026 and it's what I use every day now.</p>
           </div>
         </div>
-        <p style="color:var(--dim);margin-top:8px"><strong>המלצה לאתגר:</strong> תתחילו עם <strong>Auto accept edits</strong>. אחרי כמה ימים שתרגישו בנוח, עברו ל-<strong>Bypass permissions</strong>.</p>
-        <p style="color:var(--dim);margin-top:4px">איפה משנים: לחצו על האייקון בפינה השמאלית התחתונה של שורת הקלט (ליד כפתור השליחה).</p>
+        <p style="color:var(--dim);margin-top:12px"><strong>Recommendation:</strong> start with <strong>Auto accept edits</strong> for a day or two to build trust. Once you're comfortable, switch to <strong>Auto Mode</strong> and let Claude flow.</p>
+
+        <details class="mini-collapse">
+          <summary>On Pro? Read this before picking Auto Mode</summary>
+          <p style="color:var(--dim);font-size:0.9em;line-height:1.7;margin:8px 0">Auto Mode isn't available on the Pro ($20) plan . it needs Max, Team, or Enterprise, and Sonnet 4.6 / Opus 4.6+ as the model. If you're on Pro for this challenge, use <strong>Auto accept edits</strong> as your default. When you upgrade to Max (and most people do), Auto Mode unlocks automatically.</p>
+        </details>
+
+        <p style="color:var(--dim);margin-top:10px">Where to change it: click the icon in the bottom-left corner of the input bar (next to the send button).</p>
       </div>
 
-      <!-- Step 10: Commands -->
+      <!-- Step 9: Slash Commands -->
       <div class="section">
-        <h3><span class="sec-icon">⚡</span> שלב 10: פקודות שימושיות (Slash Commands)</h3>
-        <p style="color:var(--dim);margin-bottom:12px">ב-Claude Code יש פקודות מובנות שמתחילות ב-/. כמו קיצורי דרך. הנה הכי חשובות:</p>
-        <div style="background:rgba(0,0,0,0.3);padding:16px;border-radius:8px;margin:8px 0;font-size:0.9em">
-          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/compact</code> כשהשיחה מתארכת ו-Claude מתחיל להיות איטי. דוחס את השיחה לסיכום וממשיך חד.</p>
-          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/clear</code> מתחיל שיחה חדשה לגמרי. Claude שוכח הכל (אבל עדיין קורא את CLAUDE.md).</p>
-          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/model</code> מחליף מודל באמצע שיחה. לא צריך לפתוח הגדרות.</p>
-          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/help</code> מראה את כל הפקודות הזמינות.</p>
-          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/ask-jay</code> תקוע? תגיד לדונה לשאול את ג'יי. היא בודקת את מאגר הידע ועונה בשמו.</p>
+        <h3><span class="sec-icon">⚡</span> Step 9: Useful slash commands</h3>
+        <p style="color:var(--dim);margin-bottom:12px">Claude Code has built-in shortcuts that start with <code style="color:var(--green)">/</code>. Think of them as power buttons. The ones I use daily:</p>
+        <div style="background:var(--bg-soft);border:1px solid var(--border);padding:16px;border-radius:8px;margin:8px 0;font-size:0.9em">
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/compact</code> . use it when a chat gets long and Claude starts to slow down. Compresses the conversation into a summary and keeps going sharp.</p>
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/clear</code> . start a fresh session. Claude forgets everything (but still reads CLAUDE.md).</p>
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/model</code> . switch model mid-session. No need to open settings.</p>
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/context</code> . see how much context the session has left before it needs compacting.</p>
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/help</code> . show every available command.</p>
+          <p style="color:var(--text);line-height:2.2"><code style="color:var(--orange)">/ask-jay</code> . stuck? Donna checks the Jay knowledge base and answers in my voice.</p>
         </div>
-        <p style="color:var(--dim);margin-top:8px">תנסה עכשיו:</p>
+        <p style="color:var(--dim);margin-top:8px">Try one now:</p>
         <div class="cmd-block">
           <code>/help</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
         </div>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:8px;padding:12px;margin-top:12px">
-          <p style="color:var(--orange);font-size:0.85em;font-weight:600">מתוך סדרת ההאקים שלי: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #7: Session Getting Slow? Here's How to Fix It</a></p>
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px;margin-top:12px">
+          <p style="color:var(--orange);font-size:0.85em;font-weight:600">From my hacks series: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #7: Session Getting Slow? Here's How to Fix It</a></p>
         </div>
       </div>
 
-      <!-- Step 11: Prompting -->
+      <!-- Step 10: Prompting -->
       <div class="section">
-        <h3><span class="sec-icon">🎯</span> שלב 11: איך לבקש מ-Claude דברים (Prompting)</h3>
-        <p style="color:var(--dim);margin-bottom:12px">איך אתה מבקש משנה את מה שתקבל. הנה דוגמה:</p>
+        <h3><span class="sec-icon">🎯</span> Step 10: How to ask Claude for things (prompting)</h3>
+        <p style="color:var(--dim);margin-bottom:12px">How you ask changes what you get. One example:</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
-          <div style="background:rgba(231,76,60,0.06);border:1px solid rgba(231,76,60,0.2);border-radius:10px;padding:14px">
-            <p style="color:#e74c3c;font-weight:700;margin-bottom:6px;font-size:0.85em">בקשה עמומה (לא טוב)</p>
+          <div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:14px">
+            <p style="color:#dc2626;font-weight:700;margin-bottom:6px;font-size:0.85em">Vague (not great)</p>
             <code style="color:var(--dim);font-size:0.85em">make me a calculator</code>
-            <p style="color:var(--dim);font-size:0.8em;margin-top:6px">תוצאה: Claude ישאל שאלות הבהרה, או יבנה משהו גנרי שלא מתאים לך.</p>
+            <p style="color:var(--dim);font-size:0.8em;margin-top:6px">Result: Claude asks clarifying questions, or builds something generic that doesn't fit you.</p>
           </div>
-          <div style="background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.2);border-radius:10px;padding:14px">
-            <p style="color:#2ecc71;font-weight:700;margin-bottom:6px;font-size:0.85em">בקשה ברורה (מעולה)</p>
-            <code style="color:var(--dim);font-size:0.85em">Build me a simple HTML profit calculator. I enter cost and selling price, it shows margin as %. Make it clean and modern. Save as calculator.html</code>
-            <p style="color:var(--dim);font-size:0.8em;margin-top:6px">תוצאה: כלי עובד ב-30 שניות.</p>
+          <div style="background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.2);border-radius:10px;padding:14px">
+            <p style="color:#16a34a;font-weight:700;margin-bottom:6px;font-size:0.85em">Specific (great)</p>
+            <code style="color:var(--dim);font-size:0.85em">Build me a simple HTML profit calculator. I enter cost and selling price, it shows margin as %. Clean and modern. Save as calculator.html</code>
+            <p style="color:var(--dim);font-size:0.8em;margin-top:6px">Result: working tool in 30 seconds.</p>
           </div>
         </div>
-        <p style="color:var(--dim);margin-top:8px">הכלל: ספר ל-Claude <strong>מה</strong> אתה רוצה, <strong>באיזה פורמט</strong>, ו<strong>איפה לשמור</strong>.</p>
-
-        <p style="color:var(--text);font-weight:600;margin-top:16px;margin-bottom:8px">תנסה עכשיו. בנה מחשבון:</p>
-        <div class="cmd-block">
-          <code>Build me a simple HTML profit calculator. I enter the product cost and selling price, and it shows me the profit margin as a percentage. Make it clean and modern looking. Save it as calculator.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
-        </div>
-        <p style="color:var(--dim);margin-top:8px">Claude יבנה את הכלי וישמור אותו. תפתח את הקובץ בדפדפן ותראה מחשבון עובד.</p>
-
-        <p style="color:var(--text);font-weight:600;margin-top:16px;margin-bottom:8px">עכשיו תנסה דשבורד:</p>
-        <div class="cmd-block">
-          <code>Build me a beautiful dark-mode dashboard that shows today's date, a to-do list I can add items to, and a motivational quote. Save as dashboard.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
-        </div>
-        <p style="color:var(--dim);margin-top:8px">שחק עם זה. תנסה דברים. אי אפשר לשבור כלום. זה הזמן להתנסות.</p>
+        <p style="color:var(--dim);margin-top:8px">The rule: tell Claude <strong>what</strong> you want, <strong>in what format</strong>, and <strong>where to save it</strong>.</p>
       </div>
 
-      <!-- Step 12: Demos -->
-      <div class="section">
-        <h3><span class="sec-icon">🎨</span> שלב 12: תראו מה אפשר לעשות (ותנסו בעצמכם)</h3>
-        <p style="color:var(--dim);margin-bottom:12px">בסרטון אני מראה דוגמאות חיות של דברים שבניתי עם Claude. דשבורדים, דפי נחיתה, כלים, מחשבונים. הכל בפקודה אחת, בלי קוד.</p>
-        <p style="color:var(--dim);margin-bottom:12px">אחרי שתראו את הסרטון, תנסו בעצמכם. הנה כמה רעיונות:</p>
-        <div class="cmd-block">
-          <code>Build me a beautiful dark-mode dashboard that shows today's date, a to-do list I can add items to, and a motivational quote. Save as dashboard.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
-        </div>
-        <div class="cmd-block">
-          <code>Build me a modern landing page for a product called "SuperJuice". It's a health drink. Include a hero section, 3 benefits, testimonials, and a buy button. Save as landing-page.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
-        </div>
-        <div class="cmd-block">
-          <code>Build me a simple expense tracker where I can add expenses with a name, amount, and category. Show a total at the bottom and a pie chart. Save as expenses.html</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
-        </div>
-        <p style="color:var(--dim);margin-top:12px">אין חובה לעשות את זה. אבל אם תנסו, תבינו כמה Claude חזק. וזה עוד לפני שלימדנו אותו מי אתם ומה העסק שלכם.</p>
-      </div>
-
-      <!-- Step 13: ChatGPT Memory Import -->
-      <div class="section">
-        <h3><span class="sec-icon">🔑</span> שלב 13: טיפ זהב. ייבוא זיכרון מ-ChatGPT</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">עוברים מ-ChatGPT? אל תתחילו מאפס. Claude יכול לייבא את הזיכרונות שצברתם ב-ChatGPT, כך שהוא כבר ידע דברים עליכם מהרגע הראשון.</p>
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">איך עושים את זה:</p>
+      <!-- Step 11: ChatGPT Memory Import -->
+      <details class="section collapsible">
+        <summary><h3><span class="sec-icon">🔑</span> Step 11: Golden tip . import your memory from ChatGPT</h3><span class="collapse-hint">Optional . click to expand</span></summary>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Moving over from ChatGPT? Don't start from scratch. Claude can import the memory you've built up over there so it already knows things about you from minute one.</p>
+        <p style="color:var(--text);font-weight:600;margin-bottom:8px">How it works:</p>
         <ol>
-          <li><strong>ב-ChatGPT:</strong> בקשו ממנו לייצא את הזיכרון שלו. הוא יפרט את כל מה שהוא זוכר עליכם.</li>
-          <li><strong>העתיקו</strong> את הטקסט שהוא מחזיר.</li>
-          <li><strong>ב-Claude Desktop:</strong> היכנסו להגדרות (Customize) > Import memory > הדביקו את הטקסט.</li>
+          <li><strong>In ChatGPT:</strong> ask it to export the memory it has about you. It prints the list.</li>
+          <li><strong>Copy</strong> everything it gives you.</li>
+          <li><strong>In Claude Desktop:</strong> Customize → Import memory → paste the text.</li>
         </ol>
-        <p style="color:var(--dim);margin-top:10px">מדריך מפורט: <a href="https://jaygptpro.com/claude/claude-memory-import-guide.html" target="_blank" class="link">לחצו כאן למדריך המלא</a></p>
-        <p style="color:var(--dim);margin-top:8px;font-size:0.88em">שימו לב: זו תכונה ניסיונית. היא עובדת הכי טוב עבור העדפות עבודה ומידע מקצועי, פחות עבור פרטים אישיים. לא חייבים לעשות את זה, אבל זה חוסך זמן.</p>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:8px;padding:12px;margin-top:12px">
-          <p style="color:var(--orange);font-size:0.85em;font-weight:600">מתוך סדרת ההאקים שלי: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #1: Import Your Memory in 60 Seconds</a></p>
+        <p style="color:var(--dim);margin-top:10px">Full walkthrough: <a href="https://jaygptpro.com/claude/claude-memory-import-guide.html" target="_blank" class="link">Memory Import Guide</a></p>
+        <p style="color:var(--dim);margin-top:8px;font-size:0.88em">Note: this is experimental. It works best for work preferences and professional context, less so for personal details. Not required, but it saves time.</p>
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px;margin-top:12px">
+          <p style="color:var(--orange);font-size:0.85em;font-weight:600">From my hacks series: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #1: Import Your Memory in 60 Seconds</a></p>
         </div>
-      </div>
+      </details>
 
-      <!-- Step 14: Coach Prompt -->
-      <div class="section">
-        <h3><span class="sec-icon">🎓</span> שלב 14: טיפ זהב. פרומפט המאמן</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">יש טריק שגיליתי שהופך את Claude למאמן אישי. אתה מדביק פרומפט מיוחד בתחילת פרויקט, ו-Claude ממשיך לעבוד כרגיל, אבל מזמן לזמן זורק טיפים שעוזרים לך ללמוד.</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">למשל, אחרי שמסיימים משימה הוא עשוי להגיד: "כדאי לתעד את ההחלטה הזו. כדי שלא נבזבז שוב זמן על אותה שאלה." או אחרי שיחה ארוכה: "השיחה ארוכה, כדאי לדחוס אותה כדי לחסוך קונטקסט."</p>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">הוא לא מפסיק לעבוד ומתחיל ללמד. הוא עובד ומלמד במקביל. רק כשיש הזדמנות ללמידה ברורה.</p>
-        <div style="background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.2);border-radius:10px;padding:14px;margin:12px 0">
-          <p style="color:#2ecc71;font-weight:700;margin-bottom:6px">חדשות טובות</p>
-          <p style="color:var(--dim);line-height:1.8">כבר הטמענו את הפרומפט הזה בתוך ה-CLAUDE.md של דונה. כלומר, דונה כבר מגיעה עם "מצב מאמן" מובנה. לא צריך לעשות כלום נוסף.</p>
+      <!-- Step 12: Coach Prompt -->
+      <details class="section collapsible">
+        <summary><h3><span class="sec-icon">🎓</span> Step 12: Golden tip . the coach prompt</h3><span class="collapse-hint">Already built into Donna . expand to read</span></summary>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">A trick I stumbled into: you can turn Claude into a personal coach. You paste a special prompt at the start of a project and Claude keeps working normally, but every so often it drops a tip that helps you learn.</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">For example, after finishing a task it might say: "Worth documenting this decision so we don't lose time on the same question next week." Or after a long chat: "This session is getting long. Consider /compact to save context."</p>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">It doesn't stop working to teach. It works and teaches in parallel, only when there's a real learning moment.</p>
+        <div style="background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.2);border-radius:10px;padding:14px;margin:12px 0">
+          <p style="color:#16a34a;font-weight:700;margin-bottom:6px">Good news</p>
+          <p style="color:var(--dim);line-height:1.8">We already baked this prompt into Donna's CLAUDE.md. Donna ships with "coach mode" built in. Nothing to do on your end.</p>
         </div>
-      </div>
+      </details>
 
-      <!-- Step 15: Other Apps -->
-      <div class="section">
-        <h3><span class="sec-icon">📱</span> שלב 15: אפליקציות נוספות</h3>
-        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Claude Desktop זה לא הכלי היחיד. כדאי לדעת שיש גם אפליקציות נוספות:</p>
-        <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;margin:8px 0">
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">אפליקציית מובייל (iOS / Android)</strong> - מצב Chat בלבד. שימושי לשאלות מהירות בדרך. אין בו Code tab, אז אי אפשר להריץ דונה משם.</p>
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">תוסף לדפדפן</strong> - Claude יכול לעבוד ישירות עם דפי אינטרנט שאתם גולשים בהם. שימושי לסיכומים ומחקר.</p>
-          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">עבודה עם גיליונות</strong> - Claude יכול לקרוא ולנתח קבצי Excel ו-CSV. שימושי לניתוח נתונים ודוחות.</p>
+      <!-- Step 13: Other Apps -->
+      <details class="section collapsible">
+        <summary><h3><span class="sec-icon">📱</span> Step 13: Other ways to reach Claude</h3><span class="collapse-hint">Reference . click to expand</span></summary>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">Claude Desktop isn't the only way in. Worth knowing the others exist:</p>
+        <div style="background:var(--bg-soft);border:1px solid var(--border);padding:14px;border-radius:8px;margin:8px 0">
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Mobile app (iOS / Android)</strong> . Chat mode only. Good for quick questions on the go. No Code tab, so Donna can't run from there directly.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Browser extension</strong> . Claude can read and work with web pages you're browsing. Useful for summaries and research.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Excel & PowerPoint plugins</strong> . Claude can read and analyze spreadsheets and generate slides. Free download from inside Claude Desktop.</p>
+          <p style="color:var(--text);line-height:2.2"><strong style="color:var(--orange)">Dispatch (new)</strong> . lets you control your Mac remotely from the Claude mobile app. Your computer runs the actual work, your phone just sends the instructions. Turn it on in Settings first.</p>
         </div>
-        <p style="color:var(--dim);margin-top:8px">באתגר אנחנו עובדים רק מ-Claude Desktop (טאב Code). אבל כדאי לדעת שיש גם אפשרויות אחרות שתוכלו לחקור אחרי האתגר.</p>
-      </div>
+        <p style="color:var(--dim);margin-top:8px">For this challenge we stay in Claude Desktop, Code tab. But after the challenge, explore . there's a lot more surface area than you'd expect.</p>
+      </details>
 
-      <!-- Step 17: Starter Kit (Obsidian step moved to Day 1) -->
-      <div class="section">
-        <h3><span class="sec-icon">📦</span> שלב 17: הורדת ה-Starter Kit</h3>
-        <p style="color:var(--dim);margin-bottom:12px">ה-Starter Kit זו תיקייה עם כל מה שדונה צריכה: זהות, זיכרון, סקילס, טמפלייטים, ומדריכים.</p>
-        <ol>
-          <li>הורד את ה-Starter Kit: <a href="https://jaygptpro.com/donna-challenge/donna-starter-kit.zip" target="_blank" class="link" download>לחץ כאן להורדה</a></li>
-          <li>פתח את קובץ ה-ZIP (לחיצה כפולה)</li>
-          <li>שים את התיקייה <strong>donna-starter-kit</strong> במקום נגיש (שולחן עבודה או Documents). לא בתוך תיקיות מקוננות.</li>
+      <!-- Featured Skill: Amazon Landing Page (from the video demo) -->
+      <details class="section collapsible" style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.25)">
+        <summary><h3><span class="sec-icon">🛍️</span> Bonus from the video: Amazon Landing Page Skill</h3><span class="collapse-hint">Bonus skill . click to expand</span></summary>
+        <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">In the demo section of the video I show a skill I built that turns any Amazon product URL into a full landing page . titles, price, real reviews, images, everything. Handy when you want to run Facebook ads and capture emails instead of sending people straight to Amazon.</p>
+
+        <p style="color:var(--text);font-weight:600;margin-bottom:8px">What the skill does:</p>
+        <ul style="color:var(--dim);line-height:1.9;margin-bottom:14px">
+          <li>Scrapes the Amazon listing: title, price, images, real reviews</li>
+          <li>Builds a full HTML landing page in the background while you keep working</li>
+          <li>Includes a CTA that links back to Amazon</li>
+          <li>Can collect emails or add a coupon code if you ask for it</li>
+          <li>Not locked to Amazon . tell Claude "same thing but for a Walmart listing" and it figures it out</li>
+        </ul>
+
+        <p style="color:var(--text);font-weight:600;margin-bottom:8px">How to use it:</p>
+        <ol style="color:var(--dim);line-height:1.9;margin-bottom:14px">
+          <li>Download the skill from the page below</li>
+          <li>Drop the file into your project folder. If you're not sure where, just ask Claude: <em>"take this skill and put it in the right place."</em></li>
+          <li>Run <code style="color:var(--orange)">/amazon-landing-page</code> and paste an Amazon URL</li>
+          <li>Ask for any tweak you want: coupon code, email capture, a different CTA, a different layout</li>
         </ol>
-        <p style="color:var(--dim);margin-top:8px;font-weight:600">מה בפנים:</p>
-        <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;font-family:monospace;font-size:0.85em;color:var(--dim);direction:ltr;text-align:left;line-height:2;margin-top:8px">
-donna-starter-kit/<br>
-&nbsp;&nbsp;CLAUDE.md &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- הוראות לדונה (לא נוגעים)<br>
-&nbsp;&nbsp;brain/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- הזיכרון של דונה (Obsidian)<br>
-&nbsp;&nbsp;prompts/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- פרומפטים מוכנים ליום 2<br>
-&nbsp;&nbsp;.claude/skills/ &nbsp;&lt;-- פקודות שדונה יודעת (יום 4)<br>
-&nbsp;&nbsp;templates/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- פורמטים לדוחות<br>
-&nbsp;&nbsp;guides/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- מדריכים כתובים<br>
-&nbsp;&nbsp;samples/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- דוגמאות כתיבה שלך<br>
-&nbsp;&nbsp;output/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- כל מה שדונה יוצרת
-        </div>
-        <p style="color:var(--dim);margin-top:12px">אל תערוך כלום עדיין. ביום 1 נפתח ונתחיל.</p>
-      </div>
 
-      <!-- Step 18: Connect Everything -->
-      <div class="section">
-        <h3><span class="sec-icon">🔗</span> שלב 18: חיבור הכל</h3>
-        <p style="color:var(--dim);margin-bottom:12px">עכשיו מחברים את הכל: Claude Code + Obsidian, שניהם על אותה תיקייה.</p>
+        <p style="color:var(--dim);margin-top:8px">→ <a href="https://jaygptpro.com/claude/amazon-landing-page-skill.html" target="_blank" class="link"><strong>Get the Amazon Landing Page Skill</strong></a></p>
 
-        <p style="color:var(--text);font-weight:600;margin-bottom:8px">ב-Claude Desktop:</p>
-        <ol>
-          <li>פתח Claude Desktop</li>
-          <li>עבור לטאב <strong>Code</strong></li>
-          <li>File > Open Folder > בחר את <strong>donna-starter-kit</strong></li>
-          <li>בדוק שזה עובד:</li>
-        </ol>
-        <div class="cmd-block">
-          <code>What files do you see in this folder?</code>
-          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
+        <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px;margin-top:14px">
+          <p style="color:var(--orange);font-weight:600;margin-bottom:4px">A note on "scary" steps</p>
+          <p style="color:var(--dim);font-size:0.9em;line-height:1.7">GitHub, domains, hosting . a lot of people freeze at these words. You don't need to. Just ask Claude: <em>"how do I connect this landing page to my domain?"</em> or <em>"can you do it for me?"</em> . it'll walk you through it or take over your computer and handle it. Most of the things you think you need to do yourself, you don't.</p>
         </div>
-        <p style="color:var(--dim);margin-top:8px">Claude צריך לראות: CLAUDE.md, brain/, templates/, guides/ ועוד.</p>
-
-        <p style="color:var(--text);font-weight:600;margin-top:14px;margin-bottom:8px">ב-Obsidian:</p>
-        <ol>
-          <li>פתח Obsidian</li>
-          <li>Open folder as vault > בחר את <strong>אותה תיקייה</strong> (donna-starter-kit)</li>
-          <li>תראה בצד שמאל: brain/, guides/, templates/, CLAUDE.md</li>
-        </ol>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;margin:12px 0">
-          <p style="color:var(--orange);font-weight:700">למה אותה תיקייה?</p>
-          <p style="color:var(--dim);line-height:1.8;margin-top:4px">Claude Code ו-Obsidian שניהם מסתכלים על אותם קבצים. כשדונה כותבת דוח בוקר, הוא מופיע אוטומטית ב-Obsidian. שני חלונות, אותו מקום.</p>
-        </div>
-      </div>
+      </details>
 
       <!-- Tips -->
-      <div class="section tips">
-        <h3><span class="sec-icon">💡</span> טיפים חשובים</h3>
+      <details class="section tips collapsible">
+        <summary><h3><span class="sec-icon">💡</span> Tips worth remembering</h3><span class="collapse-hint">8 tips . click to expand</span></summary>
         <ul>
-          <li>תמיד תעבוד מטאב <strong>Code</strong>. לא Chat, לא Cowork.</li>
-          <li>השתמשו ב-<strong>Sonnet</strong> כברירת מחדל כדי לחסוך קרדיטים. תעברו ל-Opus רק כשצריכים.</li>
-          <li>אם Claude שואל שאלות הבהרה, תענו לו. הוא מנסה להבין מה אתם רוצים.</li>
-          <li>אם משהו לא עובד, תנסחו מחדש. "Build me X that does Y and save as Z" עובד כמעט תמיד.</li>
-          <li>אי אפשר לשבור כלום. תנסו, תשחקו, תתנסו.</li>
-          <li><strong>Windows:</strong> אם Claude Desktop לא עובד, וודאו שהתקנתם Git (שלב 2).</li>
-          <li>ה-Starter Kit צריך להיות במקום נגיש. לא בתוך 5 תיקיות מקוננות.</li>
-          <li>Obsidian ו-Claude Code פותחים את <strong>אותה תיקייה</strong> (donna-starter-kit).</li>
-          <li>לפני כל סשן עבודה עם דונה: פתחו את התיקייה ב-Claude Code (File > Open Folder).</li>
+          <li>Always work from the <strong>Code</strong> tab. Not Chat, not Cowork.</li>
+          <li>Default to <strong>Sonnet</strong> to save credits. Move to Opus 4.7 only when you need the extra brainpower.</li>
+          <li>If Claude asks clarifying questions, answer them. It's trying to understand what you actually want.</li>
+          <li>If something isn't working, rephrase. "Build me X that does Y and save as Z" works almost every time.</li>
+          <li>You can't break anything. Play, experiment, try things.</li>
+          <li><strong>Windows:</strong> if Claude Desktop refuses to run, double-check Git is installed (Step 2).</li>
+          <li>One folder per project. Keep projects separate so memory doesn't get tangled.</li>
+          <li>Got time? Skim my <a href="https://jaygptpro.com/daily-claude-hacks" target="_blank" class="link">Claude Hacks Library</a> . 20+ small wins you can apply today.</li>
         </ul>
-      </div>
+      </details>
 
       <!-- FAQ -->
-      <div class="section faq">
-        <h3><span class="sec-icon">❓</span> <span data-en="FAQ" data-he="שאלות נפוצות">FAQ</span></h3>
+      <details class="section faq collapsible">
+        <summary><h3><span class="sec-icon">❓</span> FAQ</h3><span class="collapse-hint">10 common questions . click to expand</span></summary>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה ההבדל בין Claude ל-ChatGPT?</div>
-          <div class="faq-a">ChatGPT הוא צ'אטבוט: שאלה, תשובה, שוכח. כל שיחה מתחילה מאפס. Claude Code הוא סביבת עבודה שלמה: הוא זוכר מידע דרך קובץ CLAUDE.md, מתחבר לכלים אמיתיים כמו מייל ויומן, יכול לבנות כלים ולשמור קבצים, ואפילו לרוץ אוטומטית לפי לוח זמנים. בקיצור, ChatGPT מדבר איתך. Claude Code עובד בשבילך.</div>
+          <div class="faq-q">What's the difference between Claude and ChatGPT?</div>
+          <div class="faq-a">ChatGPT is a chatbot: you ask, it answers, it forgets. Every conversation starts from zero. Claude Code is a full work environment: it remembers through CLAUDE.md, connects to real tools like Gmail and Calendar, can build tools and save files, and even runs on a schedule. In a sentence, ChatGPT talks to you. Claude Code works for you.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">למה צריך Obsidian?</div>
-          <div class="faq-a">Obsidian הוא "החלון" שלכם לזיכרון של דונה. דונה שומרת את כל מה שהיא לומדת בקבצי טקסט בתיקיית brain/. Obsidian מציג את הקבצים האלה בצורה ויזואלית, עם קשרים בין אנשים, פרויקטים, והחלטות. בלעדיו, דונה עדיין עובדת ושומרת הכל. אבל Obsidian מוסיף שכבה ויזואלית שעוזרת לכם לראות מה דונה יודעת ולנווט בין הנושאים.</div>
+          <div class="faq-q">How much does this cost?</div>
+          <div class="faq-a">$20/month for Claude Pro is the minimum to unlock Claude Code. Most people move up to Max ($100/month) once they feel the credit limits. The Starter Kit is included with the challenge. Git is free. Obsidian is free. That's the full cost.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">כמה זה עולה?</div>
-          <div class="faq-a">$20 לחודש עבור מנוי Pro ל-Claude. זו העלות השוטפת היחידה. Obsidian חינמי, Git חינמי, ה-Starter Kit כלול באתגר. ככל שתשתמשו יותר ותרצו יותר קרדיטים, אפשר לשדרג ל-Max ב-$100/חודש. אבל Pro מספיק לאתגר ולהתחלה.</div>
+          <div class="faq-q">Do I need to know how to code?</div>
+          <div class="faq-a">Not at all. You won't write a single line of code in this challenge. You tell Claude what you want in plain English, and Claude does the technical work. Think of it as giving instructions to a smart assistant, not writing software.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">אני צריך לדעת לתכנת?</div>
-          <div class="faq-a">לא. בכלל לא. באתגר הזה לא כותבים שורת קוד אחת. אתם מדברים עם Claude בשפה רגילה (אנגלית), ומסבירים לו מה אתם רוצים. Claude עושה את העבודה הטכנית. זה כמו לתת הוראות לעובד חכם, לא כמו לכתוב תוכנה.</div>
+          <div class="faq-q">Does this work on Mac and Windows?</div>
+          <div class="faq-a">Yes, both are supported. The only difference: Windows users need to install Git first (free, takes a minute). Without Git, Claude Code refuses to run on Windows. Mac has Git built in, nothing extra to do. Everything else is identical.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">זה עובד על Mac ועל Windows?</div>
-          <div class="faq-a">כן, שניהם נתמכים. ההבדל היחיד: על Windows חובה להתקין גם Git (חינמי, התקנה של דקה). בלי Git, Claude Code לא יעבוד על Windows. על Mac, Git כבר מותקן ברקע ולא צריך לעשות כלום נוסף. כל שאר השלבים זהים.</div>
+          <div class="faq-q">What is CLAUDE.md?</div>
+          <div class="faq-a">A plain text file that sits inside your folder. Claude reads it automatically before every new session. It's Donna's "ID card" . who she is, her rules, her working style. Your business info lives separately in brain/Business/. You don't need to hand-edit CLAUDE.md; Donna manages it.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה זה CLAUDE.md?</div>
-          <div class="faq-a">קובץ טקסט פשוט שנמצא בתיקייה שלכם. Claude קורא אותו אוטומטית לפני כל שיחה חדשה. זה "תעודת הזהות" של דונה, ההנחיות שלה, הכללים וסגנון העבודה. המידע האישי על העסק שלכם נשמר בנפרד ב-brain/Business/. לא צריך לערוך את CLAUDE.md, דונה ממלאת הכל לבד.</div>
+          <div class="faq-q">What are Skills?</div>
+          <div class="faq-a">Skills are text files with step-by-step instructions that tell Claude exactly what to do. Like a recipe. You write it once, Claude runs it whenever you trigger it. Example: /morning-briefing = "read emails, check calendar, produce a summary." Instead of explaining it each morning, just run the skill. We build skills on Day 4.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה זה Skills?</div>
-          <div class="faq-a">Skills הם קבצי טקסט עם הנחיות מפורטות שאומרות ל-Claude מה לעשות צעד אחר צעד. כמו מתכון. כותבים פעם אחת, Claude מבצע בכל פעם שמפעילים. למשל: /morning-briefing = "תקרא מיילים, תבדוק יומן, תכין סיכום." במקום להסביר מחדש בכל בוקר, פשוט מריצים את ה-Skill. נלמד לבנות Skills ביום 4.</div>
+          <div class="faq-q">What are Routines?</div>
+          <div class="faq-a">Routines are tasks that run automatically on a schedule you define. Example: "every morning at 9:15, run the morning briefing." Claude executes on its own, without you opening the app. Define once, it just runs. Anthropic recently overhauled this feature. We set up three Routines on Day 5.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה זה Scheduled Tasks?</div>
-          <div class="faq-a">משימות שרצות אוטומטית לפי לוח זמנים שאתם מגדירים. למשל: "כל בוקר ב-9:15, תריץ את סיכום הבוקר." Claude יעשה את זה לבד, בלי שתצטרכו לפתוח את האפליקציה ולבקש. פשוט מגדירים פעם אחת, וזה רץ. נלמד את זה ביום 5 של האתגר.</div>
+          <div class="faq-q">What's the difference between the models (Haiku, Sonnet, Opus)?</div>
+          <div class="faq-a">Three tiers. Haiku is fast and cheap, good for simple tasks. Sonnet is balanced and what I recommend as your default. Opus 4.7 is the strongest, brand new, and uses the most credits. For this challenge, Sonnet handles 90% of what you'll do. Move to Opus 4.7 only for heavy analysis or complex writing.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה ההבדל בין המודלים (Haiku, Sonnet, Opus)?</div>
-          <div class="faq-a">שלושת המודלים הם "גרסאות" שונות של Claude. Haiku הוא מהיר וזול, טוב לשאלות פשוטות. Sonnet מאוזן בין חוכמה לעלות, ומומלץ כברירת מחדל. Opus הוא הכי חזק וחכם, אבל צורך הכי הרבה קרדיטים. לאתגר, Sonnet מספיק ל-90% מהמשימות. תעברו ל-Opus רק כשצריכים ניתוח מורכב או כתיבה מעמיקה.</div>
+          <div class="faq-q">What happens when my credits run out?</div>
+          <div class="faq-a">On Pro ($20), you get a daily window of credits. When they're gone, you wait a few hours for a reset, or you upgrade to Max ($100/month) for a much bigger budget. Defaulting to Sonnet instead of Opus stretches credits significantly. For the challenge, Pro should be enough if you use Sonnet by default.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">מה קורה כשנגמרים הקרדיטים?</div>
-          <div class="faq-a">בתוכנית Pro ($20/חודש), יש כמות מוגבלת של שימושים ביום. כשנגמרים, תצטרכו לחכות כמה שעות עד שהם מתאפסים, או לשדרג לתוכנית Max ($100/חודש) שמגיעה עם הרבה יותר קרדיטים. שימוש ב-Sonnet במקום Opus חוסך משמעותית. לאתגר, Pro אמור להספיק אם משתמשים ב-Sonnet כברירת מחדל.</div>
+          <div class="faq-q">Is there a glossary of all these terms?</div>
+          <div class="faq-a">Yes. I built an interactive glossary with 50 Claude terms people hear but don't always understand: tokens, context window, MCP, skills, and more. Bookmark it: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #13: 50 Claude Terms Explained</a></div>
         </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">יש מילון מונחים?</div>
-          <div class="faq-a">כן! הכנתי מילון אינטראקטיבי עם 50 מונחים של Claude שכולם שומעים אבל לא תמיד מבינים: tokens, context window, MCP, skills, ועוד. שמרו את זה בסימניות: <a href="https://jaygptpro.com/daily-claude-hacks/" target="_blank" class="link">Hack #13: 50 Claude Terms Explained</a></div>
-        </div>
-      </div>
+      </details>
 
       <div style="text-align:center;margin:28px 0;opacity:0.3">
         <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:0 auto"></div>
@@ -1470,119 +1585,91 @@ donna-starter-kit/<br>
 
       <!-- Checklist -->
       <div class="section">
-        <h3><span class="sec-icon">✅</span> <span data-en="Checklist" data-he="צ'קליסט">Checklist</span></h3>
+        <h3><span class="sec-icon">✅</span> Checklist</h3>
         <div class="check-item" data-day="0" data-idx="0" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">Claude Desktop מותקן</span>
+          <span class="check-label">Claude Desktop installed</span>
         </div>
         <div class="check-item" data-day="0" data-idx="1" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">Git מותקן (Windows בלבד)</span>
+          <span class="check-label">Git installed (Windows only)</span>
         </div>
         <div class="check-item" data-day="0" data-idx="2" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">מנוי Pro פעיל ($20/חודש)</span>
+          <span class="check-label">Paid plan active (Pro $20 or Max $100)</span>
         </div>
         <div class="check-item" data-day="0" data-idx="3" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">מכיר את שלושת המצבים (Chat, Cowork, Code)</span>
+          <span class="check-label">I understand Claude works with folders</span>
         </div>
         <div class="check-item" data-day="0" data-idx="4" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">מבין שClaude עובד עם תיקיות</span>
+          <span class="check-label">I can find Routines and Customize in the sidebar</span>
         </div>
         <div class="check-item" data-day="0" data-idx="5" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">מכיר את הסיידבר וההגדרות</span>
+          <span class="check-label">Sonnet set as my default model</span>
         </div>
         <div class="check-item" data-day="0" data-idx="6" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">הגדרתי Sonnet כמודל ברירת מחדל</span>
+          <span class="check-label">I know the 5 permission modes and picked one</span>
         </div>
         <div class="check-item" data-day="0" data-idx="7" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">מבין את 4 מצבי האישורים</span>
+          <span class="check-label">I ran /help, /model, and /context at least once</span>
         </div>
         <div class="check-item" data-day="0" data-idx="8" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <span class="check-label">הרצתי /help, /model ו-/ask-jay</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="9" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">בניתי כלי עם Claude (מחשבון / דשבורד)</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="10" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">ניסיתי לבנות משהו עם Claude (דשבורד / דף נחיתה)</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="11" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">Obsidian מותקן</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="12" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">Starter Kit הורד ונפתח</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="13" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">Starter Kit פתוח ב-Claude Code (Code tab)</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="14" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">Starter Kit פתוח ב-Obsidian כ-vault</span>
-        </div>
-        <div class="check-item" data-day="0" data-idx="15" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <span class="check-label">Claude רואה את הקבצים (What files do you see)</span>
+          <span class="check-label">(Optional) Imported my ChatGPT memory</span>
         </div>
       </div>
 
       <!-- Glossary -->
-      <div class="section" style="border:1px solid var(--glass-border);background:rgba(232,112,64,0.04)">
-        <h3><span class="sec-icon">📖</span> מילון מושגים</h3>
-        <p style="color:var(--dim);margin-bottom:12px">מושגים שיחזרו לאורך האתגר. לא צריך לזכור בעל פה, פשוט תדע שהם קיימים.</p>
+      <details class="section collapsible" style="border:1px solid var(--glass-border);background:rgba(249,115,22,0.04)">
+        <summary><h3><span class="sec-icon">📖</span> Glossary</h3><span class="collapse-hint">6 terms . click to expand</span></summary>
+        <p style="color:var(--dim);margin-bottom:12px">Terms you'll see throughout the challenge. You don't need to memorize them, just know they exist.</p>
         <table style="width:100%;border-collapse:collapse">
           <tr style="border-bottom:1px solid var(--glass-border)">
             <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Claude Desktop</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">האפליקציה שהורדת למחשב. לא אתר claude.ai. דונה עובדת רק באפליקציה.</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">The app you downloaded to your computer. Not claude.ai in the browser. Donna only works inside the app.</td>
           </tr>
           <tr style="border-bottom:1px solid var(--glass-border)">
             <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Vault</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">תיקייה שאובסידיאן יודע לקרוא. אין פה קסם, זו פשוט תיקייה עם קבצי טקסט שמוצגים בצורה ויזואלית.</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">A folder Obsidian knows how to read. No magic . just a folder of text files displayed visually.</td>
           </tr>
           <tr style="border-bottom:1px solid var(--glass-border)">
             <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Skill</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">פקודה שדונה יודעת להריץ. כמו /morning-briefing או /draft-reply. קובץ טקסט עם הוראות שדונה קוראת ומבצעת.</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">A command Donna knows how to run. Like /morning-briefing or /draft-reply. A text file with instructions she reads and executes.</td>
           </tr>
           <tr style="border-bottom:1px solid var(--glass-border)">
             <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Connector</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">חיבור בין דונה לכלי חיצוני (Gmail, Calendar, Drive). ככה היא קוראת מיילים ורואה פגישות.</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">A connection between Donna and an external tool (Gmail, Calendar, Drive). This is how she reads emails and sees meetings.</td>
           </tr>
           <tr style="border-bottom:1px solid var(--glass-border)">
-            <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Scheduled Task</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">משימה שדונה מריצה לבד לפי שעון. למשל, בריפינג בוקר כל יום ב-9:15. המחשב חייב להיות דלוק.</td>
+            <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Routine</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">A task Donna runs automatically on a schedule. For example, a morning briefing every day at 9:15. Computer needs to be on.</td>
           </tr>
           <tr>
             <td style="padding:10px 12px;color:var(--orange);font-weight:600;white-space:nowrap;vertical-align:top">Markdown</td>
-            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">סוג קובץ טקסט פשוט (סיומת .md). כל הקבצים של דונה כתובים בפורמט הזה. אפשר לפתוח בכל עורך טקסט.</td>
+            <td style="padding:10px 12px;color:var(--dim);line-height:1.6">A simple text file format (.md extension). Every file Donna writes uses this format. Opens in any text editor.</td>
           </tr>
         </table>
-      </div>
+      </details>
 
-      <div style="text-align:center;padding:24px;margin-top:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(46,204,113,0.03));border:1px solid rgba(46,204,113,0.2);border-radius:12px">
+      <div style="text-align:center;padding:24px;margin-top:16px;background:linear-gradient(135deg,rgba(22,163,74,0.1),rgba(22,163,74,0.03));border:1px solid rgba(22,163,74,0.2);border-radius:12px">
         <div style="font-size:1.5em;margin-bottom:8px">🎉</div>
-        <p style="color:#2ecc71;font-weight:700;font-size:1.1em">מזל טוב! אתה מוכן לאתגר.</p>
-        <p style="color:var(--dim);margin-top:6px">כשיום 1 נפתח, תמצא אותו בטאב הבא.</p>
+        <p style="color:#16a34a;font-weight:700;font-size:1.1em">You're ready for the challenge.</p>
+        <p style="color:var(--dim);margin-top:6px">When Day 1 opens, you'll find it in the next tab.</p>
       </div>
 
-      <button class="complete-btn" data-day="0" onclick="completeDay(0)">סיימתי את ההכנה! אני מוכן לאתגר 🚀</button>
-      <button class="reset-btn" data-day="0" onclick="resetDay(0)"data-en="↩ Reset Day 0" data-he="↩ איפוס יום 0">↩ Reset Day 0</button>
+      <button class="complete-btn" data-day="0" onclick="completeDay(0)">I'm done with Day 0 . ready for the challenge 🚀</button>
+      <button class="reset-btn" data-day="0" onclick="resetDay(0)">↩ Reset Day 0</button>
     </div>
 
     <!-- ==================== DAY 1 ==================== -->
     <div class="day-content" id="day1">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
         <span class="day-number" data-en="Day 1" data-he="יום 1">Day 1</span>
         <h2 class="day-title">Meet Donna</h2>
         <p class="day-subtitle">מכירים את העובדת החדשה ומה היא עושה</p>
@@ -1602,7 +1689,7 @@ donna-starter-kit/<br>
         <h3><span class="sec-icon">👩‍💼</span> שלב 1: מי דונה ומה התפקיד שלה</h3>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:16px"><strong style="color:var(--text)">דונה = Chief of Staff AI.</strong> עוזרת מנכ"ל דיגיטלית שעובדת מתוך Claude Code Desktop, בטאב Code. היא לא צ'אטבוט. היא עובדת עם קבצים אמיתיים, מיילים אמיתיים, ויומן אמיתי.</p>
 
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:16px;margin:12px 0">
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:16px;margin:12px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:10px">מה היא עושה בפועל:</p>
           <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">1. קוראת מיילים</strong> ומסווגת אותם לפי דחיפות</p>
           <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">2. מכינה אותך לפגישות</strong> עם כל המידע הרלוונטי</p>
@@ -1649,7 +1736,7 @@ donna-starter-kit/<br>
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom:1px solid var(--glass-border);background:rgba(232,112,64,0.06)">
+              <tr style="border-bottom:1px solid var(--glass-border);background:rgba(249,115,22,0.06)">
                 <td style="padding:10px 8px;color:var(--orange);font-weight:700">1</td>
                 <td style="padding:10px 8px;color:var(--text);font-weight:600">Meet Donna</td>
                 <td style="padding:10px 8px;color:var(--dim)">מכירים את דונה והמבנה</td>
@@ -1684,9 +1771,33 @@ donna-starter-kit/<br>
         </div>
       </div>
 
-      <!-- Step 3: Meet the Starter Kit -->
+      <!-- Step 3: Download the Starter Kit (moved from Day 0) -->
       <div class="section">
-        <h3><span class="sec-icon">📦</span> שלב 3: מכירים את ה-Starter Kit</h3>
+        <h3><span class="sec-icon">⬇️</span> שלב 3: הורדת ה-Starter Kit</h3>
+        <p style="color:var(--dim);margin-bottom:12px">ה-Starter Kit זו תיקייה עם כל מה שדונה צריכה: זהות, זיכרון, סקילס, טמפלייטים, ומדריכים.</p>
+        <ol>
+          <li>הורד את ה-Starter Kit: <a href="https://jaygptpro.com/donna-challenge/donna-starter-kit.zip" target="_blank" class="link" download>לחץ כאן להורדה</a></li>
+          <li>פתח את קובץ ה-ZIP (לחיצה כפולה)</li>
+          <li>שים את התיקייה <strong>donna-starter-kit</strong> במקום נגיש (שולחן עבודה או Documents). לא בתוך תיקיות מקוננות.</li>
+        </ol>
+        <p style="color:var(--dim);margin-top:8px;font-weight:600">מה בפנים:</p>
+        <div style="background:#0f172a;padding:14px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85em;color:#cbd5e1;direction:ltr;text-align:left;line-height:2;margin-top:8px">
+donna-starter-kit/<br>
+&nbsp;&nbsp;CLAUDE.md &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- הוראות לדונה (לא נוגעים)<br>
+&nbsp;&nbsp;brain/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- הזיכרון של דונה (Obsidian)<br>
+&nbsp;&nbsp;prompts/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- פרומפטים מוכנים ליום 2<br>
+&nbsp;&nbsp;.claude/skills/ &nbsp;&lt;-- פקודות שדונה יודעת (יום 4)<br>
+&nbsp;&nbsp;templates/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- פורמטים לדוחות<br>
+&nbsp;&nbsp;guides/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- מדריכים כתובים<br>
+&nbsp;&nbsp;samples/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- דוגמאות כתיבה שלך<br>
+&nbsp;&nbsp;output/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- כל מה שדונה יוצרת
+        </div>
+        <p style="color:var(--dim);margin-top:12px">בשלב הבא נפתח אותה ב-Claude Code ונתחיל לעבוד.</p>
+      </div>
+
+      <!-- Step 4: Meet the Starter Kit -->
+      <div class="section">
+        <h3><span class="sec-icon">📦</span> שלב 4: מכירים את ה-Starter Kit</h3>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">זה השלב הכי חשוב היום. פתח את donna-starter-kit ב-Claude Code Desktop (טאב Code, לא Chat).</p>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">אחרי שפתחת, שלח את הפרומפט הזה כדי להכיר את מבנה התיקיות:</p>
         <div class="cmd-block">
@@ -1740,7 +1851,7 @@ donna-starter-kit/<br>
       <!-- Step 5: First conversation -->
       <div class="section">
         <h3><span class="sec-icon">💬</span> שלב 5: שיחה ראשונה עם דונה</h3>
-        <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:14px">
+        <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:14px">
           <p style="color:var(--orange);font-weight:700;font-size:1.05em;margin-bottom:6px">הרגע שמרגישים את ההבדל</p>
           <p style="color:var(--dim);line-height:1.7">זה לא עוד צ'אטבוט. תשאל אותה מי היא ותראה. יש פה אופי, הומור, ותגובות שאף AI אחר לא נותן. זה הרגע שמבינים שדונה שונה.</p>
         </div>
@@ -1760,7 +1871,7 @@ donna-starter-kit/<br>
           <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 8px;padding-right:20px">בודק שהאישיות של דונה פעילה. היא אמורה להגיב עם הומור יבש.</p>
-        <div style="background:rgba(61,214,140,0.08);border:1px solid rgba(61,214,140,0.2);border-radius:10px;padding:14px;margin:12px 0">
+        <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.2);border-radius:10px;padding:14px;margin:12px 0">
           <p style="color:var(--green);font-weight:600;margin-bottom:4px">שים לב לאופי שלה</p>
           <p style="color:var(--dim);font-size:0.88em;line-height:1.7">היא לא רובוט. היא חדה, ישירה, עם הומור. זה חלק מהחוויה. אם היא מדברת בלי אופי, תגיד לה: "Read your CLAUDE.md personality section and follow it."</p>
         </div>
@@ -1833,7 +1944,7 @@ donna-starter-kit/<br>
           <li><strong style="color:var(--text)">הכן 2-3 מיילים שכתבת</strong> (תצטרך להדביק אותם ב-Part 6 של about-me.md)</li>
           <li><strong style="color:var(--text)">קח את הזמן.</strong> ככל שהתשובות שלך מדויקות יותר, דונה עובדת טוב יותר.</li>
         </ol>
-        <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
+        <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:6px">חשוב: אל תדלג על ההכנה הזו</p>
           <p style="color:var(--dim);line-height:1.7;font-size:0.9em">מחר דונה תקרא את מה שכתבת ותמלא את כל הקבצים לבד. אם about-me.md ריק, אין ממה ללמוד. תן לעצמך 15-20 דקות למלא את הקובץ, ותהנה מחר מתוצאה הרבה יותר טובה.</p>
         </div>
@@ -1846,7 +1957,7 @@ donna-starter-kit/<br>
     <!-- ==================== DAY 2 ==================== -->
     <div class="day-content" id="day2">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/wfadduyp.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/wfadduyp.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
         <span class="day-number" data-en="Day 2" data-he="יום 2">Day 2</span>
         <h2 class="day-title">Donna, Meet My Business</h2>
         <p class="day-subtitle">דונה לומדת הכל על העסק שלך</p>
@@ -1867,18 +1978,18 @@ donna-starter-kit/<br>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">אתמול הכנת את הקובץ <strong style="color:var(--text)">about-me.md</strong> עם כל המידע על העסק שלך. היום דונה קוראת את מה שכתבת וממלאה את כל הקבצים שלה לבד.</p>
         <p style="color:var(--dim);line-height:1.8"><strong style="color:var(--text)">אתה לא צריך למלא כלום ידנית.</strong> פשוט תריץ את הפרומפטים המוכנים ותראה את דונה עובדת.</p>
         <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px;background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;text-align:center">
+          <div style="flex:1;min-width:200px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;text-align:center">
             <p style="color:var(--orange);font-weight:700;font-size:0.9em;margin-bottom:4px">Phase 1</p>
             <p style="color:var(--dim);font-size:0.85em">וודא שמילאת (באובסידיאן)</p>
           </div>
-          <div style="flex:1;min-width:200px;background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;text-align:center">
+          <div style="flex:1;min-width:200px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;text-align:center">
             <p style="color:var(--orange);font-weight:700;font-size:0.9em;margin-bottom:4px">Phase 2</p>
             <p style="color:var(--dim);font-size:0.85em">דונה לומדת (ב-Claude Code)</p>
           </div>
         </div>
 
         <!-- File structure explanation -->
-        <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;margin-top:12px">
+        <div style="background:var(--bg-soft);border:1px solid var(--border);padding:14px;border-radius:8px;margin-top:12px">
           <p style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.9em">מבנה הקבצים שצריך להכיר:</p>
           <div style="font-family:monospace;font-size:0.85em;color:var(--dim);direction:ltr;text-align:left;line-height:2">
             CLAUDE.md &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- הוראות לדונה (לא נוגעים)<br>
@@ -1911,14 +2022,14 @@ donna-starter-kit/<br>
       <div class="section">
         <h3><span class="sec-icon">🤖</span> Phase 2: דונה לומדת (ב-Claude Code)</h3>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:8px">פתח את donna-starter-kit ב-Claude Code Desktop (טאב Code). הריץ את הפרומפטים אחד אחרי השני.</p>
-        <div style="background:rgba(232,112,64,0.08);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;margin:0 0 16px">
+        <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;margin:0 0 16px">
           <p style="color:var(--orange);font-weight:600;font-size:0.9em;margin-bottom:4px">איך להריץ כל פרומפט:</p>
-          <p style="color:var(--dim);font-size:0.85em;line-height:1.8">פתח את הקובץ מתיקיית <strong style="color:var(--text)">prompts/</strong> ב-Obsidian. העתק את הפרומפט (מה שבתוך <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">``` ```</code>). הדבק ב-Claude Code ושלח. חכה שדונה תסיים.</p>
+          <p style="color:var(--dim);font-size:0.85em;line-height:1.8">פתח את הקובץ מתיקיית <strong style="color:var(--text)">prompts/</strong> ב-Obsidian. העתק את הפרומפט (מה שבתוך <code style="background:var(--bg-soft);border:1px solid var(--border);padding:2px 6px;border-radius:4px">``` ```</code>). הדבק ב-Claude Code ושלח. חכה שדונה תסיים.</p>
           <p style="color:var(--dim);font-size:0.82em;margin-top:6px">או לחלופין, השתמש בכפתור "העתק" כאן בפורטל.</p>
         </div>
 
         <!-- Prompt 1 -->
-        <div style="background:rgba(232,112,64,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
+        <div style="background:rgba(249,115,22,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:4px">פרומפט 1: Learn About Me</p>
           <p style="color:var(--dim);font-size:0.88em;line-height:1.7;margin-bottom:6px">דונה קוראת את מה שכתבת ב-about-me.md וממלאה את my-business.md לבד.</p>
           <p style="color:var(--dim);font-size:0.82em">קובץ: <strong style="color:var(--text)">prompts/01-learn-about-me.md</strong></p>
@@ -1941,7 +2052,7 @@ Show me a summary of what you learned and what you updated.</code>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 16px;padding-right:20px">דונה תקרא את מה שכתבת ותמלא את my-business.md. תראה אותה עובדת בזמן אמת.</p>
 
         <!-- Prompt 2 -->
-        <div style="background:rgba(232,112,64,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
+        <div style="background:rgba(249,115,22,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:4px">פרומפט 2: Learn My Writing Style</p>
           <p style="color:var(--dim);font-size:0.88em;line-height:1.7;margin-bottom:6px">דונה מנתחת את דוגמאות המיילים שלך ולומדת את סגנון הכתיבה שלך.</p>
           <p style="color:var(--dim);font-size:0.82em">קובץ: <strong style="color:var(--text)">prompts/02-learn-my-style.md</strong></p>
@@ -1961,7 +2072,7 @@ Show me what you learned about my writing style.</code>
         </div>
 
         <!-- Prompt 3 -->
-        <div style="background:rgba(232,112,64,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
+        <div style="background:rgba(249,115,22,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:4px">פרומפט 3: Verify Setup (הבדיקה הגדולה)</p>
           <p style="color:var(--dim);font-size:0.88em;line-height:1.7;margin-bottom:6px">תבקש מדונה לספר לך מה היא יודעת. אם משהו חסר או לא מדויק, תתקן.</p>
           <p style="color:var(--dim);font-size:0.82em">קובץ: <strong style="color:var(--text)">prompts/03-verify-setup.md</strong></p>
@@ -1973,7 +2084,7 @@ Show me what you learned about my writing style.</code>
         <p style="color:var(--dim);font-size:0.85em;margin:-4px 0 16px;padding-right:20px">אם דונה יודעת לענות על הכל, עברת. אם משהו חסר, תגיד לה מה לתקן.</p>
 
         <!-- Prompt 4: WOW moment -->
-        <div style="background:rgba(232,112,64,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
+        <div style="background:rgba(249,115,22,0.06);border-right:3px solid var(--orange);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0">
           <p style="color:var(--orange);font-weight:700;margin-bottom:4px">פרומפט 4: Business One-Pager (רגע הוואו)</p>
           <p style="color:var(--dim);font-size:0.88em;line-height:1.7;margin-bottom:6px">דונה כותבת סיכום עסקי שלם בלי שתגיד לה מילה. רק ממה שלמדה.</p>
           <p style="color:var(--dim);font-size:0.82em">קובץ: <strong style="color:var(--text)">prompts/04-business-one-pager.md</strong></p>
@@ -1982,7 +2093,7 @@ Show me what you learned about my writing style.</code>
           <code>Create a one-page business overview based on everything you know about me. Include: what I do, key numbers, products/services, key people, goals, current challenges, and your first impression. Save it to output/business-one-pager.md</code>
           <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-he="העתק">Copy</button>
         </div>
-        <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
+        <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
           <p style="color:var(--orange);font-weight:700;font-size:1.05em;margin-bottom:6px">זה הרגע.</p>
           <p style="color:var(--dim);line-height:1.7">דונה כותבת סקירה עסקית שלמה על העסק שלך. היא לא חיפשה אותך בגוגל. היא למדה ממה שסיפרת לה. פתח את <strong style="color:var(--text)">output/business-one-pager.md</strong> ב-Obsidian ותראה את התוצאה.</p>
         </div>
@@ -2056,7 +2167,7 @@ Show me what you learned about my writing style.</code>
     <!-- ==================== DAY 3 ==================== -->
     <div class="day-content" id="day3">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/ercyvufy.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/ercyvufy.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
         <span class="day-number" data-en="Day 3" data-he="יום 3">Day 3</span>
         <h2 class="day-title">Badge &amp; Access</h2>
         <p class="day-subtitle">דונה מקבלת גישה לכלים שלך</p>
@@ -2082,17 +2193,17 @@ Show me what you learned about my writing style.</code>
       <div class="section">
         <h3><span class="sec-icon">🔌</span> 4 החיבורים</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
-          <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;text-align:center">
+          <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.5em;margin-bottom:6px">📧</div>
             <strong style="color:var(--text)">Gmail</strong>
             <p style="color:var(--dim);font-size:0.82em;margin-top:6px">דונה קוראת מיילים, מסווגת, מכינה טיוטות תשובה</p>
           </div>
-          <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;text-align:center">
+          <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.5em;margin-bottom:6px">📅</div>
             <strong style="color:var(--text)">Calendar</strong>
             <p style="color:var(--dim);font-size:0.82em;margin-top:6px">דונה רואה פגישות, מכינה תדריכים, חוסמת זמן</p>
           </div>
-          <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:14px;text-align:center">
+          <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:1.5em;margin-bottom:6px">📁</div>
             <strong style="color:var(--text)">Drive</strong>
             <p style="color:var(--dim);font-size:0.82em;margin-top:6px">דונה מחפשת מסמכים, מציאה מידע רלוונטי</p>
@@ -2148,7 +2259,7 @@ Show me what you learned about my writing style.</code>
           <li><strong>חבר את כלי המשימות שלך (אופציונלי):</strong> לך ל-<strong>Customize > Connectors</strong> וחפש את שם הכלי (Asana, Monday, ClickUp, או Notion). אם אין לך כלי משימות, דלג על השלב הזה.</li>
           <li><strong>הדמו הגדול:</strong></li>
         </ol>
-        <div style="background:rgba(232,112,64,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
+        <div style="background:rgba(249,115,22,0.1);border:2px solid var(--orange);border-radius:10px;padding:16px;margin:12px 0">
           <p style="color:var(--orange);font-weight:700;font-size:1.05em;margin-bottom:6px">רגע הוואו של היום</p>
           <p style="color:var(--dim);line-height:1.7">זה הרגע שבו אתה מבין שדונה אמיתית. היא מושכת מידע מהמייל, מהיומן ומהדרייב בו-זמנית ומכינה תדריך מושלם לפגישה הבאה שלך.</p>
         </div>
@@ -2238,7 +2349,7 @@ Show me what you learned about my writing style.</code>
     <!-- ==================== DAY 4 ==================== -->
     <div class="day-content" id="day4">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/aycieyht.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/aycieyht.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
         <span class="day-number" data-en="Day 4" data-he="יום 4">Day 4</span>
         <h2 class="day-title">Training Day</h2>
         <p class="day-subtitle">דונה לומדת 10 משימות בפקודה אחת</p>
@@ -2296,7 +2407,7 @@ Show me what you learned about my writing style.</code>
         <div style="background:var(--card);border:1px solid var(--glass-border);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">/morning-briefing</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">Scheduled 9:15</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">Scheduled 9:15</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">סורקת מיילים, יומן ומשימות. מכינה בריפינג אחד מסודר עם סדרי עדיפויות וסיכונים.</p>
           <div class="cmd-block">
@@ -2310,7 +2421,7 @@ Show me what you learned about my writing style.</code>
         <div style="background:var(--card);border:1px solid var(--glass-border);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">/evening-summary</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">Scheduled 16:00</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">Scheduled 16:00</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">סוגרת את היום. מה נעשה, מה לא, מה דחוף למחר.</p>
           <div class="cmd-block">
@@ -2338,7 +2449,7 @@ Show me what you learned about my writing style.</code>
         <div style="background:var(--card);border:1px solid var(--glass-border);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">/prep-meeting [name]</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">Scheduled 16:00 + Manual</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">Scheduled 16:00 + Manual</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">מכינה תדריך לפגישה. מושכת מידע ממייל, יומן, ו-Key People.</p>
           <div class="cmd-block">
@@ -2422,7 +2533,7 @@ Show me what you learned about my writing style.</code>
         <div style="background:var(--card);border:1px solid var(--glass-border);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">/weekly-report</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">Scheduled Sunday 9:15</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">Scheduled Sunday 9:15</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:10px">דוח שבועי: ניצחונות, פספוסים, מספרים, ומה צריך לקרות בשבוע הבא.</p>
           <div class="cmd-block">
@@ -2434,10 +2545,10 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <!-- Skill: Ask Jay -->
-      <div style="background:linear-gradient(135deg,rgba(232,112,64,0.12),rgba(232,112,64,0.04));border:2px solid var(--orange);border-radius:12px;padding:20px;margin-bottom:16px">
+      <div style="background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(249,115,22,0.04));border:2px solid var(--orange);border-radius:12px;padding:20px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <strong style="color:var(--orange);font-size:1.1em">/ask-jay [question]</strong>
-          <span style="font-size:0.75em;padding:3px 10px;background:rgba(232,112,64,0.2);color:var(--orange);border-radius:20px;font-weight:600">Your Secret Weapon</span>
+          <span style="font-size:0.75em;padding:3px 10px;background:rgba(249,115,22,0.2);color:var(--orange);border-radius:20px;font-weight:600">Your Secret Weapon</span>
         </div>
         <p style="color:var(--text);font-size:0.92em;margin-bottom:10px;line-height:1.7"><strong>תקוע? יש שאלה?</strong> במקום לחכות לתשובה בווצאפ, תגיד לדונה לשאול את ג'יי. היא בודקת את כל מאגר הידע שג'יי בנה לתוך המערכת ועונה בשמו. אם היא לא מצאה תשובה, היא מנסחת לך את השאלה בצורה ברורה שתוכל לשלוח ישירות לקבוצת הווצאפ.</p>
         <div class="cmd-block">
@@ -2448,7 +2559,7 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <!-- Recommended order -->
-      <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:16px;margin:0 0 20px">
+      <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:16px;margin:0 0 20px">
         <p style="color:var(--orange);font-weight:700;margin-bottom:6px">אין זמן להריץ הכל? תתחיל עם אלה:</p>
         <p style="color:var(--dim);line-height:1.8"><strong style="color:var(--text)">/morning-briefing</strong> (הכי שימושי, הכי יומיומי), <strong style="color:var(--text)">/draft-reply</strong> (חוסך הכי הרבה זמן), <strong style="color:var(--text)">/prep-meeting</strong> (הכי מרשים). שלושת אלה לבד שווים את כל האתגר.</p>
       </div>
@@ -2562,7 +2673,7 @@ Show me what you learned about my writing style.</code>
     <!-- ==================== DAY 5 ==================== -->
     <div class="day-content" id="day5">
       <div class="day-header">
-        <lord-icon src="https://cdn.lordicon.com/aklfruoc.json" trigger="loop" delay="2000" colors="primary:#e87040,secondary:#f0935e" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/aklfruoc.json" trigger="loop" delay="2000" colors="primary:#f97316,secondary:#fb923c" style="width:80px;height:80px;display:block;margin:0 auto 16px"></lord-icon>
         <span class="day-number" data-en="Day 5" data-he="יום 5">Day 5</span>
         <h2 class="day-title">She Works While You Sleep</h2>
         <p class="day-subtitle">דונה עובדת לבד. גם בלעדיך.</p>
@@ -2643,10 +2754,10 @@ Show me what you learned about my writing style.</code>
       <div class="section">
         <h3><span class="sec-icon">🕐</span> 3 המשימות המתוזמנות</h3>
 
-        <div style="background:var(--card);border:1px solid rgba(232,112,64,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
+        <div style="background:var(--card);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">Morning Briefing</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">כל יום 9:15</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">כל יום 9:15</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מה עושה:</strong> סורקת מיילים, יומן ומשימות. מכינה סיכום בוקר עם סדרי עדיפויות.</p>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מתי רץ:</strong> כל יום ב-9:15 אוטומטית.</p>
@@ -2654,10 +2765,10 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.82em;font-style:italic"><strong>לאן הפלט נשמר:</strong> brain/Daily Logs/ ב-Obsidian</p>
         </div>
 
-        <div style="background:var(--card);border:1px solid rgba(232,112,64,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
+        <div style="background:var(--card);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">Evening Summary</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">כל יום 16:00</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">כל יום 16:00</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מה עושה:</strong> סוגרת את היום + מכינה תדריכים לפגישות של מחר.</p>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מתי רץ:</strong> כל יום ב-16:00 אוטומטית.</p>
@@ -2665,10 +2776,10 @@ Show me what you learned about my writing style.</code>
           <p style="color:var(--dim);font-size:0.82em;font-style:italic"><strong>לאן הפלט נשמר:</strong> brain/Daily Logs/ ב-Obsidian</p>
         </div>
 
-        <div style="background:var(--card);border:1px solid rgba(232,112,64,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
+        <div style="background:var(--card);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:16px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <strong style="color:var(--orange);font-size:1em">Weekly Report</strong>
-            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#f39c12;border-radius:20px;font-weight:600">ראשון 9:15</span>
+            <span style="font-size:0.75em;padding:3px 10px;background:rgba(243,156,18,0.1);color:#d97706;border-radius:20px;font-weight:600">ראשון 9:15</span>
           </div>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מה עושה:</strong> דוח שבועי. ניצחונות, פספוסים, מספרים, והמלצות לשבוע הבא.</p>
           <p style="color:var(--dim);font-size:0.88em;margin-bottom:6px"><strong>מתי רץ:</strong> כל ראשון ב-9:15 אוטומטית.</p>
@@ -2678,8 +2789,8 @@ Show me what you learned about my writing style.</code>
       </div>
 
       <!-- Computer must be on warning -->
-      <div style="background:rgba(231,76,60,0.08);border:2px solid rgba(231,76,60,0.3);border-radius:10px;padding:16px;margin:0 0 20px">
-        <p style="color:#e74c3c;font-weight:700;margin-bottom:6px">חשוב: המחשב חייב להיות דלוק</p>
+      <div style="background:rgba(220,38,38,0.08);border:2px solid rgba(220,38,38,0.3);border-radius:10px;padding:16px;margin:0 0 20px">
+        <p style="color:#dc2626;font-weight:700;margin-bottom:6px">חשוב: המחשב חייב להיות דלוק</p>
         <p style="color:var(--dim);line-height:1.8">Scheduled Tasks רצים רק כשהמחשב דלוק ו-Claude Desktop פתוח. אם המחשב כבוי, דונה לא תעבוד.</p>
         <p style="color:var(--dim);line-height:1.8;margin-top:6px"><strong style="color:var(--text)">Fallback:</strong> אם המחשב היה כבוי, פשוט הרץ /morning-briefing ידנית כשפותח את המחשב. לוקח 5 שניות.</p>
         <p style="color:var(--dim);line-height:1.8;margin-top:6px"><strong style="color:var(--text)">טיפ:</strong> תשאיר את המחשב דלוק בשעות שהגדרת (9:15 ו-16:00). או תריץ ידנית כשנוח לך.</p>
@@ -2767,10 +2878,10 @@ Show me what you learned about my writing style.</code>
 
       <!-- Graduation Box -->
       <div class="graduation-box">
-        <lord-icon src="https://cdn.lordicon.com/jkzgajyr.json" trigger="loop" delay="1500" colors="primary:#e87040,secondary:#3dd68c" style="width:100px;height:100px;display:block;margin:0 auto 12px"></lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/jkzgajyr.json" trigger="loop" delay="1500" colors="primary:#f97316,secondary:#3dd68c" style="width:100px;height:100px;display:block;margin:0 auto 12px"></lord-icon>
         <h3>סיימת את האתגר!</h3>
         <p style="color:var(--dim);line-height:1.8;margin-bottom:12px">בניית עובד AI אמיתי. לא צ'אטבוט, לא צעצוע. מערכת שלמה שעובדת בשבילך.</p>
-        <div style="background:rgba(232,112,64,0.06);border:1px solid rgba(232,112,64,0.2);border-radius:10px;padding:16px;margin:16px 0;text-align:right">
+        <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:10px;padding:16px;margin:16px 0;text-align:right">
           <p style="color:var(--orange);font-weight:700;margin-bottom:10px">מה בנית ב-5 ימים:</p>
           <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">10 סקילס</strong> שחוסכים שעות עבודה כל שבוע</p>
           <p style="color:var(--text);line-height:2"><strong style="color:var(--orange)">4 חיבורים</strong> למייל, יומן, דרייב ומשימות</p>
@@ -2935,7 +3046,7 @@ async function showPickRoundScreen(email){
   if(!opts) return;
   let html = '';
   if(r1Open && r1) html += `<a href="${PICK_FORM_URL}" target="_blank" class="whatsapp-link" style="background:#4285f4;text-align:center">\ud83d\udfe6 Round 1 (${fmt(r1.start_date,r1.end_date)})</a>`;
-  if(r2Open && r2) html += `<a href="${PICK_FORM_URL}" target="_blank" class="whatsapp-link" style="background:#e87040;text-align:center">\ud83d\udfe7 Round 2 (${fmt(r2.start_date,r2.end_date)})</a>`;
+  if(r2Open && r2) html += `<a href="${PICK_FORM_URL}" target="_blank" class="whatsapp-link" style="background:#f97316;text-align:center">\ud83d\udfe7 Round 2 (${fmt(r2.start_date,r2.end_date)})</a>`;
   if(!r1Open && !r2Open) html += `<p style="color:var(--dim)">Both rounds are currently full. Email info@jaygptpro.com for the next round.</p>`;
   opts.innerHTML = html;
   const screen = document.getElementById('pickRoundScreen');
@@ -3193,7 +3304,7 @@ function getDayUnlockDate(dayNum){
 }
 
 function isDayUnlocked(dayNum){
-  if(dayNum === 0) return true; // Prep always open
+  if(dayNum === 0) return true; // Day 0 always open for all registered users
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
   const check = localStorage.getItem('donna-challenge-round-check') || '';
   const expectedCheck = btoa(round + ':donna2026');
@@ -3202,11 +3313,16 @@ function isDayUnlocked(dayNum){
   if(check !== expectedCheck) {
     return false;
   }
-  if(round === 'both') return true; // Admin always open
-  if(round === 'unknown') return false; // Not picked a round yet
+  if(round === 'both') return true; // Admin always sees all days
+  // SOFT LAUNCH: Days 1-5 locked for regular users until content is finalized.
+  // To restore date-based unlocking, uncomment the block below and delete the `return false`.
+  return false;
+  /*
+  if(round === 'unknown') return false;
   const now = new Date();
   const unlock = getDayUnlockDate(dayNum);
   return now >= unlock;
+  */
 }
 
 function formatDate(d){
@@ -3219,7 +3335,6 @@ function updateNav(){
   const lang = getLang();
   const tabs = document.querySelectorAll('.day-tab');
   const dayLabel = (i) => {
-    if(i === 0) return lang === 'he' ? 'הכנה' : 'Prep';
     return lang === 'he' ? ('יום ' + i) : ('Day ' + i);
   };
   tabs.forEach((tab,i)=>{
@@ -3283,7 +3398,7 @@ function showLockedToast(dayNum){
   if(!t){
     t = document.createElement('div');
     t.id = 'locked-toast';
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(18,18,31,0.95);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,0.4);transition:all 0.3s ease;opacity:0;border:1px solid rgba(232,112,64,0.3);backdrop-filter:blur(8px)';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(18,18,31,0.95);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,0.4);transition:all 0.3s ease;opacity:0;border:1px solid rgba(249,115,22,0.3);backdrop-filter:blur(8px)';
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -3404,7 +3519,7 @@ function updateCompleteBtns(){
       btn.classList.add('done');
       btn.textContent = lang === 'he'
         ? ('יום ' + day + ' הושלם')
-        : (day === 0 ? 'Prep complete' : ('Day ' + day + ' complete'));
+        : ('Day ' + day + ' complete');
     } else {
       btn.classList.remove('done');
       if(day === 0){
@@ -3914,9 +4029,9 @@ window.showPortal = function(round) {
         adminBtn.target = '_blank';
         adminBtn.innerHTML = '🛡️';
         adminBtn.title = 'Admin Dashboard';
-        adminBtn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:9999;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(232,112,64,0.15);border:1px solid rgba(232,112,64,0.3);border-radius:50%;font-size:16px;text-decoration:none;transition:all 0.3s;cursor:pointer';
+        adminBtn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:9999;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:50%;font-size:16px;text-decoration:none;transition:all 0.3s;cursor:pointer';
         adminBtn.onmouseover = function(){ this.style.background='var(--orange)'; };
-        adminBtn.onmouseout = function(){ this.style.background='rgba(232,112,64,0.15)'; };
+        adminBtn.onmouseout = function(){ this.style.background='rgba(249,115,22,0.15)'; };
         document.body.appendChild(adminBtn);
       }
     }
