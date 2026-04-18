@@ -400,6 +400,32 @@ tr.expandable{cursor:pointer}
 }
 .quick-link:hover{border-color:var(--orange);color:var(--orange)}
 
+/* ===== WHATSAPP RECONCILIATION ===== */
+.wa-uploads{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.wa-drop{display:block;border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.18s;background:var(--glass)}
+.wa-drop:hover,.wa-drop.dragover{border-color:var(--orange);background:rgba(232,112,64,0.06)}
+.wa-drop.loaded{border-color:var(--green);background:rgba(76,175,80,0.06)}
+.wa-drop-emoji{font-size:1.8em;margin-bottom:6px}
+.wa-drop-title{font-weight:700;color:var(--bright);margin-bottom:4px}
+.wa-drop-hint{font-size:0.8em;color:var(--dim)}
+.wa-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.wa-stat{padding:14px;background:var(--glass);border:1px solid var(--border);border-radius:10px;text-align:center}
+.wa-stat .v{font-size:1.4em;font-weight:800;color:var(--orange)}
+.wa-stat .l{font-size:0.78em;color:var(--dim);margin-top:4px}
+.wa-stat.warn .v{color:#ffc107}
+.wa-stat.bad .v{color:var(--red)}
+.wa-stat.good .v{color:var(--green)}
+.wa-tables-wrap{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:1280px){.wa-tables-wrap{grid-template-columns:1fr 1fr}}
+.wa-table-section h4{margin:0 0 8px;color:var(--bright);font-size:0.95em}
+#waTable1, #waTable2{font-size:0.82em}
+#waTable1 td, #waTable2 td{padding:6px 8px;vertical-align:top}
+.wa-status-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:600;white-space:nowrap}
+.wa-status-pill.ok{background:rgba(76,175,80,0.15);color:var(--green)}
+.wa-status-pill.warn{background:rgba(255,193,7,0.15);color:#ffc107}
+.wa-status-pill.bad{background:rgba(231,76,60,0.15);color:var(--red)}
+.wa-status-pill.gray{background:rgba(255,255,255,0.06);color:var(--dim)}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px){
   .dash-header{padding:14px 16px;flex-wrap:wrap;gap:8px}
@@ -707,6 +733,7 @@ tr.expandable{cursor:pointer}
     <button class="tab-btn" data-tab="participants" onclick="switchTab('participants')">&#128101; משתתפים</button>
     <button class="tab-btn" data-tab="days" onclick="switchTab('days')">&#128197; ניתוח לפי יום</button>
     <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">&#128176; הכנסות</button>
+    <button class="tab-btn" data-tab="wa-recon" onclick="switchTab('wa-recon')">&#128172; השוואת WhatsApp</button>
     <button class="tab-btn" data-tab="manage" onclick="switchTab('manage')">&#9881;&#65039; ניהול</button>
   </nav>
 
@@ -1018,6 +1045,50 @@ tr.expandable{cursor:pointer}
           </thead>
           <tbody id="revenueBody"></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: WHATSAPP RECONCILIATION ===== -->
+  <div id="tab-wa-recon" class="tab-content">
+    <div class="mgmt-section">
+      <h3>&#128172; השוואת WhatsApp מול DB</h3>
+      <p style="font-size:0.88em;color:var(--dim);margin-bottom:14px;line-height:1.7">
+        גרור את שני קבצי ה-Export מ-WhatsApp (Round 1 + Round 2). הם מנותחים מקומית בדפדפן . הקבצים לא נשמרים ולא מועלים לשרת.
+        <br>איך לעשות Export: WhatsApp → קבוצה → תפריט → Export Chat → Without media.
+      </p>
+
+      <div class="wa-uploads">
+        <label class="wa-drop" id="waDrop1">
+          <input type="file" accept=".txt,text/plain" id="waFile1" style="display:none" onchange="onWaFileChange(1, this.files)">
+          <div class="wa-drop-inner">
+            <div class="wa-drop-emoji">&#128181;</div>
+            <div class="wa-drop-title">Round 1 export</div>
+            <div class="wa-drop-hint" id="waFile1Status">לחץ או גרור קובץ .txt</div>
+          </div>
+        </label>
+        <label class="wa-drop" id="waDrop2">
+          <input type="file" accept=".txt,text/plain" id="waFile2" style="display:none" onchange="onWaFileChange(2, this.files)">
+          <div class="wa-drop-inner">
+            <div class="wa-drop-emoji">&#129505;</div>
+            <div class="wa-drop-title">Round 2 export</div>
+            <div class="wa-drop-hint" id="waFile2Status">לחץ או גרור קובץ .txt</div>
+          </div>
+        </label>
+      </div>
+
+      <div id="waReconResults" style="display:none">
+        <div class="wa-summary" id="waSummary"></div>
+        <div class="wa-tables-wrap">
+          <div class="wa-table-section">
+            <h4>Round 1</h4>
+            <div class="table-scroll" style="max-height:540px"><table class="data-table" id="waTable1"></table></div>
+          </div>
+          <div class="wa-table-section">
+            <h4>Round 2</h4>
+            <div class="table-scroll" style="max-height:540px"><table class="data-table" id="waTable2"></table></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2973,6 +3044,272 @@ function switchTab(tabName){
   document.querySelectorAll('.tab-content').forEach(el => {
     el.classList.toggle('active', el.id === 'tab-' + tabName);
   });
+}
+
+// ============================================================================
+// WHATSAPP RECONCILIATION
+// ============================================================================
+const _waState = { 1: null, 2: null }; // parsed members per round
+
+function onWaFileChange(round, files){
+  if(!files || !files.length) return;
+  const file = files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result || '';
+    const members = parseWhatsAppExport(text);
+    _waState[round] = members;
+    const drop = document.getElementById('waDrop' + round);
+    drop.classList.add('loaded');
+    document.getElementById('waFile' + round + 'Status').textContent =
+      file.name + ' . ' + members.length + ' חברים פעילים';
+    runWaReconcile();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// Drag-and-drop on the labels
+['waDrop1','waDrop2'].forEach((id, idx) => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const drop = document.getElementById(id);
+    if(!drop) return;
+    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+    drop.addEventListener('drop', (e) => {
+      e.preventDefault(); drop.classList.remove('dragover');
+      onWaFileChange(idx + 1, e.dataTransfer.files);
+    });
+  });
+});
+
+// Parse WhatsApp .txt export. Returns array of active members (joined and not removed).
+// Each member: { displayName, phone (or null), joinedAt }
+function parseWhatsAppExport(text){
+  const lines = text.split(/\r?\n/);
+  const members = new Map(); // key = displayName (or phone), value = { displayName, phone, joinedAt }
+  // Match: [DD.M.YYYY, HH:MM:SS] Sender: action_text
+  const lineRe = /^\[(\d{1,2}\.\d{1,2}\.\d{4}),\s*\d{1,2}:\d{2}:\d{2}\]\s+(.+?):\s+(.*)$/u;
+  // Strip directional Unicode marks (LRM/RLM/PDF/LRI/RLI/PDI etc.) that WA inserts
+  const stripDirs = (s) => s ? s.replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '').trim() : '';
+  // Detect phone-only sender: starts with + and digits/spaces/parens/dashes
+  const isPhone = (s) => /^\+[\d\s().\u2011\u2010\u2012\u2013\u2014-]+$/.test(s);
+  // Extract phone digits (best effort)
+  const phoneDigits = (s) => '+' + (s.match(/\d/g) || []).join('');
+
+  // Action keywords (Hebrew + English) - direction marks already stripped
+  const isJoin = (action) => /הצטרף|joined|added you|נוספ|צירפת/u.test(action);
+  const isAdd = (action) => /צירפת את|הוספת|added/u.test(action);
+  const isLeave = (action) => /יצא|left/u.test(action) && !/הוצא/u.test(action);
+  const isRemove = (action) => /הסרת|removed/u.test(action);
+
+  for(const rawLine of lines){
+    const m = lineRe.exec(rawLine);
+    if(!m) continue;
+    const date = m[1];
+    const sender = stripDirs(m[2]);
+    const action = stripDirs(m[3]);
+
+    // Skip group meta
+    if(/Claude Code Challenge|My Love|Jay Margaliot/.test(sender) && !isJoin(action) && !isAdd(action)) {
+      // still check for "you added X" patterns where Jay is sender
+    }
+
+    // Pattern 1: "X joined the group via link" - sender IS the joiner
+    if(/הצטרף\/ה לקבוצה|joined.*group/u.test(action)){
+      const key = sender;
+      const phone = isPhone(sender) ? phoneDigits(sender) : null;
+      members.set(key, { displayName: sender, phone, joinedAt: date });
+      continue;
+    }
+    // Pattern 2: "you added X" or "צירפת את X" - extract X
+    const addedMatch = action.match(/^(?:צירפת את|הוספת את|added)\s+(.+?)$/u);
+    if(addedMatch){
+      const target = stripDirs(addedMatch[1]);
+      const phone = isPhone(target) ? phoneDigits(target) : null;
+      members.set(target, { displayName: target, phone, joinedAt: date });
+      continue;
+    }
+    // Pattern 3: "X joined via your invite"
+    if(/הצטרף\/הצטרפה דרך ההזמנה/u.test(action)){
+      const key = sender;
+      const phone = isPhone(sender) ? phoneDigits(sender) : null;
+      members.set(key, { displayName: sender, phone, joinedAt: date });
+      continue;
+    }
+    // Pattern 4: "X left"
+    if(isLeave(action)){
+      // sender is the one who left
+      members.delete(sender);
+      continue;
+    }
+    // Pattern 5: "you removed X" - extract X
+    const removedMatch = action.match(/^(?:הסרת את|removed)\s+(.+?)$/u);
+    if(removedMatch){
+      const target = stripDirs(removedMatch[1]);
+      members.delete(target);
+      continue;
+    }
+  }
+
+  return Array.from(members.values());
+}
+
+// Normalize a string for matching: lowercase, strip diacritics + extra spaces + common WA suffixes
+function normName(s){
+  if(!s) return '';
+  return s.toLowerCase()
+    .replace(/jay gpt|מאלפה|מהסדנה|דיברנו פעמיים בייעוץ|ai vault|biginternetcommerce\.com|-/gi, '')
+    .replace(/[\u0590-\u05ff]+/g, m => m) // keep Hebrew
+    .replace(/[^\w\u0590-\u05ff\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Try to match a WA member to an allowed_emails row.
+// Returns { row, score, reason } or null.
+function matchWaMember(waMember, allRows){
+  const wname = normName(waMember.displayName);
+  const wphone = (waMember.phone || '').replace(/\D/g, '');
+  const wnameTokens = wname.split(' ').filter(Boolean);
+
+  let best = null;
+
+  for(const row of allRows){
+    if(row.primary_email) continue; // skip aliases
+    const dbName = normName(row.name || '');
+    const dbPhone = (row.phone || '').replace(/\D/g, '');
+    const dbEmail = (row.email || '').toLowerCase();
+    let score = 0;
+    let reason = '';
+
+    // Phone match (best signal)
+    if(wphone && dbPhone && wphone === dbPhone){ score = 100; reason = 'phone exact'; }
+    // Name exact
+    else if(wname && dbName && wname === dbName){ score = 95; reason = 'name exact'; }
+    // First+last token both present
+    else if(wnameTokens.length >= 2){
+      const allFound = wnameTokens.every(t => t.length >= 2 && dbName.includes(t));
+      if(allFound){ score = 85; reason = 'name tokens all match'; }
+    }
+    // Single distinct token in name (length >= 4)
+    if(score === 0 && wnameTokens.length === 1 && wnameTokens[0].length >= 4 && dbName.includes(wnameTokens[0])){
+      score = 70; reason = 'first name only';
+    }
+    // Token in email local-part
+    if(score === 0 && wnameTokens.length){
+      for(const t of wnameTokens){
+        if(t.length >= 4 && dbEmail.split('@')[0].includes(t)){ score = 60; reason = 'email contains name'; break; }
+      }
+    }
+
+    if(score > 0 && (!best || score > best.score)){
+      best = { row, score, reason };
+    }
+  }
+
+  return best;
+}
+
+function renderWaReconcile(round, members){
+  const wantedRound = round === 1 ? 'round1' : 'round2';
+  const tableEl = document.getElementById('waTable' + round);
+
+  // Match each WA member
+  const matched = [];
+  const unmatched = [];
+  for(const m of members){
+    const match = matchWaMember(m, allParticipants);
+    if(match){
+      matched.push({ wa: m, db: match.row, score: match.score, reason: match.reason });
+    } else {
+      unmatched.push({ wa: m });
+    }
+  }
+
+  // DB members marked for this round (in_whatsapp = round) but NOT in WA
+  const matchedEmails = new Set(matched.map(x => x.db.email.toLowerCase()));
+  const dbInWaButMissing = allParticipants.filter(p =>
+    !p.primary_email
+    && (p.in_whatsapp === wantedRound || p.in_whatsapp === 'both')
+    && !matchedEmails.has(p.email.toLowerCase())
+  );
+
+  // DB members in this round but never declared WA, also not matched
+  const dbInRoundButNotInWa = allParticipants.filter(p =>
+    !p.primary_email
+    && p.round === wantedRound
+    && p.in_whatsapp !== wantedRound && p.in_whatsapp !== 'both'
+    && !matchedEmails.has(p.email.toLowerCase())
+  );
+
+  // Render
+  let html = '<thead><tr>'
+    + '<th>WhatsApp</th><th>טלפון</th><th>DB</th><th>סבב DB</th><th>סטטוס</th>'
+    + '</tr></thead><tbody>';
+
+  for(const m of matched){
+    const roundMatch = m.db.round === wantedRound;
+    const conf = m.score >= 90 ? 'ok' : m.score >= 70 ? 'warn' : 'gray';
+    html += '<tr>'
+      + '<td>' + esc(m.wa.displayName) + '</td>'
+      + '<td>' + (m.wa.phone ? esc(m.wa.phone) : '<span style="color:var(--dim)">.</span>') + '</td>'
+      + '<td><span style="color:var(--bright)">' + esc(m.db.name || '(no name)') + '</span><br><span style="font-size:0.8em;color:var(--dim);direction:ltr;display:inline-block">' + esc(m.db.email) + '</span></td>'
+      + '<td>' + (roundMatch ? '<span class="wa-status-pill ok">' + (m.db.round === 'round1' ? 'R1' : m.db.round === 'round2' ? 'R2' : m.db.round) + '</span>' : '<span class="wa-status-pill bad">' + esc(m.db.round || '?') + ' . סבב לא תואם!</span>') + '</td>'
+      + '<td><span class="wa-status-pill ' + conf + '" title="' + m.reason + ' (' + m.score + ')">' + (m.score >= 90 ? '✓ תואם' : m.score >= 70 ? 'תואם חלקי' : 'התאמה חלשה') + '</span></td>'
+      + '</tr>';
+  }
+
+  for(const u of unmatched){
+    html += '<tr style="background:rgba(231,76,60,0.04)">'
+      + '<td>' + esc(u.wa.displayName) + '</td>'
+      + '<td>' + (u.wa.phone ? esc(u.wa.phone) : '<span style="color:var(--dim)">.</span>') + '</td>'
+      + '<td colspan="2"><span style="color:var(--red)">לא נמצא ב-DB</span></td>'
+      + '<td><span class="wa-status-pill bad">לא מזוהה</span></td>'
+      + '</tr>';
+  }
+
+  if(dbInRoundButNotInWa.length){
+    html += '<tr><td colspan="5" style="background:rgba(255,193,7,0.08);font-weight:600;color:#ffc107;padding:10px">משלמים ב-DB ' + (round === 1 ? 'Round 1' : 'Round 2') + ' שלא בקבוצת WA</td></tr>';
+    for(const p of dbInRoundButNotInWa){
+      html += '<tr style="background:rgba(255,193,7,0.04)">'
+        + '<td colspan="2"><span style="color:var(--dim)">.</span></td>'
+        + '<td><span style="color:var(--bright)">' + esc(p.name || '(no name)') + '</span><br><span style="font-size:0.8em;color:var(--dim);direction:ltr;display:inline-block">' + esc(p.email) + '</span></td>'
+        + '<td><span class="wa-status-pill warn">' + esc(p.round || '?') + '</span></td>'
+        + '<td><span class="wa-status-pill warn" title="declared in_whatsapp=' + esc(p.in_whatsapp || 'unknown') + '">חסר ב-WA</span></td>'
+        + '</tr>';
+    }
+  }
+
+  html += '</tbody>';
+  tableEl.innerHTML = html;
+
+  return { matched: matched.length, unmatched: unmatched.length, missing: dbInRoundButNotInWa.length };
+}
+
+function runWaReconcile(){
+  if(!_waState[1] && !_waState[2]) return;
+  document.getElementById('waReconResults').style.display = 'block';
+
+  let s1 = { matched: 0, unmatched: 0, missing: 0 };
+  let s2 = { matched: 0, unmatched: 0, missing: 0 };
+
+  if(_waState[1]) s1 = renderWaReconcile(1, _waState[1]);
+  else document.getElementById('waTable1').innerHTML = '<tbody><tr><td style="padding:20px;color:var(--dim);text-align:center">העלה קובץ Round 1</td></tr></tbody>';
+
+  if(_waState[2]) s2 = renderWaReconcile(2, _waState[2]);
+  else document.getElementById('waTable2').innerHTML = '<tbody><tr><td style="padding:20px;color:var(--dim);text-align:center">העלה קובץ Round 2</td></tr></tbody>';
+
+  // Summary cards
+  const sum = document.getElementById('waSummary');
+  const totalWa = (_waState[1]?.length || 0) + (_waState[2]?.length || 0);
+  const matched = s1.matched + s2.matched;
+  const unmatched = s1.unmatched + s2.unmatched;
+  const missing = s1.missing + s2.missing;
+  sum.innerHTML =
+    `<div class="wa-stat"><div class="v">${totalWa}</div><div class="l">סה"כ ב-WA</div></div>` +
+    `<div class="wa-stat good"><div class="v">${matched}</div><div class="l">תואמים DB</div></div>` +
+    `<div class="wa-stat bad"><div class="v">${unmatched}</div><div class="l">לא מזוהים ב-WA</div></div>` +
+    `<div class="wa-stat warn"><div class="v">${missing}</div><div class="l">ב-DB אבל לא ב-WA</div></div>`;
 }
 
 // ===== INIT =====
