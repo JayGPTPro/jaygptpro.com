@@ -3953,25 +3953,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // External link click: preserve scroll position.
-// On some browsers / in certain Vimeo-iframe situations, clicking an <a target="_blank">
-// briefly shifts scroll. We open the link via window.open and restore scroll if needed.
+// Some browsers/the Vimeo iframe can cause the page to jump on link click.
+// We intercept in the CAPTURE phase (before any other listener), open the link
+// via window.open, and aggressively restore scroll for the next 500ms in case
+// anything (Vimeo, layout shifts, focus rings) tries to move it.
 document.addEventListener('click', (ev) => {
-  const a = ev.target.closest('a[href]');
+  const a = ev.target.closest && ev.target.closest('a[href]');
   if(!a) return;
   const href = a.getAttribute('href') || '';
-  // Only handle external http(s) links with target=_blank
   if(!/^https?:\/\//.test(href)) return;
   if(a.target !== '_blank') return;
   // Let middle-click, cmd/ctrl-click, shift-click go through native handling
   if(ev.button === 1 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
   ev.preventDefault();
+  ev.stopPropagation();
   const y = window.scrollY;
+  const x = window.scrollX;
   window.open(href, '_blank', 'noopener,noreferrer');
-  // Belt-and-suspenders: restore scroll on next frame in case anything shifted it
-  requestAnimationFrame(() => {
-    if(window.scrollY !== y) window.scrollTo({ top: y, left: 0, behavior: 'instant' });
-  });
-}, { capture: false });
+  // Lock scroll for ~500ms: anything that tries to move it gets reverted.
+  const deadline = Date.now() + 500;
+  const lock = () => {
+    if(window.scrollY !== y || window.scrollX !== x){
+      window.scrollTo({ top: y, left: x, behavior: 'instant' });
+    }
+    if(Date.now() < deadline) requestAnimationFrame(lock);
+  };
+  requestAnimationFrame(lock);
+  // Return false as extra safety for older browsers
+  return false;
+}, true); // CAPTURE phase
 
 // ===== ANALYTICS =====
 const ADMIN_EMAIL = 'info@jaygptpro.com';
