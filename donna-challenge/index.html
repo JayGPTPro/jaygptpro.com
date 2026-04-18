@@ -105,6 +105,33 @@ body::before{
   display:inline-block;
 }
 
+/* Video watermark overlay (anti-piracy: shows viewer's email, rotates corners) */
+.video-watermark{
+  position:absolute;
+  z-index:10;
+  pointer-events:none;
+  color:rgba(255,255,255,0.45);
+  font-family:'JetBrains Mono','SF Mono',monospace;
+  font-size:12px;
+  font-weight:500;
+  padding:6px 10px;
+  letter-spacing:0.3px;
+  text-shadow:0 1px 3px rgba(0,0,0,0.7);
+  transition:top 1.5s ease,bottom 1.5s ease,left 1.5s ease,right 1.5s ease,opacity 0.5s ease;
+  user-select:none;
+  white-space:nowrap;
+}
+.video-watermark::before{
+  content:attr(data-email);
+}
+.video-watermark.pos-tl{top:12px;left:14px;right:auto;bottom:auto}
+.video-watermark.pos-tr{top:12px;right:14px;left:auto;bottom:auto}
+.video-watermark.pos-bl{bottom:40px;left:14px;right:auto;top:auto}
+.video-watermark.pos-br{bottom:40px;right:14px;left:auto;top:auto}
+@media(max-width:700px){
+  .video-watermark{font-size:10px;padding:4px 7px}
+}
+
 /* Language mini-toggle (used on auth/error screens) */
 .lang-mini{
   display:block;margin:18px auto 0;
@@ -1165,7 +1192,8 @@ details.mini-collapse[open] > summary::before{transform:rotate(90deg)}
       </div>
 
       <div class="video-container">
-        <iframe src="https://www.youtube.com/embed/WPwctMlR6kk?rel=0" title="Day 0: The Complete Guide to Claude Code" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:20px"></iframe>
+        <iframe src="https://player.vimeo.com/video/1184420473?title=0&byline=0&portrait=0&color=f97316" title="Day 0: The Complete Guide to Claude Code" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:20px"></iframe>
+        <div class="video-watermark" data-day="0"></div>
       </div>
 
       <div style="text-align:center;margin:28px 0;opacity:0.3">
@@ -3774,11 +3802,49 @@ function saveProgressToServer(dayNum){
 }
 
 // ===== SHOW PORTAL =====
+// Video watermark: anti-piracy overlay showing viewer's email, rotating between corners
+let _watermarkRotator = null;
+function initVideoWatermarks(){
+  // Resolve viewer email: try localStorage first, then the userEmail element, then Supabase session
+  let email = (localStorage.getItem('donna-challenge-email') || '').trim();
+  if(!email){
+    const el = document.getElementById('userEmail');
+    if(el && el.textContent) email = el.textContent.trim();
+  }
+  // Async fallback to Supabase (don't block watermark if this fails)
+  if(!email && typeof sb !== 'undefined'){
+    sb.auth.getSession().then(res => {
+      const e = res?.data?.session?.user?.email;
+      if(e) applyWatermarkEmail(e);
+    }).catch(() => {});
+  }
+  if(email) applyWatermarkEmail(email);
+  // Start rotating positions (every 18s)
+  if(_watermarkRotator) clearInterval(_watermarkRotator);
+  const positions = ['pos-tl','pos-tr','pos-br','pos-bl'];
+  let idx = Math.floor(Math.random() * positions.length);
+  const rotate = () => {
+    document.querySelectorAll('.video-watermark').forEach(w => {
+      positions.forEach(p => w.classList.remove(p));
+      w.classList.add(positions[idx]);
+    });
+    idx = (idx + 1) % positions.length;
+  };
+  rotate();
+  _watermarkRotator = setInterval(rotate, 18000);
+}
+function applyWatermarkEmail(email){
+  document.querySelectorAll('.video-watermark').forEach(w => {
+    w.setAttribute('data-email', email);
+  });
+}
+
 function showPortal(round){
   hideAllScreens();
   document.getElementById('mainApp').style.display = 'block';
   const sup = document.getElementById('supportShortcut');
   if(sup) sup.style.display = 'flex';
+  try { initVideoWatermarks(); } catch(e){ console.warn('watermark init failed', e); }
 
   // Load server-side progress into state before initial render (best effort)
   const email = localStorage.getItem('donna-challenge-email');
