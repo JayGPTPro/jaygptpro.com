@@ -1167,18 +1167,6 @@ details.mini-collapse[open] > summary::before{transform:rotate(90deg)}
     </div>
     <h1 style="position:relative;z-index:2">Claude <span class="accent">Code Challenge</span></h1>
     <p class="header-sub" style="position:relative;z-index:2"><span>Your First AI Hire</span><span class="sep-dot"> . </span><span class="sub-tagline">5-day challenge to build your AI employee</span></p>
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span id="progressText">0 of 5 days complete</span>
-        <span id="progressPct">0%</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" style="width:0%"></div>
-      </div>
-      <div class="reset-all-wrap" id="resetAllWrap" style="display:none">
-        <button class="reset-all-btn" onclick="resetAll()" data-en="↩ Reset all progress" data-he="↩ איפוס כל ההתקדמות">↩ Reset all progress</button>
-      </div>
-    </div>
   </header>
 
   <!-- Day Navigation -->
@@ -3898,9 +3886,14 @@ function updateProgress(){
   const label = lang === 'he'
     ? (done + ' מתוך ' + total + ' ימים הושלמו')
     : (done + ' of ' + total + ' days complete');
-  document.getElementById('progressText').textContent = label;
-  document.getElementById('progressPct').textContent = pct + '%';
-  document.getElementById('progressFill').style.width = pct + '%';
+  // Global progress bar was removed from the header (the day tabs already show
+  // completion state via color). Guard each lookup so legacy callers don't crash.
+  const txt = document.getElementById('progressText');
+  if(txt) txt.textContent = label;
+  const pctEl = document.getElementById('progressPct');
+  if(pctEl) pctEl.textContent = pct + '%';
+  const fill = document.getElementById('progressFill');
+  if(fill) fill.style.width = pct + '%';
 }
 
 // ===== COMPLETE DAY =====
