@@ -3900,23 +3900,22 @@ function updatePriceDeadline() {
     const laOffset = utcHour - laHour; // positive = LA behind UTC (e.g. 7 for PDT)
     // Midnight tonight = next day at 00:00 LA = next day at laOffset:00 UTC
     const deadline = Date.UTC(y, m - 1, d + 1, laOffset, 0, 0);
-    const now = Date.now();
-    const diff = deadline - now;
+    const diff = deadline - now.getTime();
     const wrap = document.getElementById('priceDeadlineWrap');
     if (diff <= 0) {
         if (wrap) wrap.style.display = 'none';
         return;
     }
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
+    const hrs = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
     const pad = n => String(n).padStart(2, '0');
     const elH = document.getElementById('pdH');
     const elM = document.getElementById('pdM');
     const elS = document.getElementById('pdS');
-    if (elH) elH.textContent = pad(h);
-    if (elM) elM.textContent = pad(m);
-    if (elS) elS.textContent = pad(s);
+    if (elH) elH.textContent = pad(hrs);
+    if (elM) elM.textContent = pad(mins);
+    if (elS) elS.textContent = pad(secs);
 }
 updatePriceDeadline();
 setInterval(updatePriceDeadline, 1000);
