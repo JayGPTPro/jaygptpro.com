@@ -4281,10 +4281,22 @@ function showPortal(round){
 }
 
 // ===== AUTH STATE LISTENER =====
+// IMPORTANT: TOKEN_REFRESHED fires whenever Supabase auto-refreshes the token,
+// which happens on tab focus (returning from external link, switching apps, etc.)
+// If we re-run checkAuth() on TOKEN_REFRESHED, the entire portal re-renders
+// and the user loses their scroll position. We only need to re-check auth
+// on actual SIGNED_IN events, and only if the portal isn't already shown.
 sb.auth.onAuthStateChange((event, session) => {
-  if(event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED'){
-    checkAuth();
+  if(event === 'SIGNED_IN'){
+    const mainApp = document.getElementById('mainApp');
+    const alreadyShown = mainApp && mainApp.style.display === 'block';
+    if(!alreadyShown){
+      checkAuth();
+    }
+    // If already in portal, ignore - we're already authenticated and rendered.
   }
+  // Ignore TOKEN_REFRESHED entirely - it happens silently in the background
+  // and shouldn't trigger any UI updates.
 });
 
 // ===== INIT =====
