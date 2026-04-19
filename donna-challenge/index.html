@@ -3827,7 +3827,30 @@ function switchDay(dayNum){
   updateNav();
   showDayContent(dayNum);
   saveProgressToServer(dayNum);
+  // Update URL hash so refresh stays on this day and the URL is shareable
+  // (e.g. jaygptpro.com/donna-challenge/#day2). replaceState avoids polluting
+  // browser history with every tab click.
+  try {
+    const newHash = '#day' + dayNum;
+    if(window.location.hash !== newHash){
+      history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+    }
+  } catch(e){ /* hash update is best-effort, never block navigation */ }
 }
+
+// Parse a day number from the URL hash (e.g. "#day2" -> 2). Returns NaN if absent/invalid.
+function parseDayFromHash(){
+  const m = (window.location.hash || '').match(/^#day(\d)$/);
+  return m ? parseInt(m[1], 10) : NaN;
+}
+
+// React to manual URL changes (back/forward, pasted link, etc.)
+window.addEventListener('hashchange', () => {
+  const d = parseDayFromHash();
+  if(!isNaN(d) && d >= 0 && d <= 5 && d !== state.currentDay){
+    switchDay(d);
+  }
+});
 
 // Toast shown when user clicks a locked day tab.
 function showLockedToast(dayNum){
@@ -4275,11 +4298,18 @@ function showPortal(round){
   restoreChecks();
   startUnlockPolling();
 
-  // URL ?day=N override (e.g., from daily email link). Only if that day is unlocked.
+  // Pick which day to show on load. Priority order:
+  //   1. URL hash (#day2)            . shareable per-day links, survives refresh
+  //   2. URL ?day=N query param      . legacy support for older email links
+  //   3. state.currentDay            . last day the user was viewing
+  //   4. First unlocked, incomplete day (or Day 0)
   let startDay = state.currentDay;
   try {
+    const hashDay = parseDayFromHash();
     const urlDay = parseInt(new URLSearchParams(window.location.search).get('day') || '', 10);
-    if(!isNaN(urlDay) && urlDay >= 0 && urlDay <= 5 && isDayUnlocked(urlDay)){
+    if(!isNaN(hashDay) && hashDay >= 0 && hashDay <= 5 && isDayUnlocked(hashDay)){
+      startDay = hashDay;
+    } else if(!isNaN(urlDay) && urlDay >= 0 && urlDay <= 5 && isDayUnlocked(urlDay)){
       startDay = urlDay;
     } else if(startDay < 0 || startDay > 5 || !isDayUnlocked(startDay)){
       startDay = 0;
@@ -4294,6 +4324,13 @@ function showPortal(round){
   saveState();
   updateNav();
   showDayContent(startDay);
+  // Sync URL hash with the day we ended up on (so refresh stays here)
+  try {
+    const targetHash = '#day' + startDay;
+    if(window.location.hash !== targetHash){
+      history.replaceState(null, '', window.location.pathname + window.location.search + targetHash);
+    }
+  } catch(e){ /* best-effort */ }
 }
 
 // ===== AUTH STATE LISTENER =====
