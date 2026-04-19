@@ -815,6 +815,92 @@ section { position: relative; }
     animation: pulseRing 2.5s infinite;
 }
 .round-last-spots::before { content: "🔴"; font-size: 9px; }
+.round-spots-8 {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    padding: 5px 12px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    animation: pulseRing 2.5s infinite;
+}
+.round-spots-bar {
+    width: 100%;
+    height: 5px;
+    background: #f3f4f6;
+    border-radius: 99px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+.round-spots-bar-fill {
+    height: 100%;
+    width: 84%;
+    background: linear-gradient(90deg, var(--orange-dark), var(--orange));
+    border-radius: 99px;
+}
+.price-deadline-timer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #0f172a;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+.price-deadline-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+}
+.price-deadline-label strong { color: #fb923c; }
+.price-deadline-clock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+.price-deadline-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255,255,255,0.08);
+    border-radius: 7px;
+    padding: 6px 10px;
+    min-width: 46px;
+}
+.price-deadline-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f97316;
+    line-height: 1;
+}
+.price-deadline-lbl {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 3px;
+}
+.price-deadline-sep {
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(249,115,22,0.5);
+    padding-bottom: 12px;
+}
+@media (max-width: 480px) {
+    .price-deadline-timer { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .price-deadline-num { font-size: 18px; }
+}
 
 /* Sold Out card */
 .round-card.sold-out {
@@ -2997,6 +3083,8 @@ section { position: relative; }
                 <div class="round-label" data-en="Round 2" data-he="סבב 2">Round 2</div>
                 <div class="round-dates">Apr 27 - May 1</div>
                 <div class="round-spots" data-en="50 spots" data-he="50 מקומות">50 spots</div>
+                <div class="round-spots-8" data-en="🔴 8 spots left" data-he="🔴 8 מקומות נותרו">🔴 8 spots left</div>
+                <div class="round-spots-bar"><div class="round-spots-bar-fill"></div></div>
                 <div class="round-card-inner-cta">
                     <span data-en="Lock In $247" data-he="שריין מקום ב-$247">Lock In $247</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -3531,6 +3619,26 @@ section { position: relative; }
                     <li><span class="check">✓</span> <span data-en="48-hour money-back guarantee" data-he="אחריות החזר כספי תוך 48 שעות">48-hour money-back guarantee</span></li>
                 </ul>
 
+                <div class="price-deadline-timer" id="priceDeadlineWrap">
+                    <div class="price-deadline-label"><span data-en="Price goes up to " data-he="המחיר עולה ל-">Price goes up to </span><strong>$397</strong> <span data-en="in:" data-he="בעוד:">in:</span></div>
+                    <div class="price-deadline-clock">
+                        <div class="price-deadline-unit">
+                            <span class="price-deadline-num" id="pdH">00</span>
+                            <span class="price-deadline-lbl" data-en="HRS" data-he="שע׳">HRS</span>
+                        </div>
+                        <span class="price-deadline-sep">:</span>
+                        <div class="price-deadline-unit">
+                            <span class="price-deadline-num" id="pdM">00</span>
+                            <span class="price-deadline-lbl" data-en="MIN" data-he="דק׳">MIN</span>
+                        </div>
+                        <span class="price-deadline-sep">:</span>
+                        <div class="price-deadline-unit">
+                            <span class="price-deadline-num" id="pdS">00</span>
+                            <span class="price-deadline-lbl" data-en="SEC" data-he="שנ׳">SEC</span>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=H3FQ6C" class="btn-checkout">
                     <span data-en="Lock In $247 (Save $150)" data-he="שריין מקום ב-$247 (חוסך $150)">Lock In $247 (Save $150)</span>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -3539,7 +3647,8 @@ section { position: relative; }
                 <p class="pricing-guarantee">🛡️ <span data-en="Full refund within " data-he="החזר מלא תוך ">Full refund within </span><strong data-en="48 hours" data-he="48 שעות">48 hours</strong><span data-en=" of Day 1. Zero risk." data-he=" מיום 1. בלי סיכון."> of Day 1. Zero risk.</span></p>
 
                 <div class="urgency-note">
-                    <strong data-en="Heads up:" data-he="שים לב:">Heads up:</strong> <span data-en="Round 1 starts April 20. Round 2 starts April 27. Each round is limited to 50 spots. When they're full, they're full." data-he="סבב 1 מתחיל ב-20 באפריל. סבב 2 מתחיל ב-27 באפריל. כל סבב מוגבל ל-50 מקומות. כשנגמר, נגמר." data-round="round1">Round 1 starts April 20. Round 2 starts April 27. Each round is limited to 50 spots. When they're full, they're full.</span>
+                    <strong data-en="Round 1: Sold Out." data-he="סבב 1: אזל.">Round 1: Sold Out.</strong>
+                    <span data-en=" Round 2 (Apr 27): only 8 spots left. When they're gone, they're gone." data-he=" סבב 2 (27 באפריל): נותרו רק 8 מקומות. כשנגמר, נגמר."> Round 2 (Apr 27): only 8 spots left. When they're gone, they're gone.</span>
                 </div>
             </div>
         </div>
@@ -3568,7 +3677,7 @@ section { position: relative; }
     <div class="wrap">
         <div class="final-cta-inner">
             <h2><span data-en="Your AI Employee is" data-he="עובד ה-AI שלך במרחק">Your AI Employee is</span><br><span class="hl" data-en="5 Days Away." data-he="של 5 ימים.">5 Days Away.</span></h2>
-            <p data-en="Two rounds: Apr 20-24 or Apr 27-May 1. 50 spots each. 30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up." data-he="שני סבבים: 20-24 באפריל או 27 באפריל עד 1 במאי. 50 מקומות בכל סבב. 30 עד 60 דקות ביום. בסוף, Chief of Staff מבוסס AI שמנהל לך את הבוקר עוד לפני שהתעוררת.">Two rounds: Apr 20-24 or Apr 27-May 1. 50 spots each. 30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up.</p>
+            <p data-en="Round 2: Apr 27-May 1. Only 8 spots left. 30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up." data-he="סבב 2: 27 באפריל עד 1 במאי. נותרו רק 8 מקומות. 30 עד 60 דקות ביום. בסוף, Chief of Staff מבוסס AI שמנהל לך את הבוקר עוד לפני שהתעוררת.">Round 2: Apr 27-May 1. Only 8 spots left. 30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up.</p>
             <a href="https://buy.stripe.com/9B67sNdvX2cigseg2Gbwk00?prefilled_promo_code=H3FQ6C" class="btn-primary">
                 <span><span data-en="Lock In Your Spot." data-he="אני רוצה להיכנס.">Lock In Your Spot.</span> <span class="btn-old">$397</span> $247</span>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -3785,6 +3894,31 @@ function updateCountdown() {
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+// ===== PRICE DEADLINE COUNTDOWN (midnight LA time) =====
+function updatePriceDeadline() {
+    // Midnight April 21 PDT (UTC-7) = 2026-04-21T07:00:00Z
+    const deadline = new Date('2026-04-21T07:00:00.000Z').getTime();
+    const now = Date.now();
+    const diff = deadline - now;
+    const wrap = document.getElementById('priceDeadlineWrap');
+    if (diff <= 0) {
+        if (wrap) wrap.style.display = 'none';
+        return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const pad = n => String(n).padStart(2, '0');
+    const elH = document.getElementById('pdH');
+    const elM = document.getElementById('pdM');
+    const elS = document.getElementById('pdS');
+    if (elH) elH.textContent = pad(h);
+    if (elM) elM.textContent = pad(m);
+    if (elS) elS.textContent = pad(s);
+}
+updatePriceDeadline();
+setInterval(updatePriceDeadline, 1000);
 
 // ===== CHAT MOCKUP ANIMATION =====
 const chatWindow = document.querySelector('.chat-window');
