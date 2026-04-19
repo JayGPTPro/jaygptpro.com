@@ -2787,13 +2787,6 @@ section { position: relative; }
         <div class="hero-badge">
             <span class="pulse-dot"></span>
             <span data-en="The Claude Code Challenge" data-he="אתגר קלוד קוד">The Claude Code Challenge</span>
-            <span style="color: var(--text-4); margin: 0 6px;">|</span>
-            <span id="heroCdWrap" style="display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.5px; color: var(--orange-dark);">
-                <span id="heroCdDays">00</span>d
-                <span id="heroCdHours">00</span>h
-                <span id="heroCdMins">00</span>m
-                <span id="heroCdSecs">00</span>s
-            </span>
         </div>
 
         <h1>
@@ -3092,7 +3085,7 @@ section { position: relative; }
             </a>
         </div>
         <div class="countdown-wrap reveal" id="countdownWrap">
-            <div class="countdown-label" data-en="Round 1 starts in" data-he="סבב 1 מתחיל בעוד">Round 1 starts in</div>
+            <div class="countdown-label" data-en="Round 2 starts in" data-he="סבב 2 מתחיל בעוד">Round 2 starts in</div>
             <div class="countdown-boxes">
                 <div class="countdown-box">
                     <span class="countdown-num" id="cdDays">00</span>
@@ -3851,9 +3844,9 @@ if (pricingCard && priceTheater) {
     priceObserver.observe(pricingCard);
 }
 
-// ===== COUNTDOWN TIMER =====
+// ===== COUNTDOWN TIMER (Round 2: Apr 27 9am LA = 16:00 UTC) =====
 function updateCountdown() {
-    const target = new Date('2026-04-20T09:00:00').getTime();
+    const target = new Date('2026-04-27T16:00:00.000Z').getTime();
     const now = Date.now();
     const diff = target - now;
     if (diff <= 0) {
@@ -3895,10 +3888,18 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// ===== PRICE DEADLINE COUNTDOWN (midnight LA time) =====
+// ===== PRICE DEADLINE COUNTDOWN (midnight LA time, computed dynamically) =====
 function updatePriceDeadline() {
-    // Midnight April 21 PDT (UTC-7) = 2026-04-21T07:00:00Z
-    const deadline = new Date('2026-04-21T07:00:00.000Z').getTime();
+    // Compute tonight's midnight in America/Los_Angeles dynamically
+    const now = new Date();
+    const laDate = now.toLocaleDateString('en-CA', {timeZone: 'America/Los_Angeles'}); // "2026-04-20"
+    const [y, m, d] = laDate.split('-').map(Number);
+    // Get the UTC offset for LA right now using Intl
+    const laHour = parseInt(new Intl.DateTimeFormat('en-US', {timeZone: 'America/Los_Angeles', hour: 'numeric', hour12: false}).format(now));
+    const utcHour = now.getUTCHours();
+    const laOffset = utcHour - laHour; // positive = LA behind UTC (e.g. 7 for PDT)
+    // Midnight tonight = next day at 00:00 LA = next day at laOffset:00 UTC
+    const deadline = Date.UTC(y, m - 1, d + 1, laOffset, 0, 0);
     const now = Date.now();
     const diff = deadline - now;
     const wrap = document.getElementById('priceDeadlineWrap');
