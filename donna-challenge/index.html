@@ -4435,6 +4435,13 @@ function findNextLockedDay(){
 function updateCountdown(){
   const el = document.getElementById('unlockCountdown');
   if(!el) return;
+  // 2026-04-21: Days are unlocked MANUALLY (gate in isDayUnlocked).
+  // The countdown below uses start_date arithmetic and would show wrong
+  // times while we're on manual mode. Force-hide until Jay re-enables
+  // automatic date-based unlock.
+  el.style.display = 'none';
+  return;
+  // eslint-disable-next-line no-unreachable
   const nextDay = findNextLockedDay();
   if(nextDay === null){ el.style.display = 'none'; return; }
   const unlock = getDayUnlockDate(nextDay);
