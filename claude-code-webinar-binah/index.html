@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code. הכלי שמשנה את הכללים של AI | וובינר חינמי בעברית</title>
+    <meta name="description" content="וובינר חי בעברית עם ג'יי מרגליות ומנדי קוריץ. 90 דקות על Claude Code. הכלי שלא עונה לכם, הוא עובד בשבילכם. יום חמישי 30.4 בשעה 20:00. חינם.">
+    <meta property="og:title" content="Claude Code: הכלי שמשנה את הכללים של AI">
+    <meta property="og:description" content="וובינר חי בעברית. 90 דקות שיראו לכם מה AI באמת יכול לעשות. חינמי. יום חמישי 30.4 20:00.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #f5f5f7;
+    --bg-2: #ffffff;
+    --bg-3: #fafafc;
+    --bg-soft: #eeeef2;
+    --bg-cream: #fff9f2;
+    --bg-dark: #0a0a14;
+    --border: #e5e5eb;
+    --border-hi: #d4d4dc;
+    --text: #0a0a0f;
+    --text-2: #2a2a35;
+    --text-3: #55556a;
+    --text-4: #8a8a98;
+    --text-5: #b0b0ba;
+    --orange: #f97316;
+    --orange-2: #fb923c;
+    --orange-3: #fbbf24;
+    --orange-dark: #ea580c;
+    --orange-darker: #c2410c;
+    --orange-light: #ffedd5;
+    --orange-soft: rgba(249, 115, 22, 0.08);
+    --orange-glow: rgba(249, 115, 22, 0.2);
+    --claude: #d97757;
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --purple: #8b5cf6;
+    --shadow-sm: 0 1px 3px rgba(20, 20, 40, 0.04), 0 1px 2px rgba(20, 20, 40, 0.03);
+    --shadow: 0 4px 12px rgba(20, 20, 40, 0.05), 0 2px 4px rgba(20, 20, 40, 0.04);
+    --shadow-lg: 0 20px 50px rgba(20, 20, 40, 0.08), 0 8px 20px rgba(20, 20, 40, 0.04);
+    --shadow-xl: 0 40px 80px rgba(20, 20, 40, 0.1), 0 15px 30px rgba(20, 20, 40, 0.06);
+    --shadow-orange: 0 20px 50px rgba(249, 115, 22, 0.25), 0 10px 20px rgba(249, 115, 22, 0.15);
+    --shadow-orange-lg: 0 30px 80px rgba(249, 115, 22, 0.4), 0 15px 30px rgba(249, 115, 22, 0.25);
+    --radius: 20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
+@keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.55); }
+    70% { box-shadow: 0 0 0 20px rgba(249,115,22,0); }
+    100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+}
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes floatStar { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-18px) rotate(8deg); } 75% { transform: translateY(12px) rotate(-6deg); } }
+@keyframes lineDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes checkIn { 0% { transform: scale(0) rotate(-10deg); opacity: 0; } 70% { transform: scale(1.15) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+@keyframes countUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bgPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+}
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.2,0.8,0.2,1), transform 0.8s cubic-bezier(0.2,0.8,0.2,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+.reveal-d4 { transition-delay: 0.32s; }
+
+/* ===== LAYOUT ===== */
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.wrap-sm { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== CLAUDE STARS (DECORATIVE BG) ===== */
+.claude-star {
+    position: absolute;
+    pointer-events: none;
+    color: var(--claude);
+    z-index: 0;
+}
+.claude-star.cs-hero-1 { top: 5%; right: 3%; width: 200px; height: 200px; animation: floatStar 14s ease-in-out infinite; opacity: 0.12; }
+.claude-star.cs-hero-2 { top: 12%; left: 4%; width: 140px; height: 140px; animation: floatStar 11s ease-in-out infinite 1s; opacity: 0.1; }
+.claude-star.cs-hero-3 { bottom: 8%; right: 8%; width: 90px; height: 90px; animation: floatStar 13s ease-in-out infinite 2s; opacity: 0.08; }
+.claude-star.cs-what-1 { top: 5%; left: -50px; width: 240px; height: 240px; animation: floatStar 16s ease-in-out infinite 2s; opacity: 0.06; }
+.claude-star.cs-what-2 { bottom: 10%; right: -30px; width: 180px; height: 180px; animation: floatStar 13s ease-in-out infinite 0.5s; opacity: 0.07; }
+.claude-star.cs-pain { top: 8%; right: 6%; width: 180px; height: 180px; animation: floatStar 17s ease-in-out infinite 1.5s; opacity: 0.07; }
+.claude-star.cs-demos-1 { top: 2%; left: 4%; width: 220px; height: 220px; animation: floatStar 18s ease-in-out infinite 1.5s; opacity: 0.06; }
+.claude-star.cs-demos-2 { bottom: 6%; right: 5%; width: 160px; height: 160px; animation: floatStar 15s ease-in-out infinite 2.5s; opacity: 0.07; }
+.claude-star.cs-who-1 { top: 10%; right: 3%; width: 180px; height: 180px; animation: floatStar 14s ease-in-out infinite 0.5s; opacity: 0.06; }
+.claude-star.cs-about-1 { top: 15%; left: 2%; width: 200px; height: 200px; animation: floatStar 16s ease-in-out infinite 1s; opacity: 0.07; }
+.claude-star.cs-reg-1 { top: -60px; right: -40px; width: 280px; height: 280px; animation: floatStar 20s ease-in-out infinite; opacity: 0.08; }
+.claude-star.cs-reg-2 { bottom: -40px; left: -30px; width: 200px; height: 200px; animation: floatStar 14s ease-in-out infinite 1s; opacity: 0.07; }
+@media (max-width: 760px) {
+    .claude-star { display: none; }
+    .claude-star.cs-hero-1, .claude-star.cs-reg-1 { display: block; width: 120px; height: 120px; opacity: 0.08; }
+}
+
+/* ===== ANNOUNCEMENT BAR ===== */
+.announce-bar {
+    background: linear-gradient(90deg, var(--orange-darker), var(--orange-dark), var(--orange), var(--orange-dark), var(--orange-darker));
+    background-size: 200% 100%;
+    animation: shimmer 8s linear infinite;
+    color: white;
+    text-align: center;
+    padding: 13px 24px;
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+.announce-bar span { opacity: 0.75; margin: 0 10px; }
+.announce-bar strong { font-weight: 800; }
+
+/* ===== HERO ===== */
+.hero {
+    position: relative;
+    padding: 56px 0 88px;
+    overflow: hidden;
+}
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 65% 45% at 50% 0%, rgba(249,115,22,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 45% at 85% 30%, rgba(251,191,36,0.1) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 10% 60%, rgba(139,92,246,0.06) 0%, transparent 55%);
+    pointer-events: none;
+}
+.hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(10,10,15,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(10,10,15,0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, black 0%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, black 0%, transparent 75%);
+    pointer-events: none;
+}
+
+.hero-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--orange-dark);
+    padding: 11px 22px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeDown 0.6s ease;
+}
+.hero-badge .pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 10px var(--orange);
+    flex-shrink: 0;
+}
+
+.hero h1 {
+    font-size: clamp(40px, 7.5vw, 84px);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -1.2px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.7s ease 0.08s both;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--text);
+}
+.hero h1 .accent {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), var(--orange-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+}
+.hero h1 .accent::after {
+    content: '';
+    position: absolute;
+    right: 0; bottom: -6px;
+    width: 100%; height: 4px;
+    background: linear-gradient(90deg, var(--orange-dark), var(--orange), var(--orange-3));
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: right;
+    animation: lineDraw 1.1s cubic-bezier(0.2,0.8,0.2,1) 0.7s both;
+    box-shadow: 0 0 14px rgba(249,115,22,0.45);
+}
+
+.hero-sub {
+    font-size: clamp(18px, 2.4vw, 23px);
+    color: var(--text-3);
+    line-height: 1.65;
+    max-width: 660px;
+    margin: 0 auto 36px;
+    animation: fadeUp 0.7s ease 0.18s both;
+    font-weight: 500;
+}
+.hero-sub strong { color: var(--text); font-weight: 800; }
+.hero-sub .hl {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+/* Date/time chips row */
+.hero-chips {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    animation: fadeUp 0.7s ease 0.26s both;
+}
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 11px 22px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-2);
+    box-shadow: var(--shadow-sm);
+}
+.chip .chip-icon { font-size: 18px; }
+.chip.chip-highlight {
+    background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(251,191,36,0.08));
+    border-color: rgba(249,115,22,0.4);
+    color: var(--orange-dark);
+    box-shadow: 0 4px 12px rgba(249,115,22,0.15);
+}
+
+/* Hosts preview in hero */
+.hero-hosts {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 18px 8px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-2);
+    box-shadow: var(--shadow-sm);
+    animation: fadeUp 0.7s ease 0.22s both;
+}
+.hero-hosts-avatars {
+    display: flex;
+    position: relative;
+}
+.hero-hosts-avatars .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2.5px solid var(--bg-2);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    background-color: var(--orange-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.hero-hosts-avatars .avatar.a1 { z-index: 2; }
+.hero-hosts-avatars .avatar.a2 { margin-right: -14px; z-index: 1; }
+.hero-hosts .with-text {
+    color: var(--text-4);
+    font-weight: 500;
+    margin: 0 4px;
+}
+
+/* CTA */
+.hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    animation: fadeUp 0.8s ease 0.34s both;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 54px;
+    background: linear-gradient(135deg, var(--orange-3), var(--orange), var(--orange-dark));
+    color: white;
+    border-radius: 100px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-orange-lg);
+    position: relative;
+    overflow: hidden;
+    animation: pulseRing 2.5s ease-in-out infinite;
+}
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
+}
+.btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 30px 70px rgba(249,115,22,0.45), 0 15px 25px rgba(249,115,22,0.25);
+}
+.btn-primary svg { flex-shrink: 0; }
+
+.hero-trust {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 14.5px;
+    color: var(--text-3);
+    font-weight: 600;
+}
+.hero-trust span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.hero-trust span::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(22,163,74,0.4);
+}
+
+/* ===== SECTION COMMONS ===== */
+section { position: relative; }
+.section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+.section-header { text-align: center; max-width: 720px; margin: 0 auto 56px; position: relative; z-index: 2; }
+.section-header.wide { max-width: 900px; }
+.section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 18px;
+}
+.section-tag::before {
+    content: '';
+    width: 28px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--orange));
+    border-radius: 1px;
+}
+.section-header h2 {
+    font-size: clamp(30px, 5vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.08;
+    margin-bottom: 20px;
+    color: var(--text);
+}
+.section-header h2 .hl {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), var(--orange-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.section-header p {
+    font-size: 18px;
+    color: var(--text-3);
+    line-height: 1.75;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ===== WHAT IS CLAUDE CODE SECTION ===== */
+.what-section {
+    padding: 100px 0;
+    background: var(--bg);
+    overflow: hidden;
+}
+
+.what-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    max-width: 980px;
+    margin: 0 auto 48px;
+    position: relative;
+    z-index: 2;
+}
+
+.what-card {
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 30px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+.what-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--orange-3), var(--orange), var(--orange-dark));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.what-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(249,115,22,0.3);
+}
+.what-card:hover::before { opacity: 1; }
+
+.what-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.1));
+}
+
+.what-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.what-card p {
+    font-size: 16px;
+    color: var(--text-3);
+    line-height: 1.7;
+}
+
+.what-summary {
+    text-align: center;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 800;
+    color: var(--text);
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.35;
+    position: relative;
+    z-index: 2;
+}
+.what-summary .hl {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), var(--orange-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== COMPARISON CALLOUT ===== */
+.compare-section {
+    padding: 120px 24px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-cream) 40%, var(--bg-cream) 60%, var(--bg) 100%);
+    border-top: 1px solid rgba(249,115,22,0.15);
+    border-bottom: 1px solid rgba(249,115,22,0.15);
+    text-align: center;
+    overflow: hidden;
+}
+.compare-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(249,115,22,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    animation: bgPulse 6s ease-in-out infinite;
+}
+.compare-wrap { max-width: 880px; margin: 0 auto; position: relative; z-index: 2; }
+.compare-quote-mark {
+    font-size: 120px;
+    font-weight: 900;
+    color: rgba(249,115,22,0.25);
+    line-height: 0.5;
+    margin-bottom: 20px;
+    display: block;
+    font-family: Georgia, serif;
+    user-select: none;
+}
+.compare-big {
+    font-size: clamp(32px, 5.5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 28px;
+}
+.compare-big .dead { color: var(--text-4); position: relative; }
+.compare-big .dead::after {
+    content: '';
+    position: absolute;
+    top: 55%; right: -4px; left: -4px;
+    height: 4px;
+    background: var(--text-4);
+    border-radius: 2px;
+}
+.compare-big .alive {
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange), var(--orange-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+}
+.compare-sub {
+    font-size: 19px;
+    color: var(--text-3);
+    line-height: 1.7;
+    max-width: 620px;
+    margin: 0 auto 44px;
+    font-weight: 500;
+}
+.compare-sub strong { color: var(--text); font-weight: 800; }
+
+/* ===== PAIN SECTION (social proof from surveys) ===== */
+.pain-section {
+    padding: 110px 0;
+    background: var(--bg);
+    overflow: hidden;
+}
+
+.pain-intro {
+    text-align: center;
+    font-size: 17px;
+    color: var(--text-3);
+    max-width: 640px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    position: relative;
+    z-index: 2;
+}
+.pain-intro strong { color: var(--orange-dark); font-weight: 800; }
+
+.pain-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    max-width: 900px;
+    margin: 0 auto 40px;
+    position: relative;
+    z-index: 2;
+}
+
+.pain-card {
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 26px 28px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+.pain-card:hover {
+    transform: translateX(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(249,115,22,0.25);
+}
+.pain-votes {
+    flex-shrink: 0;
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+}
+.pain-votes small {
+    font-size: 9.5px;
+    font-weight: 700;
+    opacity: 0.85;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
+}
+.pain-text { flex: 1; }
+.pain-text h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.35;
+}
+.pain-text p {
+    font-size: 14.5px;
+    color: var(--text-3);
+    line-height: 1.6;
+}
+
+.pain-verdict {
+    text-align: center;
+    font-size: clamp(18px, 2.6vw, 24px);
+    font-weight: 700;
+    color: var(--text-2);
+    max-width: 680px;
+    margin: 0 auto;
+    line-height: 1.45;
+    position: relative;
+    z-index: 2;
+}
+.pain-verdict strong { color: var(--orange-dark); font-weight: 800; }
+
+/* ===== DEMOS SECTION ===== */
+.demos-section {
+    padding: 110px 0;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-cream) 50%, var(--bg) 100%);
+    border-top: 1px solid rgba(249,115,22,0.12);
+    border-bottom: 1px solid rgba(249,115,22,0.12);
+    overflow: hidden;
+}
+.demos-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(249,115,22,0.09) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.demos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+    max-width: 920px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.demo-card {
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 34px 30px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    position: relative;
+    overflow: hidden;
+}
+.demo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange-3), var(--orange));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.demo-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(249,115,22,0.3);
+}
+.demo-card:hover::before { opacity: 1; }
+
+.demo-number {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--orange-soft);
+    letter-spacing: -2px;
+    user-select: none;
+}
+
+.demo-emoji {
+    font-size: 46px;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+    position: relative;
+    z-index: 1;
+}
+
+.demo-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+}
+
+.demo-card p {
+    font-size: 15.5px;
+    color: var(--text-3);
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+}
+
+.demo-card .demo-wow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    background: var(--orange-soft);
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid rgba(249,115,22,0.25);
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== WHO SECTION ===== */
+.who-section {
+    padding: 110px 0;
+    background: var(--bg);
+    overflow: hidden;
+}
+
+.who-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    max-width: 940px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.who-card {
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 34px 26px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.who-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(249,115,22,0.06) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.who-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(249,115,22,0.3);
+}
+.who-card:hover::before { opacity: 1; }
+.who-icon {
+    font-size: 44px;
+    margin-bottom: 18px;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+.who-card h3 {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.35;
+    position: relative;
+    z-index: 1;
+}
+.who-card p {
+    font-size: 15px;
+    color: var(--text-3);
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+}
+.who-stat {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    background: var(--orange-soft);
+    padding: 5px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== ABOUT HOSTS SECTION ===== */
+.about-section {
+    padding: 110px 0;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-cream) 100%);
+    overflow: hidden;
+}
+.about-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 70%, rgba(249,115,22,0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.about-card {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    z-index: 2;
+}
+
+.about-photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #d4c9b8;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.about-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(10,10,20,0.4));
+}
+.about-photo-label {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    left: 24px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.about-photo-label::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--orange);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.about-bios {
+    padding: 48px 48px 52px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.bio { display: flex; flex-direction: column; }
+.bio-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.bio-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center 25%;
+    border: 2.5px solid rgba(249,115,22,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    flex-shrink: 0;
+}
+.bio-header-text { display: flex; flex-direction: column; }
+.bio h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+.bio .bio-role {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 16px;
+}
+.bio p {
+    font-size: 15.5px;
+    color: var(--text-3);
+    line-height: 1.8;
+    margin-bottom: 12px;
+}
+.bio p:last-child { margin-bottom: 0; }
+.bio strong { color: var(--text-2); font-weight: 700; }
+
+/* ===== URGENCY / FINAL PUSH ===== */
+.urgency-section {
+    padding: 110px 24px;
+    background: var(--bg-dark);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.urgency-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(249,115,22,0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 20% 20%, rgba(251,191,36,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(217,119,87,0.15) 0%, transparent 60%);
+    pointer-events: none;
+    animation: bgPulse 8s ease-in-out infinite;
+}
+.urgency-section .claude-star { opacity: 0.1; color: var(--orange); }
+
+.urgency-wrap {
+    max-width: 840px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.urgency-big {
+    font-size: clamp(34px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.08;
+    margin-bottom: 24px;
+}
+.urgency-big .hl {
+    background: linear-gradient(135deg, var(--orange-3), var(--orange), var(--orange-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.urgency-sub {
+    font-size: 19px;
+    color: rgba(255,255,255,0.75);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    font-weight: 500;
+}
+.urgency-sub strong { color: white; font-weight: 800; }
+
+/* ===== REGISTRATION SECTION ===== */
+.reg-section {
+    padding: 110px 24px 130px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-cream) 50%, var(--bg) 100%);
+    overflow: hidden;
+}
+.reg-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 65% 55% at 50% 50%, rgba(249,115,22,0.13) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.reg-card {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--bg-2);
+    border: 1.5px solid var(--border);
+    border-radius: 28px;
+    padding: 56px 52px;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+}
+.reg-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; left: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--orange-3), var(--orange), var(--orange-dark));
+}
+
+.reg-card-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+.reg-card-header .reg-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    background: var(--orange-soft);
+    border: 1px solid rgba(249,115,22,0.25);
+    padding: 8px 18px;
+    border-radius: 100px;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.reg-card-header .reg-tag .pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 10px var(--orange);
+    flex-shrink: 0;
+}
+.reg-card-header h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+.reg-card-header p {
+    font-size: 16px;
+    color: var(--text-3);
+    line-height: 1.65;
+}
+
+/* Form styles */
+.reg-form { display: flex; flex-direction: column; gap: 18px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-2);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+.form-optional {
+    font-size: 12.5px;
+    color: var(--text-4);
+    font-weight: 500;
+    margin-right: 6px;
+}
+.form-input {
+    width: 100%;
+    padding: 15px 20px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Assistant', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    outline: none;
+    direction: rtl;
+}
+.form-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
+    background: var(--bg-2);
+}
+.form-input::placeholder { color: var(--text-5); }
+.form-input.error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+
+.btn-submit {
+    width: 100%;
+    padding: 20px 32px;
+    background: linear-gradient(135deg, var(--orange-3), var(--orange), var(--orange-dark));
+    color: white;
+    border-radius: 16px;
+    font-family: 'Assistant', sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-orange-lg);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
+}
+.btn-submit:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 28px 70px rgba(249,115,22,0.45), 0 12px 20px rgba(249,115,22,0.25);
+}
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.form-privacy {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-4);
+    line-height: 1.55;
+    margin-top: 8px;
+}
+.form-privacy strong { color: var(--text-3); font-weight: 700; }
+
+/* Success state */
+.success-state {
+    display: none;
+    text-align: center;
+    padding: 28px 0 12px;
+}
+.success-state.visible { display: block; }
+.success-check {
+    font-size: 84px;
+    margin-bottom: 24px;
+    display: block;
+    animation: checkIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.success-state h3 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.3px;
+}
+.success-state p {
+    font-size: 16.5px;
+    color: var(--text-3);
+    line-height: 1.7;
+    max-width: 420px;
+    margin: 0 auto 12px;
+}
+.success-state p strong { color: var(--orange-dark); font-weight: 800; }
+
+/* ===== FOOTER ===== */
+.site-footer {
+    background: var(--text);
+    color: rgba(255,255,255,0.55);
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.site-footer a { color: rgba(255,255,255,0.7); transition: color 0.2s ease; }
+.site-footer a:hover { color: var(--orange-2); }
+.site-footer .footer-brand {
+    font-size: 17px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+}
+.site-footer .footer-sep { margin: 0 10px; opacity: 0.4; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .what-grid { grid-template-columns: 1fr; max-width: 500px; }
+    .demos-grid { grid-template-columns: 1fr; max-width: 500px; }
+    .who-grid { grid-template-columns: 1fr; max-width: 460px; }
+    .about-bios { grid-template-columns: 1fr; padding: 36px 32px 40px; gap: 32px; }
+    .pain-grid { grid-template-columns: 1fr; max-width: 500px; }
+    .reg-card { padding: 44px 28px; }
+}
+@media (max-width: 560px) {
+    .hero { padding: 44px 0 68px; }
+    .hero-chips { gap: 8px; }
+    .chip { font-size: 13px; padding: 9px 16px; }
+    .btn-primary { padding: 18px 36px; font-size: 17px; }
+    .announce-bar { font-size: 13px; padding: 11px 16px; }
+    .announce-bar span { margin: 0 6px; }
+    .pain-card { padding: 22px 20px; gap: 14px; }
+    .pain-votes { width: 54px; height: 54px; font-size: 19px; }
+    .about-bios { padding: 28px 22px 32px; }
+    .reg-card-header h2 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Claude logo SVG symbol (reused throughout) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <symbol id="claude-star" viewBox="0 0 1200 1200">
+            <path d="M 233.959793 800.214905 L 468.644287 668.536987 L 472.590637 657.100647 L 468.644287 650.738403 L 457.208069 650.738403 L 417.986633 648.322144 L 283.892639 644.69812 L 167.597321 639.865845 L 54.926208 633.825623 L 26.577238 627.785339 L 3.3e-05 592.751709 L 2.73832 575.27533 L 26.577238 559.248352 L 60.724873 562.228149 L 136.187973 567.382629 L 249.422867 575.194763 L 331.570496 580.026978 L 453.261841 592.671082 L 472.590637 592.671082 L 475.328857 584.859009 L 468.724915 580.026978 L 463.570557 575.194763 L 346.389313 495.785217 L 219.543671 411.865906 L 153.100723 363.543762 L 117.181267 339.060425 L 99.060455 316.107361 L 91.248367 266.01355 L 123.865784 230.093994 L 167.677887 233.073853 L 178.872513 236.053772 L 223.248367 270.201477 L 318.040283 343.570496 L 441.825592 434.738342 L 459.946411 449.798706 L 467.194672 444.64447 L 468.080597 441.020203 L 459.946411 427.409485 L 392.617493 305.718323 L 320.778564 181.932983 L 288.80542 130.630859 L 280.348999 99.865845 C 277.369171 87.221436 275.194641 76.590698 275.194641 63.624268 L 312.322174 13.20813 L 332.8591 6.604126 L 382.389313 13.20813 L 403.248352 31.328979 L 434.013519 101.71814 L 483.865753 212.537048 L 561.181274 363.221497 L 583.812134 407.919434 L 595.892639 449.315491 L 600.40271 461.959839 L 608.214783 461.959839 L 608.214783 454.711609 L 614.577271 369.825623 L 626.335632 265.61084 L 637.771851 131.516846 L 641.718201 93.745117 L 660.402832 48.483276 L 697.530334 24.000122 L 726.52356 37.852417 L 750.362549 72 L 747.060486 94.067139 L 732.886047 186.201416 L 705.100708 330.52356 L 686.979919 427.167847 L 697.530334 427.167847 L 709.61084 415.087341 L 758.496704 350.174561 L 840.644348 247.490051 L 876.885925 206.738342 L 919.167847 161.71814 L 946.308838 140.29541 L 997.61084 140.29541 L 1035.38269 196.429626 L 1018.469849 254.416199 L 965.637634 321.422852 L 921.825562 378.201538 L 859.006714 462.765259 L 819.785278 530.41626 L 823.409424 535.812073 L 832.75177 534.92627 L 974.657776 504.724915 L 1051.328979 490.872559 L 1142.818848 475.167786 L 1184.214844 494.496582 L 1188.724854 514.147644 L 1172.456421 554.335693 L 1074.604126 578.496765 L 959.838989 601.449829 L 788.939636 641.879272 L 786.845764 643.409485 L 789.261841 646.389343 L 866.255127 653.637634 L 899.194702 655.409424 L 979.812134 655.409424 L 1129.932861 666.604187 L 1169.154419 692.537109 L 1192.671265 724.268677 L 1188.724854 748.429688 L 1128.322144 779.194641 L 1046.818848 759.865845 L 856.590759 714.604126 L 791.355774 698.335754 L 782.335693 698.335754 L 782.335693 703.731567 L 836.69812 756.885986 L 936.322205 846.845581 L 1061.073975 962.81897 L 1067.436279 991.490112 L 1051.409424 1014.120911 L 1034.496704 1011.704712 L 924.885986 929.234924 L 882.604126 892.107544 L 786.845764 811.48999 L 780.483276 811.48999 L 780.483276 819.946289 L 802.550415 852.241699 L 919.087341 1027.409424 L 925.127625 1081.127686 L 916.671204 1098.604126 L 886.469849 1109.154419 L 853.288696 1103.114136 L 785.073914 1007.355835 L 714.684631 899.516785 L 657.906067 802.872498 L 650.979858 806.81897 L 617.476624 1167.704834 L 601.771851 1186.147705 L 565.530212 1200 L 535.328857 1177.046997 L 519.302124 1139.919556 L 535.328857 1066.550537 L 554.657776 970.792053 L 570.362488 894.68457 L 584.536926 800.134277 L 592.993347 768.724976 L 592.429626 766.630859 L 585.503479 767.516968 L 514.22821 865.369263 L 405.825531 1011.865906 L 320.053711 1103.677979 L 299.516815 1111.812256 L 263.919525 1093.369263 L 267.221497 1060.429688 L 287.114136 1031.114136 L 405.825531 880.107361 L 477.422913 786.52356 L 523.651062 732.483276 L 523.328918 724.671265 L 520.590698 724.671265 L 205.288605 929.395935 L 149.154434 936.644409 L 124.993355 914.01355 L 127.973183 876.885986 L 139.409409 864.80542 L 234.201385 799.570435 L 233.879227 799.8927 Z" fill="currentColor"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- Announcement bar -->
+<div class="announce-bar">
+    🔴 וובינר חי חינמי
+    <span>|</span>
+    יום חמישי, <strong>30.4 בשעה 20:00</strong>
+    <span>|</span>
+    מקומות מוגבלים
+</div>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <svg class="claude-star cs-hero-1" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-hero-2" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-hero-3" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap hero-inner">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            וובינר חי בעברית. חינמי לחלוטין.
+        </div>
+
+        <h1><span class="accent">Claude Code.</span><br>הכלי שמשנה את כל הכללים של AI.</h1>
+
+        <p class="hero-sub">
+            עד היום שאלתם את ה<strong>AI</strong>. הוא ענה.<br>
+            ואתם <strong>עשיתם את העבודה.</strong><br>
+            עכשיו? אתם מבקשים. <span class="hl">הוא עושה.</span>
+        </p>
+
+        <div class="hero-hosts">
+            <div class="hero-hosts-avatars">
+                <div class="avatar a1" style="background-image: url('webinar-assets/jay-profile.png'); background-position: center 20%; background-size: cover;"></div>
+                <div class="avatar a2" style="background-image: url('webinar-assets/mandy-profile.jpg'); background-position: center 30%; background-size: cover;"></div>
+            </div>
+            <span>ג'יי מרגליות <span class="with-text">+</span> מנדי קוריץ</span>
+        </div>
+
+        <div class="hero-chips">
+            <div class="chip chip-highlight">
+                <span class="chip-icon">📅</span>
+                יום חמישי, 30 באפריל
+            </div>
+            <div class="chip">
+                <span class="chip-icon">🕗</span>
+                20:00 בדיוק
+            </div>
+            <div class="chip">
+                <span class="chip-icon">💻</span>
+                בזום, חינם
+            </div>
+            <div class="chip">
+                <span class="chip-icon">⏱️</span>
+                90 דקות
+            </div>
+        </div>
+
+        <div class="hero-cta">
+            <a href="#registration" class="btn-primary">
+                שמרו לי מקום עכשיו
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12l7 7 7-7"/>
+                </svg>
+            </a>
+            <div class="hero-trust">
+                <span>100% חינמי</span>
+                <span>בעברית</span>
+                <span>גם למתחילים</span>
+                <span>אין הקלטה. רק לייב.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- WHAT IS CLAUDE CODE -->
+<section class="what-section">
+    <svg class="claude-star cs-what-1" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-what-2" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag">פשוט וברור</div>
+            <h2>רגע. מה זה בכלל <span class="hl">Claude Code?</span></h2>
+            <p>לפני שנרד לעומק בוובינר, 3 דברים שכדאי לדעת עכשיו.</p>
+        </div>
+
+        <div class="what-grid">
+            <div class="what-card reveal reveal-d1">
+                <span class="what-icon">🚫</span>
+                <h3>לא עוד צ'אטבוט</h3>
+                <p>ChatGPT, Gemini, Perplexity. כולם שואלים, עונים. <strong>Claude Code הוא לא שם.</strong> הוא משחק אחר.</p>
+            </div>
+            <div class="what-card reveal reveal-d2">
+                <span class="what-icon">⚡</span>
+                <h3>עובד, לא רק מדבר</h3>
+                <p>אתם מגדירים משימה. הוא מבצע אותה. בונה כלים, שולח מיילים, יוצר תמונות, <strong>מבצע פעולות אמיתיות.</strong></p>
+            </div>
+            <div class="what-card reveal reveal-d3">
+                <span class="what-icon">🔗</span>
+                <h3>מחובר לחיים שלכם</h3>
+                <p>Gmail, Google Calendar, Drive. הוא <strong>רואה את המיילים האמיתיים שלכם</strong>. לא מדמיין, לא ממציא. עושה עבודה אמיתית.</p>
+            </div>
+        </div>
+
+        <p class="what-summary reveal">
+            בקיצור. <span class="hl">זה לא AI שאיתו מדברים. זה AI שעובד בשבילכם.</span>
+        </p>
+    </div>
+</section>
+
+<!-- COMPARISON CALLOUT -->
+<section class="compare-section">
+    <div class="compare-wrap reveal">
+        <span class="compare-quote-mark">"</span>
+        <p class="compare-big">
+            ChatGPT <span class="dead">עושה</span> <span class="dead">חושב</span> מדבר.<br>
+            Claude Code <span class="alive">עובד.</span>
+        </p>
+        <p class="compare-sub">
+            זה ההבדל שאף אחד לא מסביר לכם בשפה פשוטה.<br>
+            <strong>בוובינר הזה אנחנו מסבירים.</strong> עם הדגמות חיות על מסך אחד.
+        </p>
+        <a href="#registration" class="btn-primary" style="display:inline-flex; animation:none;">
+            שמרו לי מקום
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        </a>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PAIN SECTION (surveys) -->
+<section class="pain-section">
+    <svg class="claude-star cs-pain" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap">
+        <div class="section-header wide reveal">
+            <div class="section-tag">בדקנו איתכם בקהילה</div>
+            <h2>הנה <span class="hl">מה שעוצר</span> אתכם היום</h2>
+            <p>סקרנו 1,000 בעלי עסקים. אלה 4 התשובות שעלו יותר מכל.</p>
+        </div>
+
+        <div class="pain-grid">
+            <div class="pain-card reveal reveal-d1">
+                <div class="pain-votes">127<small>הצבעות</small></div>
+                <div class="pain-text">
+                    <h3>"אני לא יודע מאיפה להתחיל"</h3>
+                    <p>שמעתם על Claude Code. לא הבנתם מה זה. פחדתם שזה טכני מדי. <strong>זה בדיוק הוובינר הזה.</strong></p>
+                </div>
+            </div>
+            <div class="pain-card reveal reveal-d2">
+                <div class="pain-votes">121<small>הצבעות</small></div>
+                <div class="pain-text">
+                    <h3>"לא מכיר את זה, אשמח להכיר"</h3>
+                    <p>רוב הקהילה שלנו עוד לא התנסתה. אתם לא לבד. נתחיל מאפס, בלי לאבד אף אחד בדרך.</p>
+                </div>
+            </div>
+            <div class="pain-card reveal reveal-d3">
+                <div class="pain-votes">64<small>הצבעות</small></div>
+                <div class="pain-text">
+                    <h3>"חסר לי AI שעובד בשבילי 24/7"</h3>
+                    <p>נמאס לשאול, לחכות, ולעשות את העבודה לבד. <strong>AI אמיתי עושה את העבודה בשבילכם.</strong></p>
+                </div>
+            </div>
+            <div class="pain-card reveal reveal-d4">
+                <div class="pain-votes">53<small>הצבעות</small></div>
+                <div class="pain-text">
+                    <h3>"אין זמן. הימים נבלעים"</h3>
+                    <p>מיילים, admin, ניהול. במקום לגדול. Claude Code מוריד את העומס הזה. באמת.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="pain-verdict reveal">
+            אם לפחות אחד מאלה מדבר אליכם.<br>
+            <strong>הוובינר הזה נבנה בדיוק בשבילכם.</strong>
+        </p>
+    </div>
+</section>
+
+<!-- DEMOS -->
+<section class="demos-section">
+    <svg class="claude-star cs-demos-1" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-demos-2" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag">מה תראו בוובינר</div>
+            <h2>90 דקות.<br><span class="hl">6 רגעי וואו.</span> חיים.</h2>
+            <p>לא שקפים. לא סרטונים מוכנים מראש. הכל קורה בפניכם, בזמן אמת.</p>
+        </div>
+
+        <div class="demos-grid">
+            <div class="demo-card reveal reveal-d1">
+                <span class="demo-number">01</span>
+                <span class="demo-emoji">🤔</span>
+                <h3>מה זה בכלל Claude Code</h3>
+                <p>נסביר פעם אחת ולתמיד, בעברית פשוטה, בלי ז'רגון טכני. מה זה, למה זה שונה, ולמי זה מתאים.</p>
+                <span class="demo-wow">✨ הבנה מלאה</span>
+            </div>
+
+            <div class="demo-card reveal reveal-d2">
+                <span class="demo-number">02</span>
+                <span class="demo-emoji">💻</span>
+                <h3>התקנה חיה על המסך</h3>
+                <p>נתקין בפניכם, שלב אחרי שלב. Mac או Windows. אחרי הוובינר אתם יודעים בדיוק איך להתקין בעצמכם.</p>
+                <span class="demo-wow">⚡ שלב אחרי שלב</span>
+            </div>
+
+            <div class="demo-card reveal reveal-d3">
+                <span class="demo-number">03</span>
+                <span class="demo-emoji">🔨</span>
+                <h3>בניית כלים חיה</h3>
+                <p>מחשבון, דאשבורד, כלי עסקי שאתם צריכים. Claude Code בונה בפניכם בפחות מ-2 דקות. בלי קוד, בלי מפתחים.</p>
+                <span class="demo-wow">🚀 פחות מ-2 דקות</span>
+            </div>
+
+            <div class="demo-card reveal reveal-d4">
+                <span class="demo-number">04</span>
+                <span class="demo-emoji">🖼️</span>
+                <h3>יצירת תמונות בחינם</h3>
+                <p>20 תמונות פרופיל, תמונות שיווק, תמונות לפוסטים. מתוך Claude Code, בלי מנויים נוספים, בלי עלות נוספת.</p>
+                <span class="demo-wow">🆓 חינם לגמרי</span>
+            </div>
+
+            <div class="demo-card reveal reveal-d1">
+                <span class="demo-number">05</span>
+                <span class="demo-emoji">📧</span>
+                <h3>חיבור ל-Gmail ול-Calendar</h3>
+                <p>Claude Code מחובר למיילים האמיתיים שלכם. קורא, מסווג, מכין טיוטות תגובה. עובד על היומן האמיתי שלכם.</p>
+                <span class="demo-wow">🔗 עבודה אמיתית</span>
+            </div>
+
+            <div class="demo-card reveal reveal-d2">
+                <span class="demo-number">06</span>
+                <span class="demo-emoji">⚙️</span>
+                <h3>אוטומציה שעובדת בלילה</h3>
+                <p>Scheduled tasks. Claude Code שמוגדר פעם אחת, ואז רץ לבד. כל בוקר, כל ערב. <strong>עובד גם כשאתם ישנים.</strong></p>
+                <span class="demo-wow">😴 24/7 בשבילכם</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- WHO IS IT FOR -->
+<section class="who-section">
+    <svg class="claude-star cs-who-1" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag">האם זה בשבילי?</div>
+            <h2>מתאים לכם אם<br>אתם <span class="hl">אחד מאלה.</span></h2>
+        </div>
+
+        <div class="who-grid">
+            <div class="who-card reveal reveal-d1">
+                <span class="who-icon">🧑‍💻</span>
+                <h3>מתחילים לגמרי</h3>
+                <p>לא מכירים את Claude Code? לא התחלתם? זה בדיוק הזמן הנכון. אנחנו מתחילים מאפס ולא משאירים אף אחד מאחור.</p>
+                <span class="who-stat">173 מהקהילה נמצאים כאן</span>
+            </div>
+            <div class="who-card reveal reveal-d2">
+                <span class="who-icon">💬</span>
+                <h3>משתמשי ChatGPT שרוצים עוד</h3>
+                <p>כבר יודעים AI קצת? מתסכל אתכם שהוא רק מדבר ולא עושה? נראה לכם את הצעד הבא ואיך לעבור אליו.</p>
+                <span class="who-stat">המעבר מאופנוע לחללית</span>
+            </div>
+            <div class="who-card reveal reveal-d3">
+                <span class="who-icon">👔</span>
+                <h3>חולמים על עוזר אישי</h3>
+                <p>רוצים ראש אישי שינהל יומן, מיילים, משימות ומידע? 82 מכם אמרו שזה החלום. בוובינר נראה איך לבנות אחד.</p>
+                <span class="who-stat">הראש האישי של חלומותיכם</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ABOUT HOSTS -->
+<section class="about-section">
+    <svg class="claude-star cs-about-1" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap">
+        <div class="section-header reveal">
+            <div class="section-tag">מי מעביר את הוובינר</div>
+            <h2>שני המרצים.<br><span class="hl">אחד מהם</span> משתמש ב-Claude Code כל יום.</h2>
+        </div>
+
+        <div class="about-card reveal">
+            <div class="about-photo" style="background-image: url('webinar-assets/jay-mandy.png');">
+                <div class="about-photo-label">לייב ביחד. יום חמישי, 30.4, 20:00.</div>
+            </div>
+            <div class="about-bios">
+                <div class="bio">
+                    <div class="bio-header">
+                        <div class="bio-avatar" style="background-image: url('webinar-assets/jay-profile.png');"></div>
+                        <div class="bio-header-text">
+                            <h3>ג'יי מרגליות</h3>
+                            <div class="bio-role">יזם, מומחה AI, מרצה</div>
+                        </div>
+                    </div>
+                    <p>
+                        בעל עסק שמצא דרך להשתמש ב-AI בצורה מעשית ורווחית. <strong>לפני 3 חודשים</strong> מצא את Claude Code, ומאז זה שינה לו את הדרך שהוא מנהל את העסק.
+                    </p>
+                    <p>
+                        מעביר וובינרים ומלווה בעלי עסקים בישראל ובעולם. מאמין בלימוד מעשי, בלי ז'רגון, <strong>רק תוצאות.</strong>
+                    </p>
+                </div>
+                <div class="bio">
+                    <div class="bio-header">
+                        <div class="bio-avatar" style="background-image: url('webinar-assets/mandy-profile.jpg'); background-position: center 25%;"></div>
+                        <div class="bio-header-text">
+                            <h3>מנדי קוריץ</h3>
+                            <div class="bio-role">שותף בקהילת בינה לעסקים</div>
+                        </div>
+                    </div>
+                    <p>
+                        מומחה AI ושיווק בעברית. מייסד קהילת <strong>"בינה לעסקים"</strong>. מלמד מאות בעלי עסקים ישראלים איך לשלב AI בצורה חכמה בעסק.
+                    </p>
+                    <p>
+                        בוובינר מביא את הזווית של <strong>המתחיל האמיתי</strong>. מה שלא ברור, הוא שואל. בשבילכם.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- URGENCY -->
+<section class="urgency-section">
+    <svg class="claude-star" style="top: 5%; left: 5%; width: 200px; height: 200px; animation: floatStar 14s ease-in-out infinite;" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star" style="bottom: 8%; right: 4%; width: 160px; height: 160px; animation: floatStar 12s ease-in-out infinite 1s;" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="urgency-wrap reveal">
+        <h2 class="urgency-big">
+            אין הקלטה. <span class="hl">רק לייב.</span><br>
+            מי שלא שם, פספס.
+        </h2>
+        <p class="urgency-sub">
+            אנחנו לא מעלים את זה ליוטיוב. לא שולחים אחר כך. <strong>זה קורה פעם אחת.</strong><br>
+            יום חמישי, 30 באפריל, 20:00. שמרו מקום עכשיו.
+        </p>
+        <a href="#registration" class="btn-primary">
+            בטחו לי את המקום שלי
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        </a>
+    </div>
+</section>
+
+<!-- REGISTRATION -->
+<section class="reg-section" id="registration">
+    <svg class="claude-star cs-reg-1" aria-hidden="true"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-reg-2" aria-hidden="true"><use href="#claude-star"/></svg>
+
+    <div class="wrap-sm">
+        <div class="section-header reveal" style="margin-bottom: 44px;">
+            <div class="section-tag">הרשמה לוובינר</div>
+            <h2>שמרו מקום.<br><span class="hl">חינמי. חד פעמי.</span></h2>
+            <p>מלאו את הפרטים ותקבלו אישור למייל + זימון ישירות ליומן.</p>
+        </div>
+
+        <div class="reg-card reveal">
+            <div class="reg-card-header">
+                <div class="reg-tag">
+                    <span class="pulse-dot"></span>
+                    לייב. יום חמישי 30.4 בשעה 20:00
+                </div>
+                <h2>הרשמה לוובינר</h2>
+                <p>אחרי ההרשמה תקבלו מייל אישור עם לינק לזום ותזכורת אוטומטית לפני.</p>
+            </div>
+
+            <div id="formContainer">
+                <!--
+                    TODO (Mandy):
+                    Hook up form submission to your CRM / automation:
+                    - Option 1: Webhook (Zapier / Make.com) - replace FORM_ENDPOINT below
+                    - Option 2: ConvertKit / Mailchimp / MailerLite - use their API
+                    - Option 3: Google Form backend
+                    The JS submit handler already captures name/email/phone + webinar ID.
+                    On success we show the success-state div.
+                    Auto-email confirmation + calendar invite should be set on the backend.
+                -->
+                <form class="reg-form" id="regForm" novalidate>
+                    <div class="form-group">
+                        <label class="form-label" for="name">שם מלא</label>
+                        <input
+                            class="form-input"
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="ישראל ישראלי"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">כתובת מייל</label>
+                        <input
+                            class="form-input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            dir="ltr"
+                            style="text-align:right;"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">
+                            מספר וואטסאפ
+                        </label>
+                        <input
+                            class="form-input"
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            placeholder="05X-XXXXXXX"
+                            autocomplete="tel"
+                            dir="ltr"
+                            style="text-align:right;"
+                            required
+                        >
+                    </div>
+
+                    <input type="hidden" name="webinar" value="binah-claude-code-2026-04-30">
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        שמרו לי מקום בוובינר
+                    </button>
+
+                    <p class="form-privacy">
+                        <strong>לא ספאם. לא רשימת תפוצה מופרזת.</strong><br>
+                        רק לינק לזום, זימון ליומן, ותזכורת לפני הלייב.
+                    </p>
+                </form>
+            </div>
+
+            <div class="success-state" id="successState">
+                <span class="success-check">✅</span>
+                <h3>נרשמתם. מחכים לכם!</h3>
+                <p>
+                    תקבלו ב-<strong>5 הדקות הקרובות</strong> מייל אישור<br>
+                    עם לינק לזום וזימון אוטומטי ליומן.
+                </p>
+                <p>
+                    יום חמישי, 30 באפריל, 20:00.<br>
+                    <strong>אל תאחרו. אין הקלטה.</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-brand">ג'יי מרגליות × מנדי קוריץ</div>
+    <div>
+        קהילת "בינה לעסקים"
+        <span class="footer-sep">·</span>
+        <a href="https://jaygptpro.com">jaygptpro.com</a>
+    </div>
+</footer>
+
+<script>
+// Reveal on scroll
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('in');
+            observer.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+revealEls.forEach(el => observer.observe(el));
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Registration form
+const form = document.getElementById('regForm');
+const successState = document.getElementById('successState');
+const submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    let valid = true;
+
+    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('error'));
+
+    if (!name) {
+        document.getElementById('name').classList.add('error');
+        valid = false;
+    }
+    if (!email || !email.includes('@')) {
+        document.getElementById('email').classList.add('error');
+        valid = false;
+    }
+    if (!phone || phone.length < 8) {
+        document.getElementById('phone').classList.add('error');
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    submitBtn.textContent = 'שומר מקום...';
+    submitBtn.disabled = true;
+
+    // TODO (Mandy): replace with real endpoint
+    // const FORM_ENDPOINT = 'https://hooks.zapier.com/hooks/catch/XXXX/YYYY/';
+    // await fetch(FORM_ENDPOINT, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ name, email, phone, webinar: 'binah-claude-code-2026-04-30' })
+    // });
+
+    await new Promise(r => setTimeout(r, 800));
+
+    form.style.display = 'none';
+    successState.classList.add('visible');
+
+    if (window.gtag) {
+        gtag('event', 'webinar_registration', { webinar: 'binah-claude-code-2026-04-30' });
+    }
+});
+</script>
+
+</body>
+</html>
