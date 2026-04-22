@@ -1638,88 +1638,14 @@ section { position: relative; }
                 <p>אחרי ההרשמה תקבלו מייל אישור עם לינק לזום ותזכורת אוטומטית לפני.</p>
             </div>
 
-            <div id="formContainer">
-                <!--
-                    TODO (Mandy):
-                    Hook up form submission to your CRM / automation:
-                    - Option 1: Webhook (Zapier / Make.com) - replace FORM_ENDPOINT below
-                    - Option 2: ConvertKit / Mailchimp / MailerLite - use their API
-                    - Option 3: Google Form backend
-                    The JS submit handler already captures name/email/phone + webinar ID.
-                    On success we show the success-state div.
-                    Auto-email confirmation + calendar invite should be set on the backend.
-                -->
-                <form class="reg-form" id="regForm" novalidate>
-                    <div class="form-group">
-                        <label class="form-label" for="name">שם מלא</label>
-                        <input
-                            class="form-input"
-                            type="text"
-                            id="name"
-                            name="name"
-                            placeholder="ישראל ישראלי"
-                            autocomplete="name"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="email">כתובת מייל</label>
-                        <input
-                            class="form-input"
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="you@example.com"
-                            autocomplete="email"
-                            dir="ltr"
-                            style="text-align:right;"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="phone">
-                            מספר וואטסאפ
-                        </label>
-                        <input
-                            class="form-input"
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            placeholder="05X-XXXXXXX"
-                            autocomplete="tel"
-                            dir="ltr"
-                            style="text-align:right;"
-                            required
-                        >
-                    </div>
-
-                    <input type="hidden" name="webinar" value="binah-claude-code-2026-04-30">
-
-                    <button type="submit" class="btn-submit" id="submitBtn">
-                        שמרו לי מקום בוובינר
-                    </button>
-
-                    <p class="form-privacy">
-                        <strong>לא ספאם. לא רשימת תפוצה מופרזת.</strong><br>
-                        רק לינק לזום, זימון ליומן, ותזכורת לפני הלייב.
-                    </p>
-                </form>
+            <div class="ravpage-wrap">
+                <script type='text/javascript' src='//form2.ravpage.co.il/7ef6d821e59038431ad4d2f405ca4ca169E9095B' charset='UTF-8'></script>
             </div>
 
-            <div class="success-state" id="successState">
-                <span class="success-check">✅</span>
-                <h3>נרשמתם. מחכים לכם!</h3>
-                <p>
-                    תקבלו ב-<strong>5 הדקות הקרובות</strong> מייל אישור<br>
-                    עם לינק לזום וזימון אוטומטי ליומן.
-                </p>
-                <p>
-                    יום חמישי, 30 באפריל, 20:00.<br>
-                    <strong>אל תאחרו. אין הקלטה.</strong>
-                </p>
-            </div>
+            <p class="form-privacy" style="margin-top: 20px;">
+                <strong>לא ספאם. לא רשימת תפוצה מופרזת.</strong><br>
+                רק לינק לזום, זימון ליומן, ותזכורת לפני הלייב.
+            </p>
         </div>
     </div>
 </section>
@@ -1756,56 +1682,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     });
 });
 
-// Registration form
-const form = document.getElementById('regForm');
-const successState = document.getElementById('successState');
-const submitBtn = document.getElementById('submitBtn');
-
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    let valid = true;
-
-    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('error'));
-
-    if (!name) {
-        document.getElementById('name').classList.add('error');
-        valid = false;
-    }
-    if (!email || !email.includes('@')) {
-        document.getElementById('email').classList.add('error');
-        valid = false;
-    }
-    if (!phone || phone.length < 8) {
-        document.getElementById('phone').classList.add('error');
-        valid = false;
-    }
-
-    if (!valid) return;
-
-    submitBtn.textContent = 'שומר מקום...';
-    submitBtn.disabled = true;
-
-    // TODO (Mandy): replace with real endpoint
-    // const FORM_ENDPOINT = 'https://hooks.zapier.com/hooks/catch/XXXX/YYYY/';
-    // await fetch(FORM_ENDPOINT, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ name, email, phone, webinar: 'binah-claude-code-2026-04-30' })
-    // });
-
-    await new Promise(r => setTimeout(r, 800));
-
-    form.style.display = 'none';
-    successState.classList.add('visible');
-
-    if (window.gtag) {
-        gtag('event', 'webinar_registration', { webinar: 'binah-claude-code-2026-04-30' });
-    }
-});
+// Registration form handled by Ravpage embed (no custom JS needed)
 </script>
 
 </body>
