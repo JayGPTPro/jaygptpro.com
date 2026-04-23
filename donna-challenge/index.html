@@ -4125,15 +4125,16 @@ function isDayUnlocked(dayNum){
     return false;
   }
   if(round === 'both') return true; // Admin always sees all days
-  // 2026-04-22: MANUAL LOCK override. Force-lock Days 4 and 5 even if start_date would unlock them.
-  // (Used when start_date was adjusted to unlock a past day without cascading to future days.)
-  if(dayNum === 4 || dayNum === 5) return false;
+  // 2026-04-22: MANUAL LOCK override. Force-lock Day 5 even if start_date would unlock it.
+  if(dayNum === 5) return false;
   // 2026-04-20 launch: Day 1 OPEN to ALL rounds (per Jay). Days 2-5 still locked.
   if(dayNum === 1) return true;
   // 2026-04-21: Day 2 OPEN to ALL rounds (per Jay). Day 3+ stays locked (manual unlock).
   if(dayNum === 2) return true;
   // 2026-04-22: Day 3 OPEN to ALL rounds (manual unlock). Day 4+ still locked.
   if(dayNum === 3) return true;
+  // 2026-04-23: Day 4 OPEN to ALL rounds (manual unlock). Day 5 still locked.
+  if(dayNum === 4) return true;
   return false;
   /*
   if(round === 'unknown') return false;
