@@ -5037,9 +5037,14 @@ function showVaultPopupIfEligible() {
     const hoursSinceDismiss = (Date.now() - lastDismiss) / (1000 * 60 * 60);
     if (hoursSinceDismiss < VAULT_POPUP_DISMISS_HOURS) return;
 
-    // Only show if portal is actually visible (not login/coming-soon screens)
-    const portal = document.querySelector('.day-content, .days-nav');
-    if (!portal || portal.offsetParent === null) return;
+    // Only show once user is past login/coming-soon screens (i.e. actually in the portal)
+    const login = document.getElementById('loginScreen');
+    const notAllowed = document.getElementById('notAllowedScreen');
+    const comingSoon = document.getElementById('comingSoonScreen');
+    const isLoginVisible = login && getComputedStyle(login).display !== 'none';
+    const isNotAllowedVisible = notAllowed && getComputedStyle(notAllowed).display !== 'none';
+    const isComingSoonVisible = comingSoon && getComputedStyle(comingSoon).display !== 'none';
+    if (isLoginVisible || isNotAllowedVisible || isComingSoonVisible) return;
 
     const popup = document.getElementById('vaultPopup');
     if (popup) {
