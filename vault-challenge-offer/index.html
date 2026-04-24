@@ -11,6 +11,15 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/jpeg" href="jay-key.jpeg">
+<!-- ═══ GOOGLE ANALYTICS 4 ═══ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-M4RK6H5NMH', { page_title: 'Vault Challenge Offer' });
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1261,6 +1270,94 @@ function tick() {
 
 tick();
 setInterval(tick, 1000);
+
+// ─── ANALYTICS EVENT TRACKING ────────────────────────────────────────────────
+function track(eventName, params) {
+  if (typeof gtag === 'function') gtag('event', eventName, params || {});
+}
+
+// CTA button clicks (any link to checkout)
+document.querySelectorAll('a[href*="topdog.community/checkout/ai-vault"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const label = btn.textContent.replace(/\s+/g, ' ').trim().substring(0, 80);
+    const section = btn.closest('section')?.className?.split(' ')[0] || 'unknown';
+    track('cta_click', {
+      event_category: 'cta',
+      event_label: label,
+      cta_section: section
+    });
+  });
+});
+
+// Coupon code copy
+const couponEl = document.querySelector('.coupon-code');
+if (couponEl) {
+  couponEl.addEventListener('click', () => {
+    track('coupon_copy', {
+      event_category: 'engagement',
+      event_label: couponEl.textContent.trim()
+    });
+  });
+}
+
+// FAQ opens
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const q = btn.textContent.replace(/\+/g, '').replace(/\s+/g, ' ').trim().substring(0, 90);
+    track('faq_open', { event_category: 'engagement', event_label: q });
+  });
+});
+
+// Scroll depth (25 / 50 / 75 / 100)
+(function () {
+  const sm = {};
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (max <= 0) return;
+    const p = Math.round(window.scrollY / max * 100);
+    [25, 50, 75, 100].forEach(m => {
+      if (p >= m && !sm[m]) {
+        sm[m] = true;
+        track('scroll_depth', { event_category: 'engagement', event_label: m + '%' });
+      }
+    });
+  }, { passive: true });
+})();
+
+// Vimeo VSL play + progress milestones
+(function () {
+  const iframe = document.querySelector('.vsl-inner iframe');
+  if (!iframe) return;
+  const s = document.createElement('script');
+  s.src = 'https://player.vimeo.com/api/player.js';
+  s.onload = () => {
+    if (!window.Vimeo) return;
+    const player = new Vimeo.Player(iframe);
+    let started = false;
+    const hit = { 25: false, 50: false, 75: false, 100: false };
+    player.on('play', () => {
+      if (started) return;
+      started = true;
+      track('video_play', { event_category: 'video', event_label: 'VSL' });
+    });
+    player.on('timeupdate', (data) => {
+      const pct = (data.percent || 0) * 100;
+      [25, 50, 75].forEach(m => {
+        if (pct >= m && !hit[m]) {
+          hit[m] = true;
+          track('video_progress', { event_category: 'video', event_label: m + '%' });
+        }
+      });
+    });
+    player.on('ended', () => {
+      if (!hit[100]) {
+        hit[100] = true;
+        track('video_progress', { event_category: 'video', event_label: '100%' });
+      }
+    });
+  };
+  document.head.appendChild(s);
+})();
 
 // ─── SCROLL REVEAL ───────────────────────────────────────────────────────────
 const io = new IntersectionObserver((entries) => {
