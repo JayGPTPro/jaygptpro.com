@@ -1203,6 +1203,50 @@ details.mini-collapse[open] > summary::before{transform:rotate(90deg)}
   <!-- VAULT VSL HERO SECTION (admin-only for now)    -->
   <!-- Feels like a separate landing page at the top -->
   <!-- ============================================ -->
+  <style>
+    @keyframes vaultBannerIn {
+      0% { opacity: 0; transform: translateY(-30px) scale(0.96); filter: blur(8px); }
+      60% { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @keyframes vaultGlowPulse {
+      0%, 100% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,55,0.25), 0 0 60px rgba(212,175,55,0.15); }
+      50% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,55,0.4), 0 0 90px rgba(212,175,55,0.3); }
+    }
+    @keyframes vaultHeadlineIn {
+      0% { opacity: 0; transform: translateY(20px); letter-spacing: 0.2em; }
+      100% { opacity: 1; transform: translateY(0); letter-spacing: -0.03em; }
+    }
+    @keyframes vaultGoldShimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(500px) rotate(900deg); opacity: 0; }
+    }
+    #vaultBanner.entering { animation: vaultBannerIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    #vaultBanner.entering .vault-headline-anim { animation: vaultHeadlineIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards; }
+    #vaultBanner.entering .vault-video-glow { animation: vaultGlowPulse 3s ease-in-out 1s 2; }
+    .vault-headline-shimmer {
+      background: linear-gradient(90deg,#b8941f 0%,#d4af37 25%,#f4d03f 50%,#d4af37 75%,#b8941f 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: vaultGoldShimmer 4s ease-in-out infinite;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: 0;
+      width: 10px;
+      height: 4px;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+  </style>
   <div id="vaultBanner" style="display:none;margin:-40px -20px 40px;padding:60px 20px 56px;position:relative;z-index:3;background:radial-gradient(ellipse at top,#0f1e35 0%,#081428 50%,#03080f 100%);border-bottom:1px solid rgba(212,175,55,0.25);overflow:hidden">
     <!-- Subtle gold glow overlay on navy -->
     <div style="position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(212,175,55,0.08) 0%,transparent 45%),radial-gradient(circle at 80% 70%,rgba(212,175,55,0.06) 0%,transparent 45%),radial-gradient(circle at 50% 100%,rgba(59,130,246,0.08) 0%,transparent 50%);pointer-events:none"></div>
@@ -1218,10 +1262,10 @@ details.mini-collapse[open] > summary::before{transform:rotate(90deg)}
       </div>
 
       <!-- Bombastic minimalist headline -->
-      <h2 style="font-size:clamp(36px,6vw,56px);font-weight:800;color:#fff;margin:0 0 32px;line-height:1.05;letter-spacing:-0.03em"><span style="background:linear-gradient(135deg,#f4d03f 0%,#d4af37 50%,#b8941f 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">The Vault is open.</span></h2>
+      <h2 class="vault-headline-anim" style="font-size:clamp(36px,6vw,56px);font-weight:800;color:#fff;margin:0 0 32px;line-height:1.05;letter-spacing:-0.03em"><span class="vault-headline-shimmer">The Vault is open.</span></h2>
 
       <!-- VIDEO . wide, prominent . the hero of this section -->
-      <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000;margin:0 auto 32px;max-width:760px;box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(212,175,55,0.25)">
+      <div class="vault-video-glow" style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000;margin:0 auto 32px;max-width:760px;box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(212,175,55,0.25)">
         <!-- PLACEHOLDER . replace div below with iframe when VSL video is ready -->
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:linear-gradient(135deg,#0a1628 0%,#050a14 100%);color:#d4af37">
           <div style="font-size:56px">🎬</div>
@@ -5056,8 +5100,60 @@ function showVaultBannerIfEligible() {
     const banner = document.getElementById('vaultBanner');
     if (banner) {
       banner.style.display = 'block';
+      // Trigger entrance animation on the next frame so display:block applies first
+      requestAnimationFrame(() => {
+        banner.classList.add('entering');
+        spawnVaultConfetti();
+      });
       try { if (typeof trackEvent === 'function') trackEvent('vault_banner_shown', {}, null); } catch(e){}
     }
+  } catch(e) {}
+}
+
+function spawnVaultConfetti() {
+  try {
+    const banner = document.getElementById('vaultBanner');
+    if (!banner) return;
+    // Avoid duplicate spawn
+    if (banner.querySelector('.confetti-container')) return;
+
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    container.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden';
+    banner.appendChild(container);
+
+    const colors = ['#d4af37', '#f4d03f', '#b8941f', '#ffffff', '#e8c547'];
+    const shapes = ['rect', 'circle'];
+    const total = 60;
+
+    for (let i = 0; i < total; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = Math.random() * 8 + 5;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 0.6;
+      const duration = Math.random() * 2 + 2.5;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const isCircle = shape === 'circle';
+      piece.style.cssText = `
+        position:absolute;
+        top:-20px;
+        left:${left}%;
+        width:${size}px;
+        height:${isCircle ? size : size * 0.4}px;
+        background:${color};
+        border-radius:${isCircle ? '50%' : '1px'};
+        box-shadow:0 0 6px ${color}66;
+        transform:rotate(${Math.random() * 360}deg);
+        animation:confettiFall ${duration}s cubic-bezier(0.4,0.1,0.6,1) ${delay}s forwards;
+        opacity:0;
+      `;
+      container.appendChild(piece);
+    }
+
+    // Clean up after animation done
+    setTimeout(() => { try { container.remove(); } catch(e){} }, 6000);
   } catch(e) {}
 }
 
