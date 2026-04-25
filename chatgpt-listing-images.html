@@ -3,494 +3,645 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Amazon Image System | Jay Margaliot</title>
-<meta name="description" content="Two ways to create professional Amazon listing images with AI. Free from Jay's talk.">
+<title>Amazon Listing Images with AI | Jay Margaliot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-
 :root {
-  --bg: #0C0C0F;
-  --surface: #141418;
-  --surface2: #1A1A20;
-  --border: rgba(255,255,255,0.08);
-  --border-gold: rgba(212,175,55,0.3);
+  --m-bg: #F7F6F2;
+  --m-card: #FFFFFF;
+  --m-accent: #0EA47A;
+  --m-accent2: #0B8561;
+  --m-text: #1A1A1A;
+  --m-muted: #6B7280;
+  --m-border: rgba(0,0,0,0.08);
+  --m-num: #0EA47A;
+  --a-bg: #0A0B14;
+  --a-card: #111320;
+  --a-accent: #6366F1;
+  --a-accent2: #818CF8;
+  --a-text: #E8E9FF;
+  --a-muted: rgba(232,233,255,0.45);
+  --a-border: rgba(99,102,241,0.2);
+  --a-num: #6366F1;
   --gold: #D4AF37;
-  --gold-soft: rgba(212,175,55,0.12);
-  --text: #E8E8F0;
-  --text-muted: rgba(232,232,240,0.45);
-  --text-dim: rgba(232,232,240,0.65);
-  --green: #22C55E;
-  --green-bg: rgba(34,197,94,0.1);
-  --wa: #25D366;
+  --active-bg: var(--m-bg);
+  --active-card: var(--m-card);
+  --active-accent: var(--m-accent);
+  --active-text: var(--m-text);
+  --active-muted: var(--m-muted);
+  --active-border: var(--m-border);
+  --active-num: var(--m-num);
 }
-
+body.mode-auto {
+  --active-bg: var(--a-bg);
+  --active-card: var(--a-card);
+  --active-accent: var(--a-accent);
+  --active-text: var(--a-text);
+  --active-muted: var(--a-muted);
+  --active-border: var(--a-border);
+  --active-num: var(--a-num);
+}
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', -apple-system, sans-serif;
-  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+  background: var(--active-bg);
+  color: var(--active-text);
+  transition: background 0.6s ease, color 0.5s ease;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ─── LAYOUT ─── */
-.wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-
-/* ─── HERO ─── */
-.hero {
-  padding: 64px 20px 48px;
-  text-align: center;
-  max-width: 720px;
-  margin: 0 auto;
-}
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--gold);
-  background: var(--gold-soft); border: 1px solid var(--border-gold);
-  padding: 5px 14px; border-radius: 100px;
-  margin-bottom: 24px;
-}
-.hero h1 {
-  font-size: clamp(28px, 6vw, 48px);
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin-bottom: 16px;
-}
-.hero h1 em {
-  font-style: normal;
-  color: var(--gold);
-}
-.hero p {
-  font-size: 17px;
-  color: var(--text-dim);
-  max-width: 500px;
-  margin: 0 auto 32px;
-  line-height: 1.65;
-}
-.btn-wa {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--wa); color: #fff;
-  text-decoration: none;
-  padding: 13px 24px; border-radius: 12px;
-  font-weight: 700; font-size: 15px;
-  transition: filter 0.2s, transform 0.2s;
-  box-shadow: 0 4px 24px rgba(37,211,102,0.25);
-}
-.btn-wa:hover { filter: brightness(1.1); transform: translateY(-1px); }
-
-/* ─── MODE PICKER ─── */
-.mode-section {
-  padding: 8px 20px 48px;
-  max-width: 720px;
-  margin: 0 auto;
-}
-.mode-label {
-  text-align: center;
-  font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-muted);
-  margin-bottom: 16px;
-}
-.mode-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-@media (max-width: 540px) { .mode-cards { grid-template-columns: 1fr; } }
-
-.mode-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  padding: 24px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s;
-  text-align: left;
-  user-select: none;
-}
-.mode-card:hover { transform: translateY(-2px); }
-.mode-card.active-manual { border-color: var(--gold); background: rgba(212,175,55,0.05); }
-.mode-card.active-auto { border-color: #6366F1; background: rgba(99,102,241,0.06); }
-
-.mode-icon {
-  font-size: 28px; margin-bottom: 12px;
-  display: block;
-}
-.mode-card h3 {
-  font-size: 17px; font-weight: 800;
-  color: #fff; margin-bottom: 6px;
-}
-.mode-card p {
-  font-size: 13px; color: var(--text-muted); line-height: 1.55;
-}
-.mode-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600;
-  padding: 3px 10px; border-radius: 100px;
-  margin-top: 12px;
-}
-.badge-easy { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
-.badge-power { background: rgba(99,102,241,0.12); color: #818CF8; border: 1px solid rgba(99,102,241,0.25); }
-
-/* ─── CONTENT PANELS ─── */
-.panel { display: none; }
-.panel.visible { display: block; }
-
-/* ─── SECTION ─── */
-.section { padding: 0 0 56px; }
-
-.section-header { margin-bottom: 32px; }
-.section-kicker {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--gold);
-  margin-bottom: 8px; display: block;
-}
-.section-title {
-  font-size: clamp(22px, 4vw, 30px);
-  font-weight: 800; color: #fff;
-  letter-spacing: -0.02em; line-height: 1.2;
-  margin-bottom: 8px;
-}
-.section-sub {
-  font-size: 15px; color: var(--text-muted); line-height: 1.6;
-}
-
-/* ─── STEPS ─── */
-.steps-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 32px;
-}
-@media (max-width: 560px) { .steps-row { grid-template-columns: 1fr; } }
-.step-chip {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  text-align: center;
-}
-.step-chip .num {
-  width: 32px; height: 32px;
-  background: var(--gold); color: #000;
-  font-weight: 900; font-size: 14px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 10px;
-}
-.step-chip h4 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-.step-chip p { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
-
-/* ─── PROMPT CARD ─── */
-.p-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 16px;
-  transition: border-color 0.2s;
-}
-.p-card:hover { border-color: var(--border-gold); }
-
-.p-card-top {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; gap: 12px;
-  margin-bottom: 16px;
-}
-.p-card-id {
-  display: flex; align-items: center; gap: 12px;
-}
-.p-num {
-  background: var(--gold); color: #000;
-  font-weight: 800; font-size: 13px;
-  padding: 4px 10px; border-radius: 8px;
-  flex-shrink: 0;
-}
-.p-title { font-size: 16px; font-weight: 700; color: #fff; }
-.p-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.p-tag {
-  font-size: 11px; font-weight: 600;
-  background: var(--gold-soft); color: var(--gold);
-  border: 1px solid var(--border-gold);
-  padding: 3px 10px; border-radius: 100px;
-  white-space: nowrap; flex-shrink: 0;
-}
-
-/* Prompt text area */
-.p-body {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+/* ── SPLIT HERO ── */
+.split-hero {
+  display: flex;
+  height: 100svh;
+  min-height: 580px;
   position: relative;
   overflow: hidden;
-  max-height: 160px;
-  transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1);
+}
+.split-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(32px, 6vw, 80px);
+  cursor: pointer;
+  transition: flex 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+  position: relative;
+  overflow: hidden;
+}
+.split-side:hover { flex: 1.18; }
+.side-manual { background: #F0EEE8; }
+.side-auto { background: #0A0B14; }
+
+/* Decorative BG shapes */
+.side-manual::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 30%, rgba(14,164,122,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.side-auto::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 70%, rgba(99,102,241,0.18) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Vertical divider */
+.split-divider {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px; height: 56px;
+  background: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: #1A1A1A;
+  z-index: 10; box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  transition: transform 0.3s;
+  pointer-events: none;
+  letter-spacing: -0.5px;
+}
+.split-hero:hover .split-divider { transform: translate(-50%, -50%) scale(0.9); }
+
+.split-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; margin-bottom: 20px;
+  padding: 5px 12px; border-radius: 100px;
+  display: inline-block;
+}
+.side-manual .split-tag { background: rgba(14,164,122,0.12); color: var(--m-accent); }
+.side-auto .split-tag { background: rgba(99,102,241,0.15); color: var(--a-accent2); }
+
+.split-icon { font-size: clamp(40px, 6vw, 64px); margin-bottom: 16px; display: block; }
+
+.split-title {
+  font-size: clamp(24px, 3.5vw, 42px);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 14px;
+}
+.side-manual .split-title { color: #111; }
+.side-auto .split-title { color: #fff; }
+
+.split-desc {
+  font-size: clamp(13px, 1.5vw, 16px);
+  line-height: 1.65; max-width: 340px;
+  margin-bottom: 28px;
+}
+.side-manual .split-desc { color: #5a5a5a; }
+.side-auto .split-desc { color: rgba(232,233,255,0.6); }
+
+.split-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 24px; border-radius: 12px;
+  font-size: 14px; font-weight: 700;
+  border: none; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.split-cta:hover { transform: translateY(-2px); }
+.side-manual .split-cta {
+  background: var(--m-accent); color: white;
+  box-shadow: 0 4px 20px rgba(14,164,122,0.35);
+}
+.side-manual .split-cta:hover { box-shadow: 0 8px 30px rgba(14,164,122,0.45); }
+.side-auto .split-cta {
+  background: var(--a-accent); color: white;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+}
+.side-auto .split-cta:hover { box-shadow: 0 8px 30px rgba(99,102,241,0.45); }
+
+.split-features {
+  list-style: none;
+  margin-bottom: 28px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.split-features li {
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+}
+.side-manual .split-features li { color: #3a3a3a; }
+.side-auto .split-features li { color: rgba(232,233,255,0.7); }
+.split-features li::before { content: '✓'; font-weight: 800; font-size: 13px; }
+.side-manual .split-features li::before { color: var(--m-accent); }
+.side-auto .split-features li::before { color: var(--a-accent2); }
+
+/* ── STICKY NAV ── */
+.sticky-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--active-bg);
+  border-bottom: 1px solid var(--active-border);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+  transition: background 0.6s ease;
+  backdrop-filter: blur(12px);
+}
+.sticky-nav-brand { font-size: 13px; font-weight: 700; color: var(--active-muted); }
+.sticky-nav-brand span { color: var(--active-accent); }
+.nav-switch {
+  display: flex; gap: 4px;
+  background: var(--active-border);
+  border-radius: 10px; padding: 3px;
+}
+.nav-btn {
+  padding: 6px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--active-muted);
+  transition: all 0.2s;
+}
+.nav-btn.active {
+  background: var(--active-accent); color: white;
+}
+
+/* ── MAIN CONTENT ── */
+.content-wrapper { display: none; }
+.content-wrapper.visible { display: block; }
+
+/* ── SECTION ── */
+.section { padding: 80px 0; max-width: 680px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+.section + .section { padding-top: 0; }
+
+/* Scroll animation */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── KICKER / TITLE ── */
+.kicker {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--active-accent);
+  margin-bottom: 10px; display: block;
+}
+.h2 {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 900; letter-spacing: -0.03em;
+  line-height: 1.1; margin-bottom: 10px;
+  color: var(--active-text);
+}
+.sub {
+  font-size: 16px; color: var(--active-muted); line-height: 1.65;
+  margin-bottom: 40px;
+}
+
+/* ── STEPS ROW ── */
+.steps-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+  margin-bottom: 36px;
+}
+@media(max-width:560px){ .steps-row { grid-template-columns: 1fr; } }
+.step-chip {
+  background: var(--active-card);
+  border: 1px solid var(--active-border);
+  border-radius: 16px; padding: 20px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.step-chip:hover { border-color: var(--active-accent); transform: translateY(-2px); }
+.step-num {
+  width: 34px; height: 34px;
+  background: var(--active-accent); color: white;
+  font-weight: 900; font-size: 14px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
   margin-bottom: 12px;
 }
-.p-body.open { max-height: 2400px; }
+.step-chip h4 { font-size: 13px; font-weight: 700; color: var(--active-text); margin-bottom: 5px; }
+.step-chip p { font-size: 12px; color: var(--active-muted); line-height: 1.5; }
+
+/* ── ALERT ── */
+.alert {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 12px;
+  font-size: 13.5px; line-height: 1.6;
+  margin-bottom: 32px;
+}
+.alert-tip { background: rgba(14,164,122,0.08); border: 1px solid rgba(14,164,122,0.2); color: #2d6b57; }
+.alert-tip .ai { color: var(--m-accent); font-size: 16px; flex-shrink: 0; }
+.alert-auto { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); color: var(--a-accent2); }
+.alert-auto .ai { color: var(--a-accent2); font-size: 16px; flex-shrink: 0; }
+body.mode-auto .alert-tip { background: rgba(14,164,122,0.06); border-color: rgba(14,164,122,0.15); color: rgba(14,164,122,0.8); }
+
+/* ── PROMPT CARD ── */
+.p-card {
+  background: var(--active-card);
+  border: 1.5px solid var(--active-border);
+  border-radius: 20px; padding: 24px;
+  margin-bottom: 16px;
+  transition: border-color 0.25s;
+}
+.p-card:hover { border-color: var(--active-accent); }
+.p-card-head {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 12px;
+  margin-bottom: 18px;
+}
+.p-meta { display: flex; align-items: center; gap: 12px; }
+.p-badge {
+  background: var(--active-accent); color: white;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px; border-radius: 7px; flex-shrink: 0;
+}
+.p-name { font-size: 16px; font-weight: 700; color: var(--active-text); }
+.p-hint { font-size: 12px; color: var(--active-muted); margin-top: 2px; }
+.p-step-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 100px;
+  border: 1px solid var(--active-border); color: var(--active-muted);
+  white-space: nowrap;
+}
+
+/* prompt body */
+.p-body {
+  background: var(--active-bg);
+  border: 1px solid var(--active-border);
+  border-radius: 12px;
+  position: relative; overflow: hidden;
+  max-height: 140px;
+  transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1);
+  margin-bottom: 14px;
+}
+.p-body.open { max-height: 3000px; }
+.p-scroll { padding: 16px; overflow-y: auto; }
 .p-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px; line-height: 1.75;
-  color: var(--text-dim);
+  font-size: 12px; line-height: 1.85;
+  color: var(--active-text); opacity: 0.75;
   white-space: pre-wrap;
 }
 .p-fade {
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 56px;
-  background: linear-gradient(transparent, var(--surface));
-  pointer-events: none;
+  height: 52px; pointer-events: none;
   transition: opacity 0.3s;
 }
+body:not(.mode-auto) .p-fade { background: linear-gradient(transparent, var(--m-card)); }
+body.mode-auto .p-fade { background: linear-gradient(transparent, var(--a-card)); }
 .p-body.open .p-fade { opacity: 0; }
 
-/* Actions */
 .p-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-ghost {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 12px; font-weight: 600;
-  padding: 7px 14px; border-radius: 8px;
-  cursor: pointer; transition: all 0.18s;
-  display: flex; align-items: center; gap: 6px;
-}
-.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
-.btn-gold {
-  background: var(--gold); color: #000;
-  border: none; font-size: 13px; font-weight: 700;
-  padding: 8px 18px; border-radius: 8px;
-  cursor: pointer; transition: all 0.18s;
-  display: flex; align-items: center; gap: 6px;
-}
-.btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.btn-gold.done { background: var(--green); color: #fff; }
-.btn-link {
-  background: rgba(16,163,127,0.1);
-  border: 1px solid rgba(16,163,127,0.25);
-  color: #10A37F;
-  font-size: 12px; font-weight: 600;
-  padding: 7px 14px; border-radius: 8px;
-  cursor: pointer; text-decoration: none;
-  display: flex; align-items: center; gap: 6px;
-  transition: all 0.18s;
-}
-.btn-link:hover { background: rgba(16,163,127,0.18); }
 
-/* ─── TIP ─── */
-.tip {
-  display: flex; gap: 10px; align-items: flex-start;
-  background: rgba(212,175,55,0.06);
-  border: 1px solid rgba(212,175,55,0.18);
-  border-radius: 10px;
-  padding: 12px 14px; margin-top: 12px;
-  font-size: 13px; color: var(--text-dim); line-height: 1.55;
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer;
+  transition: all 0.18s; text-decoration: none;
 }
-.tip-icon { color: var(--gold); flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+.btn-primary {
+  background: var(--active-accent); color: white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-primary.done { background: #22C55E; }
+.btn-outline {
+  background: transparent; color: var(--active-muted);
+  border: 1.5px solid var(--active-border);
+}
+.btn-outline:hover { border-color: var(--active-accent); color: var(--active-accent); }
+.btn-chatgpt { background: rgba(14,164,122,0.1); color: #0EA47A; border: 1px solid rgba(14,164,122,0.25); }
+.btn-chatgpt:hover { background: rgba(14,164,122,0.18); }
 
-/* ─── CONSISTENCY BOX ─── */
-.box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 22px; margin-top: 8px;
+/* ── PRO TIPS BOX ── */
+.tips-box {
+  background: var(--active-card);
+  border: 1.5px solid var(--active-border);
+  border-radius: 20px; padding: 24px;
 }
-.box h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
-.box-row {
-  display: flex; gap: 10px; align-items: flex-start;
-  margin-bottom: 10px;
-  font-size: 13px; color: var(--text-dim); line-height: 1.5;
+.tips-box h3 { font-size: 14px; font-weight: 700; color: var(--active-text); margin-bottom: 16px; }
+.tip-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--active-border);
+  font-size: 14px; line-height: 1.6;
+  color: var(--active-muted);
 }
-.box-row:last-child { margin-bottom: 0; }
-.check { color: var(--green); flex-shrink: 0; font-size: 14px; }
+.tip-row:last-child { border-bottom: none; padding-bottom: 0; }
+.tip-row strong { color: var(--active-text); }
+.tip-icon { font-size: 18px; flex-shrink: 0; }
 
-/* ─── AUTO PANEL SPECIFIC ─── */
-.terminal {
-  background: #0A0A0D;
-  border: 1px solid rgba(99,102,241,0.2);
-  border-radius: 14px;
-  padding: 20px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; line-height: 2;
-  margin-bottom: 16px;
+/* ── TERMINAL ── */
+/* ── CLAUDE CODE DESKTOP MOCKUP ── */
+.cc-window {
+  background: #0D0E1A; border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
-.t-comment { color: rgba(255,255,255,0.2); }
-.t-cmd { color: #818CF8; font-weight: 700; }
-.t-ok { color: var(--green); }
-.t-info { color: var(--text-muted); }
-.t-highlight { color: var(--gold); font-weight: 700; }
+.cc-titlebar {
+  background: #111224; padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(99,102,241,0.12);
+}
+.cc-titlebar-left { display: flex; align-items: center; gap: 10px; }
+.cc-dot { width: 11px; height: 11px; border-radius: 50%; }
+.cc-dot-r { background: #FF5F57; } .cc-dot-y { background: #FEBC2E; } .cc-dot-g { background: #28C840; }
+.cc-app-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.3); font-family: 'Inter'; letter-spacing: 0.02em; }
+.cc-app-name span { color: #818CF8; }
+.cc-chat { padding: 20px 20px 16px; display: flex; flex-direction: column; gap: 16px; }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px; margin: 20px 0;
+/* User message bubble */
+.cc-user-msg { display: flex; justify-content: flex-end; gap: 10px; align-items: flex-start; }
+.cc-user-bubble {
+  background: #1E2040; border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 14px 14px 4px 14px;
+  padding: 10px 14px; max-width: 75%;
+  display: flex; align-items: center; gap: 10px;
 }
-@media (max-width: 460px) { .feature-grid { grid-template-columns: 1fr; } }
-.feature-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  font-size: 13px;
+.cc-cmd { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #C7D2FE; font-weight: 600; }
+.cc-copy-btn {
+  background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+  color: #818CF8; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  font-family: 'Inter', sans-serif; white-space: nowrap;
+  transition: background 0.2s, color 0.2s; flex-shrink: 0;
 }
-.feature-item strong { display: block; color: #fff; margin-bottom: 3px; font-size: 13px; }
-.feature-item span { color: var(--text-muted); }
+.cc-copy-btn:hover { background: rgba(99,102,241,0.3); color: #C7D2FE; }
+.cc-copy-btn.done { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22C55E; }
 
-/* Setup steps */
-.setup-step {
-  display: flex; gap: 16px; align-items: flex-start;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 10px;
-  transition: border-color 0.2s;
-}
-.setup-step:hover { border-color: rgba(99,102,241,0.35); }
-.setup-num {
-  width: 32px; height: 32px; flex-shrink: 0;
-  background: rgba(99,102,241,0.15);
-  border: 1px solid rgba(99,102,241,0.3);
-  color: #818CF8; font-weight: 800; font-size: 14px;
-  border-radius: 50%;
+/* Claude response */
+.cc-claude-msg { display: flex; gap: 10px; align-items: flex-start; }
+.cc-avatar {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, #6366F1, #818CF8);
   display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; margin-top: 2px;
 }
-.setup-body { flex: 1; }
-.setup-body h4 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 5px; }
-.setup-body p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-.setup-body code {
-  display: inline-block;
-  background: rgba(99,102,241,0.1);
-  border: 1px solid rgba(99,102,241,0.2);
-  color: #818CF8;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  padding: 2px 8px; border-radius: 5px;
-  margin-top: 6px;
+.cc-response {
+  background: #13152A; border: 1px solid rgba(99,102,241,0.15);
+  border-radius: 4px 14px 14px 14px;
+  padding: 12px 16px; font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; line-height: 2; flex: 1;
 }
-.setup-sub-steps { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-.sub-step {
-  display: flex; gap: 8px; align-items: flex-start;
-  font-size: 12.5px; color: var(--text-dim); line-height: 1.5;
+.t-dim { color: rgba(255,255,255,0.22); }
+.t-green { color: #22C55E; }
+.t-gold { color: #D4AF37; font-weight: 700; }
+.cc-url-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; }
+.cc-url-text { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'JetBrains Mono'; }
+.cursor {
+  display: inline-block; width: 8px; height: 14px;
+  background: #818CF8; margin-left: 2px;
+  animation: blink 1.1s step-end infinite; vertical-align: middle;
 }
-.sub-letter {
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── FEATURE GRID ── */
+.feat-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 24px 0;
+}
+@media(max-width:460px){ .feat-grid { grid-template-columns: 1fr; } }
+.feat-item {
+  background: var(--active-card);
+  border: 1.5px solid var(--active-border);
+  border-radius: 14px; padding: 18px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feat-item:hover { border-color: var(--a-accent); transform: translateY(-2px); }
+.feat-item .fi { font-size: 22px; margin-bottom: 8px; display: block; }
+.feat-item strong { display: block; font-size: 14px; color: var(--a-text); margin-bottom: 3px; }
+.feat-item span { font-size: 12.5px; color: var(--a-muted); }
+
+/* ── SETUP STEPS ── */
+.setup-wrap { display: flex; flex-direction: column; gap: 2px; }
+.s-step {
+  background: var(--a-card);
+  border: 1.5px solid var(--a-border);
+  border-radius: 16px; padding: 22px;
+  transition: border-color 0.2s;
+  position: relative;
+}
+.s-step::after {
+  content: '';
+  position: absolute; left: 32px; bottom: -14px;
+  width: 2px; height: 14px;
+  background: linear-gradient(var(--a-border), transparent);
+}
+.s-step:last-child::after { display: none; }
+.s-step:hover { border-color: rgba(99,102,241,0.5); }
+.s-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.s-num {
+  width: 34px; height: 34px; flex-shrink: 0;
+  background: rgba(99,102,241,0.12); border: 1.5px solid rgba(99,102,241,0.3);
+  color: #818CF8; font-weight: 900; font-size: 14px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+}
+.s-step h4 { font-size: 15px; font-weight: 700; color: var(--a-text); }
+.s-step p { font-size: 13px; color: var(--a-muted); line-height: 1.7; }
+.s-step a { color: var(--a-accent2); font-weight: 600; text-decoration: none; }
+.s-step a:hover { text-decoration: underline; }
+.s-sub { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+.s-row { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--a-muted); line-height: 1.55; }
+.s-letter {
   background: rgba(212,175,55,0.15); color: var(--gold);
-  font-weight: 700; font-size: 10px;
-  padding: 1px 6px; border-radius: 4px;
+  font-weight: 800; font-size: 10px; letter-spacing: 0.05em;
+  padding: 2px 7px; border-radius: 5px;
   flex-shrink: 0; margin-top: 1px;
 }
-
-/* Cost badge */
-.cost-row {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  margin-top: 10px;
+.s-row a { color: var(--gold); font-weight: 600; text-decoration: none; }
+.s-row a:hover { text-decoration: underline; }
+.code-inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: #818CF8; padding: 2px 7px; border-radius: 5px;
 }
+.code-block {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: #818CF8; padding: 10px 14px; border-radius: 10px;
+  margin-top: 10px; display: block;
+}
+.cost-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .cost-pill {
-  background: var(--surface2); border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--a-border);
   border-radius: 100px; padding: 5px 12px;
-  font-size: 12px; color: var(--text-dim);
+  font-size: 12px; color: var(--a-muted);
 }
 .cost-pill strong { color: var(--gold); }
 
-/* ─── FAQ ─── */
-.faq { margin-top: 24px; }
-.faq h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
-.faq-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-.faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.faq-q { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 5px; }
-.faq-a { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-
-/* ─── DIVIDER ─── */
-.divider { height: 1px; background: var(--border); margin: 40px 0; }
-
-/* ─── CTA ─── */
-.cta-block {
-  text-align: center;
-  padding: 48px 20px 64px;
-  max-width: 720px;
-  margin: 0 auto;
-  border-top: 1px solid var(--border);
+/* Download buttons */
+.dl-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.btn-dl {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 10px;
+  font-size: 12.5px; font-weight: 700;
+  border: none; cursor: pointer; transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
 }
-.cta-block h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-.cta-block p { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+.btn-dl-py { background: rgba(14,164,122,0.12); color: #0EA47A; border: 1.5px solid rgba(14,164,122,0.25); }
+.btn-dl-py:hover { background: rgba(14,164,122,0.22); transform: translateY(-1px); }
+.btn-dl-md { background: rgba(99,102,241,0.12); color: #818CF8; border: 1.5px solid rgba(99,102,241,0.25); }
+.btn-dl-md:hover { background: rgba(99,102,241,0.22); transform: translateY(-1px); }
 
-/* ─── FOOTER ─── */
-.footer {
-  text-align: center; padding: 20px;
-  font-size: 12px; color: var(--text-muted);
-  border-top: 1px solid var(--border);
+/* ── FAQ ── */
+.faq-list { display: flex; flex-direction: column; }
+.faq-q {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--a-border);
+  cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
 }
-.footer a { color: var(--gold); text-decoration: none; }
+.faq-q span { font-size: 14px; font-weight: 600; color: var(--a-text); }
+.faq-toggle { color: var(--a-muted); font-size: 18px; transition: transform 0.3s; flex-shrink: 0; }
+.faq-q.open .faq-toggle { transform: rotate(45deg); color: var(--a-accent2); }
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.3s;
+  font-size: 13.5px; color: var(--a-muted); line-height: 1.7;
+}
+.faq-a.open { max-height: 200px; padding-bottom: 16px; }
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px; max-width: 680px; margin: 0 auto;
+  background: var(--active-border);
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 32px 24px;
+  font-size: 13px; color: var(--active-muted);
+  border-top: 1px solid var(--active-border);
+}
+footer a { color: var(--gold); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .split-side { padding: 28px 20px; }
+  .split-divider { width: 44px; height: 44px; font-size: 14px; }
+  .split-title { font-size: 22px; }
+  .split-desc { font-size: 13px; }
+}
 </style>
 </head>
 <body>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-eyebrow">🎤 From Jay's Talk · Sofia 2026</div>
-  <h1>Beautiful Amazon Images<br>with <em>ChatGPT AI</em></h1>
-  <p>Two free tools from the talk. Pick the path that fits you — no account needed to get started.</p>
-</div>
+<!-- ═══════════════════ SPLIT HERO ═══════════════════ -->
+<div class="split-hero" id="hero">
 
-<!-- MODE PICKER -->
-<div class="mode-section">
-  <p class="mode-label">Choose your path</p>
-  <div class="mode-cards">
-    <div class="mode-card" id="card-manual" onclick="switchMode('manual')">
-      <span class="mode-icon">✍️</span>
-      <h3>Manual Method</h3>
-      <p>Use ChatGPT directly. Copy two prompts, paste your listing, generate images yourself.</p>
-      <span class="mode-badge badge-easy">✓ No setup needed</span>
-    </div>
-    <div class="mode-card" id="card-auto" onclick="switchMode('auto')">
-      <span class="mode-icon">⚡</span>
-      <h3>One-Click Skill</h3>
-      <p>Paste a URL. A Claude Code skill generates all 7 images automatically via API.</p>
-      <span class="mode-badge badge-power">⚡ ~$2 per listing</span>
-    </div>
+  <!-- LEFT: MANUAL -->
+  <div class="split-side side-manual" onclick="selectMode('manual')">
+    <span class="split-tag">No setup needed</span>
+    <span class="split-icon">✍️</span>
+    <h2 class="split-title">Manual<br>Method</h2>
+    <p class="split-desc">Copy two prompts into ChatGPT. Paste your Amazon listing. Get 7 professional images.</p>
+    <ul class="split-features">
+      <li>Works right now, no account needed</li>
+      <li>Two prompts, one conversation</li>
+      <li>Full creative control</li>
+    </ul>
+    <button class="split-cta">Get the prompts →</button>
   </div>
+
+  <!-- DIVIDER ORB -->
+  <div class="split-divider">or</div>
+
+  <!-- RIGHT: AUTO -->
+  <div class="split-side side-auto" onclick="selectMode('auto')">
+    <span class="split-tag">⚡ ~$2 per listing</span>
+    <span class="split-icon">🤖</span>
+    <h2 class="split-title" style="color:#fff">One-Click<br>Skill</h2>
+    <p class="split-desc">Paste a URL. A Claude Code skill generates all 7 images automatically via API.</p>
+    <ul class="split-features">
+      <li>Fully automated — no prompting</li>
+      <li>7 images in ~4 minutes</li>
+      <li>Reusable on any listing</li>
+    </ul>
+    <button class="split-cta">Set it up →</button>
+  </div>
+
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- PANEL: MANUAL -->
-<!-- ═══════════════════════════════════════ -->
-<div class="panel" id="panel-manual">
-<div class="wrap">
+<!-- ═══════════════════ STICKY NAV ═══════════════════ -->
+<nav class="sticky-nav" id="stickyNav" style="display:none">
+  <div class="sticky-nav-brand">Amazon Images · <span id="modeLabel">Manual Method</span></div>
+  <div class="nav-switch">
+    <button class="nav-btn active" id="navManual" onclick="selectMode('manual')">✍️ Manual</button>
+    <button class="nav-btn" id="navAuto" onclick="selectMode('auto')">⚡ Skill</button>
+  </div>
+</nav>
 
-  <!-- HOW IT WORKS -->
+<!-- ═══════════════════ MANUAL PANEL ═══════════════════ -->
+<div class="content-wrapper" id="panel-manual">
+
+  <!-- SECTION: HOW IT WORKS -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">Bonus 1 · Manual Method</span>
-      <h2 class="section-title">The 3-Step ChatGPT System</h2>
-      <p class="section-sub">Two prompts. One conversation. Seven professional listing images.</p>
-    </div>
+    <span class="kicker reveal">Bonus 1 · Manual Method</span>
+    <h2 class="h2 reveal reveal-delay-1">The 3-Step System</h2>
+    <p class="sub reveal reveal-delay-2">Two prompts. One ChatGPT conversation. Seven listing images — consistent, professional, ready to upload.</p>
 
     <div class="steps-row">
-      <div class="step-chip">
-        <div class="num">1</div>
+      <div class="step-chip reveal reveal-delay-1">
+        <div class="step-num">1</div>
         <h4>Strategic Plan</h4>
-        <p>ChatGPT analyzes your listing and builds a visual strategy</p>
+        <p>ChatGPT reads your listing and designs the visual strategy</p>
       </div>
-      <div class="step-chip">
-        <div class="num">2</div>
+      <div class="step-chip reveal reveal-delay-2">
+        <div class="step-num">2</div>
         <h4>Image Prompts</h4>
-        <p>ChatGPT writes 7 ready-to-use generation prompts</p>
+        <p>ChatGPT writes 7 detailed prompts — one per image</p>
       </div>
-      <div class="step-chip">
-        <div class="num">3</div>
+      <div class="step-chip reveal reveal-delay-3">
+        <div class="step-num">3</div>
         <h4>Generate</h4>
-        <p>Upload product photos, say "Generate image 1" and watch</p>
+        <p>Attach product photos, say "Generate image 1" — done</p>
       </div>
     </div>
 
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      Keep all 3 steps in <strong>one ChatGPT conversation</strong>. The strategy from Step 1 carries into everything after.
+    <div class="alert alert-tip reveal">
+      <span class="ai">💡</span>
+      <span>Keep all steps in <strong>one ChatGPT conversation.</strong> The strategy from Step 1 carries into everything after it.</span>
     </div>
   </div>
 
@@ -498,26 +649,25 @@ body {
 
   <!-- PROMPT 1 -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">Step 1</span>
-      <h2 class="section-title">Strategic Blueprint</h2>
-      <p class="section-sub">Paste this into ChatGPT with your product URL and photos attached.</p>
-    </div>
+    <span class="kicker reveal">Step 1</span>
+    <h2 class="h2 reveal reveal-delay-1">Strategic Blueprint</h2>
+    <p class="sub reveal reveal-delay-2">Paste into ChatGPT with your product URL and photos attached.</p>
 
-    <div class="p-card">
-      <div class="p-card-top">
-        <div class="p-card-id">
-          <span class="p-num">Prompt 1</span>
+    <div class="p-card reveal">
+      <div class="p-card-head">
+        <div class="p-meta">
+          <span class="p-badge">Prompt 1</span>
           <div>
-            <div class="p-title">Strategic Blueprint</div>
-            <div class="p-desc">Analyzes your listing · builds the visual plan</div>
+            <div class="p-name">Strategic Blueprint</div>
+            <div class="p-hint">Analyzes the listing · builds the visual plan</div>
           </div>
         </div>
-        <span class="p-tag">Paste in ChatGPT</span>
+        <span class="p-step-tag">ChatGPT</span>
       </div>
 
       <div class="p-body" id="pb1">
-        <pre class="p-text" id="pt1">You are an expert Amazon listing image strategist and commercial creative director.
+        <div class="p-scroll">
+          <pre class="p-text" id="pt1">You are an expert Amazon listing image strategist and commercial creative director.
 
 Analyze the product I give you and create a complete visual plan for 7 Amazon listing images. Your goal: images that are beautiful, consistent, professional, and built to convert.
 
@@ -533,9 +683,9 @@ SECTION 1: PRODUCT READ
 - The one sentence that captures what makes this product feel good to own
 
 SECTION 2: VISUAL SYSTEM
-- Primary colors (hex codes if possible, otherwise descriptive)
+- Primary colors (hex codes if possible)
 - Secondary / accent colors
-- Mood and style: write 3 words (e.g. "energetic, party, fun" or "clean, premium, minimal")
+- Mood and style: write 3 words (e.g. "energetic, party, fun")
 - Lighting direction for all images
 - Consistent element to repeat across every image
 
@@ -548,32 +698,33 @@ For each image:
 
 Images to plan:
 1. Main product shot — white background, product fills 75%, no text, no props
-2. Hero lifestyle — product in use, real person, authentic moment, emotionally compelling
-3. Feature infographic — 3–5 callouts showing key benefits, clean and graphic
-4. Lifestyle scene 2 — different angle, different person or setting, same mood
-5. Benefits list — numbered or icon-based benefits, strong headline
-6. Gift or celebration scene — product as a gift or party prop, warm and exciting
-7. Detail close-up — extreme quality shot showing the best physical detail
+2. Hero lifestyle — product in use, real person, authentic moment
+3. Feature infographic — 3–5 callouts, clean and graphic
+4. Lifestyle scene 2 — different angle, person, or setting
+5. Benefits list — numbered or icon-based, strong headline
+6. Gift or celebration scene — warm and exciting
+7. Detail close-up — best physical feature, extreme quality
 
 END WITH: "The consistent visual language across all 7 images is: ___."
 
-Do not ask questions. Use whatever I give you and deliver the full plan now.
+Do not ask questions. Deliver the full plan now.
 
-[PASTE YOUR AMAZON URL HERE — or paste title + bullet points]
+[PASTE YOUR AMAZON URL HERE]
 [ATTACH YOUR PRODUCT IMAGES]</pre>
+        </div>
         <div class="p-fade" id="pf1"></div>
       </div>
 
       <div class="p-actions">
-        <button class="btn-ghost" onclick="expand('pb1','pf1',this)">▼ Show full prompt</button>
-        <button class="btn-gold" onclick="copy('pt1',this)">Copy Prompt</button>
-        <a href="https://chatgpt.com" target="_blank" class="btn-link">Open ChatGPT ↗</a>
+        <button class="btn btn-outline" onclick="toggle('pb1','pf1',this)">▼ Show full prompt</button>
+        <button class="btn btn-primary" onclick="cp('pt1',this)">Copy Prompt</button>
+        <a href="https://chatgpt.com" target="_blank" class="btn btn-chatgpt">Open ChatGPT ↗</a>
       </div>
+    </div>
 
-      <div class="tip">
-        <span class="tip-icon">💡</span>
-        Attach 2–3 existing product photos. ChatGPT sees the product and images become much more accurate.
-      </div>
+    <div class="alert alert-tip reveal" style="margin-top:0">
+      <span class="ai">💡</span>
+      <span>Attach 2–3 existing product photos. ChatGPT sees the actual product and images become far more accurate.</span>
     </div>
   </div>
 
@@ -581,38 +732,37 @@ Do not ask questions. Use whatever I give you and deliver the full plan now.
 
   <!-- PROMPT 2 -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">Step 2</span>
-      <h2 class="section-title">Image Generation Prompts</h2>
-      <p class="section-sub">Paste this in the <strong style="color:#fff">same chat</strong> after getting the strategy.</p>
-    </div>
+    <span class="kicker reveal">Step 2</span>
+    <h2 class="h2 reveal reveal-delay-1">Image Generation Prompts</h2>
+    <p class="sub reveal reveal-delay-2">Paste in the <strong>same chat</strong> right after getting the strategy.</p>
 
-    <div class="p-card">
-      <div class="p-card-top">
-        <div class="p-card-id">
-          <span class="p-num">Prompt 2</span>
+    <div class="p-card reveal">
+      <div class="p-card-head">
+        <div class="p-meta">
+          <span class="p-badge">Prompt 2</span>
           <div>
-            <div class="p-title">Image Generation Prompts</div>
-            <div class="p-desc">Same chat · 7 prompts ready to generate</div>
+            <div class="p-name">Image Generation Prompts</div>
+            <div class="p-hint">Same chat · outputs 7 ready-to-generate prompts</div>
           </div>
         </div>
-        <span class="p-tag">Same chat</span>
+        <span class="p-step-tag">Same chat</span>
       </div>
 
       <div class="p-body" id="pb2">
-        <pre class="p-text" id="pt2">Based on the visual strategy above, now write 7 professional image generation prompts.
+        <div class="p-scroll">
+          <pre class="p-text" id="pt2">Based on the visual strategy above, now write 7 professional image generation prompts.
 
-Each prompt will be used directly in ChatGPT to generate the image — make them detailed, visual, and specific.
+Each prompt will be used directly in ChatGPT image generation — make them detailed and specific.
 
 RULES FOR EVERY PROMPT:
 - 100–150 words each
 - Start with: "Amazon listing image, professional commercial photography, [image type]."
-- Describe exactly: what's in the frame, how the product is positioned, lighting, mood, colors
-- Reference the consistent visual system you defined above
+- Describe exactly: what's in the frame, product position, lighting, mood, colors
+- Reference the visual system from above
 - End every prompt with: "Visual consistency: [color palette], [mood/style], [lighting]."
 - For images with people: describe real, natural-looking humans — not stock photo models
-- Never crop the product or cut it off at the edges
-- Image 1: white background, product only, no text, no props, product fills 75% of frame
+- Never crop the product at the frame edges
+- Image 1: white background, product only, no text, fills 75% of frame
 
 FORMAT:
 IMAGE 1: [Type]
@@ -621,22 +771,23 @@ IMAGE 1: [Type]
 IMAGE 2: [Type]
 [Prompt]
 
-...continue for all 7...
+...all 7...
 
-After all 7, write exactly:
-"Ready. Type 'Generate image 1' to start, or 'Generate all 7' to begin the full set."</pre>
+After all 7, write exactly this:
+"Ready. Type 'Generate image 1' to start, or 'Generate all 7' for the full set."</pre>
+        </div>
         <div class="p-fade" id="pf2"></div>
       </div>
 
       <div class="p-actions">
-        <button class="btn-ghost" onclick="expand('pb2','pf2',this)">▼ Show full prompt</button>
-        <button class="btn-gold" onclick="copy('pt2',this)">Copy Prompt</button>
+        <button class="btn btn-outline" onclick="toggle('pb2','pf2',this)">▼ Show full prompt</button>
+        <button class="btn btn-primary" onclick="cp('pt2',this)">Copy Prompt</button>
       </div>
+    </div>
 
-      <div class="tip">
-        <span class="tip-icon">💡</span>
-        Once you have the 7 prompts, type "Generate image 1". ChatGPT will use your product photos as reference. Go one by one — takes 3–4 minutes total.
-      </div>
+    <div class="alert alert-tip reveal" style="margin-top:0">
+      <span class="ai">💡</span>
+      <span>Once you have the 7 prompts, type "Generate image 1". ChatGPT will ask to use your photos as reference. Go one by one — 3–4 minutes total.</span>
     </div>
   </div>
 
@@ -644,276 +795,244 @@ After all 7, write exactly:
 
   <!-- TIPS -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">Pro Tips</span>
-      <h2 class="section-title">Get Better Results</h2>
-    </div>
-    <div class="box">
-      <div class="box-row"><span class="check">✓</span><span><strong style="color:#fff">Make 50, keep 7.</strong> The more options you generate, the better your final set. Quantity leads to quality.</span></div>
-      <div class="box-row"><span class="check">✓</span><span><strong style="color:#fff">Two versions of your main image.</strong> One conservative (Amazon-safe), one more creative. A/B test which converts better.</span></div>
-      <div class="box-row"><span class="check">✓</span><span><strong style="color:#fff">Stay in one chat.</strong> The longer the conversation, the better ChatGPT understands your product. Never start fresh mid-session.</span></div>
-      <div class="box-row"><span class="check">✓</span><span><strong style="color:#fff">Lock the style early.</strong> The visual system from Prompt 1 stays consistent through all 7 images automatically.</span></div>
+    <span class="kicker reveal">Pro Tips</span>
+    <h2 class="h2 reveal reveal-delay-1">Get Better Results</h2>
+
+    <div class="tips-box reveal reveal-delay-2">
+      <div class="tip-row">
+        <span class="tip-icon">🎯</span>
+        <div><strong>Make 50, keep 7.</strong> The more options you generate, the better your final set. The winner earns its spot.</div>
+      </div>
+      <div class="tip-row">
+        <span class="tip-icon">🔀</span>
+        <div><strong>Two versions of your main image.</strong> One conservative (Amazon-safe), one more creative. A/B test which converts.</div>
+      </div>
+      <div class="tip-row">
+        <span class="tip-icon">🧵</span>
+        <div><strong>Stay in one chat.</strong> The longer the conversation, the better ChatGPT understands your product. Never start fresh mid-session.</div>
+      </div>
+      <div class="tip-row">
+        <span class="tip-icon">🎨</span>
+        <div><strong>Consistency is the secret.</strong> The visual system from Prompt 1 locks style across all 7 images automatically.</div>
+      </div>
     </div>
   </div>
 
-</div><!-- /wrap -->
 </div><!-- /panel-manual -->
 
 
-<!-- ═══════════════════════════════════════ -->
-<!-- PANEL: AUTO -->
-<!-- ═══════════════════════════════════════ -->
-<div class="panel" id="panel-auto">
-<div class="wrap">
+<!-- ═══════════════════ AUTO PANEL ═══════════════════ -->
+<div class="content-wrapper" id="panel-auto">
 
+  <!-- SECTION: INTRO -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">Bonus 2 · Automated Skill</span>
-      <h2 class="section-title">One URL. Seven Images. Done.</h2>
-      <p class="section-sub">A Claude Code skill that connects directly to the ChatGPT image API. No prompting, no copy-paste, no manual steps.</p>
-    </div>
+    <span class="kicker reveal">Bonus 2 · Automated Skill</span>
+    <h2 class="h2 reveal reveal-delay-1">One URL. Seven Images. Done.</h2>
+    <p class="sub reveal reveal-delay-2">A Claude Code skill that hits the ChatGPT API directly. No prompting, no copy-paste, no manual steps.</p>
 
-    <!-- TERMINAL DEMO -->
-    <div class="terminal">
-      <div class="t-comment"># In Claude Code, type:</div>
-      <div class="t-cmd">&gt; /amazon-listing-images</div>
-      <div class="t-info" style="margin-top:6px">Amazon URL: <span style="color:var(--text)">amazon.com/dp/B0B6J4XTGX</span></div>
-      <div style="margin-top:10px">
-        <div class="t-ok">🔍 Fetching product page...</div>
-        <div class="t-ok">🧠 Building visual strategy with GPT-4o...</div>
-        <div class="t-ok">🎨 Generating image 1/7 (Main Shot)... ✓</div>
-        <div class="t-ok">🎨 Generating image 2/7 (Hero Lifestyle)... ✓</div>
-        <div class="t-ok">🎨 Generating image 3/7 (Infographic)... ✓</div>
-        <div class="t-comment">...</div>
-        <div class="t-highlight" style="margin-top:8px">✅ All 7 images saved → ./masingo_listing/</div>
+    <div class="cc-window reveal">
+      <div class="cc-titlebar">
+        <div class="cc-titlebar-left">
+          <div class="cc-dot cc-dot-r"></div><div class="cc-dot cc-dot-y"></div><div class="cc-dot cc-dot-g"></div>
+          <span class="cc-app-name">Claude Code · <span>amazon-listing-images</span></span>
+        </div>
+      </div>
+      <div class="cc-chat">
+
+        <!-- User message -->
+        <div class="cc-user-msg">
+          <div class="cc-user-bubble">
+            <span class="cc-cmd">/amazon-listing-images</span>
+            <button class="cc-copy-btn" onclick="ccCopy(this, '/amazon-listing-images')">Copy</button>
+          </div>
+        </div>
+
+        <!-- Claude response -->
+        <div class="cc-claude-msg">
+          <div class="cc-avatar">✦</div>
+          <div class="cc-response">
+            <div class="t-dim">Amazon URL:</div>
+            <div class="cc-url-row">
+              <span class="cc-url-text">amazon.com/dp/B0B6J4XTGX</span>
+            </div>
+            <div class="t-green">🔍 Fetching product page...</div>
+            <div class="t-green">🧠 Building visual strategy with GPT-4o...</div>
+            <div class="t-green">🎨 Image 1/7 — Main product shot ✓</div>
+            <div class="t-green">🎨 Image 2/7 — Hero lifestyle ✓</div>
+            <div class="t-green">🎨 Image 3/7 — Feature infographic ✓</div>
+            <div class="t-dim">  ...</div>
+            <div class="t-gold" style="margin-top:4px">✅ All 7 images saved → ./masingo_listing/ <span class="cursor"></span></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="feature-grid">
-      <div class="feature-item"><strong>Fully automatic</strong><span>No prompting, no copy-paste. One command.</span></div>
-      <div class="feature-item"><strong>~$2 per listing</strong><span>Pay per use via API. No subscription.</span></div>
-      <div class="feature-item"><strong>7 images, 2K resolution</strong><span>Ready to upload directly to Amazon.</span></div>
-      <div class="feature-item"><strong>Smart strategy built in</strong><span>GPT-4o analyzes the listing before generating.</span></div>
-    </div>
-
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      Scroll down to the setup guide to download the skill files and get it running in 5 minutes.
+    <div class="feat-grid reveal">
+      <div class="feat-item"><span class="fi">⚡</span><strong>Fully automatic</strong><span>One command. No prompting or copy-paste.</span></div>
+      <div class="feat-item"><span class="fi">💵</span><strong>~$2 per listing</strong><span>Pay per use via API. No subscription needed.</span></div>
+      <div class="feat-item"><span class="fi">🖼</span><strong>7 images, 2K resolution</strong><span>Ready to upload directly to Amazon.</span></div>
+      <div class="feat-item"><span class="fi">🧠</span><strong>Strategy first</strong><span>GPT-4o analyzes the listing before generating.</span></div>
     </div>
   </div>
 
   <div class="divider"></div>
 
-  <!-- SETUP GUIDE -->
+  <!-- SETUP -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-kicker">One-Time Setup</span>
-      <h2 class="section-title">Get Running in 5 Minutes</h2>
-      <p class="section-sub">Do this once. Then it's one command forever.</p>
-    </div>
+    <span class="kicker reveal">One-Time Setup</span>
+    <h2 class="h2 reveal reveal-delay-1">Running in 5 Minutes</h2>
+    <p class="sub reveal reveal-delay-2">Do this once. After that it's one command for every listing, forever.</p>
 
-    <div class="setup-step">
-      <div class="setup-num">1</div>
-      <div class="setup-body">
-        <h4>Download the Skill Files</h4>
-        <p>Two files power the skill. Download both and put them in the same folder.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-          <button class="btn-gold" onclick="downloadScript()" style="font-size:13px">⬇ generate_listing_images.py</button>
-          <button class="btn-gold" onclick="downloadSkill()" style="font-size:13px;background:#6366F1">⬇ amazon-listing-images.md</button>
+    <div class="setup-wrap">
+
+      <div class="s-step reveal">
+        <div class="s-head"><div class="s-num">1</div><h4>Create an OpenAI API Key</h4></div>
+        <p>This connects the skill to ChatGPT's image model (gpt-image-2).</p>
+        <div class="s-sub">
+          <div class="s-row"><span class="s-letter">A</span> Go to <a href="https://platform.openai.com" target="_blank">platform.openai.com</a> — log in with your OpenAI / ChatGPT account</div>
+          <div class="s-row"><span class="s-letter">B</span> Click <strong style="color:var(--a-text)">API Keys</strong> in the left menu → <strong style="color:var(--a-text)">Create new secret key</strong> → name it anything</div>
+          <div class="s-row"><span class="s-letter">C</span> Copy the key immediately — it starts with <span class="code-inline">sk-...</span> — you can't see it again after closing</div>
+          <div class="s-row"><span class="s-letter">D</span> Go to <a href="https://platform.openai.com/settings/organization/billing" target="_blank">Billing → Add payment method</a> and add $5 credit</div>
+          <div class="s-row"><span class="s-letter">E</span> Go to <a href="https://platform.openai.com/settings/organization/general" target="_blank">Settings → Organization → General</a> → click <strong style="color:var(--a-text)">Verify Organization</strong> — required to access gpt-image-2</div>
         </div>
-        <p style="margin-top:10px;font-size:12px;color:var(--text-muted)">Put the <code style="color:var(--gold)">.py</code> file in your Claude folder. Put the <code style="color:#818CF8">.md</code> file in <code style="color:#818CF8">~/.claude/skills/</code></p>
-      </div>
-    </div>
-
-    <div class="setup-step">
-      <div class="setup-num">2</div>
-      <div class="setup-body">
-        <h4>Get Claude Code</h4>
-        <p>Download it free at <a href="https://claude.ai/code" target="_blank" style="color:var(--gold);font-weight:600">claude.ai/code</a>. Create an account and open the app — it opens as a terminal window.</p>
-      </div>
-    </div>
-
-    <div class="setup-step">
-      <div class="setup-num">3</div>
-      <div class="setup-body">
-        <h4>Create an OpenAI API Key</h4>
-        <p>This connects the skill to ChatGPT's image model.</p>
-        <div class="setup-sub-steps">
-          <div class="sub-step"><span class="sub-letter">A</span> Go to <a href="https://platform.openai.com" target="_blank" style="color:var(--gold);font-weight:600">platform.openai.com</a> — log in with your OpenAI / ChatGPT account</div>
-          <div class="sub-step"><span class="sub-letter">B</span> Click <strong style="color:#fff">API Keys</strong> in the left menu → <strong style="color:#fff">Create new secret key</strong> → name it anything (e.g. "Amazon Images")</div>
-          <div class="sub-step"><span class="sub-letter">C</span> Copy the key immediately — it starts with <code style="background:rgba(212,175,55,0.1);color:var(--gold);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:11px">sk-...</code> — you can't see it again after closing</div>
-          <div class="sub-step"><span class="sub-letter">D</span> Go to <a href="https://platform.openai.com/settings/organization/billing" target="_blank" style="color:var(--gold);font-weight:600">Billing → Add payment method</a> and add $5 credit. This is separate from your ChatGPT.com subscription.</div>
-        </div>
-        <div class="cost-row">
-          <span class="cost-pill">GPT-4o analysis <strong>~$0.05</strong></span>
-          <span class="cost-pill">7 images <strong>~$1.75</strong></span>
-          <span class="cost-pill">Total <strong style="color:var(--gold)">~$2 per listing</strong></span>
+        <div class="cost-pills">
+          <span class="cost-pill">7 images (high quality) <strong>~$1.50</strong></span>
+          <span class="cost-pill">Strategy analysis <strong>~$0.05</strong></span>
+          <span class="cost-pill">Total <strong>~$2 per listing</strong></span>
         </div>
       </div>
-    </div>
 
-    <div class="setup-step">
-      <div class="setup-num">4</div>
-      <div class="setup-body">
-        <h4>Add the Key to a .env File</h4>
-        <p>In the same folder as the script, create a file called <code style="color:var(--gold)">.env</code> and add this line:</p>
-        <code>OPENAI_API_KEY=sk-your-key-here</code>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">The script will also ask you to paste it the first time it runs if the file doesn't exist — so this step is optional.</p>
+      <div class="s-step reveal">
+        <div class="s-head"><div class="s-num">2</div><h4>Add the Key to a .env File</h4></div>
+        <p>In the same folder as the script, create a file called <span class="code-inline">.env</span> and add:</p>
+        <span class="code-block">OPENAI_API_KEY=sk-your-key-here</span>
       </div>
-    </div>
 
-    <div class="setup-step">
-      <div class="setup-num">5</div>
-      <div class="setup-body">
-        <h4>Run It in Claude Code</h4>
-        <p>Type the command and paste your Amazon URL:</p>
-        <code>/amazon-listing-images</code>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">Wait ~4 minutes. A folder with 7 images opens automatically when done.</p>
-      </div>
-    </div>
-
-    <div class="faq" style="margin-top:32px">
-      <div class="box">
-        <h4>Common Questions</h4>
-        <div class="faq">
-          <div class="faq-item">
-            <div class="faq-q">Do I need a paid ChatGPT subscription to use the skill?</div>
-            <div class="faq-a">No. The skill uses the OpenAI API directly — separate from ChatGPT.com. You pay per listing (~$2) instead of a monthly fee.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q">Is the API key the same as my ChatGPT login?</div>
-            <div class="faq-a">No. It's a separate key you create at platform.openai.com. Keep it private — treat it like a password.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q">What if I just want the prompts without the skill?</div>
-            <div class="faq-a">Switch to the Manual Method tab above — no setup needed, just copy and paste in ChatGPT.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q">Will Amazon accept AI-generated images?</div>
-            <div class="faq-a">The system follows Amazon's image guidelines. Always review before uploading — same compliance check as any other image.</div>
-          </div>
+      <div class="s-step reveal">
+        <div class="s-head"><div class="s-num">3</div><h4>Download the Two Skill Files</h4></div>
+        <p>These two files power the skill. Download both and place them correctly.</p>
+        <div class="dl-row">
+          <button class="btn-dl btn-dl-py" onclick="downloadScript()">⬇ generate_listing_images.py</button>
+          <button class="btn-dl btn-dl-md" onclick="downloadSkill()">⬇ amazon-listing-images.md</button>
         </div>
+        <p style="margin-top:10px;font-size:12px;color:var(--a-muted)">Put the <span class="code-inline">.py</span> file in the same folder as your <span class="code-inline">.env</span>. Put the <span class="code-inline">.md</span> file inside <span class="code-inline">~/.claude/skills/</span></p>
       </div>
+
+      <div class="s-step reveal">
+        <div class="s-head"><div class="s-num">4</div><h4>Run It in Claude Code</h4></div>
+        <p>Open Claude Code, type the command, paste your Amazon URL when asked:</p>
+        <span class="code-block">/amazon-listing-images</span>
+        <p style="margin-top:10px;font-size:12px;color:var(--a-muted)">Wait ~4 minutes. A folder with all 7 images opens automatically when done.</p>
+      </div>
+
     </div>
   </div>
 
-</div><!-- /wrap -->
+  <div class="divider"></div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <span class="kicker reveal">FAQ</span>
+    <h2 class="h2 reveal reveal-delay-1">Common Questions</h2>
+
+    <div class="faq-list reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Do I need a paid ChatGPT subscription to use the skill?</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">No. The skill uses the OpenAI API directly — completely separate from ChatGPT.com. You pay ~$2 per listing instead of a monthly subscription.</div>
+
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Is the API key the same as my ChatGPT login password?</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">No. It's a separate key you create at platform.openai.com. Treat it like a password — keep it private and don't share it publicly.</div>
+
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What if I just want the prompts without the skill?</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Switch to the Manual Method using the nav at the top of the page — no setup needed, just copy and paste the prompts in ChatGPT.</div>
+
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Will Amazon accept AI-generated images?</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">The system follows Amazon's image guidelines — Image 1 is always white background, product only. Always review before uploading and apply the same compliance check you would for any image.</div>
+    </div>
+  </div>
+
 </div><!-- /panel-auto -->
 
-
-<!-- CTA -->
-<div class="cta-block">
-  <h2>Want more tools like this?</h2>
-  <p>Jay shares free AI tools for Amazon sellers every week.<br>
-  <a href="https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY" target="_blank" style="color:var(--gold);font-weight:600">Join the WhatsApp group →</a></p>
-</div>
-
-<div class="footer">
-  Made by <a href="https://jaygptpro.com" target="_blank">Jay Margaliot</a> · jaygptpro.com
-</div>
+<!-- FOOTER -->
+<footer id="pageFooter" style="display:none">
+  Made by <a href="https://jaygptpro.com" target="_blank">Jay Margaliot</a> &nbsp;·&nbsp;
+  <a href="https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY" target="_blank">Join the Amazon Sellers WhatsApp Group</a>
+</footer>
 
 <script>
-const PYTHON_SCRIPT = `#!/usr/bin/env python3
-"""
-Amazon Listing Image Generator | Jay Margaliot
-Generates 7 professional Amazon listing images using gpt-image-2
+/* ── FILE CONTENTS FOR DOWNLOAD ── */
+const PY = `#!/usr/bin/env python3
+"""Amazon Listing Image Generator | Jay Margaliot
 Usage: python3 generate_listing_images.py "AMAZON_URL"
 """
 import os, sys, json, base64, requests
 from pathlib import Path
-
 try:
-    from dotenv import load_dotenv
-    load_dotenv()
+    from dotenv import load_dotenv; load_dotenv()
 except: pass
-
 try:
     from openai import OpenAI
 except ImportError:
     os.system("pip install openai python-dotenv requests -q")
     from openai import OpenAI
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    OPENAI_API_KEY = input("Paste your OpenAI API key: ").strip()
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+key = os.getenv("OPENAI_API_KEY") or input("OpenAI API key: ").strip()
+client = OpenAI(api_key=key)
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+SYSTEM = """Analyze the Amazon product and return JSON:
+{"product_name":"...","visual_style":"...","color_palette":"...","images":[
+  {"number":1,"type":"Main product shot","prompt":"120-150 words. Start: Amazon listing image, professional commercial photography, [type]. End: Visual consistency: [palette], [mood], [lighting]."},
+  ...7 total images: Main Shot / Hero Lifestyle / Feature Infographic / Lifestyle 2 / Benefits List / Gift Scene / Detail Close-up
+]}
+Every prompt 120-150 words. Image 1: white bg, product only, fills 75%."""
 
-STRATEGY_PROMPT = """You are an expert Amazon listing image strategist.
-Analyze the product and output JSON with this structure:
-{
-  "product_name": "...",
-  "visual_style": "2-3 sentences on mood, colors, lighting",
-  "color_palette": "primary colors",
-  "images": [
-    {"number": 1, "type": "Main product shot", "prompt": "120-150 word prompt..."},
-    ...7 total
-  ]
-}
-
-Image types:
-1. Main product - white background, product fills 75%, no text/props
-2. Hero lifestyle - product in use, real person, authentic moment
-3. Feature infographic - 3-5 benefit callouts, clean layout
-4. Lifestyle 2 - different setting/person, same visual language
-5. Benefits list - numbered or icon-based, strong headline
-6. Gift/celebration scene - warm and exciting
-7. Detail close-up - best physical feature, extreme quality
-
-Every prompt must start with: "Amazon listing image, professional commercial photography, [type]."
-Every prompt must end with: "Visual consistency: [color palette], [mood], [lighting]."
-"""
-
-def fetch_page(url):
-    try:
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
-        return r.text[:8000]
-    except:
-        return f"Amazon product URL: {url}"
+def fetch(url):
+    try: return requests.get(url,headers={"User-Agent":"Mozilla/5.0"},timeout=15).text[:8000]
+    except: return f"Product URL: {url}"
 
 def get_prompts(content, url):
     print("Analyzing product...")
-    r = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": STRATEGY_PROMPT},
-            {"role": "user", "content": f"URL: {url}\\n\\n{content}"}
-        ],
-        response_format={"type": "json_object"},
-        max_tokens=3000
-    )
+    r = client.chat.completions.create(model="gpt-4o",
+        messages=[{"role":"system","content":SYSTEM},{"role":"user","content":f"URL: {url}\\n\\n{content}"}],
+        response_format={"type":"json_object"},max_tokens=3000)
     return json.loads(r.choices[0].message.content)
 
-def generate_image(prompt, path, num):
-    print(f"Generating image {num}/7...")
-    r = client.images.generate(
-        model="gpt-image-2", prompt=prompt,
-        size="1024x1024", quality="high", n=1, output_format="b64_json"
-    )
-    with open(path, "wb") as f:
-        f.write(base64.b64decode(r.data[0].b64_json))
+def gen_image(prompt, path, n):
+    print(f"Generating {n}/7...")
+    r = client.images.generate(model="gpt-image-2",prompt=prompt,
+        size="1024x1024",quality="high",n=1,output_format="b64_json")
+    with open(path,"wb") as f: f.write(base64.b64decode(r.data[0].b64_json))
     print(f"  Saved: {path}")
 
 def main(url, out="listing_images"):
-    print(f"\\n Amazon Listing Generator | {url}\\n")
+    print(f"\\nAmazon Listing Generator\\nProduct: {url}\\n")
     Path(out).mkdir(exist_ok=True)
-    content = fetch_page(url)
-    data = get_prompts(content, url)
-    print(f"Strategy ready for: {data.get('product_name','Product')}\\n")
-    for img in data.get("images", []):
-        n = img["number"]
-        t = img["type"].lower().replace(" ","_").replace("/","_")
-        generate_image(img["prompt"], f"{out}/image_{n:02d}_{t}.png", n)
-    print(f"\\nDone! {len(data['images'])} images saved to ./{out}/")
+    data = get_prompts(fetch(url), url)
+    print(f"Strategy: {data.get('product_name','Product')}\\n")
+    for img in data.get("images",[]):
+        n,t = img["number"], img["type"].lower().replace(" ","_").replace("/","_")
+        gen_image(img["prompt"], f"{out}/image_{n:02d}_{t}.png", n)
+    print(f"\\nDone! {len(data['images'])} images in ./{out}/")
     os.system(f"open {out}")
 
-if __name__ == "__main__":
-    url = sys.argv[1] if len(sys.argv) > 1 else input("Amazon URL: ").strip()
-    main(url, sys.argv[2] if len(sys.argv) > 2 else "listing_images")
+if __name__=="__main__":
+    url = sys.argv[1] if len(sys.argv)>1 else input("Amazon URL: ").strip()
+    main(url, sys.argv[2] if len(sys.argv)>2 else "listing_images")
 `;
 
-const SKILL_MD = `# Amazon Listing Image Generator Skill
+const MD = `# Amazon Listing Image Generator Skill
 
 Automatically generates 7 professional Amazon listing images using gpt-image-2.
 
@@ -927,71 +1046,91 @@ User provides an Amazon URL and wants listing images generated automatically.
 
 ## How to Run
 
-Ask for the Amazon URL if not provided, then run:
+Ask for the Amazon URL if not provided, then:
 
 \`\`\`bash
 cd ~/Downloads/Claude && python3 generate_listing_images.py "AMAZON_URL" "output_folder"
 \`\`\`
 
-While generating (~4 min), explain:
+While generating (~4 min), explain what's happening:
 - GPT-4o is analyzing the listing and building a visual strategy
 - gpt-image-2 is generating each of the 7 images
-- Cost is approximately $2 in API credits
+- Cost is approximately $2 in API credits total
 
-When done, open the output folder and show the images using Read tool.
+When done, open the folder and display results with Read tool.
 
 ## Demo Product
-MASINGO Karaoke Machine
+MASINGO Karaoke Machine — Ostinato M7
 URL: https://www.amazon.com/MASINGO-Karaoke-Machine-Wireless-Microphones/dp/B0B6J4XTGX
-Output folder: masingo_listing
+Output: masingo_listing
 `;
 
-function downloadFile(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+function dl(content, name, mime) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([content], {type: mime})),
+    download: name
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function downloadScript() { dl(PY, 'generate_listing_images.py', 'text/plain'); }
+function downloadSkill()  { dl(MD, 'amazon-listing-images.md',  'text/plain'); }
+
+/* ── MODE SWITCHING ── */
+let currentMode = null;
+
+function selectMode(mode) {
+  currentMode = mode;
+  document.body.className = mode === 'auto' ? 'mode-auto' : '';
+  document.getElementById('panel-manual').classList.toggle('visible', mode === 'manual');
+  document.getElementById('panel-auto').classList.toggle('visible',  mode === 'auto');
+  document.getElementById('stickyNav').style.display = 'flex';
+  document.getElementById('pageFooter').style.display = 'block';
+  document.getElementById('modeLabel').textContent = mode === 'manual' ? 'Manual Method' : 'One-Click Skill';
+  document.getElementById('navManual').className = 'nav-btn' + (mode === 'manual' ? ' active' : '');
+  document.getElementById('navAuto').className   = 'nav-btn' + (mode === 'auto'   ? ' active' : '');
+  // Scroll past hero
+  document.getElementById('stickyNav').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Trigger reveal animations
+  setTimeout(initReveal, 100);
 }
 
-function downloadScript() {
-  downloadFile(PYTHON_SCRIPT, 'generate_listing_images.py', 'text/plain');
+/* ── PROMPT TOGGLE ── */
+function toggle(bodyId, fadeId, btn) {
+  const b = document.getElementById(bodyId);
+  const open = b.classList.toggle('open');
+  btn.textContent = open ? '▲ Collapse' : '▼ Show full prompt';
 }
 
-function downloadSkill() {
-  downloadFile(SKILL_MD, 'amazon-listing-images.md', 'text/plain');
-}
-
-function switchMode(mode) {
-  document.getElementById('panel-manual').classList.remove('visible');
-  document.getElementById('panel-auto').classList.remove('visible');
-  document.getElementById('card-manual').classList.remove('active-manual');
-  document.getElementById('card-auto').classList.remove('active-auto');
-
-  document.getElementById('panel-' + mode).classList.add('visible');
-  document.getElementById('card-' + mode).classList.add('active-' + mode);
-
-  document.getElementById('panel-' + mode).scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function expand(bodyId, fadeId, btn) {
-  const body = document.getElementById(bodyId);
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open');
-  btn.textContent = isOpen ? '▼ Show full prompt' : '▲ Collapse';
-}
-
-function copy(textId, btn) {
-  const text = document.getElementById(textId).textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
-    btn.classList.add('done');
-    setTimeout(() => { btn.textContent = orig; btn.classList.remove('done'); }, 2000);
+/* ── COPY ── */
+function cp(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const t = btn.textContent; btn.textContent = '✓ Copied!'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = t; btn.classList.remove('done'); }, 2000);
   });
 }
+function ccCopy(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const t = btn.textContent; btn.textContent = '✓ Copied!'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = t; btn.classList.remove('done'); }, 2000);
+  });
+}
+
+/* ── FAQ ── */
+function toggleFaq(el) {
+  el.classList.toggle('open');
+  const a = el.nextElementSibling;
+  a.classList.toggle('open');
+}
+
+/* ── SCROLL REVEAL ── */
+function initReveal() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+}
+
+initReveal();
 </script>
 </body>
 </html>
