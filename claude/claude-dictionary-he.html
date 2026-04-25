@@ -1282,10 +1282,11 @@ function renderMain() {
       const shortDesc = isHe ? term.he : term.en;
       const detail = isHe ? term.detail_he : term.detail_en;
       const example = isHe ? (term.example_he || term.example_en) : term.example_en;
-      const termDisplay = q ? highlightText(term.term, q) : term.term;
-      const nameHtml = isHe
-        ? `${termDisplay} <span class="term-he-inline">(${term.term_he || ''})</span>`
-        : termDisplay;
+      const termEnDisplay = q ? highlightText(term.term, q) : term.term;
+      const termHeDisplay = term.term_he ? (q ? highlightText(term.term_he, q) : term.term_he) : termEnDisplay;
+      const nameHtml = isHe && term.term_he
+        ? `${termHeDisplay} <span class="term-he-inline">(${term.term})</span>`
+        : termEnDisplay;
       const shortHtml = q ? highlightText(shortDesc, q) : shortDesc;
       const detailHtml = q ? highlightText(detail, q) : detail;
       const exampleHtml = q ? highlightText(example, q) : example;
@@ -1543,6 +1544,9 @@ window.addEventListener('scroll', () => {
 // ============================================================
 // INIT
 // ============================================================
+// Apply Hebrew to all static [data-en][data-he] elements
+document.querySelectorAll('[data-en][data-he]').forEach(t);
+document.getElementById('searchInput').placeholder = '...חיפוש מונחים';
 renderNav();
 renderMain();
 handleDeepLink();
