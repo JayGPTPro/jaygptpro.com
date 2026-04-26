@@ -3679,21 +3679,12 @@ function setLanguage(lang) {
 }
 
 document.getElementById('langToggle').addEventListener('click', () => {
-    const current = document.documentElement.lang || 'en';
-    setLanguage(current === 'en' ? 'he' : 'en');
+    window.location.href = 'he/';
 });
 
-// Init language from URL param or localStorage
+// Init language (English only — Hebrew version lives at /he/)
 (function initLang() {
-    // URL takes priority: ?lang=he or ?he
-    const params = new URLSearchParams(location.search);
-    if (params.get('lang') === 'he' || params.has('he') || location.hash === '#he') {
-        setLanguage('he');
-        return;
-    }
-    let saved = 'en';
-    try { saved = localStorage.getItem('lang') || 'en'; } catch (e) {}
-    if (saved === 'he') setLanguage('he');
+    setLanguage('en');
 })();
 
 // ===== REVEAL ON SCROLL =====
