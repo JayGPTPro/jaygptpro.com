@@ -3673,6 +3673,8 @@ function setLanguage(lang) {
         }
     });
     document.getElementById('langToggleText').textContent = lang === 'en' ? 'HE' : 'EN';
+    // Update URL hash without page reload
+    history.replaceState(null, '', lang === 'he' ? '#he' : location.pathname + location.search);
     try { localStorage.setItem('lang', lang); } catch (e) {}
     // Re-setup timeline after DOM changes (text width differences might shift things)
     if (typeof setupTimeline === 'function') {
@@ -3681,12 +3683,18 @@ function setLanguage(lang) {
 }
 
 document.getElementById('langToggle').addEventListener('click', () => {
-    window.location.href = 'he/';
+    const current = document.documentElement.lang || 'en';
+    setLanguage(current === 'en' ? 'he' : 'en');
 });
 
-// Init language (English only — Hebrew version lives at /he/)
+// Init language from hash, URL param, or localStorage
 (function initLang() {
-    setLanguage('en');
+    if (location.hash === '#he') { setLanguage('he'); return; }
+    const params = new URLSearchParams(location.search);
+    if (params.get('lang') === 'he') { setLanguage('he'); return; }
+    let saved = 'en';
+    try { saved = localStorage.getItem('lang') || 'en'; } catch (e) {}
+    if (saved === 'he') setLanguage('he');
 })();
 
 // ===== REVEAL ON SCROLL =====
