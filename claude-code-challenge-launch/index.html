@@ -3668,7 +3668,9 @@ function setLanguage(lang) {
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-en]').forEach(el => {
         const text = el.getAttribute('data-' + lang);
-        if (text !== null) el.textContent = text;
+        if (text !== null) {
+            if (text.includes('<')) { el.innerHTML = text; } else { el.textContent = text; }
+        }
     });
     document.getElementById('langToggleText').textContent = lang === 'en' ? 'HE' : 'EN';
     try { localStorage.setItem('lang', lang); } catch (e) {}
