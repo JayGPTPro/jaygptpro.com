@@ -4409,7 +4409,8 @@ function switchDay(dayNum){
   try {
     const newHash = '#day' + dayNum;
     if(window.location.hash !== newHash){
-      history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+      // Drop legacy ?day=N from search so it never re-appears in the URL.
+      history.replaceState(null, '', window.location.pathname + newHash);
     }
   } catch(e){ /* hash update is best-effort, never block navigation */ }
 }
@@ -4924,12 +4925,11 @@ function showPortal(round){
   saveState();
   updateNav();
   showDayContent(startDay);
-  // Sync URL hash with the day we ended up on (so refresh stays here)
+  // Clean URL: drop ?day=N (legacy email link) and use only #dayN going forward.
+  // This prevents stale ?day= sticking around after the user navigates between days.
   try {
     const targetHash = '#day' + startDay;
-    if(window.location.hash !== targetHash){
-      history.replaceState(null, '', window.location.pathname + window.location.search + targetHash);
-    }
+    history.replaceState(null, '', window.location.pathname + targetHash);
   } catch(e){ /* best-effort */ }
 }
 
