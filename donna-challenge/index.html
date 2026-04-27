@@ -4349,6 +4349,11 @@ function getDayUnlockDate(dayNum){
   return buildUnlockDate(startDateStr, dayNum);
 }
 
+// Manual gate for round2/unknown users in R1 portal. Keep this in sync with
+// R2_UNLOCKED_DAY in donna-challenge-r2/index.html when bumping R2 days.
+// 0=only Day 0, 1=Day 0+1, ... 5=all days. Round 1 + admin always see everything.
+const R1_R2_GATE_DAY = 1;
+
 function isDayUnlocked(dayNum){
   if(dayNum === 0) return true; // Day 0 always open for all registered users
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
@@ -4359,24 +4364,13 @@ function isDayUnlocked(dayNum){
   if(check !== expectedCheck) {
     return false;
   }
-  if(round === 'both') return true; // Admin always sees all days
-  // 2026-04-20 launch: Day 1 OPEN to ALL rounds (per Jay).
-  if(dayNum === 1) return true;
-  // 2026-04-21: Day 2 OPEN to ALL rounds (per Jay).
-  if(dayNum === 2) return true;
-  // 2026-04-22: Day 3 OPEN to ALL rounds (manual unlock).
-  if(dayNum === 3) return true;
-  // 2026-04-23: Day 4 OPEN to ALL rounds (manual unlock).
-  if(dayNum === 4) return true;
-  // 2026-04-24: Day 5 OPEN to ALL rounds (manual unlock). Challenge complete.
-  if(dayNum === 5) return true;
-  return false;
-  /*
-  if(round === 'unknown') return false;
-  const now = new Date();
-  const unlock = getDayUnlockDate(dayNum);
-  return now >= unlock;
-  */
+  // Admin always sees all days.
+  if(round === 'both') return true;
+  // Round 1 finished, all days remain open for them as a permanent archive.
+  if(round === 'round1') return true;
+  // Round 2 + unknown rounds are gated to the current R2 day.
+  // (Set above via R1_R2_GATE_DAY.)
+  return dayNum <= R1_R2_GATE_DAY;
 }
 
 function formatDate(d){
