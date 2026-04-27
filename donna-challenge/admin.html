@@ -982,7 +982,7 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
               <th data-en="WhatsApp" data-he="וואטסאפ">WhatsApp</th>
               <th data-en="Logins" data-he="כניסות">Logins</th>
               <th data-en="Time on site" data-he="זמן באתר">Time on site</th>
-              <th data-en="Last seen" data-he="ראינו אחרון">Last seen</th>
+              <th data-en="Last seen" data-he="נראה לאחרונה">Last seen</th>
               <th data-en="Current day" data-he="יום נוכחי">Current day</th>
               <th data-en="% done" data-he="% השלמה">% done</th>
               <th data-en="Status" data-he="סטטוס">Status</th>
@@ -1614,6 +1614,43 @@ function getLastEvent(email){
   return events.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0].created_at;
 }
 
+// Total login count across primary + alias emails.
+function getLoginCount(email){
+  return getParticipantEvents(email).filter(e => e.event_type === 'login').length;
+}
+
+// Total seconds on site (sum of time_on_day events).
+function getTotalSeconds(email){
+  return getParticipantEvents(email)
+    .filter(e => e.event_type === 'time_on_day')
+    .reduce((s, e) => s + (Number(eventDataObj(e).seconds) || 0), 0);
+}
+
+// Format a duration in seconds: <60min -> "Xm", >=60min -> "Xh Ym".
+function formatDuration(seconds){
+  if(!seconds || seconds <= 0) return '-';
+  const totalMin = Math.round(seconds / 60);
+  if(totalMin < 60) return totalMin + 'm';
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m === 0 ? (h + 'h') : (h + 'h ' + m + 'm');
+}
+
+// Compact "last seen" display (relative to now, falls back to a date for older).
+function formatLastSeen(dateStr){
+  if(!dateStr) return '-';
+  const now = Date.now();
+  const t0 = new Date(dateStr).getTime();
+  const diffMin = Math.floor((now - t0) / 60000);
+  if(diffMin < 1) return isRTL() ? 'עכשיו' : 'now';
+  if(diffMin < 60) return diffMin + (isRTL() ? ' דק׳' : 'm');
+  const diffHr = Math.floor(diffMin / 60);
+  if(diffHr < 24) return diffHr + (isRTL() ? ' שע׳' : 'h');
+  const diffDay = Math.floor(diffHr / 24);
+  if(diffDay < 14) return diffDay + (isRTL() ? ' ימים' : 'd');
+  return formatDate(dateStr);
+}
+
 // Get user_progress rows for an email + its aliases (server-side source of truth)
 function getProgressRows(email){
   const lower = (email || '').toLowerCase();
@@ -2225,6 +2262,9 @@ function renderParticipants(){
   filtered.forEach((p, idx) => {
     const info = getStatusInfo(p.email);
     const lastLogin = getLastLogin(p.email);
+    const lastSeen = getLastEvent(p.email);
+    const loginCount = getLoginCount(p.email);
+    const totalSec = getTotalSeconds(p.email);
     const currentDay = getCurrentDay(p.email);
     const progress = getChecklistProgress(p.email);
     const pctDone = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
@@ -2310,6 +2350,16 @@ function renderParticipants(){
       ? ` <span style="display:inline-block;background:rgba(255,193,7,0.18);color:#ffc107;font-size:0.7em;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;cursor:pointer" title="${titleConfirmRound}" onclick="confirmRound('${esc(p.id)}', '${esc(p.email)}')">?</span>`
       : '';
 
+    const loginCell = loginCount > 0
+      ? `<span style="font-family:'JetBrains Mono',monospace;color:var(--text)">${loginCount}</span>`
+      : '<span style="color:var(--dim)">0</span>';
+    const timeCell = totalSec > 0
+      ? `<span style="font-family:'JetBrains Mono',monospace;color:var(--text)">${formatDuration(totalSec)}</span>`
+      : '<span style="color:var(--dim)">-</span>';
+    const lastSeenCell = lastSeen
+      ? `<span title="${esc(formatDateTime(lastSeen))}" style="font-family:'JetBrains Mono',monospace;color:var(--text)">${formatLastSeen(lastSeen)}</span>`
+      : '<span style="color:var(--dim)">-</span>';
+
     tr.innerHTML = `
       <td>${esc(name)}${aliasBadge}</td>
       <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(p.email)}</td>
@@ -2317,7 +2367,10 @@ function renderParticipants(){
       <td>${paidCell}</td>
       <td>${phoneCell}</td>
       <td>${waCell}</td>
-      <td>יום ${currentDay}</td>
+      <td>${loginCell}</td>
+      <td>${timeCell}</td>
+      <td>${lastSeenCell}</td>
+      <td>${t('misc.dayN')}${currentDay}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;min-width:60px">
@@ -2326,7 +2379,6 @@ function renderParticipants(){
           <span style="font-size:0.8em;color:var(--dim)">${pctDone}%</span>
         </div>
       </td>
-      <td>${lastLogin ? formatDateTime(lastLogin) : '<span style="color:var(--dim)">-</span>'}</td>
       <td><span class="badge ${esc(info.cls)}">${esc(info.label)}</span></td>
       <td onclick="event.stopPropagation()">
         <div class="row-actions">
@@ -2379,7 +2431,7 @@ function renderParticipants(){
       }).join('') + '</div>';
     }
 
-    expandTr.innerHTML = `<td colspan="11">${timelineHtml}</td>`;
+    expandTr.innerHTML = `<td colspan="13">${timelineHtml}</td>`;
     tbody.appendChild(expandTr);
   });
 }
