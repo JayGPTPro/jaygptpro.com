@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>אתגר דונה . לוח בקרה</title>
+<title data-en="Donna Challenge . Admin Dashboard" data-he="אתגר דונה . לוח בקרה">Donna Challenge . Admin Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -690,6 +690,91 @@ tr.expandable{cursor:pointer}
   padding:24px;margin-bottom:24px;
   text-align:center;
 }
+
+/* ===== LANGUAGE TOGGLE ===== */
+.lang-toggle{
+  background:none;border:1px solid var(--glass-border);
+  color:var(--dim);padding:6px 12px;border-radius:var(--radius-sm);
+  font-family:inherit;font-size:0.78em;font-weight:600;cursor:pointer;
+  transition:0.2s;letter-spacing:0.04em;
+}
+.lang-toggle:hover{color:var(--orange);border-color:var(--orange)}
+
+/* RTL/LTR direction handling */
+html[dir="rtl"] th{text-align:right}
+html[dir="ltr"] th{text-align:left}
+html[dir="ltr"] .round-card .round-card-dates{text-align:left}
+html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
+
+/* ===== ENGAGEMENT SECTION ===== */
+.engagement-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:16px;margin-bottom:32px;
+}
+.eng-card{
+  background:var(--card);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  padding:18px 20px;
+}
+.eng-card h4{
+  font-size:0.95em;color:var(--bright);font-weight:700;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid var(--glass-border);
+  display:flex;align-items:center;gap:8px;
+}
+.eng-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  font-size:0.85em;
+}
+.eng-row:last-child{border-bottom:none}
+.eng-row .eng-name{color:var(--text);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eng-row .eng-email{color:var(--dim);font-size:0.78em;direction:ltr}
+.eng-row .eng-meta{color:var(--dim);font-size:0.78em}
+.eng-row .eng-val{color:var(--orange);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:0.88em}
+.eng-row .eng-actions a,.eng-row .eng-actions button{
+  background:rgba(61,214,140,0.12);color:var(--green);
+  border:1px solid rgba(61,214,140,0.3);
+  padding:4px 10px;border-radius:6px;font-size:0.75em;
+  text-decoration:none;cursor:pointer;font-family:inherit;
+  transition:0.18s;white-space:nowrap;
+}
+.eng-row .eng-actions a:hover,.eng-row .eng-actions button:hover{background:var(--green-bg);border-color:var(--green)}
+.eng-empty{color:var(--dim);font-size:0.85em;padding:14px 0;text-align:center}
+.eng-prompt{font-family:'JetBrains Mono',monospace;direction:ltr;font-size:0.78em}
+
+/* Hourly heatmap */
+.hour-heatmap{display:flex;gap:3px;align-items:flex-end;height:120px;padding:8px 0}
+.hour-bar{
+  flex:1;background:var(--orange);border-radius:3px 3px 0 0;
+  position:relative;min-height:2px;
+  transition:height 0.4s cubic-bezier(0.4,0,0.2,1);
+  cursor:pointer;
+}
+.hour-bar:hover{background:var(--orange-light)}
+.hour-bar::after{
+  content:attr(data-count);
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  font-size:0.7em;color:var(--bright);opacity:0;pointer-events:none;
+  font-family:'JetBrains Mono',monospace;
+}
+.hour-bar:hover::after{opacity:1}
+.hour-labels{display:flex;gap:3px;margin-top:6px}
+.hour-label{flex:1;text-align:center;font-size:0.65em;color:var(--dim);font-family:'JetBrains Mono',monospace}
+
+/* R1 vs R2 comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.compare-side{
+  background:var(--bg);border:1px solid var(--glass-border);
+  border-radius:8px;padding:14px;
+}
+.compare-side.r1{border-top:3px solid var(--blue)}
+.compare-side.r2{border-top:3px solid var(--orange)}
+.compare-side h5{font-size:0.85em;color:var(--bright);font-weight:700;margin-bottom:10px}
+.compare-row{display:flex;justify-content:space-between;padding:5px 0;font-size:0.82em}
+.compare-row .lbl{color:var(--dim)}
+.compare-row .val{color:var(--bright);font-weight:600;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
 <body>
@@ -703,11 +788,11 @@ tr.expandable{cursor:pointer}
 <div id="deniedScreen" class="auth-screen" style="display:none">
   <div class="auth-card">
     <span class="denied-icon">&#128683;</span>
-    <h1>גישה נדחתה</h1>
-    <p class="subtitle">הדשבורד זמין רק לאדמין</p>
+    <h1 data-en="Access denied" data-he="גישה נדחתה">Access denied</h1>
+    <p class="subtitle" data-en="This dashboard is admin only" data-he="הדשבורד זמין רק לאדמין">This dashboard is admin only</p>
     <button class="google-btn" onclick="signIn()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      התחבר עם Google
+      <span data-en="Sign in with Google" data-he="התחבר עם Google">Sign in with Google</span>
     </button>
   </div>
 </div>
@@ -716,109 +801,104 @@ tr.expandable{cursor:pointer}
 <div id="dashboard" class="dashboard">
   <!-- Header -->
   <header class="dash-header">
-    <h1>&#128202; לוח בקרה <span>. אתגר דונה</span></h1>
+    <h1>&#128202; <span data-en="Admin Dashboard" data-he="לוח בקרה">Admin Dashboard</span> <span>. <span data-en="Donna Challenge" data-he="אתגר דונה">Donna Challenge</span></span></h1>
     <div class="header-actions">
       <div class="refresh-indicator">
         <span class="dot"></span>
-        <span id="lastRefresh">מתעדכן...</span>
+        <span id="lastRefresh" data-en="Refreshing..." data-he="מתעדכן...">Refreshing...</span>
       </div>
       <span class="user-email" id="adminEmail"></span>
-      <button onclick="signOut()">התנתק</button>
+      <button class="lang-toggle" id="langToggleBtn" onclick="toggleLanguage()" title="Switch language">EN / עב</button>
+      <button onclick="signOut()" data-en="Sign out" data-he="התנתק">Sign out</button>
     </div>
   </header>
 
   <!-- Tab Nav -->
   <nav class="tab-nav">
-    <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">&#128200; סקירה כללית</button>
-    <button class="tab-btn" data-tab="participants" onclick="switchTab('participants')">&#128101; משתתפים</button>
-    <button class="tab-btn" data-tab="days" onclick="switchTab('days')">&#128197; ניתוח לפי יום</button>
-    <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">&#128176; הכנסות</button>
-    <button class="tab-btn" data-tab="wa-recon" onclick="switchTab('wa-recon')">&#128172; השוואת WhatsApp</button>
-    <button class="tab-btn" data-tab="manage" onclick="switchTab('manage')">&#9881;&#65039; ניהול</button>
+    <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')"><span data-en="&#128200; Overview" data-he="&#128200; סקירה כללית">&#128200; Overview</span></button>
+    <button class="tab-btn" data-tab="participants" onclick="switchTab('participants')"><span data-en="&#128101; Participants" data-he="&#128101; משתתפים">&#128101; Participants</span></button>
+    <button class="tab-btn" data-tab="days" onclick="switchTab('days')"><span data-en="&#128197; Day analytics" data-he="&#128197; ניתוח לפי יום">&#128197; Day analytics</span></button>
+    <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')"><span data-en="&#128176; Revenue" data-he="&#128176; הכנסות">&#128176; Revenue</span></button>
+    <button class="tab-btn" data-tab="wa-recon" onclick="switchTab('wa-recon')"><span data-en="&#128172; WhatsApp recon" data-he="&#128172; השוואת WhatsApp">&#128172; WhatsApp recon</span></button>
+    <button class="tab-btn" data-tab="manage" onclick="switchTab('manage')"><span data-en="&#9881;&#65039; Manage" data-he="&#9881;&#65039; ניהול">&#9881;&#65039; Manage</span></button>
   </nav>
 
   <!-- ===== TAB 1: OVERVIEW ===== -->
   <div id="tab-overview" class="tab-content active">
     <div class="stat-grid" id="overviewStats">
       <div class="stat-card fade-in">
-        <div class="stat-label">נרשמו</div>
+        <div class="stat-label" data-en="Registered" data-he="נרשמו">Registered</div>
         <div class="stat-value" id="statRegistered">0</div>
-        <div class="stat-sub">סה"כ משתתפים</div>
+        <div class="stat-sub" data-en="Total participants" data-he="סה&quot;כ משתתפים">Total participants</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">התחברו לפחות פעם</div>
+        <div class="stat-label" data-en="Logged in at least once" data-he="התחברו לפחות פעם">Logged in at least once</div>
         <div class="stat-value" id="statLoggedIn">0</div>
-        <div class="stat-sub">מתוך Supabase Auth</div>
+        <div class="stat-sub" data-en="From Supabase Auth" data-he="מתוך Supabase Auth">From Supabase Auth</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">השלימו 5 ימים</div>
-        <div class="stat-value" id="statCompleted">0</div>
-        <div class="stat-sub">בוגרים</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-label">אחוז השלמה</div>
-        <div class="stat-value" id="statCompletionRate">0%</div>
-        <div class="stat-sub">בוגרים / נרשמים</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-label">פעילים היום</div>
+        <div class="stat-label" data-en="Active today" data-he="פעילים היום">Active today</div>
         <div class="stat-value" id="statActiveToday">0</div>
-        <div class="stat-sub">אירוע אחרון ב-24 שעות</div>
+        <div class="stat-sub" data-en="Event in last 24h" data-he="אירוע אחרון ב-24 שעות">Event in last 24h</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">לא פעילים 3+ ימים</div>
+        <div class="stat-label" data-en="Inactive 3+ days" data-he="לא פעילים 3+ ימים">Inactive 3+ days</div>
         <div class="stat-value" id="statInactive">0</div>
-        <div class="stat-sub">דורשים תשומת לב</div>
+        <div class="stat-sub" data-en="Need attention" data-he="דורשים תשומת לב">Need attention</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">שילמו (Stripe)</div>
+        <div class="stat-label" data-en="Paid (Stripe)" data-he="שילמו (Stripe)">Paid (Stripe)</div>
         <div class="stat-value" id="statPaid">0</div>
-        <div class="stat-sub">מתוך stripe_customers</div>
+        <div class="stat-sub" data-en="From stripe_customers" data-he="מתוך stripe_customers">From stripe_customers</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">שילמו ללא גישה</div>
+        <div class="stat-label" data-en="Paid without portal access" data-he="שילמו ללא גישה">Paid without portal access</div>
         <div class="stat-value" id="statPaidNoAccess">0</div>
-        <div class="stat-sub">שילמו אבל לא רשומים בפורטל</div>
+        <div class="stat-sub" data-en="Paid but not in allowed_emails" data-he="שילמו אבל לא רשומים בפורטל">Paid but not in allowed_emails</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">חסר טלפון</div>
+        <div class="stat-label" data-en="Missing phone" data-he="חסר טלפון">Missing phone</div>
         <div class="stat-value" id="statNoPhone">0</div>
-        <div class="stat-sub">נדרש להוסיף ידנית</div>
+        <div class="stat-sub" data-en="Add manually" data-he="נדרש להוסיף ידנית">Add manually</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">סטטוס וואטסאפ לא ידוע</div>
+        <div class="stat-label" data-en="WhatsApp status unknown" data-he="סטטוס וואטסאפ לא ידוע">WhatsApp status unknown</div>
         <div class="stat-value" id="statUnknownWA">0</div>
-        <div class="stat-sub">צריך לבדוק ידנית</div>
+        <div class="stat-sub" data-en="Need manual check" data-he="צריך לבדוק ידנית">Need manual check</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">גישה בוטלה</div>
+        <div class="stat-label" data-en="Access revoked" data-he="גישה בוטלה">Access revoked</div>
         <div class="stat-value" id="statRevokedAccess" style="color:var(--red)">0</div>
-        <div class="stat-sub">לא יכולים להיכנס לפורטל</div>
+        <div class="stat-sub" data-en="Cannot enter portal" data-he="לא יכולים להיכנס לפורטל">Cannot enter portal</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">קיבלו מייל welcome</div>
+        <div class="stat-label" data-en="Welcome email sent" data-he="קיבלו מייל welcome">Welcome email sent</div>
         <div class="stat-value" id="statWelcomeSent" style="color:var(--green)">0</div>
-        <div class="stat-sub" id="statWelcomeSentSub">מתוך משלמים</div>
+        <div class="stat-sub" id="statWelcomeSentSub" data-en="Out of paying users" data-he="מתוך משלמים">Out of paying users</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">סך הכנסות (גרוס)</div>
+        <div class="stat-label" data-en="Gross revenue" data-he="סך הכנסות (גרוס)">Gross revenue</div>
         <div class="stat-value" id="statRevenue">$0</div>
-        <div class="stat-sub">מ-Stripe</div>
+        <div class="stat-sub" data-en="From Stripe" data-he="מ-Stripe">From Stripe</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">החזרים</div>
+        <div class="stat-label" data-en="Refunds" data-he="החזרים">Refunds</div>
         <div class="stat-value" id="statRefunds">0</div>
-        <div class="stat-sub" id="statRefundsAmount">$0 הוחזרו</div>
+        <div class="stat-sub" id="statRefundsAmount">$0 refunded</div>
       </div>
       <div class="stat-card fade-in">
-        <div class="stat-label">הכנסות נטו</div>
+        <div class="stat-label" data-en="Net revenue" data-he="הכנסות נטו">Net revenue</div>
         <div class="stat-value" id="statRevenueNet" style="color:var(--green)">$0</div>
-        <div class="stat-sub">אחרי החזרים</div>
+        <div class="stat-sub" data-en="After refunds" data-he="אחרי החזרים">After refunds</div>
       </div>
     </div>
 
+    <!-- ENGAGEMENT SECTION (top users, sleeping, prompts, FAQs, heatmap, R1 vs R2) -->
+    <div class="section-title" style="margin-top:8px">&#128293; <span data-en="Engagement" data-he="מעורבות">Engagement</span></div>
+    <div class="engagement-grid" id="engagementGrid"></div>
+
     <!-- ROUND STATUS CARDS -->
-    <div class="section-title" style="margin-top:8px">&#127919; מצב הסבבים (משלמים)</div>
+    <div class="section-title" style="margin-top:8px">&#127919; <span data-en="Round status (paying users)" data-he="מצב הסבבים (משלמים)">Round status (paying users)</span></div>
     <div class="round-cards" id="roundCards"></div>
 
     <!-- FAMILY / ADMIN STRIP -->
@@ -832,7 +912,7 @@ tr.expandable{cursor:pointer}
       <div style="display:flex;align-items:center;gap:16px;justify-content:center">
         <div style="font-size:2.5em;font-weight:800;color:var(--orange)" id="countdownDays">--</div>
         <div>
-          <div style="font-weight:600;color:var(--text)" id="countdownLabel">ימים לסבב הבא</div>
+          <div style="font-weight:600;color:var(--text)" id="countdownLabel">days to next round</div>
           <div style="font-size:0.85em;color:var(--dim)" id="countdownRound"></div>
         </div>
       </div>
@@ -840,20 +920,20 @@ tr.expandable{cursor:pointer}
 
     <!-- Funnel -->
     <div class="funnel-container">
-      <div class="section-title">&#128202; משפך התקדמות</div>
+      <div class="section-title">&#128202; <span data-en="Progress funnel" data-he="משפך התקדמות">Progress funnel</span></div>
       <div class="funnel-steps" id="funnelChart"></div>
     </div>
 
     <!-- Stripe sync alert -->
     <div class="alerts-box" id="stripeSyncAlert" style="display:none;border-color:rgba(245,197,66,0.3);margin-bottom:16px">
-      <h3 style="color:var(--yellow)">&#128176; לקוחות ששילמו ללא גישה לפורטל</h3>
+      <h3 style="color:var(--yellow)">&#128176; <span data-en="Paid customers without portal access" data-he="לקוחות ששילמו ללא גישה לפורטל">Paid customers without portal access</span></h3>
       <div id="stripeSyncList"></div>
-      <button class="btn-primary" id="addAllStripeBtn" onclick="addMissingStripeCustomers()" style="margin-top:12px">הוסף את כולם ל-allowed_emails</button>
+      <button class="btn-primary" id="addAllStripeBtn" onclick="addMissingStripeCustomers()" style="margin-top:12px" data-en="Add all to allowed_emails" data-he="הוסף את כולם ל-allowed_emails">Add all to allowed_emails</button>
     </div>
 
     <!-- Alerts -->
     <div class="alerts-box">
-      <h3>&#9888;&#65039; התראות. משתתפים לא פעילים</h3>
+      <h3>&#9888;&#65039; <span data-en="Alerts. Inactive participants" data-he="התראות. משתתפים לא פעילים">Alerts. Inactive participants</span></h3>
       <div id="alertsList"></div>
     </div>
   </div>
@@ -863,48 +943,50 @@ tr.expandable{cursor:pointer}
     <div class="table-wrapper">
       <div class="table-controls">
         <select id="filterRound" onchange="renderParticipants()">
-          <option value="all">כל הסבבים</option>
-          <option value="round1">סבב 1</option>
-          <option value="round2">סבב 2</option>
-          <option value="unknown">ללא סבב</option>
-          <option value="both">אדמין</option>
+          <option value="all" data-en="All rounds" data-he="כל הסבבים">All rounds</option>
+          <option value="round1" data-en="Round 1" data-he="סבב 1">Round 1</option>
+          <option value="round2" data-en="Round 2" data-he="סבב 2">Round 2</option>
+          <option value="unknown" data-en="No round" data-he="ללא סבב">No round</option>
+          <option value="both" data-en="Admin" data-he="אדמין">Admin</option>
         </select>
         <select id="filterStatus" onchange="renderParticipants()">
-          <option value="all">כל הסטטוסים</option>
-          <option value="active">פעילים</option>
-          <option value="inactive">לא פעילים</option>
-          <option value="never">לא התחברו</option>
-          <option value="completed">השלימו</option>
-          <option value="revoked">גישה בוטלה</option>
+          <option value="all" data-en="All statuses" data-he="כל הסטטוסים">All statuses</option>
+          <option value="active" data-en="Active" data-he="פעילים">Active</option>
+          <option value="inactive" data-en="Inactive" data-he="לא פעילים">Inactive</option>
+          <option value="never" data-en="Never logged in" data-he="לא התחברו">Never logged in</option>
+          <option value="completed" data-en="Completed" data-he="השלימו">Completed</option>
+          <option value="revoked" data-en="Access revoked" data-he="גישה בוטלה">Access revoked</option>
         </select>
         <select id="filterDataMissing" onchange="renderParticipants()">
-          <option value="all">כל הנתונים</option>
-          <option value="round_unconfirmed">סבב לא מאושר</option>
-          <option value="no_welcome_email">לא קיבלו מייל welcome</option>
-          <option value="email_failed">מייל נכשל</option>
-          <option value="no_phone">חסר טלפון</option>
-          <option value="wa_unknown">וואטסאפ לא ידוע</option>
-          <option value="wa_none">לא בקבוצת וואטסאפ</option>
-          <option value="wa_wrong">בוואטסאפ הלא נכון</option>
-          <option value="refunded">קיבלו החזר</option>
+          <option value="all" data-en="All data" data-he="כל הנתונים">All data</option>
+          <option value="round_unconfirmed" data-en="Round unconfirmed" data-he="סבב לא מאושר">Round unconfirmed</option>
+          <option value="no_welcome_email" data-en="No welcome email" data-he="לא קיבלו מייל welcome">No welcome email</option>
+          <option value="email_failed" data-en="Email failed" data-he="מייל נכשל">Email failed</option>
+          <option value="no_phone" data-en="No phone" data-he="חסר טלפון">No phone</option>
+          <option value="wa_unknown" data-en="WhatsApp unknown" data-he="וואטסאפ לא ידוע">WhatsApp unknown</option>
+          <option value="wa_none" data-en="Not in WhatsApp group" data-he="לא בקבוצת וואטסאפ">Not in WhatsApp group</option>
+          <option value="wa_wrong" data-en="Wrong WhatsApp group" data-he="בוואטסאפ הלא נכון">Wrong WhatsApp group</option>
+          <option value="refunded" data-en="Refunded" data-he="קיבלו החזר">Refunded</option>
         </select>
-        <input type="text" id="searchInput" placeholder="&#128269; חיפוש לפי שם או אימייל..." oninput="renderParticipants()">
+        <input type="text" id="searchInput" data-en-placeholder="&#128269; Search by name or email..." data-he-placeholder="&#128269; חיפוש לפי שם או אימייל..." placeholder="&#128269; Search by name or email..." oninput="renderParticipants()">
       </div>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>שם</th>
-              <th>אימייל</th>
-              <th>סבב</th>
-              <th>שילם</th>
-              <th>טלפון</th>
-              <th>וואטסאפ</th>
-              <th>יום נוכחי</th>
-              <th>% השלמה</th>
-              <th>כניסה אחרונה</th>
-              <th>סטטוס</th>
-              <th>פעולות <span style="display:inline-block;background:rgba(255,255,255,0.08);color:var(--dim);font-size:0.72em;font-weight:700;padding:1px 6px;border-radius:4px;cursor:help;margin-right:4px" title="✎ ערוך פרטים | ✉ פתח Gmail עם נמען מוכן | 💬 פתח שיחת WhatsApp | 💾 מייל welcome נשלח (לחץ לשליחה חוזרת) | 📧 לא נשלח עדיין | ❗ שליחה נכשלה | 🚫 בטל גישה לפורטל | ✅ שחזר גישה">?</span></th>
+              <th data-en="Name" data-he="שם">Name</th>
+              <th data-en="Email" data-he="אימייל">Email</th>
+              <th data-en="Round" data-he="סבב">Round</th>
+              <th data-en="Paid" data-he="שילם">Paid</th>
+              <th data-en="Phone" data-he="טלפון">Phone</th>
+              <th data-en="WhatsApp" data-he="וואטסאפ">WhatsApp</th>
+              <th data-en="Logins" data-he="כניסות">Logins</th>
+              <th data-en="Time on site" data-he="זמן באתר">Time on site</th>
+              <th data-en="Last seen" data-he="ראינו אחרון">Last seen</th>
+              <th data-en="Current day" data-he="יום נוכחי">Current day</th>
+              <th data-en="% done" data-he="% השלמה">% done</th>
+              <th data-en="Status" data-he="סטטוס">Status</th>
+              <th><span data-en="Actions" data-he="פעולות">Actions</span> <span style="display:inline-block;background:rgba(255,255,255,0.08);color:var(--dim);font-size:0.72em;font-weight:700;padding:1px 6px;border-radius:4px;cursor:help;margin-right:4px" data-en-title="Edit | Open Gmail | Open WhatsApp chat | Welcome email status | Revoke / restore access" data-he-title="✎ ערוך פרטים | ✉ פתח Gmail | 💬 פתח שיחת WhatsApp | 💾 welcome נשלח | 📧 לא נשלח | ❗ נכשל | 🚫 בטל גישה | ✅ שחזר" title="Edit | Open Gmail | Open WhatsApp chat | Welcome email status | Revoke / restore access">?</span></th>
             </tr>
           </thead>
           <tbody id="participantsBody"></tbody>
@@ -917,63 +999,63 @@ tr.expandable{cursor:pointer}
   <div id="editModal" class="edit-modal-overlay" style="display:none" onclick="if(event.target===this)closeEditModal()">
     <div class="edit-modal">
       <div class="edit-modal-header">
-        <h3>עריכת משתתף</h3>
+        <h3 data-en="Edit participant" data-he="עריכת משתתף">Edit participant</h3>
         <button onclick="closeEditModal()" class="edit-modal-close">×</button>
       </div>
       <div class="edit-modal-body">
         <input type="hidden" id="editParticipantId">
         <div class="form-group" style="margin-bottom:14px">
-          <label>אימייל</label>
+          <label data-en="Email" data-he="אימייל">Email</label>
           <input type="text" id="editEmailDisplay" disabled style="opacity:0.6">
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>שם</label>
+          <label data-en="Name" data-he="שם">Name</label>
           <input type="text" id="editName">
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>סבב</label>
+          <label data-en="Round" data-he="סבב">Round</label>
           <select id="editRound">
-            <option value="round1">סבב 1</option>
-            <option value="round2">סבב 2</option>
-            <option value="both">שניהם (אדמין)</option>
+            <option value="round1" data-en="Round 1" data-he="סבב 1">Round 1</option>
+            <option value="round2" data-en="Round 2" data-he="סבב 2">Round 2</option>
+            <option value="both" data-en="Both (admin)" data-he="שניהם (אדמין)">Both (admin)</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>טלפון</label>
+          <label data-en="Phone" data-he="טלפון">Phone</label>
           <div class="phone-input-wrap">
             <button type="button" class="cc-trigger" id="ccTrigger" onclick="toggleCcDropdown()">
               <span id="ccFlag">🌐</span>
-              <span id="ccCode">קוד</span>
+              <span id="ccCode" data-en="Code" data-he="קוד">Code</span>
               <span class="cc-arrow">▾</span>
             </button>
             <input type="tel" id="editPhoneLocal" placeholder="555 123 4567" dir="ltr" oninput="syncPhoneFromParts()">
             <input type="hidden" id="editPhone">
             <div class="cc-dropdown" id="ccDropdown" style="display:none">
-              <input type="text" class="cc-search" id="ccSearch" placeholder="חיפוש מדינה או קוד..." oninput="filterCcList()" dir="rtl">
+              <input type="text" class="cc-search" id="ccSearch" data-en-placeholder="Search country or code..." data-he-placeholder="חיפוש מדינה או קוד..." placeholder="Search country or code..." oninput="filterCcList()">
               <div class="cc-list" id="ccList"></div>
             </div>
           </div>
-          <div style="font-size:0.72em;color:var(--dim);margin-top:4px">פורמט מלא נשמר אוטומטית. למשל +972 50 1234567</div>
+          <div style="font-size:0.72em;color:var(--dim);margin-top:4px" data-en="Full format saved automatically. Example +972 50 1234567" data-he="פורמט מלא נשמר אוטומטית. למשל +972 50 1234567">Full format saved automatically. Example +972 50 1234567</div>
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>סטטוס בקבוצת וואטסאפ</label>
+          <label data-en="WhatsApp group status" data-he="סטטוס בקבוצת וואטסאפ">WhatsApp group status</label>
           <select id="editWhatsapp">
-            <option value="unknown">לא ידוע</option>
-            <option value="none">לא בקבוצה</option>
-            <option value="round1">בקבוצת סבב 1</option>
-            <option value="round2">בקבוצת סבב 2</option>
-            <option value="both">בשתי הקבוצות</option>
+            <option value="unknown" data-en="Unknown" data-he="לא ידוע">Unknown</option>
+            <option value="none" data-en="Not in group" data-he="לא בקבוצה">Not in group</option>
+            <option value="round1" data-en="In Round 1 group" data-he="בקבוצת סבב 1">In Round 1 group</option>
+            <option value="round2" data-en="In Round 2 group" data-he="בקבוצת סבב 2">In Round 2 group</option>
+            <option value="both" data-en="In both groups" data-he="בשתי הקבוצות">In both groups</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:14px">
-          <label>הערות פנימיות</label>
-          <textarea id="editNotes" rows="3" placeholder="הערות לעצמך, לא נראות למשתתף"></textarea>
+          <label data-en="Internal notes" data-he="הערות פנימיות">Internal notes</label>
+          <textarea id="editNotes" rows="3" data-en-placeholder="Notes for yourself, not visible to participant" data-he-placeholder="הערות לעצמך, לא נראות למשתתף" placeholder="Notes for yourself, not visible to participant"></textarea>
         </div>
         <div class="form-msg" id="editMsg"></div>
       </div>
       <div class="edit-modal-footer">
-        <button class="btn-primary" onclick="saveParticipantEdit()">שמור</button>
-        <button onclick="closeEditModal()" style="background:none;border:1px solid var(--glass-border);color:var(--dim);padding:10px 24px;border-radius:8px;font-family:inherit;cursor:pointer">ביטול</button>
+        <button class="btn-primary" onclick="saveParticipantEdit()" data-en="Save" data-he="שמור">Save</button>
+        <button onclick="closeEditModal()" style="background:none;border:1px solid var(--glass-border);color:var(--dim);padding:10px 24px;border-radius:8px;font-family:inherit;cursor:pointer" data-en="Cancel" data-he="ביטול">Cancel</button>
       </div>
     </div>
   </div>
@@ -987,60 +1069,60 @@ tr.expandable{cursor:pointer}
   <div id="tab-revenue" class="tab-content">
     <div class="stat-grid" id="revenueStats">
       <div class="stat-card">
-        <div class="stat-label">הכנסות גרוס</div>
+        <div class="stat-label" data-en="Gross revenue" data-he="הכנסות גרוס">Gross revenue</div>
         <div class="stat-value" id="revTotal">$0</div>
-        <div class="stat-sub">ללא TEST</div>
+        <div class="stat-sub" data-en="Excluding TEST" data-he="ללא TEST">Excluding TEST</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">החזרים</div>
+        <div class="stat-label" data-en="Refunds" data-he="החזרים">Refunds</div>
         <div class="stat-value" id="revRefunds" style="color:var(--red)">$0</div>
-        <div class="stat-sub" id="revRefundsCount">0 החזרים</div>
+        <div class="stat-sub" id="revRefundsCount">0 refunds</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">הכנסות נטו</div>
+        <div class="stat-label" data-en="Net revenue" data-he="הכנסות נטו">Net revenue</div>
         <div class="stat-value" id="revNet" style="color:var(--green)">$0</div>
-        <div class="stat-sub">אחרי החזרים</div>
+        <div class="stat-sub" data-en="After refunds" data-he="אחרי החזרים">After refunds</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">לקוחות פעילים</div>
+        <div class="stat-label" data-en="Active customers" data-he="לקוחות פעילים">Active customers</div>
         <div class="stat-value" id="revCustomers">0</div>
-        <div class="stat-sub" id="revCustomersSub">ללא TEST וללא החזרים</div>
+        <div class="stat-sub" id="revCustomersSub" data-en="Excluding TEST and refunds" data-he="ללא TEST וללא החזרים">Excluding TEST and refunds</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">ממוצע לעסקה</div>
+        <div class="stat-label" data-en="Average per transaction" data-he="ממוצע לעסקה">Average per transaction</div>
         <div class="stat-value" id="revAvg">$0</div>
       </div>
     </div>
 
-    <div class="section-title">&#128200; ציר זמן הכנסות</div>
+    <div class="section-title">&#128200; <span data-en="Revenue timeline" data-he="ציר זמן הכנסות">Revenue timeline</span></div>
     <div id="revenueTimeline" style="margin-bottom:32px"></div>
 
-    <div class="section-title">&#128176; הכנסות לפי קופון</div>
+    <div class="section-title">&#128176; <span data-en="Revenue by coupon" data-he="הכנסות לפי קופון">Revenue by coupon</span></div>
     <div class="stat-grid" id="couponStats" style="margin-bottom:32px"></div>
 
-    <div class="section-title">&#127758; לקוחות לפי מדינה</div>
+    <div class="section-title">&#127758; <span data-en="Customers by country" data-he="לקוחות לפי מדינה">Customers by country</span></div>
     <div class="stat-grid" id="countryStats" style="margin-bottom:32px"></div>
 
     <div class="table-wrapper">
       <div class="table-controls">
-        <div class="section-title" style="padding:0;border:none;margin:0;flex:1">&#128203; פירוט עסקאות</div>
+        <div class="section-title" style="padding:0;border:none;margin:0;flex:1">&#128203; <span data-en="Transaction detail" data-he="פירוט עסקאות">Transaction detail</span></div>
         <select id="filterRefunded" onchange="renderRevenue()">
-          <option value="all">הכל</option>
-          <option value="active">פעילים בלבד</option>
-          <option value="refunded">החזרים בלבד</option>
+          <option value="all" data-en="All" data-he="הכל">All</option>
+          <option value="active" data-en="Active only" data-he="פעילים בלבד">Active only</option>
+          <option value="refunded" data-en="Refunds only" data-he="החזרים בלבד">Refunds only</option>
         </select>
       </div>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>שם</th>
-              <th>אימייל</th>
-              <th>סכום</th>
-              <th>קופון</th>
-              <th>מדינה</th>
-              <th>תאריך</th>
-              <th>סטטוס</th>
+              <th data-en="Name" data-he="שם">Name</th>
+              <th data-en="Email" data-he="אימייל">Email</th>
+              <th data-en="Amount" data-he="סכום">Amount</th>
+              <th data-en="Coupon" data-he="קופון">Coupon</th>
+              <th data-en="Country" data-he="מדינה">Country</th>
+              <th data-en="Date" data-he="תאריך">Date</th>
+              <th data-en="Status" data-he="סטטוס">Status</th>
             </tr>
           </thead>
           <tbody id="revenueBody"></tbody>
@@ -1052,11 +1134,8 @@ tr.expandable{cursor:pointer}
   <!-- ===== TAB: WHATSAPP RECONCILIATION ===== -->
   <div id="tab-wa-recon" class="tab-content">
     <div class="mgmt-section">
-      <h3>&#128172; השוואת WhatsApp מול DB</h3>
-      <p style="font-size:0.88em;color:var(--dim);margin-bottom:14px;line-height:1.7">
-        גרור את שני קבצי ה-Export מ-WhatsApp (Round 1 + Round 2). הם מנותחים מקומית בדפדפן . הקבצים לא נשמרים ולא מועלים לשרת.
-        <br>איך לעשות Export: WhatsApp → קבוצה → תפריט → Export Chat → Without media.
-      </p>
+      <h3>&#128172; <span data-en="WhatsApp vs DB reconciliation" data-he="השוואת WhatsApp מול DB">WhatsApp vs DB reconciliation</span></h3>
+      <p style="font-size:0.88em;color:var(--dim);margin-bottom:14px;line-height:1.7" data-en="Drag both WhatsApp export files (Round 1 and Round 2). They are parsed locally in your browser. Files are not uploaded or stored. To export, open WhatsApp, group, menu, Export Chat, Without media." data-he="גרור את שני קבצי ה-Export מ-WhatsApp (Round 1 + Round 2). הם מנותחים מקומית בדפדפן . הקבצים לא נשמרים ולא מועלים לשרת. איך לעשות Export: WhatsApp → קבוצה → תפריט → Export Chat → Without media.">Drag both WhatsApp export files (Round 1 and Round 2). They are parsed locally in your browser. Files are not uploaded or stored. To export, open WhatsApp, group, menu, Export Chat, Without media.</p>
 
       <div class="wa-uploads">
         <label class="wa-drop" id="waDrop1">
@@ -1064,7 +1143,7 @@ tr.expandable{cursor:pointer}
           <div class="wa-drop-inner">
             <div class="wa-drop-emoji">&#128181;</div>
             <div class="wa-drop-title">Round 1 export</div>
-            <div class="wa-drop-hint" id="waFile1Status">לחץ או גרור קובץ .txt</div>
+            <div class="wa-drop-hint" id="waFile1Status" data-en="Click or drop a .txt file" data-he="לחץ או גרור קובץ .txt">Click or drop a .txt file</div>
           </div>
         </label>
         <label class="wa-drop" id="waDrop2">
@@ -1072,7 +1151,7 @@ tr.expandable{cursor:pointer}
           <div class="wa-drop-inner">
             <div class="wa-drop-emoji">&#129505;</div>
             <div class="wa-drop-title">Round 2 export</div>
-            <div class="wa-drop-hint" id="waFile2Status">לחץ או גרור קובץ .txt</div>
+            <div class="wa-drop-hint" id="waFile2Status" data-en="Click or drop a .txt file" data-he="לחץ או גרור קובץ .txt">Click or drop a .txt file</div>
           </div>
         </label>
       </div>
@@ -1097,38 +1176,39 @@ tr.expandable{cursor:pointer}
   <div id="tab-manage" class="tab-content">
     <!-- Stripe Sync Info -->
     <div class="mgmt-section">
-      <h3>&#128260; סנכרון Stripe</h3>
+      <h3>&#128260; <span data-en="Stripe sync" data-he="סנכרון Stripe">Stripe sync</span></h3>
       <p style="font-size:0.88em;color:var(--dim);margin-bottom:12px">
-        נתוני Stripe מסתנכרנים אוטומטית דרך webhook. שינוי אחרון: <span id="lastStripeSync" style="color:var(--orange)">טוען...</span>
+        <span data-en="Stripe data syncs automatically via webhook. Last update:" data-he="נתוני Stripe מסתנכרנים אוטומטית דרך webhook. שינוי אחרון:">Stripe data syncs automatically via webhook. Last update:</span>
+        <span id="lastStripeSync" style="color:var(--orange)">loading...</span>
       </p>
-      <button class="btn-primary" style="opacity:0.6;cursor:default" disabled>&#9989; Sync פעיל (אוטומטי)</button>
+      <button class="btn-primary" style="opacity:0.6;cursor:default" disabled>&#9989; <span data-en="Sync active (automatic)" data-he="Sync פעיל (אוטומטי)">Sync active (automatic)</span></button>
     </div>
 
     <!-- Add Participant -->
     <div class="mgmt-section">
-      <h3>&#10133; הוספת משתתף</h3>
+      <h3>&#10133; <span data-en="Add participant" data-he="הוספת משתתף">Add participant</span></h3>
       <div class="form-row">
         <div class="form-group">
-          <label>אימייל</label>
+          <label data-en="Email" data-he="אימייל">Email</label>
           <input type="email" id="addEmail" placeholder="user@example.com">
         </div>
         <div class="form-group">
-          <label>שם</label>
-          <input type="text" id="addName" placeholder="שם מלא">
+          <label data-en="Name" data-he="שם">Name</label>
+          <input type="text" id="addName" data-en-placeholder="Full name" data-he-placeholder="שם מלא" placeholder="Full name">
         </div>
         <div class="form-group">
-          <label>סבב</label>
+          <label data-en="Round" data-he="סבב">Round</label>
           <select id="addRound">
-            <option value="round1">סבב 1</option>
-            <option value="round2">סבב 2</option>
-            <option value="both">שניהם</option>
+            <option value="round1" data-en="Round 1" data-he="סבב 1">Round 1</option>
+            <option value="round2" data-en="Round 2" data-he="סבב 2">Round 2</option>
+            <option value="both" data-en="Both" data-he="שניהם">Both</option>
           </select>
         </div>
         <div class="form-group">
-          <label>טלפון (אופציונלי)</label>
+          <label data-en="Phone (optional)" data-he="טלפון (אופציונלי)">Phone (optional)</label>
           <input type="tel" id="addPhone" placeholder="+1..." dir="ltr">
         </div>
-        <button class="btn-primary" onclick="addParticipant()">הוסף</button>
+        <button class="btn-primary" onclick="addParticipant()" data-en="Add" data-he="הוסף">Add</button>
       </div>
       <div class="form-msg" id="addMsg"></div>
       <div class="form-msg" id="addStripeNote"></div>
@@ -1136,41 +1216,41 @@ tr.expandable{cursor:pointer}
 
     <!-- Rounds -->
     <div class="mgmt-section">
-      <h3>&#128197; סבבים</h3>
+      <h3>&#128197; <span data-en="Rounds" data-he="סבבים">Rounds</span></h3>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>שם</th>
-              <th>תאריך התחלה</th>
-              <th>תאריך סיום</th>
-              <th>קישור וואטסאפ</th>
-              <th>סטטוס</th>
+              <th data-en="Name" data-he="שם">Name</th>
+              <th data-en="Start date" data-he="תאריך התחלה">Start date</th>
+              <th data-en="End date" data-he="תאריך סיום">End date</th>
+              <th data-en="WhatsApp link" data-he="קישור וואטסאפ">WhatsApp link</th>
+              <th data-en="Status" data-he="סטטוס">Status</th>
             </tr>
           </thead>
           <tbody id="roundsBody"></tbody>
         </table>
       </div>
       <div style="margin-top:16px">
-        <div class="section-title">הוספת סבב</div>
+        <div class="section-title" data-en="Add round" data-he="הוספת סבב">Add round</div>
         <div class="form-row">
           <div class="form-group">
-            <label>שם</label>
-            <input type="text" id="roundName" placeholder="סבב 3">
+            <label data-en="Name" data-he="שם">Name</label>
+            <input type="text" id="roundName" data-en-placeholder="Round 3" data-he-placeholder="סבב 3" placeholder="Round 3">
           </div>
           <div class="form-group">
-            <label>תאריך התחלה</label>
+            <label data-en="Start date" data-he="תאריך התחלה">Start date</label>
             <input type="date" id="roundStart">
           </div>
           <div class="form-group">
-            <label>תאריך סיום</label>
+            <label data-en="End date" data-he="תאריך סיום">End date</label>
             <input type="date" id="roundEnd">
           </div>
           <div class="form-group">
-            <label>קישור וואטסאפ</label>
+            <label data-en="WhatsApp link" data-he="קישור וואטסאפ">WhatsApp link</label>
             <input type="url" id="roundWA" placeholder="https://chat.whatsapp.com/...">
           </div>
-          <button class="btn-primary" onclick="addRound()">הוסף סבב</button>
+          <button class="btn-primary" onclick="addRound()" data-en="Add round" data-he="הוסף סבב">Add round</button>
         </div>
         <div class="form-msg" id="roundMsg"></div>
       </div>
@@ -1178,50 +1258,47 @@ tr.expandable{cursor:pointer}
 
     <!-- WhatsApp Bulk Import -->
     <div class="mgmt-section">
-      <h3>&#128172; ייבוא חברי קבוצת וואטסאפ</h3>
-      <p style="font-size:0.85em;color:var(--dim);margin-bottom:12px;line-height:1.6">
-        פתח את קבוצת הוואטסאפ → Group info → Members → העתק את השמות/מספרים. הדבק כאן ובחר באיזו קבוצה הם.<br>
-        המערכת מחפשת התאמה לפי מספר טלפון או שם ומסמנת אוטומטית.
-      </p>
+      <h3>&#128172; <span data-en="WhatsApp group member import" data-he="ייבוא חברי קבוצת וואטסאפ">WhatsApp group member import</span></h3>
+      <p style="font-size:0.85em;color:var(--dim);margin-bottom:12px;line-height:1.6" data-en="Open the WhatsApp group, Group info, Members, copy names and numbers. Paste here and pick which group. The system matches by phone or name and tags automatically." data-he="פתח את קבוצת הוואטסאפ → Group info → Members → העתק את השמות/מספרים. הדבק כאן ובחר באיזו קבוצה הם. המערכת מחפשת התאמה לפי מספר טלפון או שם ומסמנת אוטומטית.">Open the WhatsApp group, Group info, Members, copy names and numbers. Paste here and pick which group. The system matches by phone or name and tags automatically.</p>
       <div class="form-row">
         <div class="form-group" style="flex:1">
-          <label>קבוצה</label>
+          <label data-en="Group" data-he="קבוצה">Group</label>
           <select id="waImportGroup">
-            <option value="round1">קבוצת סבב 1</option>
-            <option value="round2">קבוצת סבב 2</option>
-            <option value="both">שתי הקבוצות</option>
+            <option value="round1" data-en="Round 1 group" data-he="קבוצת סבב 1">Round 1 group</option>
+            <option value="round2" data-en="Round 2 group" data-he="קבוצת סבב 2">Round 2 group</option>
+            <option value="both" data-en="Both groups" data-he="שתי הקבוצות">Both groups</option>
           </select>
         </div>
       </div>
       <div class="form-group" style="margin-top:8px">
-        <label>הדבק רשימה (כל שורה: מספר טלפון או שם או שניהם)</label>
+        <label data-en="Paste list (one per line: phone or name or both)" data-he="הדבק רשימה (כל שורה: מספר טלפון או שם או שניהם)">Paste list (one per line: phone or name or both)</label>
         <textarea id="waImportList" rows="6" placeholder="+1 555 123 4567&#10;Bruce Kernan&#10;+972 50 1234567 Andrea Butter&#10;..." style="width:100%;background:var(--bg);border:1px solid var(--glass-border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:inherit;font-size:0.88em;direction:ltr;text-align:left"></textarea>
       </div>
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn-primary" onclick="waImportPreview()">&#128269; מצא התאמות</button>
-        <button onclick="document.getElementById('waImportList').value=''" style="background:none;border:1px solid var(--glass-border);color:var(--dim);padding:10px 16px;border-radius:8px;font-family:inherit;cursor:pointer">נקה</button>
+        <button class="btn-primary" onclick="waImportPreview()">&#128269; <span data-en="Find matches" data-he="מצא התאמות">Find matches</span></button>
+        <button onclick="document.getElementById('waImportList').value=''" style="background:none;border:1px solid var(--glass-border);color:var(--dim);padding:10px 16px;border-radius:8px;font-family:inherit;cursor:pointer" data-en="Clear" data-he="נקה">Clear</button>
       </div>
       <div id="waImportResults" style="margin-top:16px"></div>
     </div>
 
     <!-- CSV Export -->
     <div class="mgmt-section">
-      <h3>&#128229; ייצוא נתונים</h3>
+      <h3>&#128229; <span data-en="Export data" data-he="ייצוא נתונים">Export data</span></h3>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn-primary" onclick="exportCSV('participants')">ייצוא משתתפים CSV</button>
-        <button class="btn-primary" onclick="exportCSV('stripe')">ייצוא עסקאות CSV</button>
+        <button class="btn-primary" onclick="exportCSV('participants')" data-en="Export participants CSV" data-he="ייצוא משתתפים CSV">Export participants CSV</button>
+        <button class="btn-primary" onclick="exportCSV('stripe')" data-en="Export transactions CSV" data-he="ייצוא עסקאות CSV">Export transactions CSV</button>
       </div>
     </div>
 
     <!-- Quick Links -->
     <div class="mgmt-section">
-      <h3>&#128279; קישורים מהירים</h3>
+      <h3>&#128279; <span data-en="Quick links" data-he="קישורים מהירים">Quick links</span></h3>
       <div class="quick-links" id="quickLinks">
-        <a class="quick-link" href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank">&#128172; וואטסאפ סבב 1</a>
-        <a class="quick-link" href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank">&#128172; וואטסאפ סבב 2</a>
+        <a class="quick-link" href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank">&#128172; <span data-en="WhatsApp Round 1" data-he="וואטסאפ סבב 1">WhatsApp Round 1</span></a>
+        <a class="quick-link" href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank">&#128172; <span data-en="WhatsApp Round 2" data-he="וואטסאפ סבב 2">WhatsApp Round 2</span></a>
         <a class="quick-link" href="https://dashboard.stripe.com" target="_blank">&#128179; Stripe Dashboard</a>
         <a class="quick-link" href="https://supabase.com/dashboard/project/faqjilunlzljbgrnpcgi" target="_blank">&#128194; Supabase Dashboard</a>
-        <a class="quick-link" href="/donna-challenge/" target="_blank">&#127919; פורטל משתתפים</a>
+        <a class="quick-link" href="/donna-challenge/" target="_blank">&#127919; <span data-en="Participant portal" data-he="פורטל משתתפים">Participant portal</span></a>
       </div>
     </div>
   </div>
@@ -1246,6 +1323,164 @@ function esc(str) {
   div.textContent = String(str);
   return div.innerHTML;
 }
+
+// ===== I18N =====
+let currentLang = localStorage.getItem('admin-lang') || 'en';
+
+// Strings used by JS-generated content (not in DOM at load).
+// Use t('key') in dynamic render functions.
+const I18N = {
+  // Status badges
+  'status.revoked':       { en: 'Access revoked',     he: 'גישה בוטלה' },
+  'status.completed':     { en: 'Completed',          he: 'השלים' },
+  'status.never':         { en: 'Never logged in',    he: 'לא התחבר' },
+  'status.active':        { en: 'Active',             he: 'פעיל' },
+  'status.daysAgo':       { en: 'd ago',              he: 'ימים' },
+  // Round labels
+  'round.round1':         { en: 'Round 1',            he: 'סבב 1' },
+  'round.round2':         { en: 'Round 2',            he: 'סבב 2' },
+  'round.both':           { en: 'Admin',              he: 'אדמין' },
+  'round.unknown':        { en: 'Unknown',            he: 'לא ידוע' },
+  'round.unknownLabel':   { en: 'No round',           he: 'סבב לא ידוע' },
+  'round.unknownDesc':    { en: 'No form filled / no pick', he: 'לא מילאו פורם / לא בחרו' },
+  // Round card lines
+  'rc.confirmedWA':       { en: 'WhatsApp verified',  he: 'וואטסאפ מאומת' },
+  'rc.bothGroups':        { en: 'In 2 groups',        he: 'ב-2 קבוצות' },
+  'rc.wrongGroup':        { en: 'In wrong group',     he: 'בקבוצה הלא נכונה' },
+  'rc.unknownWA':         { en: 'WhatsApp unknown',   he: 'וואטסאפ לא ידוע' },
+  'rc.inG1':              { en: 'In Round 1 group',   he: 'בקבוצת סבב 1' },
+  'rc.inG2':              { en: 'In Round 2 group',   he: 'בקבוצת סבב 2' },
+  'rc.noGroup':           { en: 'No group',           he: 'ללא קבוצה' },
+  'rc.full':              { en: 'FULL',               he: 'מלא' },
+  // Family / admin strip
+  'fs.family':            { en: 'Family / guests (free)', he: 'משפחה / אורחים (חינם)' },
+  'fs.admin':             { en: 'Admin',              he: 'אדמין' },
+  // Action queue
+  'aq.roundUnconfirmed':  { en: 'Round unconfirmed',  he: 'סבב לא מאושר' },
+  'aq.noWelcome':         { en: 'No welcome email',   he: 'לא קיבלו מייל welcome' },
+  'aq.failedEmail':       { en: 'Email failed',       he: 'מייל נכשל' },
+  'aq.noRound':           { en: 'No round',           he: 'ללא סבב' },
+  'aq.wrongWA':           { en: 'Wrong WA group',     he: 'בקבוצה הלא נכונה' },
+  'aq.bothGroups':        { en: 'In both groups',     he: 'בשתי קבוצות' },
+  'aq.waUnknown':         { en: 'WA unknown',         he: 'WA לא ידוע' },
+  'aq.noPhone':           { en: 'Missing phone',      he: 'חסר טלפון' },
+  'aq.refundedAccess':    { en: 'Refunded with access', he: 'גישה למוחזרים' },
+  // Funnel
+  'fn.paid':              { en: 'Paid (active)',      he: 'שילמו (אקטיבי)' },
+  'fn.registered':        { en: 'Registered',         he: 'נרשמו בפורטל' },
+  'fn.loggedIn':          { en: 'Logged in',          he: 'התחברו' },
+  'fn.day':               { en: 'Day ',               he: 'יום ' },
+  'fn.day0':              { en: 'Day 0',              he: 'יום 0' },
+  'fn.graduated':         { en: 'Graduated',          he: 'בוגרים' },
+  // Misc
+  'misc.refunded':        { en: 'Refunded',           he: 'החזר' },
+  'misc.noActivity':      { en: 'd inactive',         he: 'ימים ללא פעילות' },
+  'misc.neverLoggedIn':   { en: 'never logged in',    he: 'לא התחבר מעולם' },
+  'misc.noEvents':        { en: 'No events recorded yet', he: 'אין אירועים מתועדים עדיין' },
+  'misc.noData':          { en: 'No data yet',        he: 'עדיין אין נתונים' },
+  'misc.noDataDesc':      { en: 'Data will appear once participants log in and start the challenge.', he: 'הנתונים יתחילו להופיע כשמשתתפים ייכנסו לפורטל ויתחילו את האתגר.' },
+  'misc.noStripe':        { en: 'No Stripe data yet', he: 'אין נתוני Stripe עדיין' },
+  'misc.noTransactions':  { en: 'No transactions match this filter', he: 'אין עסקאות בסינון הזה' },
+  'misc.aliasEmails':     { en: 'Additional login emails', he: 'מיילים נוספים לכניסה לפורטל' },
+  'misc.dayN':            { en: 'Day ',               he: 'יום ' },
+  'misc.minutes':         { en: ' min',               he: ' דקות' },
+  'misc.unknownCountry':  { en: 'Unknown',            he: 'לא ידוע' },
+  'misc.noCoupon':        { en: 'No coupon',          he: 'ללא קופון' },
+  'misc.daysToNext':      { en: ' days to next round', he: ' ימים לסבב הבא' },
+  'misc.dayToNext':       { en: ' day to next round',  he: ' יום לסבב הבא' },
+  'misc.allActive':       { en: 'All participants active', he: 'כל המשתתפים פעילים' },
+  'misc.refreshed':       { en: 'Updated ',           he: 'עודכן ' },
+  // Day analytics labels
+  'da.started':           { en: 'Started',            he: 'התחילו' },
+  'da.completed':         { en: 'Completed',          he: 'השלימו' },
+  'da.dropoff':           { en: 'Dropoff',            he: 'נשירה' },
+  'da.avgTime':           { en: 'Average time',       he: 'זמן ממוצע' },
+  'da.topCommand':        { en: 'Most copied command', he: 'פקודה הכי מועתקת' },
+  'da.topFaq':            { en: 'Top FAQ',            he: 'FAQ הכי נפתח' },
+  'da.checklist':         { en: 'Checklist completion', he: 'השלמת צ\'קליסט' },
+  // Day names (header rendered via DAY_TITLES)
+  'day.0':                { en: 'Prep',               he: 'הכנה' },
+  'day.1':                { en: 'Day 1',              he: 'יום 1' },
+  'day.2':                { en: 'Day 2',              he: 'יום 2' },
+  'day.3':                { en: 'Day 3',              he: 'יום 3' },
+  'day.4':                { en: 'Day 4',              he: 'יום 4' },
+  'day.5':                { en: 'Day 5',              he: 'יום 5' },
+  // WA / table
+  'wa.unknown':           { en: '? unknown',          he: '? לא ידוע' },
+  'wa.none':              { en: '✗ not in group',     he: '✗ לא בקבוצה' },
+  'wa.r1':                { en: '✓ Round 1',          he: '✓ סבב 1' },
+  'wa.r2':                { en: '✓ Round 2',          he: '✓ סבב 2' },
+  'wa.both':              { en: '✓✓ both',            he: '✓✓ שתיהן' },
+  'phone.missing':        { en: 'missing',            he: 'חסר' },
+  // Engagement section
+  'eng.topActive':        { en: 'Top 10 most active (last 7 days)', he: '10 הפעילים ביותר (7 ימים אחרונים)' },
+  'eng.sleeping':         { en: 'Sleeping users (no login 48h+)', he: 'משתמשים רדומים (ללא כניסה 48 שעות)' },
+  'eng.topPrompts':       { en: 'Top 10 copied prompts', he: '10 הפרומפטים הכי מועתקים' },
+  'eng.topFaqs':          { en: 'Top 10 opened FAQs',    he: '10 ה-FAQ הכי נפתחים' },
+  'eng.heatmap':          { en: 'Hourly activity (last 7 days, your timezone)', he: 'פעילות שעתית (7 ימים אחרונים, אזור זמן שלך)' },
+  'eng.compare':          { en: 'Round 1 vs Round 2 comparison', he: 'השוואה בין סבב 1 לסבב 2' },
+  'eng.logins':           { en: 'logins',             he: 'כניסות' },
+  'eng.daysSince':        { en: 'd ago',              he: 'ימים' },
+  'eng.sendDM':           { en: 'Send DM',            he: 'שלח הודעה' },
+  'eng.empty':            { en: 'No data yet',        he: 'עדיין אין נתונים' },
+  'eng.copied':           { en: 'copies',             he: 'העתקות' },
+  'eng.opens':            { en: 'opens',              he: 'פתיחות' },
+  'eng.cmpRegistered':    { en: 'Registered',         he: 'נרשמו' },
+  'eng.cmpActive24':      { en: 'Active in last 24h', he: 'פעילים ב-24 שעות' },
+  'eng.cmpAvgTime':       { en: 'Avg time on site',   he: 'זמן ממוצע באתר' },
+  'eng.cmpLogins':        { en: 'Total logins',       he: 'סך כניסות' },
+  'eng.cmpCopies':        { en: 'Commands copied',    he: 'פקודות שהועתקו' }
+};
+
+function t(key){
+  const entry = I18N[key];
+  if(!entry) return key;
+  return entry[currentLang] || entry.en || key;
+}
+
+function isRTL(){ return currentLang === 'he'; }
+
+// Apply current language to all DOM nodes with data-en/data-he attributes.
+function applyLanguageToDOM(){
+  const lang = currentLang;
+  // Update html dir + lang
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  // Walk all nodes with data-en text content
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if(val !== null) el.textContent = val;
+  });
+  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+    const val = el.getAttribute('data-' + lang + '-placeholder');
+    if(val !== null) el.setAttribute('placeholder', val);
+  });
+  document.querySelectorAll('[data-en-title]').forEach(el => {
+    const val = el.getAttribute('data-' + lang + '-title');
+    if(val !== null) el.setAttribute('title', val);
+  });
+  // Update toggle button label
+  const btn = document.getElementById('langToggleBtn');
+  if(btn) btn.textContent = lang === 'en' ? 'EN / עב' : 'עב / EN';
+}
+
+function setLanguage(lang){
+  currentLang = (lang === 'he') ? 'he' : 'en';
+  localStorage.setItem('admin-lang', currentLang);
+  applyLanguageToDOM();
+  // Re-render dynamic content (status badges, action queue, etc.)
+  if(typeof renderAll === 'function' && document.getElementById('dashboard') &&
+     document.getElementById('dashboard').style.display === 'block'){
+    try { renderAll(); } catch(e){ console.warn('renderAll on lang change:', e); }
+  }
+}
+
+function toggleLanguage(){
+  setLanguage(currentLang === 'en' ? 'he' : 'en');
+}
+
+// Apply language on load (covers loading screen + denied screen)
+applyLanguageToDOM();
 
 // ===== GLOBAL STATE =====
 let allParticipants = []; // primary accounts only (no aliases)
@@ -1303,10 +1538,10 @@ async function checkAuth(){
   setInterval(async () => {
     await loadAllData();
     renderAll();
-    document.getElementById('lastRefresh').textContent = 'עודכן ' + new Date().toLocaleTimeString('he-IL');
+    document.getElementById('lastRefresh').textContent = t('misc.refreshed') + new Date().toLocaleTimeString(isRTL() ? 'he-IL' : 'en-US');
   }, 60000);
 
-  document.getElementById('lastRefresh').textContent = 'עודכן ' + new Date().toLocaleTimeString('he-IL');
+  document.getElementById('lastRefresh').textContent = t('misc.refreshed') + new Date().toLocaleTimeString(isRTL() ? 'he-IL' : 'en-US');
 }
 
 // ===== DATA LOADING =====
@@ -1454,31 +1689,33 @@ function daysSince(dateStr){
 function getStatusInfo(email){
   // Revoked access takes precedence over everything else
   const p = allParticipants.find(x => x.email && x.email.toLowerCase() === (email || '').toLowerCase());
-  if(p && p.access_revoked_at) return { status: 'revoked', label: 'גישה בוטלה', cls: 'badge-red' };
+  if(p && p.access_revoked_at) return { status: 'revoked', label: t('status.revoked'), cls: 'badge-red' };
 
   const lastEvent = getLastEvent(email);
   const lastLogin = getLastLogin(email);
   const completedDays = getCompletedDays(email);
   const completed5 = [1,2,3,4,5].every(d => completedDays.includes(d));
 
-  if(completed5) return { status: 'completed', label: 'השלים', cls: 'badge-blue' };
+  if(completed5) return { status: 'completed', label: t('status.completed'), cls: 'badge-blue' };
 
   const days = daysSince(lastEvent || lastLogin);
-  if(days === Infinity || (!lastEvent && !lastLogin)) return { status: 'never', label: 'לא התחבר', cls: 'badge-gray' };
-  if(days <= 1) return { status: 'active', label: 'פעיל', cls: 'badge-green' };
-  if(days <= 3) return { status: 'inactive', label: days + ' ימים', cls: 'badge-yellow' };
-  return { status: 'inactive', label: days + ' ימים', cls: 'badge-red' };
+  if(days === Infinity || (!lastEvent && !lastLogin)) return { status: 'never', label: t('status.never'), cls: 'badge-gray' };
+  if(days <= 1) return { status: 'active', label: t('status.active'), cls: 'badge-green' };
+  const suffix = isRTL() ? ' ימים' : 'd';
+  if(days <= 3) return { status: 'inactive', label: days + suffix, cls: 'badge-yellow' };
+  return { status: 'inactive', label: days + suffix, cls: 'badge-red' };
 }
 
 function formatDateTime(d){
   if(!d) return '-';
   const dt = new Date(d);
-  return dt.toLocaleDateString('he-IL') + ' ' + dt.toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'});
+  const loc = isRTL() ? 'he-IL' : 'en-US';
+  return dt.toLocaleDateString(loc) + ' ' + dt.toLocaleTimeString(loc, {hour:'2-digit',minute:'2-digit'});
 }
 
 function formatDate(d){
   if(!d) return '-';
-  return new Date(d).toLocaleDateString('he-IL');
+  return new Date(d).toLocaleDateString(isRTL() ? 'he-IL' : 'en-US');
 }
 
 // ===== RENDER ALL =====
@@ -1509,7 +1746,7 @@ function renderRoundCards(){
     const roundRow = (allRounds || []).find(r => r.id === roundKey);
     const isFull = roundRow && roundRow.status === 'full';
     const fullBadge = isFull
-      ? '<span style="display:inline-block;margin-right:8px;font-size:0.65em;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:1px;vertical-align:middle">FULL</span>'
+      ? '<span style="display:inline-block;margin-right:8px;font-size:0.65em;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:1px;vertical-align:middle">' + t('rc.full') + '</span>'
       : '';
     // Confidence breakdown
     const confirmed = inRound.filter(p => p.in_whatsapp === roundKey).length;
@@ -1533,10 +1770,10 @@ function renderRoundCards(){
           <div class="conf-seg conf-soft" style="width:${softPct}%"></div>
         </div>
         <div class="conf-list">
-          <div class="row"><span class="label">&#9989; וואטסאפ מאומת</span><span class="num green">${confirmed}</span></div>
-          ${inBothWA > 0 ? `<div class="row"><span class="label">&#8644; ב-2 קבוצות</span><span class="num yellow">${inBothWA}</span></div>` : ''}
-          ${wrongWA > 0 ? `<div class="row"><span class="label">&#9888;&#65039; בקבוצה הלא נכונה</span><span class="num red">${wrongWA}</span></div>` : ''}
-          ${noWA > 0 ? `<div class="row"><span class="label">&#10067; וואטסאפ לא ידוע</span><span class="num yellow">${noWA}</span></div>` : ''}
+          <div class="row"><span class="label">&#9989; ${t('rc.confirmedWA')}</span><span class="num green">${confirmed}</span></div>
+          ${inBothWA > 0 ? `<div class="row"><span class="label">&#8644; ${t('rc.bothGroups')}</span><span class="num yellow">${inBothWA}</span></div>` : ''}
+          ${wrongWA > 0 ? `<div class="row"><span class="label">&#9888;&#65039; ${t('rc.wrongGroup')}</span><span class="num red">${wrongWA}</span></div>` : ''}
+          ${noWA > 0 ? `<div class="row"><span class="label">&#10067; ${t('rc.unknownWA')}</span><span class="num yellow">${noWA}</span></div>` : ''}
         </div>
       </div>
     `;
@@ -1551,24 +1788,24 @@ function renderRoundCards(){
 
   const unknownCard = `
     <div class="round-card unknown" onclick="filterToRound('unknown')">
-      <div class="round-card-title">סבב לא ידוע</div>
+      <div class="round-card-title">${t('round.unknownLabel')}</div>
       <div class="round-card-num">${unknownRound.length}</div>
-      <div class="round-card-dates">לא מילאו פורם / לא בחרו</div>
+      <div class="round-card-dates">${t('round.unknownDesc')}</div>
       <div class="conf-bar">
         <div class="conf-seg conf-soft" style="width:${unknownRound.length > 0 ? ((unkInWA1+unkInWA2+unkInBoth) / unknownRound.length) * 100 : 0}%"></div>
       </div>
       <div class="conf-list">
-        ${unkInWA1 > 0 ? `<div class="row"><span class="label">&#128172; בקבוצת סבב 1</span><span class="num green">${unkInWA1}</span></div>` : ''}
-        ${unkInWA2 > 0 ? `<div class="row"><span class="label">&#128172; בקבוצת סבב 2</span><span class="num green">${unkInWA2}</span></div>` : ''}
-        ${unkInBoth > 0 ? `<div class="row"><span class="label">&#8644; ב-2 קבוצות</span><span class="num yellow">${unkInBoth}</span></div>` : ''}
-        ${unkNoWA > 0 ? `<div class="row"><span class="label">&#10071; ללא קבוצה</span><span class="num red">${unkNoWA}</span></div>` : ''}
+        ${unkInWA1 > 0 ? `<div class="row"><span class="label">&#128172; ${t('rc.inG1')}</span><span class="num green">${unkInWA1}</span></div>` : ''}
+        ${unkInWA2 > 0 ? `<div class="row"><span class="label">&#128172; ${t('rc.inG2')}</span><span class="num green">${unkInWA2}</span></div>` : ''}
+        ${unkInBoth > 0 ? `<div class="row"><span class="label">&#8644; ${t('rc.bothGroups')}</span><span class="num yellow">${unkInBoth}</span></div>` : ''}
+        ${unkNoWA > 0 ? `<div class="row"><span class="label">&#10071; ${t('rc.noGroup')}</span><span class="num red">${unkNoWA}</span></div>` : ''}
       </div>
     </div>
   `;
 
   container.innerHTML =
-    buildCard('round1', 'סבב 1', 'Apr 20-24', 'r1') +
-    buildCard('round2', 'סבב 2', 'Apr 27 - May 1', 'r2') +
+    buildCard('round1', t('round.round1'), 'Apr 20-24', 'r1') +
+    buildCard('round2', t('round.round2'), 'Apr 27 - May 1', 'r2') +
     unknownCard;
 
   // Family / admin section (separate, doesn't affect paid counts)
@@ -1584,12 +1821,12 @@ function renderRoundCards(){
         <div class="family-strip-item" onclick="filterToCustomerType('family')">
           <span class="family-icon">&#129489;&#8205;&#129489;&#8205;&#129489;&#8205;&#129489;</span>
           <span class="family-num">${family.length}</span>
-          <span class="family-label">משפחה / אורחים (חינם)</span>
+          <span class="family-label">${t('fs.family')}</span>
         </div>
         <div class="family-strip-item" onclick="filterToCustomerType('admin')">
           <span class="family-icon">&#128737;&#65039;</span>
           <span class="family-num">${admin.length}</span>
-          <span class="family-label">אדמין</span>
+          <span class="family-label">${t('fs.admin')}</span>
         </div>
       `;
     }
@@ -1604,7 +1841,9 @@ function filterToCustomerType(type){
   if(!opt){
     opt = document.createElement('option');
     opt.value = '__type_' + type;
-    opt.textContent = type === 'family' ? 'משפחה' : 'אדמין';
+    opt.textContent = type === 'family'
+      ? (isRTL() ? 'משפחה' : 'Family')
+      : (isRTL() ? 'אדמין' : 'Admin');
     sel.appendChild(opt);
   }
   sel.value = '__type_' + type;
@@ -1626,7 +1865,7 @@ function filterToRound(round){
     if(!opt){
       const newOpt = document.createElement('option');
       newOpt.value = 'unknown';
-      newOpt.textContent = 'סבב לא ידוע';
+      newOpt.textContent = t('round.unknownLabel');
       document.getElementById('filterRound').appendChild(newOpt);
     }
     document.getElementById('filterRound').value = 'unknown';
@@ -1667,15 +1906,15 @@ function renderActionQueue(){
   const roundUnconfirmed = active.filter(p => p.round_confirmed === false).length;
 
   const items = [
-    { count: roundUnconfirmed, label: 'סבב לא מאושר', icon: '&#10067;', cls: roundUnconfirmed > 0 ? 'warn' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='round_unconfirmed'; renderParticipants(); } },
-    { count: noWelcomeEmail, label: 'לא קיבלו מייל welcome', icon: '&#128231;', cls: noWelcomeEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_welcome_email'; renderParticipants(); } },
-    { count: failedEmail, label: 'מייל נכשל', icon: '&#10060;', cls: failedEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='email_failed'; renderParticipants(); } },
-    { count: noRound, label: 'ללא סבב', icon: '&#127919;', cls: noRound > 0 ? 'urgent' : 'zero', filter: () => filterToRound('unknown') },
-    { count: wrongWA, label: 'בקבוצה הלא נכונה', icon: '&#9888;&#65039;', cls: wrongWA > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='wa_wrong'; renderParticipants(); } },
-    { count: inBoth, label: 'בשתי קבוצות', icon: '&#8644;', cls: inBoth > 0 ? 'warn' : 'zero', filter: null },
-    { count: noWA, label: 'WA לא ידוע', icon: '&#10067;', cls: noWA > 0 ? 'warn' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='wa_unknown'; renderParticipants(); } },
-    { count: noPhone, label: 'חסר טלפון', icon: '&#9742;&#65039;', cls: noPhone > 0 ? 'info' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_phone'; renderParticipants(); } },
-    { count: refundedAccess, label: 'גישה למוחזרים', icon: '&#128181;', cls: refundedAccess > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='refunded'; renderParticipants(); } }
+    { count: roundUnconfirmed, label: t('aq.roundUnconfirmed'), icon: '&#10067;', cls: roundUnconfirmed > 0 ? 'warn' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='round_unconfirmed'; renderParticipants(); } },
+    { count: noWelcomeEmail, label: t('aq.noWelcome'), icon: '&#128231;', cls: noWelcomeEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_welcome_email'; renderParticipants(); } },
+    { count: failedEmail, label: t('aq.failedEmail'), icon: '&#10060;', cls: failedEmail > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='email_failed'; renderParticipants(); } },
+    { count: noRound, label: t('aq.noRound'), icon: '&#127919;', cls: noRound > 0 ? 'urgent' : 'zero', filter: () => filterToRound('unknown') },
+    { count: wrongWA, label: t('aq.wrongWA'), icon: '&#9888;&#65039;', cls: wrongWA > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='wa_wrong'; renderParticipants(); } },
+    { count: inBoth, label: t('aq.bothGroups'), icon: '&#8644;', cls: inBoth > 0 ? 'warn' : 'zero', filter: null },
+    { count: noWA, label: t('aq.waUnknown'), icon: '&#10067;', cls: noWA > 0 ? 'warn' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='wa_unknown'; renderParticipants(); } },
+    { count: noPhone, label: t('aq.noPhone'), icon: '&#9742;&#65039;', cls: noPhone > 0 ? 'info' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='no_phone'; renderParticipants(); } },
+    { count: refundedAccess, label: t('aq.refundedAccess'), icon: '&#128181;', cls: refundedAccess > 0 ? 'urgent' : 'zero', filter: () => { switchTab('participants'); document.getElementById('filterDataMissing').value='refunded'; renderParticipants(); } }
   ];
 
   container.innerHTML = items.map((item, i) => `
@@ -1738,8 +1977,6 @@ function renderOverview(){
 
   document.getElementById('statRegistered').textContent = total;
   document.getElementById('statLoggedIn').textContent = loggedIn;
-  document.getElementById('statCompleted').textContent = graduated;
-  document.getElementById('statCompletionRate').textContent = completionRate + '%';
   document.getElementById('statActiveToday').textContent = activeToday;
   document.getElementById('statInactive').textContent = inactive3;
   document.getElementById('statNoPhone').textContent = noPhone;
@@ -1752,8 +1989,12 @@ function renderOverview(){
   const welcomeStatEl = document.getElementById('statWelcomeSent');
   if(welcomeStatEl){
     welcomeStatEl.textContent = welcomeSent;
-    document.getElementById('statWelcomeSentSub').textContent =
-      welcomeSent + ' מתוך ' + paidActive.length + ' משלמים פעילים';
+    const subEl = document.getElementById('statWelcomeSentSub');
+    if(subEl){
+      subEl.textContent = isRTL()
+        ? (welcomeSent + ' מתוך ' + paidActive.length + ' משלמים פעילים')
+        : (welcomeSent + ' of ' + paidActive.length + ' paying users');
+    }
     if(welcomeSent < paidActive.length){
       welcomeStatEl.style.color = 'var(--yellow)';
     }
@@ -1778,7 +2019,7 @@ function renderOverview(){
   const netCents = grossCents - refundCents;
   document.getElementById('statRevenue').textContent = '$' + (grossCents / 100).toLocaleString();
   document.getElementById('statRefunds').textContent = refunded.length;
-  document.getElementById('statRefundsAmount').textContent = '$' + (refundCents / 100).toLocaleString() + ' הוחזרו';
+  document.getElementById('statRefundsAmount').textContent = '$' + (refundCents / 100).toLocaleString() + (isRTL() ? ' הוחזרו' : ' refunded');
   document.getElementById('statRevenueNet').textContent = '$' + (netCents / 100).toLocaleString();
 
   // Countdown to next round
@@ -1791,7 +2032,9 @@ function renderOverview(){
     const nextRound = upcomingRounds[0];
     const diffDays = Math.ceil((new Date(nextRound.start_date) - today2) / (1000*60*60*24));
     document.getElementById('countdownDays').textContent = diffDays;
-    document.getElementById('countdownLabel').textContent = diffDays === 1 ? 'יום לסבב הבא' : 'ימים לסבב הבא';
+    document.getElementById('countdownLabel').textContent = isRTL()
+      ? (diffDays === 1 ? 'יום לסבב הבא' : 'ימים לסבב הבא')
+      : (diffDays === 1 ? 'day to next round' : 'days to next round');
     document.getElementById('countdownRound').textContent = nextRound.name + ' . ' + formatDate(nextRound.start_date);
     countdownCard.style.display = 'block';
   } else {
@@ -1829,9 +2072,9 @@ function renderFunnel(totalRegistered, totalLoggedIn, totalGraduated){
   ).length;
 
   const steps = [
-    { label: 'שילמו (אקטיבי)', count: paidCount },
-    { label: 'נרשמו בפורטל', count: totalRegistered },
-    { label: 'התחברו', count: totalLoggedIn }
+    { label: t('fn.paid'), count: paidCount },
+    { label: t('fn.registered'), count: totalRegistered },
+    { label: t('fn.loggedIn'), count: totalLoggedIn }
   ];
 
   for(let d = 0; d <= 5; d++){
@@ -1844,10 +2087,10 @@ function renderFunnel(totalRegistered, totalLoggedIn, totalGraduated){
       );
       return views.length > 0;
     }).length;
-    steps.push({ label: d === 0 ? 'יום 0' : 'יום ' + d, count });
+    steps.push({ label: d === 0 ? t('fn.day0') : (t('fn.day') + d), count });
   }
 
-  steps.push({ label: 'בוגרים', count: totalGraduated });
+  steps.push({ label: t('fn.graduated'), count: totalGraduated });
 
   const maxCount = Math.max(...steps.map(s => s.count), 1);
   const container = document.getElementById('funnelChart');
@@ -1882,16 +2125,23 @@ function renderAlerts(){
   });
 
   if(!inactive.length){
-    container.innerHTML = '<div class="no-alerts">&#10003; כל המשתתפים פעילים</div>';
+    container.innerHTML = '<div class="no-alerts">&#10003; ' + t('misc.allActive') + '</div>';
     return;
   }
+
+  const emailLabel = isRTL() ? 'מייל' : 'Email';
+  const waLabel = isRTL() ? 'וואטסאפ' : 'WhatsApp';
 
   container.innerHTML = inactive.map(p => {
     const last = getLastEvent(p.email) || getLastLogin(p.email);
     const days = daysSince(last);
-    const daysText = days === Infinity ? 'לא התחבר מעולם' : days + ' ימים ללא פעילות';
+    const daysText = days === Infinity
+      ? t('misc.neverLoggedIn')
+      : (isRTL() ? (days + ' ימים ללא פעילות') : (days + ' days inactive'));
     const name = p.name || p.email.split('@')[0];
-    const waMsg = encodeURIComponent('היי ' + name + '! ראיתי שלא נכנסת לאתגר כבר כמה ימים. הכל בסדר? אשמח לעזור אם יש שאלות.');
+    const waMsg = encodeURIComponent(isRTL()
+      ? ('היי ' + name + '! ראיתי שלא נכנסת לאתגר כבר כמה ימים. הכל בסדר? אשמח לעזור אם יש שאלות.')
+      : ('Hey ' + name + '! Noticed you haven\'t been in the challenge for a few days. All good? Happy to help if you have any questions.'));
 
     return `<div class="alert-row">
       <div class="alert-info">
@@ -1900,8 +2150,8 @@ function renderAlerts(){
         <span class="alert-meta">${daysText} . ${esc(p.round)}</span>
       </div>
       <div class="alert-actions" style="display:flex;gap:8px;align-items:center">
-        <a href="mailto:${encodeURI(p.email)}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; מייל</a>
-        <a href="https://wa.me/?text=${waMsg}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128172; וואטסאפ</a>
+        <a href="mailto:${encodeURI(p.email)}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; ${emailLabel}</a>
+        <a href="https://wa.me/?text=${waMsg}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128172; ${waLabel}</a>
       </div>
     </div>`;
   }).join('');
@@ -1979,10 +2229,10 @@ function renderParticipants(){
     const progress = getChecklistProgress(p.email);
     const pctDone = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
     const name = p.name || p.email.split('@')[0];
-    const roundLabel = p.round === 'round1' ? 'סבב 1'
-      : p.round === 'round2' ? 'סבב 2'
-      : p.round === 'both' ? 'אדמין'
-      : 'לא ידוע';
+    const roundLabel = p.round === 'round1' ? t('round.round1')
+      : p.round === 'round2' ? t('round.round2')
+      : p.round === 'both' ? t('round.both')
+      : t('round.unknown');
 
     // Main row
     const tr = document.createElement('tr');
@@ -1993,7 +2243,7 @@ function renderParticipants(){
     if(!stripeMatch){
       paidCell = '<span style="color:var(--dim)">---</span>';
     } else if(stripeMatch.refunded){
-      paidCell = '<span style="color:var(--red);font-weight:600;text-decoration:line-through">$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(0) + '</span> <span style="color:var(--red);font-size:0.75em">החזר</span>';
+      paidCell = '<span style="color:var(--red);font-weight:600;text-decoration:line-through">$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(0) + '</span> <span style="color:var(--red);font-size:0.75em">' + t('misc.refunded') + '</span>';
     } else {
       paidCell = '<span style="color:var(--green);font-weight:600">$' + ((stripeMatch.amount_paid || 0) / 100).toFixed(0) + '</span>';
     }
@@ -2002,7 +2252,7 @@ function renderParticipants(){
     const phone = p.phone || (stripeMatch && stripeMatch.phone) || '';
     const phoneCell = phone
       ? `<span class="phone-cell has-phone">${esc(phone)}</span>`
-      : `<span class="phone-cell">חסר</span>`;
+      : `<span class="phone-cell">${t('phone.missing')}</span>`;
 
     // Aliases (additional emails this person can log in with)
     const aliases = getAliases(p.email);
@@ -2012,13 +2262,8 @@ function renderParticipants(){
 
     // WhatsApp status
     const waStatus = p.in_whatsapp || 'unknown';
-    const waLabel = {
-      unknown: '? לא ידוע',
-      none: '✗ לא בקבוצה',
-      round1: '✓ סבב 1',
-      round2: '✓ סבב 2',
-      both: '✓✓ שתיהן'
-    }[waStatus];
+    const waLabelKey = ({unknown:'wa.unknown',none:'wa.none',round1:'wa.r1',round2:'wa.r2',both:'wa.both'})[waStatus] || 'wa.unknown';
+    const waLabel = t(waLabelKey);
     const waCell = `<span class="wa-cell wa-${waStatus}">${esc(waLabel)}</span>`;
 
     // Action buttons
@@ -2032,26 +2277,37 @@ function renderParticipants(){
       waPhone = '1' + phoneDigits; // US 10-digit local -> +1
     }
     const waHref = waPhone.length >= 10 ? `https://wa.me/${waPhone}` : '';
+    const titleOpenWA = isRTL() ? 'פתח וואטסאפ' : 'Open WhatsApp';
+    const titleNoCC = isRTL() ? 'מספר ללא קוד מדינה. ערוך והוסף' : 'Phone has no country code. Edit and add it';
+    const titleNoPhone = isRTL() ? 'חסר טלפון' : 'No phone';
+    const titleRestore = isRTL() ? 'שחזר גישה לפורטל' : 'Restore portal access';
+    const titleRevoke = isRTL() ? 'בטל גישה לפורטל' : 'Revoke portal access';
     const waBtn = waHref
-      ? `<a class="row-action-btn wa" href="${esc(waHref)}" target="_blank" title="פתח וואטסאפ" onclick="event.stopPropagation()">&#128172;</a>`
-      : `<button class="row-action-btn wa" disabled style="opacity:0.4;cursor:not-allowed" title="${phone ? 'מספר ללא קוד מדינה. ערוך והוסף' : 'חסר טלפון'}">&#128172;</button>`;
+      ? `<a class="row-action-btn wa" href="${esc(waHref)}" target="_blank" title="${titleOpenWA}" onclick="event.stopPropagation()">&#128172;</a>`
+      : `<button class="row-action-btn wa" disabled style="opacity:0.4;cursor:not-allowed" title="${phone ? titleNoCC : titleNoPhone}">&#128172;</button>`;
     const revokeBtn = p.access_revoked_at
-      ? `<button class="row-action-btn restore" onclick="restoreAccess('${esc(p.id)}','${esc(p.email)}')" title="שחזר גישה לפורטל">&#9989;</button>`
-      : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="בטל גישה לפורטל">&#128683;</button>`;
+      ? `<button class="row-action-btn restore" onclick="restoreAccess('${esc(p.id)}','${esc(p.email)}')" title="${titleRestore}">&#9989;</button>`
+      : `<button class="row-action-btn revoke" onclick="revokeAccess('${esc(p.id)}','${esc(p.email)}')" title="${titleRevoke}">&#128683;</button>`;
     // Welcome email resend button
     let welcomeBtn;
+    const titleFailed = isRTL() ? 'שליחה נכשלה' : 'Send failed';
+    const retryLabel = isRTL() ? 'לחץ לנסיון חוזר' : 'click to retry';
+    const titleNotSent = isRTL() ? 'לא נשלח מייל welcome. לחץ לשליחה' : 'Welcome email not sent. Click to send';
+    const titleSent = isRTL() ? 'נשלח' : 'Sent';
+    const resendLabel = isRTL() ? 'לחץ לשליחה חוזרת' : 'click to resend';
     if(p.welcome_email_error){
-      welcomeBtn = `<button class="row-action-btn welcome welcome-failed" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="שליחה נכשלה: ${esc(p.welcome_email_error.substring(0,80))}. לחץ לנסיון חוזר">&#10071;</button>`;
+      welcomeBtn = `<button class="row-action-btn welcome welcome-failed" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="${titleFailed}: ${esc(p.welcome_email_error.substring(0,80))}. ${retryLabel}">&#10071;</button>`;
     } else if(!p.welcome_email_sent_at){
-      welcomeBtn = `<button class="row-action-btn welcome welcome-pending" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="לא נשלח מייל welcome. לחץ לשליחה">&#128231;</button>`;
+      welcomeBtn = `<button class="row-action-btn welcome welcome-pending" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="${titleNotSent}">&#128231;</button>`;
     } else {
-      welcomeBtn = `<button class="row-action-btn welcome welcome-sent" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="נשלח: ${formatDateTime(p.welcome_email_sent_at)}. לחץ לשליחה חוזרת">&#128190;</button>`;
+      welcomeBtn = `<button class="row-action-btn welcome welcome-sent" onclick="sendWelcomeNow('${esc(p.id)}','${esc(p.email)}')" title="${titleSent}: ${formatDateTime(p.welcome_email_sent_at)}. ${resendLabel}">&#128190;</button>`;
     }
 
     // Unconfirmed-round badge: round was auto-assigned, Jay hasn't verified.
     // Click to mark as confirmed (Jay will use this after confirming with each person via WhatsApp).
+    const titleConfirmRound = isRTL() ? 'לחץ לאשר את הסבב הזה' : 'Click to confirm this round';
     const unconfirmedBadge = (p.round_confirmed === false)
-      ? ` <span style="display:inline-block;background:rgba(255,193,7,0.18);color:#ffc107;font-size:0.7em;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;cursor:pointer" title="לחץ לאשר את הסבב הזה" onclick="confirmRound('${esc(p.id)}', '${esc(p.email)}')">?</span>`
+      ? ` <span style="display:inline-block;background:rgba(255,193,7,0.18);color:#ffc107;font-size:0.7em;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;cursor:pointer" title="${titleConfirmRound}" onclick="confirmRound('${esc(p.id)}', '${esc(p.email)}')">?</span>`
       : '';
 
     tr.innerHTML = `
@@ -2074,9 +2330,9 @@ function renderParticipants(){
       <td><span class="badge ${esc(info.cls)}">${esc(info.label)}</span></td>
       <td onclick="event.stopPropagation()">
         <div class="row-actions">
-          <button class="row-action-btn edit" onclick="openEditModal('${esc(p.id)}')" title="ערוך">&#9998;</button>
+          <button class="row-action-btn edit" onclick="openEditModal('${esc(p.id)}')" title="${isRTL() ? 'ערוך' : 'Edit'}">&#9998;</button>
           ${welcomeBtn}
-          <a class="row-action-btn email" href="${esc(emailHref)}" title="פתח Gmail עם נמען מוכן">&#9993;&#65039;</a>
+          <a class="row-action-btn email" href="${esc(emailHref)}" title="${isRTL() ? 'פתח Gmail עם נמען מוכן' : 'Open Gmail with recipient prefilled'}">&#9993;&#65039;</a>
           ${waBtn}
           ${revokeBtn}
         </div>
@@ -2095,22 +2351,25 @@ function renderParticipants(){
     // Aliases section above the timeline
     if(aliases.length > 0){
       timelineHtml += '<div style="padding:14px 20px;background:rgba(92,160,255,0.06);border-bottom:1px solid var(--glass-border)">'
-        + '<div style="font-size:0.78em;color:var(--blue);font-weight:600;margin-bottom:8px">&#128231; מיילים נוספים לכניסה לפורטל</div>'
+        + '<div style="font-size:0.78em;color:var(--blue);font-weight:600;margin-bottom:8px">&#128231; ' + t('misc.aliasEmails') + '</div>'
         + aliases.map(a => `<div style="font-size:0.85em;color:var(--text);direction:ltr;text-align:right;padding:2px 0">${esc(a.email)}<span style="color:var(--dim);font-size:0.78em;margin-right:8px">${esc(a.notes ? a.notes.split('\n')[0] : '')}</span></div>`).join('')
         + '</div>';
     }
     if(events.length === 0){
-      timelineHtml += '<div style="padding:16px;color:var(--dim);font-size:0.88em">אין אירועים מתועדים עדיין</div>';
+      timelineHtml += '<div style="padding:16px;color:var(--dim);font-size:0.88em">' + t('misc.noEvents') + '</div>';
     } else {
+      const cancelledLbl = isRTL() ? '(בוטל)' : '(unchecked)';
+      const minLbl = t('misc.minutes');
+      const roundLbl = isRTL() ? 'סבב: ' : 'Round: ';
       timelineHtml = '<div class="timeline">' + events.slice(0, 50).map(e => {
         const data = eventDataObj(e);
         let detailText = '';
-        if(data.item) detailText = data.item + (data.checked === false ? ' (בוטל)' : '');
+        if(data.item) detailText = data.item + (data.checked === false ? ' ' + cancelledLbl : '');
         else if(data.command) detailText = data.command;
         else if(data.question) detailText = data.question;
-        else if(data.seconds) detailText = Math.round(data.seconds/60) + ' דקות';
-        else if(data.round) detailText = 'סבב: ' + data.round;
-        const dayLabel = (eventDay(e) !== null && eventDay(e) !== undefined) ? 'יום ' + eventDay(e) : '';
+        else if(data.seconds) detailText = Math.round(data.seconds/60) + minLbl;
+        else if(data.round) detailText = roundLbl + data.round;
+        const dayLabel = (eventDay(e) !== null && eventDay(e) !== undefined) ? t('misc.dayN') + eventDay(e) : '';
         return `
         <div class="timeline-item">
           <span class="tl-time">${formatDateTime(e.created_at)}</span>
@@ -2551,8 +2810,8 @@ function renderDayAnalytics(){
     container.innerHTML = `
       <div style="text-align:center;padding:60px;color:var(--dim);grid-column:1/-1">
         <div style="font-size:3em;margin-bottom:16px">&#128202;</div>
-        <h3 style="color:var(--text);margin-bottom:8px">עדיין אין נתונים</h3>
-        <p>הנתונים יתחילו להופיע כשמשתתפים ייכנסו לפורטל ויתחילו את האתגר.</p>
+        <h3 style="color:var(--text);margin-bottom:8px">${t('misc.noData')}</h3>
+        <p>${t('misc.noDataDesc')}</p>
       </div>
     `;
     return;
@@ -2609,38 +2868,39 @@ function renderDayAnalytics(){
 
     const card = document.createElement('div');
     card.className = 'day-card fade-in';
+    const dayNameLocal = t('day.' + d);
     card.innerHTML = `
       <div class="day-card-header">
         <span class="day-card-title">${DAY_TITLES[d]}</span>
-        <span class="day-card-num">${DAY_NAMES[d]}</span>
+        <span class="day-card-num">${dayNameLocal}</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">התחילו</span>
+        <span class="day-stat-label">${t('da.started')}</span>
         <span class="day-stat-val">${started}</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">השלימו</span>
+        <span class="day-stat-label">${t('da.completed')}</span>
         <span class="day-stat-val">${completed}</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">נשירה</span>
+        <span class="day-stat-label">${t('da.dropoff')}</span>
         <span class="day-stat-val" style="color:${dropoff > 30 ? 'var(--red)' : dropoff > 15 ? 'var(--yellow)' : 'var(--green)'}">${dropoff}%</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">זמן ממוצע</span>
-        <span class="day-stat-val">${avgTime > 0 ? avgTime + ' דקות' : '-'}</span>
+        <span class="day-stat-label">${t('da.avgTime')}</span>
+        <span class="day-stat-val">${avgTime > 0 ? avgTime + t('misc.minutes') : '-'}</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">פקודה הכי מועתקת</span>
+        <span class="day-stat-label">${t('da.topCommand')}</span>
         <span class="day-stat-val" style="font-size:0.8em;direction:ltr">${topCmd ? esc(topCmd[0].substring(0, 30)) + ' (' + topCmd[1] + ')' : '-'}</span>
       </div>
       <div class="day-stat-row">
-        <span class="day-stat-label">FAQ הכי נפתח</span>
+        <span class="day-stat-label">${t('da.topFaq')}</span>
         <span class="day-stat-val" style="font-size:0.8em">${topFaq ? esc(topFaq[0].substring(0, 30)) + ' (' + topFaq[1] + ')' : '-'}</span>
       </div>
       ${Object.keys(checkItems).length > 0 ? `
         <div class="checklist-bars" style="margin-top:12px">
-          <div style="font-size:0.78em;color:var(--dim);margin-bottom:8px">השלמת צ'קליסט</div>
+          <div style="font-size:0.78em;color:var(--dim);margin-bottom:8px">${t('da.checklist')}</div>
           ${Object.entries(checkItems).map(([item, count]) => {
             const checkPct = started > 0 ? Math.round((count / started) * 100) : 0;
             return `<div class="cl-bar-row">
@@ -2661,7 +2921,7 @@ function renderRevenue(){
   if(!stripeCustomers.length){
     document.getElementById('revTotal').textContent = '$0';
     document.getElementById('revRefunds').textContent = '$0';
-    document.getElementById('revRefundsCount').textContent = '0 החזרים';
+    document.getElementById('revRefundsCount').textContent = isRTL() ? '0 החזרים' : '0 refunds';
     document.getElementById('revNet').textContent = '$0';
     document.getElementById('revCustomers').textContent = '0';
     document.getElementById('revAvg').textContent = '$0';
@@ -2670,7 +2930,7 @@ function renderRevenue(){
     document.getElementById('revenueTimeline').innerHTML = '';
     document.getElementById('revenueBody').innerHTML = `
       <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--dim)">
-        אין נתוני Stripe עדיין
+        ${t('misc.noStripe')}
       </td></tr>`;
     return;
   }
@@ -2688,7 +2948,7 @@ function renderRevenue(){
 
   document.getElementById('revTotal').textContent = '$' + (grossCents/100).toLocaleString();
   document.getElementById('revRefunds').textContent = '$' + (refundCents/100).toLocaleString();
-  document.getElementById('revRefundsCount').textContent = refunded.length + ' החזרים';
+  document.getElementById('revRefundsCount').textContent = refunded.length + (isRTL() ? ' החזרים' : ' refunds');
   document.getElementById('revNet').textContent = '$' + netDollars.toLocaleString();
   document.getElementById('revCustomers').textContent = active.length;
   document.getElementById('revAvg').textContent = '$' + avgDollars.toLocaleString();
@@ -2724,24 +2984,25 @@ function renderRevenue(){
   // Revenue by coupon (include all, including TEST for visibility)
   const coupons = {};
   stripeCustomers.forEach(c => {
-    const coupon = c.coupon_used || 'ללא קופון';
+    const coupon = c.coupon_used || t('misc.noCoupon');
     if(!coupons[coupon]) coupons[coupon] = { count: 0, totalCents: 0 };
     coupons[coupon].count++;
     coupons[coupon].totalCents += c.amount_paid || 0;
   });
 
+  const customersWord = isRTL() ? 'לקוחות' : 'customers';
   document.getElementById('couponStats').innerHTML = Object.entries(coupons).map(([name, data]) => `
     <div class="stat-card">
       <div class="stat-label">${esc(name)}</div>
       <div class="stat-value" style="font-size:1.4em">$${(data.totalCents / 100).toLocaleString()}</div>
-      <div class="stat-sub">${data.count} לקוחות</div>
+      <div class="stat-sub">${data.count} ${customersWord}</div>
     </div>
   `).join('');
 
   // Revenue by country
   const countries = {};
   stripeCustomers.forEach(c => {
-    const country = c.country || 'לא ידוע';
+    const country = c.country || t('misc.unknownCountry');
     if(!countries[country]) countries[country] = 0;
     countries[country]++;
   });
@@ -2752,7 +3013,7 @@ function renderRevenue(){
     <div class="stat-card">
       <div class="stat-label">${esc(name)}</div>
       <div class="stat-value" style="font-size:1.4em">${count}</div>
-      <div class="stat-sub">לקוחות</div>
+      <div class="stat-sub">${customersWord}</div>
     </div>
   `).join('');
 
@@ -2768,17 +3029,17 @@ function renderRevenue(){
   });
 
   document.getElementById('revenueBody').innerHTML = filtered.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--dim)">אין עסקאות בסינון הזה</td></tr>`
+    ? `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--dim)">${t('misc.noTransactions')}</td></tr>`
     : filtered.map(c => {
       const isTest = (c.coupon_used || '').toUpperCase() === 'TEST';
       let statusCell;
       if(c.refunded){
         const refundDate = c.refunded_at ? ' . ' + formatDate(c.refunded_at) : '';
-        statusCell = `<span class="badge badge-red" title="${esc(c.refund_reason) || ''}">החזר${refundDate}</span>`;
+        statusCell = `<span class="badge badge-red" title="${esc(c.refund_reason) || ''}">${t('misc.refunded')}${refundDate}</span>`;
       } else if(isTest){
-        statusCell = `<span class="badge badge-gray">בדיקה</span>`;
+        statusCell = `<span class="badge badge-gray">${isRTL() ? 'בדיקה' : 'Test'}</span>`;
       } else {
-        statusCell = `<span class="badge badge-green">פעיל</span>`;
+        statusCell = `<span class="badge badge-green">${isRTL() ? 'פעיל' : 'Active'}</span>`;
       }
       const rowStyle = c.refunded ? 'opacity:0.55' : '';
       return `<tr style="${rowStyle}">
@@ -2932,22 +3193,25 @@ async function addRound(){
 function renderRounds(){
   const tbody = document.getElementById('roundsBody');
 
+  const waLinkLabel = isRTL() ? 'וואטסאפ' : 'WhatsApp';
+  const activeLabel = isRTL() ? 'פעיל' : 'Active';
+
   if(allRounds.length === 0){
     // Show hardcoded rounds if table doesn't exist yet (corrected dates)
     tbody.innerHTML = `
       <tr>
-        <td>סבב 1</td>
+        <td>${t('round.round1')}</td>
         <td>20/04/2026</td>
         <td>24/04/2026</td>
-        <td><a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" style="color:var(--orange)">וואטסאפ</a></td>
-        <td><span class="badge badge-green">פעיל</span></td>
+        <td><a href="https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS" target="_blank" style="color:var(--orange)">${waLinkLabel}</a></td>
+        <td><span class="badge badge-green">${activeLabel}</span></td>
       </tr>
       <tr>
-        <td>סבב 2</td>
+        <td>${t('round.round2')}</td>
         <td>27/04/2026</td>
         <td>01/05/2026</td>
-        <td><a href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank" style="color:var(--orange)">וואטסאפ</a></td>
-        <td><span class="badge badge-green">פעיל</span></td>
+        <td><a href="https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB" target="_blank" style="color:var(--orange)">${waLinkLabel}</a></td>
+        <td><span class="badge badge-green">${activeLabel}</span></td>
       </tr>
     `;
     return;
@@ -2959,15 +3223,17 @@ function renderRounds(){
     const isFull = r.status === 'full';
     const isCompleted = r.status === 'completed';
     let badge;
-    if(isFull) badge = '<span class="badge badge-red">&#128308; מלא</span>';
-    else if(isCompleted) badge = '<span class="badge badge-gray">הסתיים</span>';
-    else if(r.status === 'active') badge = '<span class="badge badge-green">פעיל</span>';
-    else badge = '<span class="badge badge-blue">&#128994; פתוח להרשמה</span>';
+    if(isFull) badge = '<span class="badge badge-red">&#128308; ' + (isRTL() ? 'מלא' : 'Full') + '</span>';
+    else if(isCompleted) badge = '<span class="badge badge-gray">' + (isRTL() ? 'הסתיים' : 'Completed') + '</span>';
+    else if(r.status === 'active') badge = '<span class="badge badge-green">' + activeLabel + '</span>';
+    else badge = '<span class="badge badge-blue">&#128994; ' + (isRTL() ? 'פתוח להרשמה' : 'Open for signup') + '</span>';
 
     let toggleBtn = '';
     if(!isCompleted){
       const newStatus = isFull ? 'upcoming' : 'full';
-      const label = isFull ? '&#128994; פתח להרשמה' : '&#128308; סמן כמלא';
+      const label = isFull
+        ? ('&#128994; ' + (isRTL() ? 'פתח להרשמה' : 'Open for signup'))
+        : ('&#128308; ' + (isRTL() ? 'סמן כמלא' : 'Mark as full'));
       const cls = isFull ? 'btn-toggle-open' : 'btn-toggle-close';
       toggleBtn = `<button class="round-toggle ${cls}" onclick="toggleRoundStatus('${esc(r.id)}','${newStatus}')">${label}</button>`;
     }
@@ -2979,7 +3245,7 @@ function renderRounds(){
       <td>${esc(r.name)}</td>
       <td>${formatDate(r.start_date)}</td>
       <td>${formatDate(r.end_date)}</td>
-      <td>${r.whatsapp_link ? '<a href="' + encodeURI(r.whatsapp_link) + '" target="_blank" style="color:var(--orange)">וואטסאפ</a>' : '-'}</td>
+      <td>${r.whatsapp_link ? '<a href="' + encodeURI(r.whatsapp_link) + '" target="_blank" style="color:var(--orange)">' + waLinkLabel + '</a>' : '-'}</td>
       <td>${statusUI(r)}</td>
     </tr>
   `).join('');
