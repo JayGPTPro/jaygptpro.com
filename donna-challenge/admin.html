@@ -1760,6 +1760,7 @@ function renderAll(){
   renderRoundCards();
   renderActionQueue();
   renderOverview();
+  renderEngagement();
   renderParticipants();
   renderDayAnalytics();
   renderRevenue();
@@ -1971,6 +1972,274 @@ function renderActionQueue(){
 function actionItemClick(i){
   const item = window._actionItems && window._actionItems[i];
   if(item && item.filter) item.filter();
+}
+
+// ===== ENGAGEMENT SECTION =====
+function renderEngagement(){
+  const container = document.getElementById('engagementGrid');
+  if(!container) return;
+
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const fortyEightHoursAgo = now - 48 * 60 * 60 * 1000;
+  const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+
+  // Map every event email to its primary participant (so aliases roll up).
+  // Returns lowercased primary email or the event email itself if no alias maps to it.
+  const aliasToPrimary = new Map();
+  (allAliases || []).forEach(a => {
+    const aliasEmail = (a.email || '').toLowerCase();
+    const primary = (a.primary_email || '').toLowerCase();
+    if(aliasEmail && primary) aliasToPrimary.set(aliasEmail, primary);
+  });
+  function primaryEmailFor(eventEmailLower){
+    return aliasToPrimary.get(eventEmailLower) || eventEmailLower;
+  }
+  function findParticipantByEmail(emailLower){
+    return allParticipants.find(p => (p.email || '').toLowerCase() === emailLower);
+  }
+
+  // Helper: build empty state card
+  function emptyCard(titleHtml){
+    return `<div class="eng-card"><h4>${titleHtml}</h4><div class="eng-empty">${t('eng.empty')}</div></div>`;
+  }
+
+  // ===== Top 10 most active (last 7 days, by total seconds) =====
+  let topActiveHtml = `<div class="eng-card"><h4>&#128293; ${t('eng.topActive')}</h4>`;
+  const activityByPrimary = new Map(); // primary email -> { seconds, logins, name }
+  allEvents.forEach(e => {
+    const ts = new Date(e.created_at).getTime();
+    if(ts < sevenDaysAgo) return;
+    const eEmail = (e.user_email || '').toLowerCase();
+    if(!eEmail) return;
+    const primary = primaryEmailFor(eEmail);
+    if(!activityByPrimary.has(primary)) activityByPrimary.set(primary, { seconds: 0, logins: 0 });
+    const rec = activityByPrimary.get(primary);
+    if(e.event_type === 'time_on_day') rec.seconds += Number(eventDataObj(e).seconds) || 0;
+    if(e.event_type === 'login') rec.logins += 1;
+  });
+  const topActive = Array.from(activityByPrimary.entries())
+    .map(([email, rec]) => {
+      const p = findParticipantByEmail(email);
+      return { email, name: p ? (p.name || email.split('@')[0]) : email.split('@')[0], seconds: rec.seconds, logins: rec.logins };
+    })
+    .filter(x => x.seconds > 0)
+    .sort((a,b) => b.seconds - a.seconds)
+    .slice(0, 10);
+  if(topActive.length === 0){
+    topActiveHtml += `<div class="eng-empty">${t('eng.empty')}</div>`;
+  } else {
+    topActiveHtml += topActive.map(u => `
+      <div class="eng-row">
+        <div style="flex:1;min-width:0">
+          <div class="eng-name">${esc(u.name)}</div>
+          <div class="eng-email">${esc(u.email)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="eng-val">${formatDuration(u.seconds)}</div>
+          <div class="eng-meta">${u.logins} ${t('eng.logins')}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  topActiveHtml += '</div>';
+
+  // ===== Sleeping users (paid, no login in 48h) =====
+  let sleepingHtml = `<div class="eng-card"><h4>&#128164; ${t('eng.sleeping')}</h4>`;
+  const sleepers = allParticipants
+    .filter(p => !p.access_revoked_at)
+    .filter(p => (p.customer_type || 'paid') === 'paid')
+    .map(p => {
+      const lastEv = getLastEvent(p.email);
+      const lastTs = lastEv ? new Date(lastEv).getTime() : 0;
+      return { p, lastEv, lastTs };
+    })
+    .filter(x => x.lastTs < fortyEightHoursAgo)
+    .sort((a,b) => b.lastTs - a.lastTs)
+    .slice(0, 10);
+  if(sleepers.length === 0){
+    sleepingHtml += `<div class="eng-empty">${t('eng.empty')}</div>`;
+  } else {
+    sleepingHtml += sleepers.map(({ p, lastEv }) => {
+      const name = p.name || p.email.split('@')[0];
+      const days = lastEv ? Math.floor((now - new Date(lastEv).getTime()) / (24*60*60*1000)) : '∞';
+      const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
+      const phone = p.phone || (stripeMatch && stripeMatch.phone) || '';
+      const phoneDigits = (phone || '').replace(/[^0-9]/g, '');
+      const stripeCountry = stripeMatch && stripeMatch.country ? stripeMatch.country.toUpperCase() : '';
+      let waPhone = phoneDigits;
+      if(phoneDigits.length === 10 && stripeCountry === 'US' && !(phone || '').trim().startsWith('+')) waPhone = '1' + phoneDigits;
+      const waMsg = encodeURIComponent(isRTL()
+        ? ('היי ' + name + '! לא ראינו אותך באתגר כבר ' + days + ' ימים. הכל בסדר?')
+        : ('Hey ' + name + '! Haven\'t seen you in the challenge for ' + days + ' days. All good?'));
+      const dmHref = waPhone.length >= 10
+        ? `https://wa.me/${waPhone}?text=${waMsg}`
+        : `mailto:${encodeURI(p.email)}?subject=${encodeURIComponent('Donna Challenge')}&body=${waMsg}`;
+      const daysLabel = lastEv
+        ? (days + (isRTL() ? ' ימים' : 'd'))
+        : t('misc.neverLoggedIn');
+      return `
+        <div class="eng-row">
+          <div style="flex:1;min-width:0">
+            <div class="eng-name">${esc(name)}</div>
+            <div class="eng-email">${esc(p.email)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="eng-val" style="color:var(--yellow)">${daysLabel}</div>
+          </div>
+          <div class="eng-actions"><a href="${esc(dmHref)}" target="_blank">${t('eng.sendDM')}</a></div>
+        </div>
+      `;
+    }).join('');
+  }
+  sleepingHtml += '</div>';
+
+  // ===== Top 10 most copied prompts =====
+  let promptsHtml = `<div class="eng-card"><h4>&#128203; ${t('eng.topPrompts')}</h4>`;
+  const promptCounts = new Map();
+  allEvents.filter(e => e.event_type === 'copy_command').forEach(e => {
+    const cmd = (eventDataObj(e).command || '').toString();
+    if(!cmd) return;
+    promptCounts.set(cmd, (promptCounts.get(cmd) || 0) + 1);
+  });
+  const topPrompts = Array.from(promptCounts.entries())
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 10);
+  if(topPrompts.length === 0){
+    promptsHtml += `<div class="eng-empty">${t('eng.empty')}</div>`;
+  } else {
+    promptsHtml += topPrompts.map(([cmd, count]) => {
+      const truncated = cmd.length > 80 ? (cmd.substring(0, 80) + '...') : cmd;
+      return `
+        <div class="eng-row">
+          <div style="flex:1;min-width:0;overflow:hidden">
+            <div class="eng-name eng-prompt" title="${esc(cmd)}">${esc(truncated)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="eng-val">${count}</div>
+            <div class="eng-meta">${t('eng.copied')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  promptsHtml += '</div>';
+
+  // ===== Top 10 opened FAQs =====
+  let faqHtml = `<div class="eng-card"><h4>&#10067; ${t('eng.topFaqs')}</h4>`;
+  const faqCounts = new Map();
+  allEvents.filter(e => e.event_type === 'faq_open').forEach(e => {
+    const data = eventDataObj(e);
+    // Inspect a few likely shapes; fall back to JSON of the data.
+    const id = data.question || data.faq_id || data.id || data.title || JSON.stringify(data);
+    const key = (id || 'unknown').toString();
+    if(!key) return;
+    faqCounts.set(key, (faqCounts.get(key) || 0) + 1);
+  });
+  const topFaqs = Array.from(faqCounts.entries())
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 10);
+  if(topFaqs.length === 0){
+    faqHtml += `<div class="eng-empty">${t('eng.empty')}</div>`;
+  } else {
+    faqHtml += topFaqs.map(([id, count]) => {
+      const truncated = id.length > 80 ? (id.substring(0, 80) + '...') : id;
+      return `
+        <div class="eng-row">
+          <div style="flex:1;min-width:0;overflow:hidden">
+            <div class="eng-name" title="${esc(id)}">${esc(truncated)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="eng-val">${count}</div>
+            <div class="eng-meta">${t('eng.opens')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  faqHtml += '</div>';
+
+  // ===== Hourly activity heatmap (last 7 days, local timezone) =====
+  let heatmapHtml = `<div class="eng-card" style="grid-column:span 2;min-width:0"><h4>&#9200; ${t('eng.heatmap')}</h4>`;
+  const hourBuckets = new Array(24).fill(0);
+  allEvents.forEach(e => {
+    const ts = new Date(e.created_at);
+    if(ts.getTime() < sevenDaysAgo) return;
+    const h = ts.getHours(); // local
+    if(h >= 0 && h < 24) hourBuckets[h]++;
+  });
+  const maxBucket = Math.max(...hourBuckets, 1);
+  const totalHits = hourBuckets.reduce((s,n) => s + n, 0);
+  if(totalHits === 0){
+    heatmapHtml += `<div class="eng-empty">${t('eng.empty')}</div>`;
+  } else {
+    heatmapHtml += '<div class="hour-heatmap">'
+      + hourBuckets.map((n, h) => {
+          const heightPct = (n / maxBucket) * 100;
+          return `<div class="hour-bar" style="height:${Math.max(heightPct, 2)}%" data-count="${n}" title="${h}:00 . ${n}"></div>`;
+        }).join('')
+      + '</div>'
+      + '<div class="hour-labels">'
+      + hourBuckets.map((_, h) => `<div class="hour-label">${h % 3 === 0 ? h : ''}</div>`).join('')
+      + '</div>';
+  }
+  heatmapHtml += '</div>';
+
+  // ===== R1 vs R2 comparison =====
+  function roundStats(roundKey){
+    const inRound = allParticipants.filter(p =>
+      !p.access_revoked_at &&
+      (p.customer_type || 'paid') === 'paid' &&
+      p.round === roundKey
+    );
+    const registered = inRound.length;
+    let active24 = 0;
+    let totalSec = 0;
+    let logins = 0;
+    let copies = 0;
+    inRound.forEach(p => {
+      const events = getParticipantEvents(p.email);
+      const lastTs = events.length ? Math.max(...events.map(e => new Date(e.created_at).getTime())) : 0;
+      if(lastTs >= twentyFourHoursAgo) active24++;
+      totalSec += events
+        .filter(e => e.event_type === 'time_on_day')
+        .reduce((s, e) => s + (Number(eventDataObj(e).seconds) || 0), 0);
+      logins += events.filter(e => e.event_type === 'login').length;
+      copies += events.filter(e => e.event_type === 'copy_command').length;
+    });
+    const avgSec = registered > 0 ? Math.round(totalSec / registered) : 0;
+    return { registered, active24, avgSec, logins, copies };
+  }
+  const r1 = roundStats('round1');
+  const r2 = roundStats('round2');
+  const cmpRow = (lbl, v1, v2) => `
+    <div class="compare-row"><span class="lbl">${lbl}</span><span class="val">${v1}</span></div>
+    <div class="compare-row"><span class="lbl">${lbl}</span><span class="val">${v2}</span></div>
+  `;
+  // Use side-by-side mirrored layout
+  let compareHtml = `<div class="eng-card" style="grid-column:span 2;min-width:0">
+    <h4>&#9878;&#65039; ${t('eng.compare')}</h4>
+    <div class="compare-grid">
+      <div class="compare-side r1">
+        <h5>Round 1</h5>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r1.registered}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r1.active24}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r1.avgSec)}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${r1.logins}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${r1.copies}</span></div>
+      </div>
+      <div class="compare-side r2">
+        <h5>Round 2</h5>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r2.registered}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r2.active24}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r2.avgSec)}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${r2.logins}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${r2.copies}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  container.innerHTML = topActiveHtml + sleepingHtml + promptsHtml + faqHtml + heatmapHtml + compareHtml;
 }
 
 // ===== TAB 1: OVERVIEW =====
