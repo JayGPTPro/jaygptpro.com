@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אתגר קלוד קוד | בנה את עובד ה-AI הראשון שלך ב-5 ימים</title>
+<meta name="description" content="אתגר 5 ימים בעברית. בנה עוזרת AI אישית שמנהלת את הבוקר שלך, מכינה פגישות וכותבת מיילים בסגנון שלך. ג'יי מרגליות ומנדי קוריץ.">
+<meta property="og:title" content="אתגר קלוד קוד — בנה את דונה שלך ב-5 ימים">
+<meta property="og:description" content="אתגר מעשי בעברית. בלי ידע טכני. בלי קוד. תוך 5 ימים יש לך עובדת AI שעובדת בזמן שאתה ישן.">
+<meta property="og:type" content="website">
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-M4RK6H5NMH');
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800;900&family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --orange: #f97316;
+  --orange-dark: #ea6c0a;
+  --bg: #ffffff;
+  --bg-2: #f9f9fb;
+  --border: #e8e8ed;
+  --text: #1c1c1e;
+  --text-2: #3c3c43;
+  --text-3: #6e6e73;
+  --text-5: #c7c7cc;
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-orange: 0 8px 32px rgba(249,115,22,0.22);
+  --radius: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: 'Assistant', 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== REVEAL ===== */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ===== SECTION HEADERS ===== */
+.section-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
+  color: var(--orange-dark); font-size: 12px; font-weight: 800;
+  letter-spacing: 1.2px; text-transform: uppercase; padding: 6px 14px;
+  border-radius: 100px; margin-bottom: 16px;
+}
+.section-header { text-align: center; margin-bottom: 48px; }
+.section-header h2 { font-size: clamp(28px, 5vw, 40px); font-weight: 900; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 14px; }
+.section-header p { font-size: 17px; color: var(--text-3); max-width: 560px; margin: 0 auto; }
+.hl { color: var(--orange); }
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+  color: #fff; font-size: 17px; font-weight: 800;
+  padding: 18px 40px; border-radius: 100px;
+  text-decoration: none; border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.1px;
+}
+.btn-primary svg { transform: scaleX(-1); flex-shrink: 0; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(249,115,22,0.45); }
+
+.btn-checkout {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+  color: #fff; font-size: 18px; font-weight: 800;
+  padding: 20px 24px; border-radius: 16px;
+  text-decoration: none; border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 18px 0 8px;
+}
+.btn-checkout svg { transform: scaleX(-1); flex-shrink: 0; }
+.btn-checkout:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(249,115,22,0.45); }
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; right: 0; left: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { font-size: 14px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.2px; }
+.nav-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; color: var(--text-3);
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 100px;
+}
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+
+/* ===== HERO ===== */
+.hero {
+  padding: 140px 24px 80px;
+  text-align: center;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(249,115,22,0.07) 0%, transparent 70%);
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
+  color: var(--orange-dark); font-size: 13px; font-weight: 800;
+  padding: 7px 16px; border-radius: 100px; margin-bottom: 28px;
+  letter-spacing: 0.3px; animation: fadeUp 0.6s ease both;
+}
+.hero h1 {
+  font-size: clamp(34px, 7vw, 62px); font-weight: 900; line-height: 1.12;
+  letter-spacing: -1.5px; margin-bottom: 20px;
+  animation: fadeUp 0.7s ease 0.1s both;
+}
+.hero h1 .accent { color: var(--orange); position: relative; }
+.hero-subtitle {
+  font-size: clamp(16px, 2.5vw, 19px); color: var(--text-3); font-weight: 500;
+  max-width: 640px; margin: 0 auto 32px;
+  animation: fadeUp 0.7s ease 0.15s both; line-height: 1.6;
+}
+.hero-stats {
+  display: flex; justify-content: center; align-items: center; gap: 20px;
+  flex-wrap: wrap; margin-bottom: 40px;
+  font-size: 13px; font-weight: 700; color: var(--text-3);
+  animation: fadeUp 0.7s ease 0.2s both;
+}
+.hero-stats span { display: flex; align-items: center; gap: 6px; }
+.hero-stats .sep { color: var(--text-5); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+
+/* ===== VSL VIDEO ===== */
+.vsl-wrap { max-width: 720px; margin: 0 auto 40px; animation: fadeUp 0.7s ease 0.25s both; }
+.vsl-frame {
+  position: relative; width: 100%; padding-bottom: 56.25%;
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid var(--border); background: #1c1c1e;
+}
+.vsl-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+.vsl-placeholder {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; color: #8e8e93;
+  font-size: 15px; font-weight: 600;
+}
+.vsl-play-icon { width: 64px; height: 64px; background: rgba(249,115,22,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+.hero-cta { margin-bottom: 24px; animation: fadeUp 0.7s ease 0.3s both; }
+.hero-price-note {
+  font-size: 14px; color: var(--text-3); font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+}
+.hero-trust { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: var(--text-3); font-weight: 600; }
+.hero-trust span::before { content: "✓ "; color: var(--orange); }
+
+.price-tag-hero {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25);
+  padding: 6px 16px; border-radius: 100px; font-size: 15px; font-weight: 800;
+}
+.price-tag-hero .old { text-decoration: line-through; color: var(--text-5); font-weight: 600; font-size: 13px; }
+.price-tag-hero .new { color: var(--orange-dark); }
+
+/* ===== SOCIAL PROOF BAR ===== */
+.proof-bar {
+  background: #1c1c1e; color: #fff;
+  padding: 18px 24px; text-align: center;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.2px;
+}
+.proof-bar span { color: var(--orange); }
+
+/* ===== BRIDGE ===== */
+.bridge-quote { padding: 80px 24px; text-align: center; }
+.bridge-quote-text { font-size: clamp(22px, 4vw, 34px); font-weight: 800; line-height: 1.3; letter-spacing: -0.5px; }
+
+/* ===== DONNA INTRO ===== */
+.donna-intro { padding: 60px 0 80px; }
+.donna-intro-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+@media (max-width: 700px) { .donna-intro-inner { grid-template-columns: 1fr; gap: 40px; } }
+.donna-intro-text h2 { font-size: clamp(26px, 4vw, 36px); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 16px; line-height: 1.2; }
+.donna-intro-text p { font-size: 16px; color: var(--text-3); margin-bottom: 14px; line-height: 1.7; }
+.donna-traits { list-style: none; margin-top: 20px; }
+.donna-traits li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; font-weight: 600; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.donna-traits li:last-child { border-bottom: none; }
+.donna-traits li::before { content: "→"; color: var(--orange); font-weight: 900; flex-shrink: 0; }
+
+/* Chat mockup */
+.chat-mock { background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
+.chat-msg { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start; }
+.chat-msg:last-child { margin-bottom: 0; }
+.chat-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; font-size: 16px; display: flex; align-items: center; justify-content: center; background: #f5f5f7; }
+.chat-bubble { background: #fff; border: 1px solid var(--border); border-radius: 16px; border-top-right-radius: 4px; padding: 10px 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); max-width: 240px; box-shadow: var(--shadow-sm); }
+.chat-msg.you { flex-direction: row-reverse; }
+.chat-msg.you .chat-bubble { background: #1c1c1e; color: #fff; border-top-right-radius: 16px; border-top-left-radius: 4px; border-color: transparent; }
+.chat-msg.you .chat-avatar { background: var(--orange); color: #fff; font-size: 13px; font-weight: 800; }
+.chat-label { font-size: 11px; color: var(--text-5); margin-top: 3px; text-align: right; }
+
+/* ===== ROUNDS ===== */
+.rounds-section { padding: 80px 0; background: var(--bg-2); }
+.rounds-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; max-width: 560px; margin: 0 auto 40px;
+}
+@media (max-width: 560px) { .rounds-grid { grid-template-columns: 1fr; max-width: 320px; } }
+
+.round-card {
+  display: block; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 28px 20px; text-align: center;
+  box-shadow: var(--shadow-sm); transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  cursor: pointer; text-decoration: none; color: inherit; position: relative; overflow: hidden;
+}
+.round-card:hover { border-color: var(--orange); transform: translateY(-4px); box-shadow: var(--shadow-orange); }
+.round-label { font-size: 13px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.round-dates { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; margin-bottom: 10px; }
+.round-spots-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 10px; padding: 5px 12px;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25);
+  color: var(--orange-dark); font-size: 12px; font-weight: 800;
+  border-radius: 100px; letter-spacing: 0.3px;
+}
+.round-cta {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+  padding: 9px 18px; background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+  color: #fff; font-size: 13px; font-weight: 700; border-radius: 100px;
+}
+.round-cta svg { transform: scaleX(-1); }
+
+/* Countdown */
+.countdown-wrap { text-align: center; }
+.countdown-label { font-size: 14px; font-weight: 700; color: var(--text-3); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; }
+.countdown-boxes { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; }
+.countdown-box { text-align: center; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; min-width: 72px; box-shadow: var(--shadow-sm); }
+.countdown-num { display: block; font-size: 36px; font-weight: 900; letter-spacing: -1px; color: var(--text); }
+.countdown-unit { display: block; font-size: 11px; font-weight: 700; color: var(--text-5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.countdown-sep { font-size: 28px; font-weight: 900; color: var(--text-5); }
+
+/* ===== 5 DAYS ===== */
+.days-section { padding: 80px 0; }
+.days-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 48px; }
+@media (max-width: 700px) { .days-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .days-grid { grid-template-columns: 1fr; } }
+.day-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 18px;
+  padding: 22px 20px;
+}
+.day-card.day-0 { grid-column: span 1; border-style: dashed; opacity: 0.75; }
+.day-number { font-size: 11px; font-weight: 800; color: var(--text-5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.day-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+.day-desc { font-size: 13.5px; color: var(--text-3); line-height: 1.6; }
+.day-card.highlight { background: #fff; border-color: rgba(249,115,22,0.3); border-width: 1.5px; }
+.day-emoji { font-size: 22px; margin-bottom: 8px; }
+
+/* ===== SKILLS ===== */
+.skills-section { padding: 80px 0; background: var(--bg-2); }
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+@media (max-width: 700px) { .skills-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .skills-grid { grid-template-columns: 1fr; } }
+.skill-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.skill-icon { font-size: 24px; margin-bottom: 10px; }
+.skill-name { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.skill-desc { font-size: 13px; color: var(--text-3); line-height: 1.5; }
+
+/* ===== ROI ===== */
+.roi-section { padding: 80px 0; }
+.roi-numbers { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin: 48px 0; }
+.roi-number { text-align: center; }
+.roi-big { font-size: clamp(40px, 8vw, 64px); font-weight: 900; color: var(--orange); letter-spacing: -2px; line-height: 1; }
+.roi-label { font-size: 14px; color: var(--text-3); font-weight: 600; margin-top: 6px; }
+.roi-verdict { font-size: 18px; font-weight: 700; color: var(--text-2); text-align: center; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+/* ===== BIOS ===== */
+.about-section { padding: 80px 0; background: var(--bg-2); }
+.bios-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+@media (max-width: 700px) { .bios-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; } }
+.bio-card { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; text-align: center; }
+.bio-photo { width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 18px; background-size: cover; background-position: center 20%; border: 3px solid var(--border); display: block; }
+.bio-photo-link { display: block; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 18px; background-size: cover; background-position: center 20%; border: 3px solid var(--border); text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+.bio-photo-link:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.bio-card h3 { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+.bio-role { font-size: 13px; font-weight: 700; color: var(--orange-dark); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+.bio-card p { font-size: 14px; color: var(--text-3); line-height: 1.7; margin-bottom: 10px; text-align: right; }
+.bio-card p:last-child { margin-bottom: 0; }
+.bio-card strong { color: var(--text-2); font-weight: 700; }
+
+/* ===== FAQ ===== */
+.faq-section { padding: 80px 0; }
+.faq-list { max-width: 680px; margin: 48px auto 0; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; font-size: 16px; font-weight: 700; color: var(--text);
+  text-align: right; gap: 12px; font-family: inherit;
+}
+.faq-q svg { flex-shrink: 0; transition: transform 0.3s; color: var(--orange); }
+.faq-item.open .faq-q svg { transform: rotate(45deg); }
+.faq-a { display: none; padding-bottom: 18px; font-size: 15px; color: var(--text-3); line-height: 1.7; }
+.faq-item.open .faq-a { display: block; }
+
+/* ===== PRICING ===== */
+.pricing-section { padding: 80px 0; background: var(--bg-2); }
+.pricing-card {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 24px; max-width: 520px; margin: 48px auto 0;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.pricing-card-inner { padding: 40px 36px; }
+@media (max-width: 560px) { .pricing-card-inner { padding: 30px 22px; } }
+.pricing-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
+  color: var(--orange-dark); font-size: 12px; font-weight: 800;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 100px; margin-bottom: 20px;
+}
+.pricing-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 2s infinite; }
+.pricing-label { font-size: 14px; font-weight: 700; color: var(--text-3); margin-bottom: 6px; }
+.price-display { display: flex; align-items: baseline; gap: 12px; margin: 8px 0 6px; }
+.price-main { font-size: clamp(52px, 10vw, 68px); font-weight: 900; color: var(--text); letter-spacing: -2px; line-height: 1; }
+.price-old { font-size: 22px; font-weight: 700; color: var(--text-5); text-decoration: line-through; }
+.price-currency { font-size: 24px; font-weight: 800; color: var(--text); }
+.pricing-desc { font-size: 14px; color: var(--text-3); margin-bottom: 24px; }
+
+.pricing-features { list-style: none; margin-bottom: 8px; }
+.pricing-features li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 500; }
+.pricing-features li:last-child { border-bottom: none; }
+.check { color: var(--orange); font-weight: 900; flex-shrink: 0; }
+
+.pricing-note { text-align: center; font-size: 13px; color: var(--text-3); font-weight: 600; margin-top: 10px; }
+.pricing-urgency { margin-top: 16px; padding: 12px 16px; background: rgba(249,115,22,0.06); border-radius: 10px; font-size: 13px; color: var(--orange-dark); font-weight: 700; text-align: center; }
+
+/* ===== FINAL CTA ===== */
+.final-cta { padding: 100px 24px; text-align: center; background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(249,115,22,0.06) 0%, transparent 70%); }
+.final-cta h2 { font-size: clamp(28px, 5vw, 44px); font-weight: 900; letter-spacing: -1px; margin-bottom: 20px; line-height: 1.2; }
+.final-cta p { font-size: 17px; color: var(--text-3); margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+/* ===== FOOTER ===== */
+footer { padding: 32px 24px; border-top: 1px solid var(--border); text-align: center; color: var(--text-3); font-size: 13px; }
+footer a { color: var(--text-3); text-decoration: none; }
+footer a:hover { color: var(--orange); }
+
+/* ===== STICKY CTA ===== */
+.sticky-cta {
+  position: fixed; bottom: 24px; left: 24px; right: auto;
+  background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+  color: #fff; font-size: 14px; font-weight: 800;
+  padding: 14px 24px; border-radius: 100px;
+  text-decoration: none; display: none;
+  box-shadow: 0 8px 32px rgba(249,115,22,0.4);
+  z-index: 200; transition: transform 0.2s;
+  animation: fadeUp 0.4s ease;
+}
+.sticky-cta.show { display: block; }
+.sticky-cta:hover { transform: translateY(-3px); }
+
+@media (max-width: 640px) {
+  .sticky-cta { bottom: 16px; right: 16px; left: 16px; text-align: center; font-size: 14px; }
+}
+
+/* Claude star SVG decoration */
+.claude-star {
+  position: absolute; opacity: 0.04; pointer-events: none;
+  animation: floatStar 10s ease-in-out infinite;
+}
+@keyframes floatStar { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-15px) rotate(8deg)} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="claude-star" viewBox="0 0 200 200">
+    <path d="M100 0 L115 85 L200 100 L115 115 L100 200 L85 115 L0 100 L85 85 Z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a class="nav-logo" href="#">🇮🇱 אתגר קלוד קוד | עברית</a>
+  <div class="nav-badge">
+    <span class="nav-dot"></span>
+    <span>50 מקומות בלבד · סבב 1 מתחיל 11 במאי</span>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-badge">🇮🇱 בעברית | ג'יי מרגליות + מנדי קוריץ</div>
+  <h1>בנה את עובד ה-AI הראשון שלך.<br><span class="accent">ב-5 ימים.</span></h1>
+  <p class="hero-subtitle">אתגר מעשי שבו בעלי עסקים — בלי שום ידע טכני ובלי קוד — בונים "דונה": עוזרת AI אישית שמנהלת את הבוקר שלהם, מכינה פגישות וכותבת מיילים בסגנון שלהם.</p>
+
+  <div class="hero-stats">
+    <span>✅ 3 סבבי אנגלית sold out</span>
+    <span class="sep">·</span>
+    <span>✅ 150+ בעלי עסקים</span>
+    <span class="sep">·</span>
+    <span>✅ 5 ימים בלבד</span>
+  </div>
+
+  <!-- VIDEO: replace src with Hebrew YouTube embed URL -->
+  <div class="vsl-wrap">
+    <div class="vsl-frame">
+      <!-- PLACEHOLDER: replace with Hebrew video embed
+      <iframe src="YOUTUBE_EMBED_URL_HERE?rel=0&modestbranding=1" title="אתגר קלוד קוד" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      -->
+      <div class="vsl-placeholder">
+        <div class="vsl-play-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <span>הסרטון יועלה בקרוב</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-cta">
+    <a href="STRIPE_LINK_HERE" class="btn-primary">
+      שריין מקום עכשיו
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="hero-price-note">
+    <span class="price-tag-hero">
+      <span class="old">999 ₪</span>
+      <span class="new">699 ₪ השקה</span>
+    </span>
+  </div>
+  <div class="hero-trust">
+    <span>ללא ידע טכני</span>
+    <span>החזר כספי תוך 48 שעות</span>
+    <span>גישה לכל החיים</span>
+  </div>
+</section>
+
+<!-- ===== SOCIAL PROOF BAR ===== -->
+<div class="proof-bar">
+  3 סבבי האתגר הבינלאומי (אנגלית) כבר <span>נמכרו במלואם</span>. עכשיו נפתח האתגר הראשון <span>בעברית</span>.
+</div>
+
+<!-- ===== BRIDGE ===== -->
+<section class="bridge-quote">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="bridge-quote-text">דונה היא החלום של כל בעל עסק.<br><span class="hl">בעוד 5 ימים, אתה בונה את שלך.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DONNA INTRO ===== -->
+<section class="donna-intro">
+  <div class="wrap">
+    <div class="donna-intro-inner">
+      <div class="donna-intro-text reveal">
+        <div class="section-tag">מה בונים באתגר</div>
+        <h2>פוגשים את <span class="hl">דונה</span></h2>
+        <p>דונה היא לא צ'אטבוט. היא לא עוד אפליקציה שתפתחו פעם ותשכחו. היא עובדת AI שיושבת בתוך ה-Claude Code Desktop שלכם ועובדת עבורכם.</p>
+        <p>היא מכירה את העסק שלכם, כותבת בסגנון שלכם, זוכרת הבטחות שנתתם, ומכינה אתכם לכל פגישה.</p>
+        <ul class="donna-traits">
+          <li>מכינה בריפינג בוקר לפני שהתעוררתם</li>
+          <li>כותבת מיילים בסגנון שלכם</li>
+          <li>מכינה תדריך לכל פגישה</li>
+          <li>עוקבת אחרי הבטחות שנתתם</li>
+          <li>מריצה דוח שבועי בכל ראשון בבוקר</li>
+        </ul>
+      </div>
+      <div class="chat-mock reveal">
+        <div class="chat-msg">
+          <div class="chat-avatar">🤖</div>
+          <div>
+            <div class="chat-bubble">בוקר טוב. יש לך 3 מיילים שמחכים לתגובה, פגישה ב-10:00 עם ישי (הוא ביקש קודם הצעת מחיר) ומשימה שדחית כבר פעמיים. מה מתחיל?</div>
+          </div>
+        </div>
+        <div class="chat-msg you">
+          <div class="chat-avatar">J</div>
+          <div>
+            <div class="chat-bubble">תכיני לי תדריך לפגישה עם ישי</div>
+          </div>
+        </div>
+        <div class="chat-msg">
+          <div class="chat-avatar">🤖</div>
+          <div>
+            <div class="chat-bubble">ישי בן-דוד, פגישה ב-10:00.<br><strong>הקשר:</strong> לקוח פוטנציאלי, ביקר באתר פעמיים. ביקש הצעת מחיר לחודש שעבר — לא קיבל.<br><strong>שאלות מומלצות:</strong> מה הדדליין שלו? מה הניסיון הקודם שלו עם פתרונות דומים?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROUNDS ===== -->
+<section class="rounds-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">מתי זה קורה</div>
+      <h2>שני סבבים. <span class="hl">תבחר את שלך.</span></h2>
+      <p>כל סבב מוגבל ל-50 מקומות כדי שאוכל לתמוך באופן אישי בכל משתתף.</p>
+    </div>
+    <div class="rounds-grid reveal">
+      <a href="STRIPE_LINK_HERE" class="round-card">
+        <div class="round-label">סבב 1</div>
+        <div class="round-dates">11–15 במאי</div>
+        <div class="round-spots-badge">50 מקומות בלבד</div>
+        <div class="round-cta">
+          שריין מקום
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+      <a href="STRIPE_LINK_HERE" class="round-card">
+        <div class="round-label">סבב 2</div>
+        <div class="round-dates">25–29 במאי</div>
+        <div class="round-spots-badge">50 מקומות בלבד</div>
+        <div class="round-cta">
+          שריין מקום
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+    </div>
+    <div class="countdown-wrap reveal">
+      <div class="countdown-label">סבב 1 מתחיל בעוד</div>
+      <div class="countdown-boxes">
+        <div class="countdown-box">
+          <span class="countdown-num" id="cdDays">00</span>
+          <span class="countdown-unit">ימים</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-box">
+          <span class="countdown-num" id="cdHours">00</span>
+          <span class="countdown-unit">שעות</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-box">
+          <span class="countdown-num" id="cdMins">00</span>
+          <span class="countdown-unit">דקות</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-box">
+          <span class="countdown-num" id="cdSecs">00</span>
+          <span class="countdown-unit">שניות</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5 DAYS ===== -->
+<section class="days-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">מבנה האתגר</div>
+      <h2>5 ימים. <span class="hl">עובדת AI שתישאר אצלכם לתמיד.</span></h2>
+      <p>כל יום 30–60 דקות. אין שיעורי בית. אין ידע מוקדם. רק תוצאות.</p>
+    </div>
+    <div class="days-grid">
+      <div class="day-card day-0 reveal">
+        <div class="day-emoji">⚙️</div>
+        <div class="day-number">יום 0 (הכנה)</div>
+        <div class="day-title">מתקינים ומתחברים</div>
+        <div class="day-desc">מתקינים Claude Desktop, מגדירים חשבון Pro ומוריד את ה-Starter Kit.</div>
+      </div>
+      <div class="day-card highlight reveal">
+        <div class="day-emoji">👋</div>
+        <div class="day-number">יום 1</div>
+        <div class="day-title">פוגשים את דונה</div>
+        <div class="day-desc">הכרות עם דונה, דמו חי, מבינים מה אנחנו בונים ולמה זה שונה מכל כלי AI אחר.</div>
+      </div>
+      <div class="day-card reveal">
+        <div class="day-emoji">🧠</div>
+        <div class="day-number">יום 2</div>
+        <div class="day-title">דונה מכירה את העסק שלך</div>
+        <div class="day-desc">ממלאים שאלון קצר, ודונה בונה את הזיכרון העסקי שלה — לגמרי לבד.</div>
+      </div>
+      <div class="day-card reveal">
+        <div class="day-emoji">🔌</div>
+        <div class="day-number">יום 3</div>
+        <div class="day-title">חיבורים</div>
+        <div class="day-desc">מחברים Gmail, Google Calendar ו-Drive. דונה מתחילה לראות את העסק האמיתי.</div>
+      </div>
+      <div class="day-card reveal">
+        <div class="day-emoji">⚡</div>
+        <div class="day-number">יום 4</div>
+        <div class="day-title">יום האימון</div>
+        <div class="day-desc">מריצים את כל הסקילס. בריפינג בוקר, טיוטת מייל, הכנה לפגישה — הכל חי.</div>
+      </div>
+      <div class="day-card highlight reveal">
+        <div class="day-emoji">🌙</div>
+        <div class="day-number">יום 5</div>
+        <div class="day-title">היא עובדת בזמן שאתה ישן</div>
+        <div class="day-desc">מגדירים Scheduled Tasks. מעכשיו דונה מתעוררת לפניך ומכינה לך את הבוקר.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SKILLS ===== -->
+<section class="skills-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">מה דונה יודעת לעשות</div>
+      <h2>12 סקילס. <span class="hl">עובדים ביום הראשון.</span></h2>
+      <p>כל סקיל הוא פקודה אחת. דונה עושה את השאר.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card reveal">
+        <div class="skill-icon">🌅</div>
+        <div class="skill-name">בריפינג בוקר</div>
+        <div class="skill-desc">מיילים דחופים, יומן היום, משימות פתוחות ועדיפות #1 — לפני קפה ראשון.</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">✉️</div>
+        <div class="skill-name">טיוטת מייל</div>
+        <div class="skill-desc">כותבת תשובות למיילים בדיוק בסגנון שלך. אתה רק עורך ושולח.</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">📋</div>
+        <div class="skill-name">הכנה לפגישה</div>
+        <div class="skill-desc">תדריך מלא על הבנאדם שאתה נפגש — היסטוריה, הבטחות פתוחות, שאלות מומלצות.</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">✅</div>
+        <div class="skill-name">ניהול משימות</div>
+        <div class="skill-desc">עוקבת אחרי מה שצריך לקרות ומזכירה לך לפני שזה נשכח.</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">📊</div>
+        <div class="skill-name">דוח שבועי</div>
+        <div class="skill-desc">ניצחונות, פספוסים, מספרים ועדיפויות — מגיע לך כל ראשון ב-9:00.</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">⚠️</div>
+        <div class="skill-name">זיהוי סיכונים</div>
+        <div class="skill-desc">מצפה בעיות לפני שהן מתפוצצות. פלאגים על הבטחות שנשכחו ודדליינים מתקרבים.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROI ===== -->
+<section class="roi-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">חשבון פשוט</div>
+      <h2>השקעה של שעות. <span class="hl">חיסכון לכל החיים.</span></h2>
+    </div>
+    <div class="roi-numbers reveal">
+      <div class="roi-number">
+        <div class="roi-big">5</div>
+        <div class="roi-label">ימי אתגר</div>
+      </div>
+      <div class="roi-number">
+        <div class="roi-big">15+</div>
+        <div class="roi-label">שעות בשבוע חזרה</div>
+      </div>
+      <div class="roi-number">
+        <div class="roi-big">∞</div>
+        <div class="roi-label">עובדת בלי לעצור</div>
+      </div>
+    </div>
+    <p class="roi-verdict reveal">
+      משקיעים <strong>3 עד 5 שעות פעם אחת</strong> ומקבלים בחזרה <strong>15+ שעות כל שבוע, לתמיד</strong>. זה <strong>720+ שעות בשנה הראשונה.</strong> עסקה שתרגישו טיפשים לפספס.
+    </p>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section class="about-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">מי עומד מאחורי האתגר</div>
+      <h2>שני <span class="hl">מומחים.</span> אתגר אחד.</h2>
+      <p>ג'יי מרגליות ומנדי קוריץ בנו את האתגר הזה יחד, כדי שתקבלו גם את הטכניקה וגם את הפרספקטיבה העסקית.</p>
+    </div>
+    <div class="bios-grid">
+      <div class="bio-card reveal">
+        <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" class="bio-photo-link" style="background-image: url('../claude-code-webinar-binah/webinar-assets/jay-profile.png');" aria-label="LinkedIn של ג'יי מרגליות"></a>
+        <h3>ג'יי מרגליות</h3>
+        <div class="bio-role">יזם, מרצה, מומחה AI</div>
+        <p>נעים מאוד, אני ג'יי מרגליות. יזם עם <strong>10 שנות ניסיון באיקומרס הבינלאומי</strong>, ומאז שגיליתי את עולם ה-AI הפכתי את זה למרכז של מה שאני עושה.</p>
+        <p>פיתחתי שיטה ייחודית ליצירת "עובדי AI" עם קלוד קוד, ואני מריץ סבבים של אתגר בינלאומי שבו בעלי עסקים (גם בלי רקע טכני) בונים לעצמם עובד AI אישי בתוך חמישה ימים.</p>
+        <p>אני לא מאמין בכלים מהעתיד. אני מאמין במה שעובד <strong>עכשיו</strong>, ובמה שיפנה לכם זמן <strong>כבר מחר בבוקר.</strong></p>
+      </div>
+      <div class="bio-card reveal">
+        <span class="bio-photo-link" style="background-image: url('../claude-code-webinar-binah/webinar-assets/mandy-profile.png'); background-position: center 25%; cursor: default;"></span>
+        <h3>מנדי קוריץ</h3>
+        <div class="bio-role">אסטרטג עסקי, יועץ להטמעת AI</div>
+        <p>נעים מאוד, אני מנדי קוריץ, אסטרטג עסקי ויועץ להטמעת AI ודיגיטציה.</p>
+        <p>התשוקה שלי היא לקחת את הטכנולוגיה הכי מתקדמת בעולם ולהפוך אותה לכלי עבודה פשוט, פרקטי ויישומי עבור בעלי עסקים. אני מלווה ארגונים ויזמים בתהליכי הטמעה של מערכות בינה מלאכותית ואוטומציה, במטרה אחת ברורה: <strong>לחסוך זמן יקר, לצמצם הוצאות ולייעל את העסק למקסימום.</strong></p>
+        <p>כמדריך ומלווה בתחום ה-AI, אני לא מאמין בתיאוריות. אני מאמין ב"לעשות", בבניית נכסים דיגיטליים וביצירת פתרונות טכנולוגיים שרואים מהם <strong>תוצאות בשטח.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq-section">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">שאלות נפוצות</div>
+      <h2>יש לכם שאלות. <span class="hl">יש לנו תשובות.</span></h2>
+    </div>
+    <div class="faq-list reveal">
+
+      <div class="faq-item">
+        <button class="faq-q">
+          אין לי ידע טכני. האתגר מתאים לי?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">בדיוק בשבילך. האתגר תוכנן במיוחד לבעלי עסקים שאין להם רקע טכני. אין כתיבת קוד. אין מונחים מסובכים. יש הסברים ברורים וצעד אחרי צעד, בעברית.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          כמה זמן לוקח ביום?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">30 עד 60 דקות ביום. כל התוכן מוקלט מראש, כך שאתם עובדים בקצב שלכם. אין שידורים חיים שאתם חייבים להגיע אליהם בשעה מסוימת.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          מה צריך כדי להתחיל?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">מחשב (Mac או Windows), חשבון Gmail ו-Google Calendar, ומינוי Claude Pro ב-20 דולר לחודש. הכל השאר מסופק — קבצים, מדריכים, תבניות ותמיכה.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          האתגר הוא לייב או מוקלט?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">כל התוכן מוקלט ועריך מראש — כך שאפשר לצפות בכל שעה שנוח לכם. בנוסף יש קבוצת WhatsApp עם תמיכה ישירה מג'יי ומנדי לאורך האתגר.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          מה קורה אחרי 5 הימים?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">דונה נשארת אצלכם לתמיד. יש לכם גישה לכל ההקלטות, לכל הקבצים ולכל העדכונים העתידיים — ללא תשלום נוסף. זו השקעה חד פעמית.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          מה אם זה לא מתאים לי?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a">החזר כספי מלא תוך 48 שעות מרגע הרכישה, ללא שאלות. אנחנו בטוחים בתוכן.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="pricing-section" id="pricing">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">מחיר</div>
+      <h2>תשלום אחד. <span class="hl">מערכת שעובדת לכל החיים.</span></h2>
+    </div>
+
+    <div class="pricing-card reveal">
+      <div class="pricing-card-inner">
+        <div class="pricing-badge">
+          <span class="dot"></span>
+          מחיר השקה מיוחד
+        </div>
+        <div class="pricing-label">שריין את מקומך תמורת</div>
+        <div class="price-display">
+          <span class="price-main">699</span>
+          <span class="price-currency">₪</span>
+          <span class="price-old">999 ₪</span>
+        </div>
+        <p class="pricing-desc">תשלום חד פעמי. גישה מלאה.</p>
+
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> אתגר קלוד קוד המלא, 5 ימים בעברית</li>
+          <li><span class="check">✓</span> סרטוני הדרכה מוקלטים ברמה מקצועית</li>
+          <li><span class="check">✓</span> קבוצת WhatsApp סגורה עם ג'יי ומנדי</li>
+          <li><span class="check">✓</span> Starter Kit מלא: תבניות, פרומפטים וקבצי הגדרה</li>
+          <li><span class="check">✓</span> מדריך התקנה מלא ליום 0</li>
+          <li><span class="check">✓</span> גישה לכל החיים לכל ההקלטות והעדכונים</li>
+          <li><span class="check">✓</span> החזר כספי מלא תוך 48 שעות</li>
+        </ul>
+
+        <a href="STRIPE_LINK_HERE" class="btn-checkout">
+          אני בפנים. שמור לי מקום
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+
+        <p class="pricing-note">החזר כספי מלא תוך 48 שעות · תשלום מאובטח</p>
+        <div class="pricing-urgency">⚡ מחיר ההשקה של 699 ₪ הוא לתקופה מוגבלת. לאחר מכן המחיר עולה ל-999 ₪.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="final-cta">
+  <div class="wrap">
+    <div class="final-cta-inner reveal">
+      <h2>עובדת ה-AI שלך<br><span class="hl">במרחק של 5 ימים.</span></h2>
+      <p>30 עד 60 דקות ביום. בלי קוד. בלי ידע טכני. בסוף, Chief of Staff מבוסס AI שמנהל לך את הבוקר עוד לפני שהתעוררת.</p>
+      <a href="STRIPE_LINK_HERE" class="btn-primary">
+        כן, אני רוצה את דונה שלי
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <p class="hero-price-note" style="margin-top: 18px;">
+        <span>699 ₪ במקום 999 ₪ · החזר תוך 48 שעות</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div>נבנה על ידי <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">ג'יי מרגליות</a> ו<span>מנדי קוריץ</span> · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></div>
+  <div style="margin-top: 6px;">&copy; 2026</div>
+</footer>
+
+<!-- ===== STICKY CTA ===== -->
+<a href="STRIPE_LINK_HERE" class="sticky-cta" id="stickyCta">שריין מקום ← 699 ₪</a>
+
+<script>
+// ===== COUNTDOWN (Round 1: May 11, 2026 09:00 Israel time = UTC+3 → 06:00 UTC) =====
+function updateCountdown() {
+  const target = Date.UTC(2026, 4, 11, 6, 0, 0); // May 11, 09:00 Israel (UTC+3)
+  const now = Date.now();
+  const diff = target - now;
+  if (diff <= 0) {
+    document.getElementById('cdDays').textContent = '00';
+    document.getElementById('cdHours').textContent = '00';
+    document.getElementById('cdMins').textContent = '00';
+    document.getElementById('cdSecs').textContent = '00';
+    return;
+  }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+  document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ===== REVEAL ON SCROLL =====
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ===== STICKY CTA =====
+const stickyCta = document.getElementById('stickyCta');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 600) { stickyCta.classList.add('show'); }
+  else { stickyCta.classList.remove('show'); }
+}, { passive: true });
+
+// ===== FAQ =====
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// ===== GA EVENTS =====
+document.querySelectorAll('a[href="STRIPE_LINK_HERE"]').forEach(el => {
+  el.addEventListener('click', () => {
+    gtag('event', 'cta_click', { event_category: 'conversion', event_label: el.closest('section')?.id || el.className });
+  });
+});
+</script>
+
+</body>
+</html>
