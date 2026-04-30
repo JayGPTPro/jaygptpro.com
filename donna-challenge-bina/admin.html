@@ -754,41 +754,28 @@ async function signOut() {
 // ===== DATA LOADING =====
 async function loadData() {
   try {
-    const [stripeRes, binaRes] = await Promise.all([
-      sb.from('stripe_customers')
-        .select('email, amount_paid, coupon_used, country, created_at, refunded, refund_amount, payment_date, name')
-        .gte('amount_paid', MIN_AMOUNT_AGOROT)
-        .order('created_at', { ascending: false }),
-      sb.from('bina_registrations')
-        .select('email, round, welcome_email_sent_at, welcome_email_error, notes, created_at')
-    ]);
+    const binaRes = await sb.from('bina_registrations')
+      .select('email, round, welcome_email_sent_at, welcome_email_error, notes, created_at')
+      .order('created_at', { ascending: false });
 
-    if (stripeRes.error) throw stripeRes.error;
     if (binaRes.error) throw binaRes.error;
 
-    // Build bina lookup by email
-    const binaMap = {};
-    (binaRes.data || []).forEach(r => { binaMap[r.email] = r; });
-
-    // Merge
-    allParticipants = (stripeRes.data || []).map(s => {
-      const bina = binaMap[s.email] || null;
-      return {
-        email: s.email,
-        name: s.name || '',
-        amount_paid: s.amount_paid,
-        coupon_used: s.coupon_used || '',
-        country: s.country || '',
-        created_at: s.created_at,
-        payment_date: s.payment_date,
-        refunded: s.refunded || false,
-        refund_amount: s.refund_amount || 0,
-        round: bina ? bina.round : null,
-        welcome_email_sent_at: bina ? bina.welcome_email_sent_at : null,
-        welcome_email_error: bina ? bina.welcome_email_error : null,
-        bina_notes: bina ? bina.notes : null,
-      };
-    });
+    // bina_registrations is the source of truth for Bina participants
+    allParticipants = (binaRes.data || []).map(r => ({
+      email: r.email,
+      name: '',
+      amount_paid: null,
+      coupon_used: '',
+      country: '',
+      created_at: r.created_at,
+      payment_date: r.created_at,
+      refunded: false,
+      refund_amount: 0,
+      round: r.round || null,
+      welcome_email_sent_at: r.welcome_email_sent_at || null,
+      welcome_email_error: r.welcome_email_error || null,
+      bina_notes: r.notes || null,
+    }));
 
     updateUI();
     lastRefresh = new Date();
