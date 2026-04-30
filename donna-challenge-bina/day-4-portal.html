@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>יום 4 | אתגר בינה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08080c;
+      --bg-card: #12121a;
+      --border: #2a2a3a;
+      --orange: #e87040;
+      --orange-bright: #ff8050;
+      --text: #e8e8ee;
+      --text-dim: #8a8a9a;
+      --text-bright: #ffffff;
+      --green: #4ade80;
+      --red: #ef4444;
+      --code-bg: #0f0f16;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+    .nav-brand span { color: var(--orange); }
+    .nav-days { display: flex; gap: 4px; }
+
+    .nav-day {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-day.done { color: var(--green); background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.2); }
+    .nav-day.active { color: var(--orange-bright); background: rgba(232,112,64,0.12); border-color: var(--orange); }
+    .nav-day.locked { color: var(--text-dim); background: rgba(255,255,255,0.03); border-color: var(--border); cursor: not-allowed; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0e0e18 0%, #12101e 50%, #0e0e18 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 40px 48px;
+      text-align: center;
+    }
+
+    .day-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(232,112,64,0.1);
+      border: 1px solid rgba(232,112,64,0.3);
+      color: var(--orange-bright);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 5px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 { font-size: 40px; font-weight: 900; color: var(--text-bright); margin-bottom: 12px; line-height: 1.2; }
+    .hero h1 span { color: var(--orange-bright); }
+    .hero p { font-size: 18px; color: var(--text-dim); max-width: 640px; margin: 0 auto 32px; line-height: 1.6; }
+
+    .hero-meta { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
+
+    .meta-chip { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-dim); }
+    .meta-chip .icon {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* LAYOUT */
+    .page-layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .page-layout { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* VIDEO SECTION */
+    .video-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .video-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .video-header-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+
+    .video-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+    .video-header p { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+    .video-placeholder {
+      background: #0a0a12;
+      height: 360px;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .video-placeholder:hover { background: #0d0d18; }
+
+    .play-btn {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 0 40px rgba(232,112,64,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .video-placeholder:hover .play-btn { transform: scale(1.05); box-shadow: 0 0 60px rgba(232,112,64,0.45); }
+    .video-placeholder span { font-size: 13px; color: var(--text-dim); }
+
+    .video-script { padding: 24px; }
+
+    .script-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .script-toggle:hover { border-color: var(--orange); color: var(--orange); }
+
+    .script-content {
+      display: none;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .script-content.open { display: block; }
+
+    .script-part { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .script-part:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .script-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+    .script-direction { font-size: 12px; color: var(--blue); font-style: italic; margin-bottom: 8px; }
+    .script-text { font-size: 14px; color: var(--text); line-height: 1.8; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 20px; font-weight: 800; color: var(--text-bright);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* LESSON CARDS */
+    .lesson-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .lesson-card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+
+    .lesson-num {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 900; color: white; flex-shrink: 0;
+    }
+
+    .lesson-card-header h3 { font-size: 17px; font-weight: 800; color: var(--text-bright); margin-bottom: 4px; }
+    .lesson-card-header p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+    .lesson-body { padding: 24px; }
+
+    /* CALLOUTS */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border-right: 3px solid;
+    }
+
+    .callout-orange { background: rgba(232,112,64,0.07); border-color: var(--orange); }
+    .callout-green { background: rgba(74,222,128,0.07); border-color: var(--green); }
+    .callout-blue { background: rgba(96,165,250,0.07); border-color: var(--blue); }
+    .callout-purple { background: rgba(167,139,250,0.07); border-color: var(--purple); }
+
+    .callout-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .callout-orange .callout-title { color: var(--orange-bright); }
+    .callout-green .callout-title { color: var(--green); }
+    .callout-blue .callout-title { color: var(--blue); }
+    .callout-purple .callout-title { color: var(--purple); }
+
+    .callout p { font-size: 13px; color: var(--text); line-height: 1.7; }
+    .callout ul { margin: 6px 0 0; padding-right: 18px; list-style: none; }
+    .callout ul li { font-size: 13px; color: var(--text); line-height: 1.8; padding-right: 8px; position: relative; }
+    .callout ul li::before { content: '•'; position: absolute; right: 0; color: var(--text-dim); }
+
+    /* SKILLS TABLE */
+    .skills-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .skills-table th {
+      background: rgba(255,255,255,0.04);
+      padding: 10px 14px;
+      text-align: right;
+      font-weight: 700;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .skills-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      line-height: 1.5;
+      vertical-align: top;
+    }
+
+    .skills-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .skill-cmd {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--orange-bright);
+      background: rgba(232,112,64,0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .skill-special {
+      display: inline-block;
+      background: rgba(167,139,250,0.15);
+      border: 1px solid rgba(167,139,250,0.3);
+      color: var(--purple);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-right: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .skill-day2 {
+      display: inline-block;
+      background: rgba(96,165,250,0.12);
+      border: 1px solid rgba(96,165,250,0.25);
+      color: var(--blue);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-right: 6px;
+    }
+
+    /* FOLDER VISUAL */
+    .folder-tree {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin: 14px 0;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .folder-tree .dir { color: var(--blue); }
+    .folder-tree .file { color: var(--orange-bright); }
+    .folder-tree .comment { color: var(--text-dim); font-style: italic; }
+
+    /* CODE BLOCKS */
+    .code-block {
+      position: relative;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 14px 0;
+      overflow: hidden;
+    }
+
+    .code-block-header {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .code-lang { font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: 'Heebo', sans-serif;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { background: rgba(232,112,64,0.1); border-color: var(--orange); color: var(--orange); }
+    .copy-btn.copied { background: rgba(74,222,128,0.1); border-color: var(--green); color: var(--green); }
+
+    .code-block pre {
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--orange-bright);
+      overflow-x: auto;
+      line-height: 1.6;
+      direction: ltr;
+      text-align: left;
+    }
+
+    /* SKILL PRACTICE CARDS */
+    .skill-practice-list { display: flex; flex-direction: column; gap: 16px; margin: 16px 0; }
+
+    .skill-practice-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+    .skill-practice-header {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .skill-num {
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      color: white;
+      font-size: 11px; font-weight: 900;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .skill-header-info { flex: 1; }
+    .skill-header-name { font-size: 14px; font-weight: 800; color: var(--text-bright); }
+    .skill-header-desc { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+
+    .skill-practice-body { padding: 16px; }
+
+    .skill-practice-body p { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; line-height: 1.6; }
+
+    .skill-practice-item .code-block { margin: 0; border-radius: 0; border: none; border-top: 1px solid var(--border); }
+    .skill-practice-item .code-block pre { font-size: 13px; }
+
+    /* STEPS */
+    .steps-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }
+
+    .step-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .step-num {
+      width: 28px; height: 28px;
+      background: rgba(232,112,64,0.15);
+      border: 1px solid rgba(232,112,64,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: var(--orange);
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    .step-content { flex: 1; }
+    .step-content strong { font-size: 14px; font-weight: 700; color: var(--text-bright); display: block; margin-bottom: 4px; }
+    .step-content p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+    /* CHECKLIST */
+    .checklist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+
+    .checklist-title { font-size: 16px; font-weight: 800; color: var(--text-bright); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    .check-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .check-item:last-child { border-bottom: none; }
+
+    .checkbox {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+
+    .check-item.checked .checkbox { background: var(--green); border-color: var(--green); }
+    .check-item.checked .checkbox::after { content: '✓'; color: white; font-size: 12px; font-weight: 800; }
+    .check-item.checked .check-label { text-decoration: line-through; color: var(--text-dim); }
+    .check-label { font-size: 14px; color: var(--text); line-height: 1.5; }
+
+    /* CTA */
+    .cta-block {
+      background: linear-gradient(135deg, rgba(232,112,64,0.1), rgba(232,112,64,0.04));
+      border: 1px solid rgba(232,112,64,0.25);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .cta-block h3 { font-size: 18px; font-weight: 800; color: var(--text-bright); margin-bottom: 8px; }
+    .cta-block p { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      color: white;
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px; font-weight: 800;
+      padding: 14px 32px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(232,112,64,0.3);
+    }
+
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(232,112,64,0.45); }
+
+    /* SIDEBAR */
+    .sidebar { position: sticky; top: 80px; display: flex; flex-direction: column; gap: 20px; }
+
+    .sidebar-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+
+    .sidebar-card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 800; color: var(--text-bright);
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    .sidebar-card-body { padding: 16px 18px; }
+
+    /* PROGRESS */
+    .progress-days { display: flex; flex-direction: column; gap: 8px; }
+
+    .progress-day {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+    }
+
+    .progress-day.done { background: rgba(74,222,128,0.07); color: var(--green); }
+    .progress-day.active { background: rgba(232,112,64,0.1); color: var(--orange-bright); border: 1px solid rgba(232,112,64,0.25); }
+    .progress-day.upcoming { color: var(--text-dim); }
+    .progress-icon { font-size: 14px; }
+    .progress-label { flex: 1; }
+    .progress-status { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+
+    /* SOP */
+    .sop-steps { display: flex; flex-direction: column; }
+
+    .sop-step {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .sop-step:last-child { border-bottom: none; }
+
+    .sop-dot {
+      width: 20px; height: 20px;
+      background: rgba(232,112,64,0.12);
+      border: 1px solid rgba(232,112,64,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: var(--orange);
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    .sop-text { color: var(--text); line-height: 1.5; }
+    .sop-text code {
+      font-family: 'Courier New', monospace;
+      font-size: 11px; color: var(--orange);
+      background: rgba(232,112,64,0.1);
+      padding: 1px 5px; border-radius: 3px;
+    }
+
+    /* NOTE BOX */
+    .note-box {
+      background: rgba(167,139,250,0.06);
+      border: 1px dashed rgba(167,139,250,0.3);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px; color: var(--text-dim); line-height: 1.6;
+      margin: 12px 0;
+    }
+
+    .note-box strong { color: var(--purple); }
+
+    .lesson-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* QUICK-REF LIST */
+    .quick-ref { display: flex; flex-direction: column; gap: 6px; }
+
+    .quick-ref-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .quick-ref-cmd {
+      font-family: 'Courier New', monospace;
+      font-size: 11px; color: var(--orange-bright);
+      background: rgba(232,112,64,0.1);
+      padding: 1px 7px; border-radius: 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .quick-ref-desc { color: var(--text-dim); line-height: 1.4; }
+
+    /* FLOATING SOP */
+    .floating-sop {
+      position: fixed;
+      bottom: 24px; left: 24px;
+      background: linear-gradient(135deg, var(--orange), #c05030);
+      color: white;
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px; font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 50px;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(232,112,64,0.4);
+      z-index: 200;
+      display: flex; align-items: center; gap: 7px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .floating-sop:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(232,112,64,0.55); }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 26px; }
+      .hero { padding: 32px 20px; }
+      nav { padding: 0 12px; }
+      .nav-day { padding: 5px 8px; font-size: 11px; }
+      .skills-table { font-size: 12px; }
+    }
+  
+/* ===== GATE OVERLAY ===== */
+#bina-gate{position:fixed;inset:0;z-index:99999;background:rgba(8,8,12,0.97);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Heebo',sans-serif;direction:rtl;}
+.gate-box{background:#12121a;border:1px solid #2a2a3a;border-radius:20px;
+  padding:48px 40px;text-align:center;max-width:400px;width:90%;}
+.gate-logo{font-size:28px;font-weight:800;color:#e87040;margin-bottom:8px;}
+.gate-sub{font-size:13px;color:#8a8a9a;margin-bottom:28px;}
+.gate-box h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;}
+.gate-input{width:100%;padding:14px 16px;border-radius:10px;
+  border:1px solid #2a2a3a;background:#0f0f16;color:#e8e8ee;
+  font-size:16px;font-family:'Heebo',sans-serif;text-align:center;
+  margin-bottom:12px;letter-spacing:2px;outline:none;}
+.gate-input:focus{border-color:#e87040;}
+.gate-btn{width:100%;padding:14px;border-radius:10px;background:#e87040;
+  color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;transition:background .15s;}
+.gate-btn:hover{background:#ff8050;}
+.gate-err{color:#ef4444;font-size:13px;margin-top:10px;display:none;}
+
+</style>
+</head>
+<body>
+<div id="bina-gate">
+  <div class="gate-box">
+    <div class="gate-logo">אתגר בינה</div>
+    <p class="gate-sub">שיטת יצירת עובדי AI של ג'יי</p>
+    <h2>נדרש קוד גישה</h2>
+    <input id="gate-input" class="gate-input" type="password" placeholder="הכניסו קוד גישה" autocomplete="off" autofocus>
+    <button id="gate-btn" class="gate-btn">כניסה</button>
+    <p id="gate-err" class="gate-err">קוד שגוי. נסו שוב.</p>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">שיטת יצירת עובדי AI של ג'יי</div>
+  <div class="nav-days">
+    <a href="day-0-portal.html" class="nav-day done">יום 0 ✓</a>
+    <a href="day-1-portal.html" class="nav-day done">יום 1 ✓</a>
+    <a href="day-2-portal.html" class="nav-day done">יום 2 ✓</a>
+    <a href="day-3-portal.html" class="nav-day done">יום 3 ✓</a>
+    <span class="nav-day active">יום 4</span>
+    <span class="nav-day locked">יום 5 🔒</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="day-badge">💪 יום 4 מתוך 5</div>
+  <h1>יום <span>האימון</span></h1>
+  <p>היום מריצים כישורים. 12 כישורים יומיים. כישור /morning-briefing ראשון. ואחר כך מתאימים אישית.</p>
+  <div class="hero-meta">
+    <div class="meta-chip"><div class="icon">⏱</div> 60-90 דקות</div>
+    <div class="meta-chip"><div class="icon">📹</div> 3 סרטונים</div>
+    <div class="meta-chip"><div class="icon">⚙️</div> 3 שיעורים</div>
+    <div class="meta-chip"><div class="icon">🛠️</div> יצירת כישור משלכם</div>
+  </div>
+</section>
+
+<!-- PAGE LAYOUT -->
+<div class="page-layout">
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- ===== INTRO VIDEO ===== -->
+    <div class="video-section">
+      <div class="video-header">
+        <div class="video-header-icon">🎬</div>
+        <div>
+          <h2>פתיחת יום 4</h2>
+          <p>מבוא. מה קרה ביום 3 ומה קורה היום</p>
+        </div>
+      </div>
+      <div class="video-placeholder">
+        <div class="play-btn">▶</div>
+        <span>לחצו לצפייה בסרטון פתיחת יום 4</span>
+      </div>
+      <div class="video-script">
+        <button class="script-toggle" onclick="toggleScript(this)">📄 הצג תסריט</button>
+        <div class="script-content">
+          <div class="script-part">
+            <div class="script-label">מבוא</div>
+            <div class="script-direction">[SCREEN: שקף: יום 4 Cover ("יום האימון")]</div>
+            <div class="script-text">
+              ברוכים הבאים ליום 4. יום האימון.<br><br>
+              סיכום מהיר. ביום 3 חיברתם את Gmail, היומן, ו-Drive. דונה רשמית רואה את החיים האמיתיים שלכם. הרצתם 7 פרומפטים חזקים וכנראה ראיתם כמה דברים על עצמכם שלא ציפיתם.<br><br>
+              היום:<br><br>
+              שיעור 1. כישורים ו-/morning-briefing הראשון שלכם. מה זה כישור, איפה הם גרים, 12 הכישורים היומיים, ומריצים את הכישור המוביל.<br><br>
+              שיעור 2. תורכם. מריצים 5 כישורים שונים בזה אחר זה. כל אחד סוג עזרה אחרת. תרגישו את הטווח.<br><br>
+              שיעור 3. תתאימו אישית. פותחים קובץ כישור, מתאימים אחד לעסק שלכם, ולומדים איך לבנות או לייבא עוד.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LESSONS ===== -->
+    <div class="section-title">שיעורי יום 4</div>
+
+    <!-- LESSON 1: SKILLS + MORNING BRIEFING -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">1</div>
+        <div>
+          <h3>כישורים ו-/morning-briefing הראשון</h3>
+          <p>מה זה כישור, איפה הם גרים, 12 כישורים יומיים, ומריצים את הכישור המוביל</p>
+        </div>
+      </div>
+
+      <div style="border-bottom: 1px solid var(--border);">
+        <div class="video-placeholder" style="height:280px;">
+          <div class="play-btn" style="width:56px;height:56px;font-size:22px;">▶</div>
+          <span>שיעור 1: כישורים ו-/morning-briefing הראשון</span>
+        </div>
+      </div>
+
+      <div class="video-script" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+        <button class="script-toggle" onclick="toggleScript(this)">📄 הצג תסריט שיעור 1</button>
+        <div class="script-content">
+          <div class="script-part">
+            <div class="script-label">שיעור 1</div>
+            <div class="script-direction">[SCREEN: שקף: שיעור 1 ("כישורים + הכישור הראשון")]</div>
+            <div class="script-text">
+              שיעור 1. כישורים.<br><br>
+              מה זה כישור?<br>
+              פקודה בן מילה שמפעילה תהליך שלם.<br>
+              במקום לכתוב פרגרף שמסביר לדונה מה אתם רוצים. פשוט כותבים /morning-briefing. והיא עושה את הכל.<br><br>
+              איפה הכישורים גרים?<br>
+              בתיקייה .claude/commands/ בתוך הערכה שלכם. כל כישור הוא קובץ .md. כל קובץ מכיל הוראות מפורטות.<br>
+              אתם לא צריכים להסתכל בפנים עוד. רק לדעת שהם שם. נפתח אחד בשיעור 3.<br><br>
+              12 הכישורים היומיים. בואו נעבור עליהם.<br>
+              [הראו טבלה - 12 שורות]<br><br>
+              עכשיו. הכישור הראשון שלכם. /morning-briefing.<br>
+              פתחו קלוד דסקטופ, הקלידו:<br>
+              /morning-briefing<br>
+              היא תושך מהיומן שלכם, תבדוק מיילים דחופים, ותציג את היום שלכם במבט ציפור.<br><br>
+              קראו את הפלט. ספרו לי: ראיתם משהו שלא ידעתם?<br><br>
+              הערה על /learn: תראו אותו ברשימה. הוא מיוחד. אתם לא מריצים אותו ידנית. הוא רץ אוטומטית כחלק משגרת הערב. נגדיר את זה מחר ביום 5. לעת עתה, פשוט דעו שהוא קיים.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lesson-body">
+
+        <div class="callout callout-orange">
+          <div class="callout-title">⚡ מה זה כישור?</div>
+          <p>פקודה בן מילה שמפעילה תהליך שלם. במקום לכתוב פרגרף שמסביר לדונה מה רוצים, פשוט כותבים <strong style="color:var(--orange-bright);">/morning-briefing</strong>. והיא עושה את הכל.</p>
+        </div>
+
+        <p style="font-size:14px;color:var(--text);font-weight:700;margin:20px 0 6px;">איפה הכישורים גרים?</p>
+        <div class="folder-tree">
+          <span class="dir">📁 הערכה שלכם/</span><br>
+          <span style="color:var(--text-dim);">├── </span><span class="dir">📁 brain/</span><span class="comment"> ← הזיכרון של דונה (יום 2)</span><br>
+          <span style="color:var(--text-dim);">└── </span><span class="dir">📁 .claude/</span><br>
+          <span style="color:var(--text-dim);">&nbsp;&nbsp;&nbsp;&nbsp;└── </span><span class="dir">📁 commands/</span><span class="comment"> ← כאן גרים הכישורים</span><br>
+          <span style="color:var(--text-dim);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span class="file">morning-briefing.md</span><br>
+          <span style="color:var(--text-dim);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span class="file">email-draft.md</span><br>
+          <span style="color:var(--text-dim);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span class="file">decisions.md</span><br>
+          <span style="color:var(--text-dim);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── </span><span class="file">... (עוד 9 כישורים)</span>
+        </div>
+
+        <div class="lesson-divider"></div>
+
+        <p style="font-size:15px;font-weight:800;color:var(--text-bright);margin-bottom:14px;">12 הכישורים היומיים של דונה</p>
+
+        <table class="skills-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>שם הכישור</th>
+              <th>מה הוא עושה</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="skill-cmd">/morning-briefing</span></td>
+              <td>סיכום בוקר: יומן היום, מיילים דחופים, משימות ממתינות. מבט ציפור על היום לפני שמתחילים</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="skill-cmd">/email-draft</span></td>
+              <td>כותבת מייל בסגנון שלכם לפי הנחיה קצרה. ברכה, טון, חתימה. הכל מה-brain</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="skill-cmd">/decisions</span></td>
+              <td>ממסגרת החלטה שתקועים בה. שאלות מנחות, בחינת צדדים, המלצה מנומקת</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="skill-cmd">/weekly-plan</span></td>
+              <td>תכנון שבועי ביחד. לוקחת בחשבון יומן, משימות ממתינות, ועדיפויות שהגדרתם</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><span class="skill-cmd">/summarize</span></td>
+              <td>מסכמת כל מסמך, דו"ח, מאמר, או URL. נקודות עיקריות, תובנות, פעולות נדרשות</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><span class="skill-cmd">/accountability</span></td>
+              <td>בודקת מה התחייבתם השבוע שעבר ומה עשיתם בפועל. ללא פילטרים, עם חמדה</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td><span class="skill-cmd">/deep-work</span></td>
+              <td>מגדירה חלון עבודה ממוקדת. חוסמת הסחות, מגדירה יעד ברור, ומלווה אתכם</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td><span class="skill-cmd">/delegate</span></td>
+              <td>מכינה בריף ברור לאדם שאתם מאצילים אליו. ציפיות, לו"ז, הגדרת הצלחה</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td><span class="skill-cmd">/meeting-prep</span></td>
+              <td>הכנה לפגישה: מי משתתף, מה הרקע, מה המטרה, מה לשאול, מה לשמור לעצמכם</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td><span class="skill-cmd">/end-of-day</span></td>
+              <td>סיכום יום. מה הושלם, מה נדחה, מה לחר, ומה שווה לתעד בזיכרון של דונה</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td><span class="skill-cmd">/ask-jay</span></td>
+              <td>מגבשת שאלה מסודרת לג'יי עם הקשר מלא. במקום להטריח. לשאול חכם</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>
+                <span class="skill-special">מיוחד</span>
+                <span class="skill-cmd">/learn</span>
+              </td>
+              <td>מעדכנת את הזיכרון של דונה בסוף כל יום. לא מריצים ידנית. רץ כחלק משגרת הערב ביום 5</td>
+            </tr>
+            <tr style="opacity:0.7;">
+              <td colspan="3" style="padding:8px 14px;font-size:12px;color:var(--text-dim);">
+                <span class="skill-day2" style="margin-left:6px;">מיום 2</span>
+                <span class="skill-cmd">/learn-me</span> ו-<span class="skill-cmd">/business-one-pager</span>
+                גם הם חלק מהארסנל. סה"כ 14 כישורים בערכה.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-purple" style="margin-top:20px;">
+          <div class="callout-title">🔮 שים לב: /learn הוא מיוחד</div>
+          <p>אתם לא מריצים אותו ידנית. הוא מיועד לרוץ אוטומטית בסוף כל יום כחלק משגרת הערב. נגדיר את זה מחר ביום 5. לעת עתה. רק דעו שהוא קיים.</p>
+        </div>
+
+        <div class="lesson-divider"></div>
+
+        <p style="font-size:15px;font-weight:800;color:var(--text-bright);margin-bottom:10px;">עכשיו. הכישור הראשון שלכם.</p>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px;line-height:1.6;">פתחו קלוד דסקטופ. הקלידו את הפקודה הזו. קראו את הפלט. ספרו לי: ראיתם משהו שלא ידעתם?</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">כישור ראשון</span>
+            <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+          </div>
+          <pre>/morning-briefing</pre>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LESSON 2: YOUR TURN -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">2</div>
+        <div>
+          <h3>תורכם. מריצים 5 כישורים שונים</h3>
+          <p>כל אחד סוג עזרה אחרת. לא לשנן. לרגיש את הטווח.</p>
+        </div>
+      </div>
+
+      <div style="border-bottom: 1px solid var(--border);">
+        <div class="video-placeholder" style="height:280px;">
+          <div class="play-btn" style="width:56px;height:56px;font-size:22px;">▶</div>
+          <span>שיעור 2: תורכם</span>
+        </div>
+      </div>
+
+      <div class="video-script" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+        <button class="script-toggle" onclick="toggleScript(this)">📄 הצג תסריט שיעור 2</button>
+        <div class="script-content">
+          <div class="script-part">
+            <div class="script-label">שיעור 2</div>
+            <div class="script-direction">[SCREEN: שקף: שיעור 2 ("תורכם")]</div>
+            <div class="script-text">
+              שיעור 2. מריצים 5 כישורים שונים.<br>
+              לא לנסות לשנן. רק להרגיש את הטווח.<br><br>
+              כישור 1. /email-draft.<br>
+              שלחו לדונה מייל שקיבלתם. אמרו לה בגדול מה רוצים לענות. היא תכתוב בסגנון שלכם.<br>
+              "קיבלתי את המייל הזה מ-[שם]. רוצה לענות שאנחנו מעוניינים אבל צריכים עוד שבוע. /email-draft"<br>
+              שימו לב: היא השתמשה בברכה שלכם. בחתימה שלכם. בטון שלכם. כל זה מ-brain/Preferences/Style.md שכתבה ביום 2.<br><br>
+              כישור 2. /decisions.<br>
+              "יש לי החלטה שאני מתלבט בה כבר שבועיים. /decisions"<br><br>
+              כישור 3. /weekly-plan.<br>
+              "תעשי איתי תכנון שבועי. /weekly-plan"<br><br>
+              כישור 4. /summarize.<br>
+              שתפו אותה ב-URL של מאמר או דוח. "/summarize [הדביקו לינק]"<br><br>
+              כישור 5. /accountability.<br>
+              "מה ההתחייבויות שלי מהשבוע שעבר? בדקי מה עשיתי ומה לא. /accountability"<br><br>
+              זה הטווח. 5 סוגי עזרה. כישור אחד כל אחד.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lesson-body">
+
+        <div class="callout callout-blue">
+          <div class="callout-title">📌 המטרה של השיעור הזה</div>
+          <p>לא לשנן. לא לסיים הכל. לרגיש את הטווח. 5 כישורים שונים. 5 סוגי עזרה שונים. אחרי זה תדעו איזה מהם הכי שווה לכם.</p>
+        </div>
+
+        <div class="skill-practice-list">
+
+          <div class="skill-practice-item">
+            <div class="skill-practice-header">
+              <div class="skill-num">1</div>
+              <div class="skill-header-info">
+                <div class="skill-header-name">/email-draft</div>
+                <div class="skill-header-desc">מייל בסגנון שלכם. הברכה, הטון, החתימה. הכל אוטומטי</div>
+              </div>
+            </div>
+            <div class="skill-practice-body">
+              <p>שתפו את המייל שקיבלתם. אמרו לדונה בגדול מה רוצים לענות. היא תכתוב בסגנון שלכם מה-brain.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">דוגמה</span>
+                <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              </div>
+              <pre>קיבלתי את המייל הזה מ-[שם].
+רוצה לענות שאנחנו מעוניינים
+אבל צריכים עוד שבוע.
+/email-draft</pre>
+            </div>
+          </div>
+
+          <div class="skill-practice-item">
+            <div class="skill-practice-header">
+              <div class="skill-num">2</div>
+              <div class="skill-header-info">
+                <div class="skill-header-name">/decisions</div>
+                <div class="skill-header-desc">ממסגרת החלטות. שאלות מנחות, בחינת צדדים, המלצה</div>
+              </div>
+            </div>
+            <div class="skill-practice-body">
+              <p>תארו החלטה שאתם מתלבטים בה. דונה תשאל אתכם שאלות ותסייע לגבש.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">דוגמה</span>
+                <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              </div>
+              <pre>יש לי החלטה שאני מתלבט בה כבר שבועיים.
+/decisions</pre>
+            </div>
+          </div>
+
+          <div class="skill-practice-item">
+            <div class="skill-practice-header">
+              <div class="skill-num">3</div>
+              <div class="skill-header-info">
+                <div class="skill-header-name">/weekly-plan</div>
+                <div class="skill-header-desc">תכנון שבועי ביחד. יומן, משימות, עדיפויות</div>
+              </div>
+            </div>
+            <div class="skill-practice-body">
+              <p>דונה תסתכל על היומן שלכם ותעזור לתכנן שבוע שיש בו גם ביצוע וגם מרחב.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">דוגמה</span>
+                <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              </div>
+              <pre>תעשי איתי תכנון שבועי.
+/weekly-plan</pre>
+            </div>
+          </div>
+
+          <div class="skill-practice-item">
+            <div class="skill-practice-header">
+              <div class="skill-num">4</div>
+              <div class="skill-header-info">
+                <div class="skill-header-name">/summarize</div>
+                <div class="skill-header-desc">מסכמת כל מסמך, מאמר, או URL לנקודות עיקריות</div>
+              </div>
+            </div>
+            <div class="skill-practice-body">
+              <p>שתפו לינק למאמר, דוח, או כל טקסט. דונה תחזיר תמצית עם תובנות ופעולות נדרשות.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">דוגמה</span>
+                <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              </div>
+              <pre>/summarize [הדביקו לינק לכתבה או מסמך]</pre>
+            </div>
+          </div>
+
+          <div class="skill-practice-item">
+            <div class="skill-practice-header">
+              <div class="skill-num">5</div>
+              <div class="skill-header-info">
+                <div class="skill-header-name">/accountability</div>
+                <div class="skill-header-desc">בודקת מה התחייבתם ומה עשיתם בפועל. ללא פילטרים</div>
+              </div>
+            </div>
+            <div class="skill-practice-body">
+              <p>דונה תבדוק בהיסטוריה ותתן לכם תמונה ישירה. זה אחד מהכישורים שגורמים לאנשים לשנות הרגלים.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">דוגמה</span>
+                <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              </div>
+              <pre>מה ההתחייבויות שלי מהשבוע שעבר?
+בדקי מה עשיתי ומה לא.
+/accountability</pre>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="note-box">
+          <strong>הרגישו את הטווח.</strong> לא צריך לשנן כלום. כל כישור הוא כלי אחר. אחרי שהרצתם את החמישה. תדעו איזה מהם הכי שווה לכם לאמץ כשגרה יומית.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LESSON 3: MAKE IT YOURS -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">3</div>
+        <div>
+          <h3>תתאימו אישית</h3>
+          <p>פותחים קובץ כישור, מוסיפים כלל, בונים כישור משלכם, ולומדים לייבא מהקהילה</p>
+        </div>
+      </div>
+
+      <div style="border-bottom: 1px solid var(--border);">
+        <div class="video-placeholder" style="height:280px;">
+          <div class="play-btn" style="width:56px;height:56px;font-size:22px;">▶</div>
+          <span>שיעור 3: תתאימו אישית</span>
+        </div>
+      </div>
+
+      <div class="video-script" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+        <button class="script-toggle" onclick="toggleScript(this)">📄 הצג תסריט שיעור 3</button>
+        <div class="script-content">
+          <div class="script-part">
+            <div class="script-label">שיעור 3</div>
+            <div class="script-direction">[SCREEN: שקף: שיעור 3 ("תתאימו אישית")]</div>
+            <div class="script-text">
+              שיעור 3. הכי חשוב ביום.<br><br>
+              פתיחת קובץ כישור.<br>
+              פתחו קלוד דסקטופ. הקלידו:<br>
+              "פתחי את הקובץ .claude/commands/morning-briefing.md. הראי לי את התוכן."<br>
+              קראו אותו. הוראות בטקסט רגיל. אין קוד. אין קסם. פשוט משפטים.<br><br>
+              עכשיו. הוסיפו כלל אחד לכישור הזה.<br>
+              "הוסיפי לכישור /morning-briefing שהוא תמיד מסיים בשאלה אחת ישירה: 'מה ה-1 דבר שאם תסיים היום, היום יהיה ניצחון?'"<br>
+              היא תערוך את הקובץ. מהיום /morning-briefing יסיים תמיד עם השאלה הזאת.<br><br>
+              זה כוח ההתאמה.<br><br>
+              עכשיו. בניית כישור משלכם.<br>
+              זוכרים את זרימת העבודה החזקה מיום 3? הפרומפט שמצאתם הכי שימושי? היום הזמן להפוך אותה לכישור.<br>
+              אמרו לדונה:<br>
+              "הפכי את [התיאור של הפרומפט שלכם] לכישור חדש בשם /[שם הכישור]. צרי את הקובץ ב-.claude/commands/"<br>
+              היא תיצור. מהיום זו פקודה חדשה.<br><br>
+              ואיך מוסיפים כישורים מבחוץ?<br>
+              בקהילת וואטסאפ אשתף כישורים שכתבתי לעסקים שונים. כל כישור זה קובץ .md. מורידים. מניחים בתיקייה. מריצים. זהו.<br><br>
+              מכאן ואילך, כל זרימת עבודה שאתם עושים 3 פעמים ויותר. הפכו לכישור.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lesson-body">
+
+        <div class="callout callout-green">
+          <div class="callout-title">💡 הכלל הכי חשוב של יום 4</div>
+          <p>כל זרימת עבודה שאתם עושים 3 פעמים ויותר. הפכו לכישור. פעם אחת כותבים, אלפי פעמים מריצים בן מילה.</p>
+        </div>
+
+        <div class="steps-list">
+
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>פתחו קובץ כישור</strong>
+              <p>תראו מה בפנים. זה רק טקסט. אין קוד. אין קסם.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">בקשה לדונה</span>
+            <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+          </div>
+          <pre>פתחי את הקובץ .claude/commands/morning-briefing.md.
+הראי לי את התוכן.</pre>
+        </div>
+
+        <div class="steps-list" style="margin-top:16px;">
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>הוסיפו כלל אחד לכישור קיים</strong>
+              <p>התאמה אחת. תראו שהשינוי נכנס לתוקף מיד.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">בקשה לדונה</span>
+            <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+          </div>
+          <pre>הוסיפי לכישור /morning-briefing שהוא תמיד
+מסיים בשאלה אחת ישירה:
+"מה ה-1 דבר שאם תסיים היום, היום יהיה ניצחון?"</pre>
+        </div>
+
+        <div class="steps-list" style="margin-top:16px;">
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>בנו כישור משלכם</strong>
+              <p>זוכרים את הפרומפט הכי שימושי מיום 3? הפכו אותו לכישור. פקודה בן מילה שלכם.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">בקשה לדונה</span>
+            <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+          </div>
+          <pre>הפכי את [תיאור הפרומפט שמצאתם הכי שימושי]
+לכישור חדש בשם /[שם-הכישור].
+צרי את הקובץ ב-.claude/commands/</pre>
+        </div>
+
+        <div class="steps-list" style="margin-top:16px;">
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>ייבוא כישורים מהקהילה</strong>
+              <p>כישורים שאשתף בקבוצת וואטסאפ. קובץ .md. מורידים. מניחים בתיקייה. מריצים.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="callout callout-blue" style="margin-top:16px;">
+          <div class="callout-title">📥 ייבוא כישור מהקהילה</div>
+          <ul>
+            <li>הורידו את קובץ ה-.md שאשתף בקבוצת וואטסאפ</li>
+            <li>הניחו אותו בתיקייה .claude/commands/ שלכם</li>
+            <li>הריצו /שם-הכישור. זהו. אין יותר.</li>
+          </ul>
+        </div>
+
+        <div class="note-box" style="margin-top:16px;">
+          <strong>קולבק ליום 3.</strong> הפרומפט שמצאתם הכי שימושי בחקירת העסק. הוא המועמד הראשי לכישור שלכם. אם עוד לא בחרתם. חזרו לפרומפטים 5-7 מיום 3 ובחרו אחד.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- OUTRO CARD -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num" style="background: linear-gradient(135deg, #4ade80, #22c55e); font-size:20px;">✓</div>
+        <div>
+          <h3>סיכום יום 4</h3>
+          <p>מה עשינו ומה מחכה ביום 5</p>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <div class="callout callout-green">
+          <div class="callout-title">✅ מה עשינו היום</div>
+          <ul>
+            <li>/morning-briefing הורץ על נתונים אמיתיים ויומן אמיתי</li>
+            <li>הרצנו 5 כישורים שונים וראינו את הטווח</li>
+            <li>פתחנו קובץ כישור והוספנו כלל אחד. ראינו שהשינוי נכנס לתוקף מיד</li>
+            <li>בניתם כישור אחד משלכם. פקודה חדשה שלא הייתה אתמול</li>
+          </ul>
+        </div>
+        <div class="callout callout-orange" style="margin-top:12px;">
+          <div class="callout-title">🚀 מה שנשאר: יום 5</div>
+          <p>שם דונה הולכת לאוטומציה. היא עובדת בזמן שאתם ישנים. שגרות בוקר, ערב, שבועיות. נתראה מחר.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="checklist-card">
+      <div class="checklist-title">✅ צ'קליסט יום 4</div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="checkbox"></div>
+        <div class="check-label">/morning-briefing הורץ על נתונים אמיתיים ויומן אמיתי</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="checkbox"></div>
+        <div class="check-label">הרצתי לפחות 5 כישורים שונים וראיתי את הטווח</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="checkbox"></div>
+        <div class="check-label">פתחתי קובץ כישור והוספתי כלל אחד</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="checkbox"></div>
+        <div class="check-label">בניתי כישור אחד משלי מהפרומפטים של יום 3</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="checkbox"></div>
+        <div class="check-label">זיהיתי את 4 הכישורים היומיים שלי. ה-Daily 4 האישי שלי</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <h3>יום 4 הושלם</h3>
+      <p>יש לכם כישורים. דונה מאומנת. מחר היא עובדת בזמן שאתם ישנים. יום 5 הוא שגרות ואוטומציה.</p>
+      <a href="day-5-portal.html" class="cta-btn">מוכנים ליום 5? ←</a>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">📊 התקדמות האתגר</div>
+      <div class="sidebar-card-body">
+        <div class="progress-days">
+          <div class="progress-day done">
+            <span class="progress-icon">✅</span>
+            <span class="progress-label">יום 0. הכנה</span>
+            <span class="progress-status">הושלם</span>
+          </div>
+          <div class="progress-day done">
+            <span class="progress-icon">✅</span>
+            <span class="progress-label">יום 1. ערכת ההתחלה</span>
+            <span class="progress-status">הושלם</span>
+          </div>
+          <div class="progress-day done">
+            <span class="progress-icon">✅</span>
+            <span class="progress-label">יום 2. זיכרון ואישיות</span>
+            <span class="progress-status">הושלם</span>
+          </div>
+          <div class="progress-day done">
+            <span class="progress-icon">✅</span>
+            <span class="progress-label">יום 3. תג וגישה</span>
+            <span class="progress-status">הושלם</span>
+          </div>
+          <div class="progress-day active">
+            <span class="progress-icon">💪</span>
+            <span class="progress-label">יום 4. יום האימון</span>
+            <span class="progress-status">עכשיו</span>
+          </div>
+          <div class="progress-day upcoming">
+            <span class="progress-icon">🔒</span>
+            <span class="progress-label">יום 5. שגרות ואוטומציה</span>
+            <span class="progress-status">מחר</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">⚡ סדר פעולות יום 4</div>
+      <div class="sidebar-card-body">
+        <div class="sop-steps">
+          <div class="sop-step">
+            <div class="sop-dot">1</div>
+            <div class="sop-text">צפו בסרטון מבוא (3 דקות)</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">2</div>
+            <div class="sop-text">קראו את טבלת 12 הכישורים</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">3</div>
+            <div class="sop-text">הריצו <code>/morning-briefing</code> ראשון</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">4</div>
+            <div class="sop-text">הריצו 5 כישורים שונים (שיעור 2)</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">5</div>
+            <div class="sop-text">פתחו קובץ כישור. הוסיפו כלל</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">6</div>
+            <div class="sop-text">בנו כישור משלכם מפרומפט יום 3</div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-dot">7</div>
+            <div class="sop-text">זהו את ה-Daily 4 שלכם. סמנו צ'קליסט</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">📋 עזר מהיר. הכישורים</div>
+      <div class="sidebar-card-body">
+        <div class="quick-ref">
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/morning-briefing</span>
+            <span class="quick-ref-desc">סיכום בוקר</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/email-draft</span>
+            <span class="quick-ref-desc">מייל בסגנון שלכם</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/decisions</span>
+            <span class="quick-ref-desc">ממסגרת החלטה</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/weekly-plan</span>
+            <span class="quick-ref-desc">תכנון שבוע</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/summarize</span>
+            <span class="quick-ref-desc">תמצית מסמך/URL</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/accountability</span>
+            <span class="quick-ref-desc">בדיקת התחייבויות</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/end-of-day</span>
+            <span class="quick-ref-desc">סיכום יום</span>
+          </div>
+          <div class="quick-ref-item">
+            <span class="quick-ref-cmd">/meeting-prep</span>
+            <span class="quick-ref-desc">הכנה לפגישה</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">💡 טיפ יום 4</div>
+      <div class="sidebar-card-body">
+        <p style="font-size:13px;color:var(--text-dim);line-height:1.7;">מצאתם כישור שעובד מצוין? שתפו בקבוצה. אחרים ייבאו. זה כוח הקהילה. כישור אחד טוב שווה לכולם.</p>
+      </div>
+    </div>
+
+  </aside>
+
+</div><!-- end page-layout -->
+
+<!-- FLOATING SOP -->
+<button class="floating-sop" onclick="document.querySelector('.sidebar').scrollIntoView({behavior:'smooth'})">
+  ⚡ סדר פעולות
+</button>
+
+<script>
+  function toggleScript(btn) {
+    const content = btn.nextElementSibling;
+    content.classList.toggle('open');
+    const isOpen = content.classList.contains('open');
+    const label = btn.dataset.label || btn.textContent.replace('📄 ', '').replace('הסתר ', '').replace('הצג ', '');
+    btn.textContent = isOpen ? '📄 הסתר ' + label : '📄 הצג ' + label;
+  }
+
+  document.querySelectorAll('.script-toggle').forEach(btn => {
+    const text = btn.textContent.replace('📄 ', '').replace('הצג ', '');
+    btn.dataset.label = text;
+  });
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'הועתק ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'העתק';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function toggleCheck(item) {
+    item.classList.toggle('checked');
+    const checked = document.querySelectorAll('.check-item.checked').length;
+    const total = document.querySelectorAll('.check-item').length;
+    if (checked === total) {
+      setTimeout(() => alert('כל הכבוד! השלמתם את יום 4. דונה מאומנת. מחר היא עובדת בזמן שאתם ישנים. ליום 5!'), 300);
+    }
+  }
+</script>
+
+
+<script>
+(function(){
+  var KEY='bina_portal_v1';
+  if(localStorage.getItem(KEY)==='ok'){document.getElementById('bina-gate').style.display='none';return;}
+  // Participant codes (change here to update)
+  var CODES=['DONNA2025','BINAADMIN'];
+  document.getElementById('gate-btn').addEventListener('click',check);
+  document.getElementById('gate-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  function check(){
+    var v=document.getElementById('gate-input').value.trim().toUpperCase();
+    if(CODES.includes(v)){localStorage.setItem(KEY,'ok');document.getElementById('bina-gate').style.display='none';}
+    else{document.getElementById('gate-err').style.display='block';}
+  }
+})();
+</script>
+
+</body>
+</html>

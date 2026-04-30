@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יום 5 . היא עובדת בזמן שאתה ישן | אתגר בינה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08080c;
+  --bg-card:#12121a;
+  --bg-card-hover:#1a1a24;
+  --border:#2a2a3a;
+  --orange:#e87040;
+  --orange-bright:#ff8050;
+  --text:#e8e8ee;
+  --text-dim:#8a8a9a;
+  --text-bright:#ffffff;
+  --green:#4ade80;
+  --red:#ef4444;
+  --code-bg:#0f0f16;
+  --purple:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Heebo',sans-serif;
+  direction:rtl;
+  text-align:right;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(8,8,12,0.96);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+}
+.nav-inner{
+  max-width:1100px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  height:56px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.nav-inner::-webkit-scrollbar{display:none;}
+.nav-tab{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 16px;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  white-space:nowrap;
+  text-decoration:none;
+  color:var(--text-dim);
+  transition:all .2s;
+  border:1px solid transparent;
+}
+.nav-tab:hover{background:var(--bg-card);color:var(--text);}
+.nav-tab.complete{color:var(--green);}
+.nav-tab.active{
+  background:rgba(232,112,64,0.12);
+  color:var(--orange-bright);
+  border-color:rgba(232,112,64,0.3);
+}
+.dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--text-dim);
+  flex-shrink:0;
+}
+.dot.green{background:var(--green);}
+.dot.orange{background:var(--orange);}
+.brand-nav{
+  margin-right:auto;
+  font-size:13px;
+  font-weight:600;
+  color:var(--text-dim);
+  white-space:nowrap;
+  padding-right:16px;
+  border-right:1px solid var(--border);
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main{max-width:1100px;margin:0 auto;padding:48px 24px 80px;}
+
+/* ===== DAY HEADER ===== */
+.day-header{margin-bottom:48px;}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  font-size:13px;font-weight:600;
+  border:1px solid var(--border);
+  background:var(--bg-card);
+  color:var(--text-dim);
+}
+.badge.day-badge{
+  background:rgba(232,112,64,0.15);
+  color:var(--orange-bright);
+  border-color:rgba(232,112,64,0.4);
+  font-size:15px;
+}
+.badge.grad-badge{
+  background:rgba(167,139,250,0.15);
+  color:var(--purple);
+  border-color:rgba(167,139,250,0.35);
+}
+.day-h1{
+  font-size:clamp(32px,5vw,52px);
+  font-weight:800;
+  color:var(--text-bright);
+  line-height:1.15;
+  margin-bottom:16px;
+}
+.day-h1 span{color:var(--orange-bright);}
+.day-subtitle{
+  font-size:18px;
+  color:var(--text-dim);
+  font-weight:400;
+  max-width:640px;
+  line-height:1.6;
+}
+
+/* ===== SECTION TITLES ===== */
+.section-title{
+  font-size:22px;
+  font-weight:700;
+  color:var(--text-bright);
+  margin-bottom:20px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+
+/* ===== COLLAPSIBLE ===== */
+.collapsible{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin-bottom:32px;
+  overflow:hidden;
+}
+.collapsible-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 24px;
+  cursor:pointer;
+  user-select:none;
+  transition:background .2s;
+}
+.collapsible-header:hover{background:var(--bg-card-hover);}
+.collapsible-title{
+  font-size:16px;
+  font-weight:600;
+  color:var(--text-bright);
+  display:flex;align-items:center;gap:10px;
+}
+.collapsible-icon{
+  font-size:12px;color:var(--text-dim);
+  transition:transform .3s;
+}
+.collapsible.open .collapsible-icon{transform:rotate(180deg);}
+.collapsible-body{
+  display:none;
+  padding:0 24px 24px;
+  border-top:1px solid var(--border);
+}
+.collapsible.open .collapsible-body{display:block;}
+
+/* ===== SCRIPT SECTION ===== */
+.script-part{margin-bottom:28px;padding-top:24px;}
+.script-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--orange);
+  margin-bottom:12px;
+}
+.script-text{
+  font-size:15px;
+  line-height:1.8;
+  color:var(--text);
+  white-space:pre-line;
+}
+.screen-note{
+  display:inline-block;
+  background:rgba(167,139,250,0.1);
+  border:1px solid rgba(167,139,250,0.25);
+  border-radius:6px;
+  padding:4px 12px;
+  font-size:12px;
+  color:var(--purple);
+  margin-bottom:10px;
+  font-weight:500;
+}
+
+/* ===== LESSON CARDS ===== */
+.lessons-grid{display:flex;flex-direction:column;gap:28px;margin-bottom:40px;}
+.lesson-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+.lesson-card-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:24px 28px;
+  background:linear-gradient(135deg, rgba(232,112,64,0.08) 0%, transparent 70%);
+  border-bottom:1px solid var(--border);
+}
+.lesson-num{
+  width:44px;height:44px;
+  border-radius:50%;
+  background:rgba(232,112,64,0.15);
+  border:2px solid rgba(232,112,64,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;color:var(--orange-bright);
+  flex-shrink:0;
+}
+.lesson-title-wrap{}
+.lesson-num-label{font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;}
+.lesson-title{font-size:20px;font-weight:700;color:var(--text-bright);}
+.lesson-body{padding:28px;}
+
+/* ===== ROUTINE CARDS ===== */
+.routines-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+.routine-card{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+}
+.routine-card:hover{border-color:rgba(232,112,64,0.3);background:rgba(232,112,64,0.04);}
+.routine-icon{font-size:24px;margin-bottom:10px;}
+.routine-name{font-size:15px;font-weight:700;color:var(--text-bright);margin-bottom:6px;}
+.routine-time{
+  font-size:12px;font-weight:600;
+  color:var(--orange);
+  background:rgba(232,112,64,0.1);
+  border-radius:20px;
+  padding:3px 10px;
+  display:inline-block;
+  margin-bottom:8px;
+}
+.routine-trigger{font-size:13px;color:var(--text-dim);line-height:1.5;}
+.routine-cmd{
+  margin-top:10px;
+  font-family:monospace;
+  font-size:12px;
+  color:var(--orange-bright);
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 10px;
+}
+
+/* ===== SETUP STEPS ===== */
+.setup-steps{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px 24px;
+  margin:20px 0;
+}
+.setup-steps-title{
+  font-size:13px;font-weight:700;
+  color:var(--text-dim);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+.setup-step{
+  display:flex;align-items:flex-start;gap:12px;
+  margin-bottom:12px;
+}
+.step-num{
+  width:22px;height:22px;
+  border-radius:50%;
+  background:rgba(232,112,64,0.15);
+  border:1px solid rgba(232,112,64,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+  color:var(--orange);
+  flex-shrink:0;
+  margin-top:1px;
+}
+.step-text{font-size:14px;color:var(--text);line-height:1.6;}
+.step-text code{
+  font-family:monospace;
+  font-size:12px;
+  background:rgba(232,112,64,0.12);
+  color:var(--orange-bright);
+  padding:2px 6px;
+  border-radius:4px;
+}
+
+/* ===== CALLOUT ===== */
+.callout{
+  border-radius:10px;
+  padding:16px 20px;
+  margin:16px 0;
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:14px;line-height:1.6;
+}
+.callout.warning{
+  background:rgba(232,112,64,0.08);
+  border:1px solid rgba(232,112,64,0.2);
+  color:var(--text);
+}
+.callout.info{
+  background:rgba(167,139,250,0.08);
+  border:1px solid rgba(167,139,250,0.2);
+  color:var(--text);
+}
+.callout.green{
+  background:rgba(74,222,128,0.07);
+  border:1px solid rgba(74,222,128,0.2);
+  color:var(--text);
+}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.callout strong{color:var(--text-bright);}
+
+/* ===== CODE BLOCK ===== */
+.code-block{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 20px;
+  margin:12px 0;
+  position:relative;
+}
+.code-block code{
+  font-family:'Courier New',monospace;
+  font-size:14px;
+  color:var(--orange-bright);
+  white-space:pre-wrap;
+  direction:ltr;
+  text-align:left;
+  display:block;
+}
+.copy-btn{
+  position:absolute;
+  top:10px;
+  left:12px;
+  background:rgba(232,112,64,0.1);
+  border:1px solid rgba(232,112,64,0.25);
+  color:var(--orange);
+  border-radius:6px;
+  padding:4px 10px;
+  font-size:11px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'Heebo',sans-serif;
+}
+.copy-btn:hover{background:rgba(232,112,64,0.2);}
+.copy-btn.copied{color:var(--green);border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.08);}
+
+/* ===== TIMELINE ===== */
+.timeline{margin:16px 0;}
+.timeline-item{
+  display:flex;align-items:flex-start;gap:16px;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+}
+.timeline-item:last-child{border-bottom:none;}
+.timeline-dot{
+  width:12px;height:12px;
+  border-radius:50%;
+  margin-top:4px;
+  flex-shrink:0;
+}
+.timeline-dot.orange{background:var(--orange);}
+.timeline-dot.purple{background:var(--purple);}
+.timeline-dot.green{background:var(--green);}
+.timeline-time{
+  font-size:13px;font-weight:700;
+  color:var(--orange-bright);
+  min-width:120px;
+  white-space:nowrap;
+}
+.timeline-desc{font-size:14px;color:var(--text);line-height:1.5;}
+
+/* ===== COMPARISON TABLE ===== */
+.compare-table{width:100%;border-collapse:collapse;margin-top:12px;}
+.compare-table th{
+  padding:12px 16px;
+  font-size:13px;font-weight:700;
+  color:var(--text-bright);
+  border-bottom:2px solid var(--border);
+  text-align:right;
+}
+.compare-table th:first-child{color:var(--text-dim);}
+.compare-table th.day1-col{color:var(--text-dim);}
+.compare-table th.day30-col{color:var(--orange-bright);}
+.compare-table td{
+  padding:12px 16px;
+  font-size:14px;
+  color:var(--text);
+  border-bottom:1px solid var(--border);
+  line-height:1.5;
+}
+.compare-table tr:last-child td{border-bottom:none;}
+.compare-table td:first-child{color:var(--text-dim);font-weight:600;}
+.compare-table td.dim{color:var(--text-dim);}
+.compare-table td.bright{color:var(--green);}
+
+/* ===== CHECKLIST ===== */
+.checklist{list-style:none;margin:0;padding:0;}
+.checklist-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  font-size:15px;
+  color:var(--text);
+}
+.checklist-item:last-child{border-bottom:none;}
+.check-box{
+  width:22px;height:22px;
+  border-radius:6px;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  cursor:pointer;
+  transition:all .2s;
+  margin-top:1px;
+}
+.check-box.checked{
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+  font-size:12px;
+}
+.check-box:not(.checked):hover{border-color:var(--orange);}
+.checklist-item.done .check-text{text-decoration:line-through;color:var(--text-dim);}
+
+/* ===== FAQ ===== */
+.faq-list{display:flex;flex-direction:column;gap:12px;}
+.faq-item{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.faq-q{
+  padding:18px 20px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:15px;font-weight:600;color:var(--text-bright);
+  user-select:none;
+}
+.faq-q:hover{background:var(--bg-card-hover);}
+.faq-icon{font-size:12px;color:var(--text-dim);transition:transform .3s;flex-shrink:0;margin-right:8px;}
+.faq-item.open .faq-icon{transform:rotate(180deg);}
+.faq-a{
+  display:none;
+  padding:0 20px 18px;
+  font-size:14px;color:var(--text);
+  line-height:1.7;
+  border-top:1px solid var(--border);
+  padding-top:16px;
+}
+.faq-item.open .faq-a{display:block;}
+
+/* ===== WHAT YOU BUILT ===== */
+.built-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+  margin:20px 0;
+}
+.built-item{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.built-item:hover{border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.03);}
+.built-check{
+  color:var(--green);
+  font-size:18px;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.built-text{font-size:14px;color:var(--text);line-height:1.5;}
+
+/* ===== DAY 6+ SECTION ===== */
+.next-section{
+  background:linear-gradient(135deg,rgba(232,112,64,0.08) 0%,rgba(167,139,250,0.04) 100%);
+  border:1px solid rgba(232,112,64,0.2);
+  border-radius:16px;
+  padding:36px;
+  margin:40px 0;
+}
+.next-title{
+  font-size:26px;font-weight:800;
+  color:var(--text-bright);
+  margin-bottom:8px;
+}
+.next-subtitle{font-size:15px;color:var(--text-dim);margin-bottom:28px;}
+.next-timeline{display:flex;flex-direction:column;gap:0;}
+.next-item{
+  display:flex;align-items:flex-start;gap:20px;
+  padding:18px 0;
+  border-bottom:1px solid var(--border);
+}
+.next-item:last-child{border-bottom:none;}
+.next-when{
+  min-width:130px;
+  font-size:13px;font-weight:700;
+  color:var(--orange-bright);
+  padding-top:2px;
+}
+.next-desc{font-size:14px;color:var(--text);line-height:1.6;}
+.next-desc strong{color:var(--text-bright);}
+
+/* ===== CELEBRATION ===== */
+.celebration{
+  text-align:center;
+  padding:56px 24px;
+  margin:32px 0;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  position:relative;
+  overflow:hidden;
+}
+.celebration::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(232,112,64,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.celebration-emoji{font-size:56px;margin-bottom:20px;display:block;}
+.celebration-title{
+  font-size:32px;font-weight:800;
+  color:var(--text-bright);
+  margin-bottom:12px;
+}
+.celebration-title span{color:var(--orange-bright);}
+.celebration-sub{
+  font-size:16px;color:var(--text-dim);
+  max-width:500px;
+  margin:0 auto 24px;
+  line-height:1.6;
+}
+.celebration-quote{
+  font-size:18px;font-weight:600;
+  color:var(--text);
+  font-style:italic;
+  max-width:600px;
+  margin:0 auto;
+  padding:20px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(232,112,64,0.04);
+}
+
+/* ===== UTILITIES ===== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr;}}
+.mt-sm{margin-top:12px;}
+.mt-md{margin-top:20px;}
+.mt-lg{margin-top:32px;}
+.mb-md{margin-bottom:20px;}
+.text-dim{color:var(--text-dim);}
+.text-bright{color:var(--text-bright);}
+.text-orange{color:var(--orange-bright);}
+.text-green{color:var(--green);}
+.text-purple{color:var(--purple);}
+hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;
+  bottom:32px;
+  right:50%;
+  transform:translateX(50%);
+  background:#1a1a24;
+  border:1px solid rgba(74,222,128,0.3);
+  color:var(--green);
+  padding:12px 24px;
+  border-radius:8px;
+  font-size:14px;font-weight:600;
+  opacity:0;
+  transition:opacity .3s;
+  pointer-events:none;
+  z-index:999;
+}
+.toast.show{opacity:1;}
+
+/* ===== GATE OVERLAY ===== */
+#bina-gate{position:fixed;inset:0;z-index:99999;background:rgba(8,8,12,0.97);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Heebo',sans-serif;direction:rtl;}
+.gate-box{background:#12121a;border:1px solid #2a2a3a;border-radius:20px;
+  padding:48px 40px;text-align:center;max-width:400px;width:90%;}
+.gate-logo{font-size:28px;font-weight:800;color:#e87040;margin-bottom:8px;}
+.gate-sub{font-size:13px;color:#8a8a9a;margin-bottom:28px;}
+.gate-box h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;}
+.gate-input{width:100%;padding:14px 16px;border-radius:10px;
+  border:1px solid #2a2a3a;background:#0f0f16;color:#e8e8ee;
+  font-size:16px;font-family:'Heebo',sans-serif;text-align:center;
+  margin-bottom:12px;letter-spacing:2px;outline:none;}
+.gate-input:focus{border-color:#e87040;}
+.gate-btn{width:100%;padding:14px;border-radius:10px;background:#e87040;
+  color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;transition:background .15s;}
+.gate-btn:hover{background:#ff8050;}
+.gate-err{color:#ef4444;font-size:13px;margin-top:10px;display:none;}
+
+</style>
+</head>
+<body>
+<div id="bina-gate">
+  <div class="gate-box">
+    <div class="gate-logo">אתגר בינה</div>
+    <p class="gate-sub">שיטת יצירת עובדי AI של ג'יי</p>
+    <h2>נדרש קוד גישה</h2>
+    <input id="gate-input" class="gate-input" type="password" placeholder="הכניסו קוד גישה" autocomplete="off" autofocus>
+    <button id="gate-btn" class="gate-btn">כניסה</button>
+    <p id="gate-err" class="gate-err">קוד שגוי. נסו שוב.</p>
+  </div>
+</div>
+
+<!-- ===== TOP NAV ===== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <div class="brand-nav">שיטת יצירת עובדי AI של ג'יי</div>
+    <a href="day-0-portal.html" class="nav-tab complete">
+      <span class="dot green"></span>יום 0
+    </a>
+    <a href="day-1-portal.html" class="nav-tab complete">
+      <span class="dot green"></span>יום 1
+    </a>
+    <a href="day-2-portal.html" class="nav-tab complete">
+      <span class="dot green"></span>יום 2
+    </a>
+    <a href="day-3-portal.html" class="nav-tab complete">
+      <span class="dot green"></span>יום 3
+    </a>
+    <a href="day-4-portal.html" class="nav-tab complete">
+      <span class="dot green"></span>יום 4
+    </a>
+    <a href="day-5-portal.html" class="nav-tab active">
+      <span class="dot orange"></span>יום 5
+    </a>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="main">
+
+  <!-- DAY HEADER -->
+  <div class="day-header">
+    <div class="badge-row">
+      <span class="badge day-badge">יום 5</span>
+      <span class="badge">⏱️ 60-75 דקות</span>
+      <span class="badge">📹 3 סרטונים</span>
+      <span class="badge">⚙️ 3 שיעורים</span>
+      <span class="badge grad-badge">🎓 סיום!</span>
+    </div>
+    <h1 class="day-h1">היא עובדת <span>בזמן שאתה ישן</span></h1>
+    <p class="day-subtitle">שגרות. לולאת הלמידה. והסיום. מכאן, דונה עובדת גם בלעדיכם.</p>
+  </div>
+
+  <!-- ===== SCRIPT COLLAPSIBLE ===== -->
+  <div class="collapsible" id="script-collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible('script-collapsible')">
+      <div class="collapsible-title">📜 תסריט מלא לסרטונים <span style="font-size:13px;color:var(--text-dim);font-weight:400;margin-right:8px;">לחצו להרחבה</span></div>
+      <span class="collapsible-icon">▼</span>
+    </div>
+    <div class="collapsible-body">
+
+      <!-- INTRO -->
+      <div class="script-part">
+        <div class="script-label">סרטון פתיחה . אינטרו</div>
+        <div class="screen-note">[SCREEN: שקף: יום 5 - "היא עובדת בזמן שאתה ישן"]</div>
+        <div class="script-text">ברוכים הבאים ליום 5. היום האחרון.
+
+סיכום מהיר. ביום 4 הרצתם את /morning-briefing הראשון שלכם על נתונים אמיתיים. חמישה כישורים שונים. פתחתם קובץ כישור והוספתם כלל אחד. זיהיתם את ה-Daily 4 שלכם.
+
+היום: 3 שיעורים.
+
+שיעור 1. שגרות. מרכיב 7 בשיטה. המעבר מ"המתנה" ל"ריצה". מגדירים את כל 4 השגרות ואני מסביר מה צריך לדעת כדי שהן באמת יעבדו.
+
+שיעור 2. לולאת הלמידה. מרכיב 8. מריצים /weekly-report ו-/accountability, ואני מראה לכם איך /learn מעדכן את הזיכרון של דונה ברקע כל לילה.
+
+שיעור 3. סיום. תצוגת גרף, הרפלקציה, מה בניתם, וסקירה מלאה של מה שדונה יכולה לעשות לכם מחר בבוקר.</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- LESSON 1 SCRIPT -->
+      <div class="script-part">
+        <div class="script-label">שיעור 1 . שגרות</div>
+        <div class="screen-note">[SCREEN: שקף: שיעור 1 ("שגרות")]</div>
+        <div class="script-text">שיעור 1. שגרות.
+
+עד עכשיו דונה עבדה רק כשאתם ביקשתם. שאלתם. ענתה. שתקתם. שתקה.
+
+שגרות משנות את זה. היא עובדת גם בלעדיכם.
+
+4 שגרות:
+
+שגרה 1. תדריך בוקר. כל בוקר, שבע וחצי. דונה שולחת לכם עדכון יומי. יומן. מיילים דחופים. משימות ביום. מזג אוויר אם רלוונטי.
+
+שגרה 2. סיכום ערב. כל ערב, אחת עשרה. דונה מסכמת את היום. מה נעשה. מה נדחה. מה למדה.
+
+שגרה 3. דוח שבועי. כל ראשון בשבע בבוקר. סקירת השבוע. ניצחונות. פערים. המלצה לשבוע הבא.
+
+שגרה 4. לולאת הלמידה. כל לילה, כחלק מסיכום הערב. /learn רץ ברקע. היא מעדכנת את הזיכרון שלה עם מה שלמדה עליכם ביום.
+
+איך מגדירים שגרות ב-Claude Code Desktop:
+פתחו הגדרות. Scheduled Tasks. לחצו Add Task.
+
+שגרה 1 - תדריך בוקר:
+Prompt: /morning-briefing
+Schedule: כל יום, 7:30 בבוקר
+
+שגרה 2 - סיכום ערב:
+Prompt: /end-of-day
+Schedule: כל יום, 23:00
+
+שגרה 3 - דוח שבועי:
+Prompt: /weekly-report
+Schedule: כל ראשון, 7:00 בבוקר
+
+שגרה 4 - לולאת הלמידה כבר מוטמעת בשגרת הערב.
+
+מה שצריך לדעת כדי שזה באמת יעבוד:
+
+אחד. קלוד דסקטופ צריך להיות פתוח בשעה שהשגרה מופעלת. אם הוא סגור, השגרה מחכה.
+
+שתיים. ב-Mac, כדאי להגדיר שהמחשב לא נכנס ל-Sleep לפני 11 בלילה.
+
+שלוש. אם בדיוק ביום ראשון הראשון השגרה לא הופיעה בזמן, נורמלי. בדקו שהוגדר נכון. הריצו פעם ידנית כדי לוודא.
+
+עכשיו. תגדירו את 3 השגרות. ואני אדגים איך הן נראות כשרצות.</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- LESSON 2 SCRIPT -->
+      <div class="script-part">
+        <div class="script-label">שיעור 2 . לולאת הלמידה</div>
+        <div class="screen-note">[SCREEN: שקף: שיעור 2 ("לולאת הלמידה")]</div>
+        <div class="script-text">שיעור 2. לולאת הלמידה.
+
+מרכיב 8. האחרון.
+
+איך דונה נעשית טובה יותר עם הזמן?
+
+/learn רץ כל לילה. הוא קורא מה קרה ביום. מה שיחתם. מה הוחלט. מה למדנו. ומעדכן את brain/Daily-Logs ואת brain/Preferences בהתאם.
+
+תוצאה:
+אחרי שבוע אחד: דונה מכירה את הדפוסים הבסיסיים שלכם.
+אחרי חודש: היא מכירה אתכם טוב יותר ממה שאתם מכירים את עצמכם.
+אחרי שלושה חודשים: לא דומה לדונה שפגשתם ביום 1.
+
+/weekly-report: הריצו עכשיו. "/weekly-report"
+תראו: מה הניצחונות של השבוע. מה הפערים. מה ממליצה לשבוע הבא.
+אם זה השבוע הראשון: קיבלתם נתונים מ-4 ימים בלבד. זה צפוי. בשבוע הבא יהיה יותר.
+
+/accountability: הריצו עכשיו. "/accountability"
+דונה בודקת: מה הבטחתם לאנשים השבוע? מה עשיתם? מה לא?
+זה הכישור שהכי שנוא. ושהכי אהוב. בו-זמנית.
+
+/learn לא מריצים ידנית. הוא חלק מ-/end-of-day. כל פעם שתריצו את שגרת הערב, הוא רץ בתוכה. תבחינו שדונה "זוכרת" דברים שלא אמרתם לה ישירות.</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- LESSON 3 SCRIPT -->
+      <div class="script-part">
+        <div class="script-label">שיעור 3 . סיום</div>
+        <div class="screen-note">[SCREEN: שקף: שיעור 3 ("סיום")]</div>
+        <div class="script-text">שיעור 3. סיום. שני חלקים. מהירים.
+
+חלק א: תצוגת הגרף.
+פתחו אובסידיאן. לחצו על הסמל של תצוגת גרף (פינה שמאלית תחתונה, icon של 3 נקודות מחוברות).
+תראו: נקודות. כל נקודה היא קובץ. כל קו הוא קישור בין קבצים.
+היום: כמה נקודות. מינימלי.
+ביום 30: אשכולות צפופים.
+תצלמו סקרינשוט עכשיו. תצלמו שוב ביום 30. ההבדל דרמטי.
+
+חלק ב: מה בניתם.
+
+בואו נעשה חשבון.
+[הצג: שקף עם רשימה]
+
+יש לכם:
+עובד AI שמכיר אתכם. העסק. האנשים. הסגנון.
+14 כישורים שרצים בפקודה.
+גישה ל-Gmail, יומן, ו-Drive.
+4 שגרות שרצות לבד.
+לולאת למידה שמשפרת את דונה כל לילה.
+
+זה מה שבניתם ב-5 ימים.
+
+מה עכשיו?
+מחר בבוקר: תדריך הבוקר הראשון שלכם רץ לבד. פשוט פתחו קלוד דסקטופ בבוקר ותמצאו אותו.
+קהילת וואטסאפ תמיד פתוחה. /ask-jay אם תקועים. ולזכור: דונה ביום 30 תהיה עובד אחר לגמרי. נתראה שם.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== LESSON CARDS ===== -->
+  <div class="section-title">שיעורים . יום 5</div>
+  <div class="lessons-grid">
+
+    <!-- LESSON 1: שגרות -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">1</div>
+        <div class="lesson-title-wrap">
+          <div class="lesson-num-label">שיעור ראשון</div>
+          <div class="lesson-title">שגרות . המעבר לאוטומציה</div>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p class="text-dim mb-md" style="font-size:15px;line-height:1.7;">עד עכשיו דונה עבדה רק כשביקשתם. מכאן, היא עובדת גם בלעדיכם. ארבע שגרות. כל אחת רצה לבד בזמן שנקבע.</p>
+
+        <div class="routines-grid">
+          <div class="routine-card">
+            <div class="routine-icon">🌅</div>
+            <div class="routine-name">תדריך בוקר</div>
+            <div class="routine-time">כל יום, 7:30</div>
+            <div class="routine-trigger">יומן, מיילים דחופים, משימות, ועדכון יומי. מחכה לכם כשאתם פותחים קלוד.</div>
+            <div class="routine-cmd">/morning-briefing</div>
+          </div>
+          <div class="routine-card">
+            <div class="routine-icon">🌙</div>
+            <div class="routine-name">סיכום ערב</div>
+            <div class="routine-time">כל יום, 23:00</div>
+            <div class="routine-trigger">מה נעשה, מה נדחה, מה למדנו. הכנה ליום הבא.</div>
+            <div class="routine-cmd">/end-of-day</div>
+          </div>
+          <div class="routine-card">
+            <div class="routine-icon">📊</div>
+            <div class="routine-name">דוח שבועי</div>
+            <div class="routine-time">כל ראשון, 7:00</div>
+            <div class="routine-trigger">סקירת השבוע. ניצחונות, פערים, המלצה לשבוע הבא.</div>
+            <div class="routine-cmd">/weekly-report</div>
+          </div>
+          <div class="routine-card">
+            <div class="routine-icon">🧠</div>
+            <div class="routine-name">לולאת הלמידה</div>
+            <div class="routine-time">כל לילה, אוטומטי</div>
+            <div class="routine-trigger">רצה בתוך /end-of-day. מעדכן את הזיכרון של דונה בשקט ברקע.</div>
+            <div class="routine-cmd">/learn (אוטומטי)</div>
+          </div>
+        </div>
+
+        <div class="setup-steps">
+          <div class="setup-steps-title">הגדרת שגרות ב-Claude Code Desktop</div>
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-text">פתחו <code>Preferences</code> ← <code>Scheduled Tasks</code></div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-text">לחצו <code>+ Add Task</code></div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-text">שגרה 1. Prompt: <code>/morning-briefing</code> | Schedule: <code>Every day at 07:30</code></div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">4</div>
+            <div class="step-text">שגרה 2. Prompt: <code>/end-of-day</code> | Schedule: <code>Every day at 23:00</code></div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">5</div>
+            <div class="step-text">שגרה 3. Prompt: <code>/weekly-report</code> | Schedule: <code>Every Sunday at 07:00</code></div>
+          </div>
+        </div>
+
+        <div class="callout warning">
+          <div class="callout-icon">⚠️</div>
+          <div><strong>מה שצריך לדעת:</strong> קלוד דסקטופ צריך להיות פתוח בשעה שהשגרה מופעלת. אם הוא סגור, השגרה מחכה לפעם הבאה שתפתחו.</div>
+        </div>
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div><strong>Mac Sleep:</strong> בהגדרות מערכת, הגדירו שהמחשב לא נכנס ל-Sleep לפני 23:30 כדי ששגרת הערב תרוץ בזמן.</div>
+        </div>
+        <div class="callout green">
+          <div class="callout-icon">✅</div>
+          <div><strong>שגרה 4 מוטמעת.</strong> לולאת הלמידה רצה אוטומטית כחלק מ-/end-of-day. לא צריך להגדיר אותה בנפרד.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LESSON 2: לולאת הלמידה -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">2</div>
+        <div class="lesson-title-wrap">
+          <div class="lesson-num-label">שיעור שני</div>
+          <div class="lesson-title">לולאת הלמידה</div>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p class="text-dim mb-md" style="font-size:15px;line-height:1.7;">מרכיב 8, האחרון. איך דונה נעשית טובה יותר כל יום? /learn קורא את מה שקרה ומעדכן את הזיכרון שלה.</p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot orange"></div>
+            <div class="timeline-time">אחרי שבוע</div>
+            <div class="timeline-desc">דונה מכירה את הדפוסים הבסיסיים. מה עדיפויות, מה כואב, מה חשוב.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot purple"></div>
+            <div class="timeline-time">אחרי חודש</div>
+            <div class="timeline-desc">היא מכירה אתכם טוב יותר ממה שאתם מכירים את עצמכם. ממש.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-time">אחרי 3 חודשים</div>
+            <div class="timeline-desc">לא דומה לדונה שפגשתם ביום 1. כישורים חדשים, הבנה עמוקה, יזמות עצמאית.</div>
+          </div>
+        </div>
+
+        <div class="mt-md">
+          <p class="text-bright" style="font-size:15px;font-weight:600;margin-bottom:10px;">הריצו עכשיו: /weekly-report</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this, '/weekly-report')">העתק</button>
+            <code>/weekly-report</code>
+          </div>
+          <p class="text-dim" style="font-size:13px;margin-top:8px;">תראו: ניצחונות השבוע, פערים, המלצה לשבוע הבא. שבוע ראשון = 4 ימי נתונים. זה צפוי ונורמלי.</p>
+        </div>
+
+        <div class="mt-md">
+          <p class="text-bright" style="font-size:15px;font-weight:600;margin-bottom:10px;">הריצו עכשיו: /accountability</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this, '/accountability')">העתק</button>
+            <code>/accountability</code>
+          </div>
+          <p class="text-dim" style="font-size:13px;margin-top:8px;">דונה בודקת מה הבטחתם לאנשים השבוע. מה עשיתם. מה לא. הכישור הכי שנוא. והכי אהוב. בו-זמנית.</p>
+        </div>
+
+        <div class="callout info mt-md">
+          <div class="callout-icon">🔄</div>
+          <div><strong>/learn לא מריצים ידנית.</strong> הוא רץ אוטומטית כחלק מכל /end-of-day. תבחינו שדונה "זוכרת" דברים שלא אמרתם לה ישירות.</div>
+        </div>
+
+        <div class="mt-md">
+          <p style="font-size:13px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">מה /learn מעדכן</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="font-size:12px;color:var(--purple);font-weight:700;margin-bottom:6px;">brain/Daily-Logs</div>
+              <div style="font-size:13px;color:var(--text-dim);line-height:1.5;">יומן מה קרה, מה הוחלט, מה למדנו כל יום</div>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="font-size:12px;color:var(--purple);font-weight:700;margin-bottom:6px;">brain/Preferences</div>
+              <div style="font-size:13px;color:var(--text-dim);line-height:1.5;">עדיפויות, סגנון כתיבה, דפוסי עבודה, אנשים חשובים</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LESSON 3: סיום -->
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-num">3</div>
+        <div class="lesson-title-wrap">
+          <div class="lesson-num-label">שיעור שלישי</div>
+          <div class="lesson-title">סיום</div>
+        </div>
+      </div>
+      <div class="lesson-body">
+
+        <!-- GRAPH VIEW -->
+        <p class="text-bright" style="font-size:17px;font-weight:700;margin-bottom:14px;">חלק א . תצוגת הגרף</p>
+        <div class="setup-steps">
+          <div class="setup-steps-title">פתיחת תצוגת גרף באובסידיאן</div>
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-text">פתחו את Obsidian ועברו לתיקיית ה-brain שלכם</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-text">לחצו על סמל תצוגת הגרף בפינה השמאלית התחתונה (3 נקודות מחוברות)</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-text">תראו נקודות מחוברות. כל נקודה = קובץ. כל קו = קישור בין קבצים.</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">4</div>
+            <div class="step-text">צלמו סקרינשוט עכשיו. צלמו שוב ביום 30. ההבדל יהיה דרמטי.</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- WHAT YOU BUILT -->
+        <p class="text-bright" style="font-size:17px;font-weight:700;margin-bottom:14px;">חלק ב . מה בניתם</p>
+        <p class="text-dim mb-md" style="font-size:14px;">חשבון של 5 ימים:</p>
+        <div class="built-grid">
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>עובד AI אישי</strong> שמכיר אתכם, את העסק, את האנשים, ואת הסגנון</div>
+          </div>
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>14 כישורים</strong> שרצים בפקודה. /morning-briefing, /accountability, ועוד</div>
+          </div>
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>גישה ל-Gmail, יומן ו-Drive</strong> עם connectors מוגדרים</div>
+          </div>
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>4 שגרות אוטומטיות</strong> שרצות לבד כל יום ושבוע</div>
+          </div>
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>לולאת למידה</strong> שמשפרת את דונה כל לילה בלי שתגידו לה</div>
+          </div>
+          <div class="built-item">
+            <div class="built-check">✓</div>
+            <div class="built-text"><strong>brain/ באובסידיאן</strong> עם זיכרון, לוגים, ועדיפויות שצומחות</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- COMPARISON TABLE -->
+        <p class="text-bright" style="font-size:17px;font-weight:700;margin-bottom:14px;">דונה יום 1 מול דונה יום 30</p>
+        <div style="overflow-x:auto;">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="day1-col">יום 1</th>
+                <th class="day30-col">יום 30</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>זיכרון</td>
+                <td class="dim">ריק. לא יודעת כלום</td>
+                <td class="bright">30 ימי לוגים, עדיפויות, דפוסים</td>
+              </tr>
+              <tr>
+                <td>כישורים</td>
+                <td class="dim">בסיסיים</td>
+                <td class="bright">מותאמים אישית, מעודכנים, חדשים</td>
+              </tr>
+              <tr>
+                <td>שגרות</td>
+                <td class="dim">אין. ממתינה</td>
+                <td class="bright">4 שגרות רצות לבד כל יום</td>
+              </tr>
+              <tr>
+                <td>הבנת עסק</td>
+                <td class="dim">מינימלי</td>
+                <td class="bright">עמוקה. יודעת מה חשוב, מה לא</td>
+              </tr>
+              <tr>
+                <td>גרף אובסידיאן</td>
+                <td class="dim">5-6 נקודות</td>
+                <td class="bright">עשרות נקודות מחוברות</td>
+              </tr>
+              <tr>
+                <td>רמת עצמאות</td>
+                <td class="dim">תלויה בשאלות שלכם</td>
+                <td class="bright">מזהה תבניות, מציעה, מזהירה</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CHECKLIST ===== -->
+  <div class="collapsible" id="checklist-collapsible" style="margin-bottom:32px;">
+    <div class="collapsible-header" onclick="toggleCollapsible('checklist-collapsible')">
+      <div class="collapsible-title">✅ רשימת משימות . יום 5</div>
+      <span class="collapsible-icon">▼</span>
+    </div>
+    <div class="collapsible-body">
+      <ul class="checklist" id="day5-checklist">
+        <li class="checklist-item" data-id="c1">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <span class="check-text">הגדרתי את 3 השגרות הראשיות ב-Scheduled Tasks</span>
+        </li>
+        <li class="checklist-item" data-id="c2">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <span class="check-text">/weekly-report הורץ וראיתי את הפלט</span>
+        </li>
+        <li class="checklist-item" data-id="c3">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <span class="check-text">/accountability הורץ ובדקתי מה התחייבתי השבוע</span>
+        </li>
+        <li class="checklist-item" data-id="c4">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <span class="check-text">ראיתי את תצוגת הגרף ב-Obsidian</span>
+        </li>
+        <li class="checklist-item" data-id="c5">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <span class="check-text">צילמתי סקרינשוט של הגרף לשמירה (להשוואה ביום 30)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== FAQ ===== -->
+  <div class="section-title">שאלות נפוצות . יום 5</div>
+  <div class="faq-list" style="margin-bottom:40px;">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>מה אם דונה שוכחת דברים בין שיחות?</span>
+        <span class="faq-icon">▼</span>
+      </div>
+      <div class="faq-a">כל שיחה חדשה, קלוד Code טוען מחדש את CLAUDE.md ואת כל קבצי ה-brain/. זה הזיכרון המתמיד שלה. לא נעלם. זה בדיוק למה בנינו את המבנה הזה.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>האם צריך להשאיר קלוד דסקטופ פתוח כל הזמן?</span>
+        <span class="faq-icon">▼</span>
+      </div>
+      <div class="faq-a">כן, לשגרות בלבד. אם קלוד סגור בשעה שהשגרה אמורה לרוץ, היא מחכה לפתיחה הבאה. לשאר השימוש, פותחים כשצריך ועובדים רגיל.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>מה אם /weekly-report יוצא ריק או דל מאוד?</span>
+        <span class="faq-icon">▼</span>
+      </div>
+      <div class="faq-a">שבוע ראשון זה נורמלי לגמרי. יש לכם נתונים מ-4-5 ימים בלבד. /weekly-report משתפר עם כל שבוע שעובר. ביום 30 זה כבר שונה לגמרי.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>מה עכשיו אחרי יום 5? האתגר נגמר?</span>
+        <span class="faq-icon">▼</span>
+      </div>
+      <div class="faq-a">הכל. הכישורים פועלים. השגרות פועלות. הכלים מחוברים. מכאן דונה גדלה איתכם כל יום. הקהילה תמיד פתוחה, /ask-jay זמין, וביום 30 תפגשו עובד AI שונה לגמרי ממה שהיה ביום 1.</div>
+    </div>
+  </div>
+
+  <!-- ===== DAY 6+ ===== -->
+  <div class="next-section">
+    <div class="next-title">מה עכשיו?</div>
+    <div class="next-subtitle">אתגר הבינה הסתיים. דונה רק מתחילה.</div>
+    <div class="next-timeline">
+      <div class="next-item">
+        <div class="next-when">מחר בבוקר</div>
+        <div class="next-desc"><strong>תדריך הבוקר הראשון שרץ לבד.</strong> פשוט פתחו קלוד דסקטופ בשבע וחצי. הוא כבר שם.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-when">שבוע 1</div>
+        <div class="next-desc"><strong>הוסיפו עוד מידע ל-/learn-me.</strong> בנו כישור אחד שחסר לכם. הניחו לשגרות לרוץ.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-when">שבוע 2</div>
+        <div class="next-desc"><strong>הריצו /weekly-report</strong> ותראו מה השתנה. תתפלאו.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-when">חודש 1</div>
+        <div class="next-desc"><strong>תצלמו את תצוגת הגרף</strong> ושתפו בקהילה. השוו לסקרינשוט שצילמתם היום.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-when">תמיד</div>
+        <div class="next-desc"><strong>/ask-jay</strong> אם תקועים. קהילת הוואטסאפ פתוחה. אתם לא לבד בזה.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CELEBRATION ===== -->
+  <div class="celebration">
+    <span class="celebration-emoji">🎓</span>
+    <div class="celebration-title">ברוכים הבאים <span>לאחרי יום 5</span></div>
+    <p class="celebration-sub">
+      לפני 5 ימים לא הייתה לכם דונה. היום יש לכם עובד AI שמכיר אתכם, עסק שלכם, ועובד גם כשאתם ישנים.
+    </p>
+    <div class="celebration-quote">
+      "דונה ביום 30 תהיה עובד אחר לגמרי. נתראה שם."
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">הועתק!</div>
+
+<script>
+// Toggle collapsible
+function toggleCollapsible(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// Toggle FAQ
+function toggleFaq(header) {
+  const item = header.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+// Toggle checklist item
+function toggleCheck(box) {
+  const item = box.closest('.checklist-item');
+  box.classList.toggle('checked');
+  item.classList.toggle('done');
+  if (box.classList.contains('checked')) box.textContent = '✓';
+  else box.textContent = '';
+  saveChecklist();
+}
+
+// Persist checklist state
+function saveChecklist() {
+  const items = document.querySelectorAll('.checklist-item');
+  const state = {};
+  items.forEach((item, i) => {
+    const id = item.dataset.id || i;
+    state[id] = item.querySelector('.check-box').classList.contains('checked');
+  });
+  localStorage.setItem('day5-checklist', JSON.stringify(state));
+}
+
+function loadChecklist() {
+  const saved = localStorage.getItem('day5-checklist');
+  if (!saved) return;
+  const state = JSON.parse(saved);
+  document.querySelectorAll('.checklist-item').forEach((item, i) => {
+    const id = item.dataset.id || i;
+    if (state[id]) {
+      const box = item.querySelector('.check-box');
+      box.classList.add('checked');
+      box.textContent = '✓';
+      item.classList.add('done');
+    }
+  });
+}
+
+// Copy to clipboard
+function copyCode(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'הועתק!';
+    btn.classList.add('copied');
+    showToast('הועתק!');
+    setTimeout(() => {
+      btn.textContent = 'העתק';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', loadChecklist);
+</script>
+
+<script>
+(function(){
+  var KEY='bina_portal_v1';
+  if(localStorage.getItem(KEY)==='ok'){document.getElementById('bina-gate').style.display='none';return;}
+  // Participant codes (change here to update)
+  var CODES=['DONNA2025','BINAADMIN'];
+  document.getElementById('gate-btn').addEventListener('click',check);
+  document.getElementById('gate-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  function check(){
+    var v=document.getElementById('gate-input').value.trim().toUpperCase();
+    if(CODES.includes(v)){localStorage.setItem(KEY,'ok');document.getElementById('bina-gate').style.display='none';}
+    else{document.getElementById('gate-err').style.display='block';}
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>יום 2: דונה, הכירי את העסק שלי | שיטת ג'יי לבינה לעסקים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08080c;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a24;
+      --border: #2a2a3a;
+      --orange: #e87040;
+      --orange-bright: #ff8050;
+      --text: #e8e8ee;
+      --text-dim: #8a8a9a;
+      --text-bright: #ffffff;
+      --green: #4ade80;
+      --red: #ef4444;
+      --code-bg: #0f0f16;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Heebo', sans-serif; direction: rtl; text-align: right; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* TOP BAR */
+    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(8,8,12,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 16px; }
+    .brand { font-size: 15px; font-weight: 700; color: var(--text-bright); white-space: nowrap; flex-shrink: 0; }
+    .brand span { color: var(--orange); }
+    .day-tabs { display: flex; gap: 4px; align-items: center; }
+    .day-tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; text-decoration: none; color: var(--text-dim); font-family: 'Heebo', sans-serif; }
+    .day-tab:hover { color: var(--text); border-color: var(--border); }
+    .day-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .day-tab.locked { color: #444; cursor: not-allowed; pointer-events: none; }
+    .user-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 6px 14px; font-size: 13px; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+    .user-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+    /* LAYOUT */
+    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 40px 24px; display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start; }
+    .main-col { min-width: 0; }
+
+    /* DAY HEADER */
+    .day-header { margin-bottom: 40px; }
+    .day-badge { display: inline-flex; align-items: center; background: rgba(232,112,64,0.15); border: 1px solid rgba(232,112,64,0.4); color: var(--orange); font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.5px; }
+    .time-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .time-badge { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--text-dim); }
+    .day-header h1 { font-size: 36px; font-weight: 800; color: var(--text-bright); line-height: 1.2; margin-bottom: 12px; }
+    .day-header h1 span { color: var(--orange); }
+    .day-subtitle { font-size: 16px; color: var(--text-dim); line-height: 1.6; max-width: 680px; }
+
+    /* VIDEO */
+    .section-block { margin-bottom: 40px; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+    .video-placeholder { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 48px 32px; text-align: center; color: var(--text-dim); }
+    .video-placeholder .play-icon { font-size: 40px; margin-bottom: 12px; }
+    .video-placeholder p { font-size: 15px; font-weight: 600; color: var(--text); }
+    .video-placeholder small { font-size: 13px; color: var(--text-dim); margin-top: 6px; display: block; }
+
+    /* SCRIPT */
+    .script-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 40px; overflow: hidden; }
+    .script-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .script-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+    .script-toggle { background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: 'Heebo', sans-serif; transition: all 0.2s; }
+    .script-toggle:hover { border-color: var(--orange); color: var(--orange); }
+    .script-body { padding: 24px; }
+    .script-part { margin-bottom: 32px; }
+    .script-part:last-child { margin-bottom: 0; }
+    .screen-cue { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; font-family: monospace; }
+    .script-section-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 10px; }
+    .script-text { font-size: 15px; line-height: 1.85; color: var(--text); white-space: pre-line; }
+    .script-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    /* LESSON CARDS */
+    .lessons-section { margin-bottom: 40px; }
+    .lessons-section > h2 { font-size: 20px; font-weight: 700; color: var(--text-bright); margin-bottom: 20px; }
+    .lesson-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; overflow: hidden; transition: border-color 0.2s; }
+    .lesson-card:hover { border-color: rgba(232,112,64,0.3); }
+    .lesson-card-header { padding: 20px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; user-select: none; }
+    .lesson-num { width: 40px; height: 40px; border-radius: 50%; background: rgba(232,112,64,0.15); border: 2px solid var(--orange); color: var(--orange); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lesson-card-header h3 { font-size: 17px; font-weight: 700; color: var(--text-bright); flex: 1; }
+    .lesson-card-header .chevron { color: var(--text-dim); font-size: 16px; transition: transform 0.2s; }
+    .lesson-card.open .chevron { transform: rotate(180deg); }
+    .lesson-card-body { display: none; padding: 0 24px 24px; }
+    .lesson-card.open .lesson-card-body { display: block; }
+    .lesson-part { margin-bottom: 28px; }
+    .lesson-part:last-child { margin-bottom: 0; }
+    .lesson-part h3 { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-bottom: 10px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .lesson-part:first-child h3 { border-top: none; padding-top: 0; }
+    .lesson-part p { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+
+    /* CODE BLOCKS */
+    .code-block { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 16px 16px 60px; margin: 12px 0; position: relative; }
+    .code-block pre { font-family: 'Courier New', monospace; font-size: 14px; color: #a8d8ff; line-height: 1.6; white-space: pre-wrap; direction: rtl; }
+    .copy-btn { position: absolute; top: 10px; left: 10px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: 'Heebo', sans-serif; transition: all 0.2s; }
+    .copy-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* CALLOUTS */
+    .callout { border-radius: 10px; padding: 14px 16px; margin: 12px 0; border-right: 3px solid; font-size: 14px; line-height: 1.6; }
+    .callout.orange { background: rgba(232,112,64,0.08); border-color: var(--orange); color: var(--text); }
+    .callout.info { background: rgba(74,222,128,0.08); border-color: var(--green); color: var(--text); }
+    .callout.warn { background: rgba(239,68,68,0.08); border-color: var(--red); color: var(--text); }
+    .callout strong { display: block; margin-bottom: 4px; font-weight: 700; }
+
+    /* STEPS */
+    .steps-list { list-style: none; }
+    .steps-list li { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; background: rgba(232,112,64,0.15); border: 1px solid var(--orange); color: var(--orange); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-content { flex: 1; font-size: 14px; line-height: 1.6; color: var(--text); }
+
+    /* CHECKLIST */
+    .checklist { list-style: none; margin: 12px 0; }
+    .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 14px; color: var(--text); border-bottom: 1px solid rgba(42,42,58,0.5); }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; margin-top: 1px; accent-color: var(--orange); }
+
+    /* DIAGRAM */
+    .memory-diagram { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center; margin: 20px 0; }
+    .diagram-box { background: rgba(232,112,64,0.08); border: 1px solid rgba(232,112,64,0.3); border-radius: 12px; padding: 16px; text-align: center; }
+    .diagram-box h4 { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 6px; }
+    .diagram-box p { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0; }
+    .diagram-arrow { text-align: center; font-size: 24px; color: var(--orange); padding: 0 12px; }
+    .diagram-result { background: rgba(74,222,128,0.08); border: 2px solid rgba(74,222,128,0.4); border-radius: 12px; padding: 16px; text-align: center; }
+    .diagram-result h4 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 6px; }
+    .diagram-result p { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    .data-table th { background: rgba(42,42,58,0.5); color: var(--text-dim); font-weight: 600; padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 10px 14px; border-bottom: 1px solid rgba(42,42,58,0.5); color: var(--text); vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--orange); font-weight: 700; white-space: nowrap; }
+
+    /* SIDEBAR */
+    .sidebar { position: sticky; top: 80px; }
+    .sidebar-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .sidebar-card h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .sop-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; font-size: 13px; color: var(--text); }
+    .sop-num { width: 22px; height: 22px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    /* HOMEWORK */
+    .homework-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 40px; overflow: hidden; }
+    .homework-header { padding: 20px 24px; background: rgba(232,112,64,0.08); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .homework-header h2 { font-size: 18px; font-weight: 700; color: var(--text-bright); }
+    .hw-badge { background: var(--orange); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+    .homework-body { padding: 24px; }
+    .hw-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 14px; color: var(--text); line-height: 1.5; }
+    .hw-item:last-child { border-bottom: none; }
+    .hw-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* DAY CHECKLIST */
+    .day-checklist { background: var(--bg-card); border: 1px solid rgba(74,222,128,0.3); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
+    .day-checklist h2 { font-size: 18px; font-weight: 700; color: var(--text-bright); margin-bottom: 16px; }
+    .check-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 14px; color: var(--text); }
+    .check-item:last-child { border-bottom: none; }
+    .check-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+
+    /* CTA */
+    .next-day-cta { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(232,112,64,0.15) 0%, rgba(232,112,64,0.05) 100%); border: 1px solid rgba(232,112,64,0.4); border-radius: 16px; padding: 24px 28px; margin-bottom: 40px; gap: 20px; }
+    .cta-text h3 { font-size: 18px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }
+    .cta-text p { font-size: 14px; color: var(--text-dim); }
+    .cta-btn { background: var(--orange); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; white-space: nowrap; transition: background 0.2s; text-decoration: none; display: inline-block; }
+    .cta-btn:hover { background: var(--orange-bright); }
+
+    /* FAB */
+    .sop-fab { position: fixed; bottom: 24px; left: 24px; background: var(--orange); color: #fff; border: none; padding: 12px 18px; border-radius: 50px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; z-index: 200; box-shadow: 0 4px 20px rgba(232,112,64,0.4); transition: all 0.2s; }
+    .sop-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(232,112,64,0.5); }
+    .sop-modal { display: none; position: fixed; bottom: 76px; left: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 300px; z-index: 199; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .sop-modal.open { display: block; }
+    .sop-modal h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+    /* WOW BOX */
+    .wow-box { background: rgba(74,222,128,0.06); border: 2px solid rgba(74,222,128,0.3); border-radius: 14px; padding: 20px; margin: 16px 0; }
+    .wow-box h4 { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+    .wow-box p { font-size: 14px; line-height: 1.6; color: var(--text); margin: 0; }
+
+    /* SKILL CARD */
+    .skill-card { background: rgba(232,112,64,0.06); border: 1px solid rgba(232,112,64,0.25); border-radius: 12px; padding: 16px 20px; margin: 14px 0; }
+    .skill-card .skill-name { font-size: 18px; font-weight: 800; color: var(--orange); font-family: 'Courier New', monospace; margin-bottom: 6px; }
+    .skill-card p { font-size: 14px; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    @media (max-width: 900px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .memory-diagram { grid-template-columns: 1fr; }
+      .diagram-arrow { transform: rotate(90deg); padding: 8px 0; }
+      .topbar { flex-wrap: wrap; height: auto; padding: 12px; }
+      .day-tabs { flex-wrap: wrap; }
+    }
+  
+/* ===== GATE OVERLAY ===== */
+#bina-gate{position:fixed;inset:0;z-index:99999;background:rgba(8,8,12,0.97);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Heebo',sans-serif;direction:rtl;}
+.gate-box{background:#12121a;border:1px solid #2a2a3a;border-radius:20px;
+  padding:48px 40px;text-align:center;max-width:400px;width:90%;}
+.gate-logo{font-size:28px;font-weight:800;color:#e87040;margin-bottom:8px;}
+.gate-sub{font-size:13px;color:#8a8a9a;margin-bottom:28px;}
+.gate-box h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;}
+.gate-input{width:100%;padding:14px 16px;border-radius:10px;
+  border:1px solid #2a2a3a;background:#0f0f16;color:#e8e8ee;
+  font-size:16px;font-family:'Heebo',sans-serif;text-align:center;
+  margin-bottom:12px;letter-spacing:2px;outline:none;}
+.gate-input:focus{border-color:#e87040;}
+.gate-btn{width:100%;padding:14px;border-radius:10px;background:#e87040;
+  color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;transition:background .15s;}
+.gate-btn:hover{background:#ff8050;}
+.gate-err{color:#ef4444;font-size:13px;margin-top:10px;display:none;}
+
+</style>
+</head>
+<body>
+<div id="bina-gate">
+  <div class="gate-box">
+    <div class="gate-logo">אתגר בינה</div>
+    <p class="gate-sub">שיטת יצירת עובדי AI של ג'יי</p>
+    <h2>נדרש קוד גישה</h2>
+    <input id="gate-input" class="gate-input" type="password" placeholder="הכניסו קוד גישה" autocomplete="off" autofocus>
+    <button id="gate-btn" class="gate-btn">כניסה</button>
+    <p id="gate-err" class="gate-err">קוד שגוי. נסו שוב.</p>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand">שיטת יצירת עובדי AI של ג'יי</div>
+  <nav class="day-tabs">
+    <a href="day-0-portal.html" class="day-tab done">✓ יום 0</a>
+    <a href="day-1-portal.html" class="day-tab">יום 1</a>
+    <a href="#" class="day-tab active">יום 2</a>
+    <a href="#" class="day-tab locked">יום 3 🔒</a>
+    <a href="#" class="day-tab locked">יום 4 🔒</a>
+    <a href="#" class="day-tab locked">יום 5 🔒</a>
+  </nav>
+  <div class="user-chip">
+    <div class="dot"></div>
+    <span>חבר פעיל</span>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <main class="main-col">
+
+    <div class="day-header">
+      <div class="day-badge">יום 2</div>
+      <div class="time-badges">
+        <span class="time-badge">⏱️ 60-75 דקות</span>
+        <span class="time-badge">📹 3 סרטונים</span>
+        <span class="time-badge">⚙️ 3 שיעורים</span>
+        <span class="time-badge">📝 + הכנה ליום 3</span>
+      </div>
+      <h1>דונה, הכירי את <span>העסק שלי</span></h1>
+      <p class="day-subtitle">יום 2 הוא היום שדונה מפסיקה להיות גנרית ומתחילה להיות שלכם.</p>
+    </div>
+
+    <div class="section-block">
+      <div class="section-label">סרטוני היום</div>
+      <div class="video-placeholder">
+        <div class="play-icon">📹</div>
+        <p>סרטוני יום 2 (3 שיעורים)</p>
+        <small>הסרטונים יעלו כאן לפני תחילת יום 2 של האתגר</small>
+      </div>
+    </div>
+
+    <!-- SCRIPT SECTION -->
+    <div class="script-section">
+      <div class="script-header">
+        <h2>📄 תסריט מלא של היום</h2>
+        <button class="script-toggle" onclick="toggleScript()">הצג / הסתר</button>
+      </div>
+      <div class="script-body" id="scriptBody">
+
+        <div class="script-part">
+          <div class="screen-cue">[SCREEN: שקף: יום 2 Cover: "דונה פוגשת את העסק שלי"]</div>
+          <div class="script-section-title">מבוא (45 שניות)</div>
+          <div class="script-text">ברוכים הבאים ליום 2. היום דונה מפסיקה להיות גנרית ומתחילה להיות שלכם.
+
+סיכום מהיר. ביום 1 התקנתם את הערכה, דונה יכולה לראות את התיקיות שלכם, והכנתם שיעורי בית על העסק שלכם.
+היום נעשה שלושה דברים.
+שיעור 1. הרעיון הגדול. זיכרון וסגנון כתיבה. למה שני המרכיבים האלה הופכים AI גנרי ל-AI שלכם.
+שיעור 2. /learn-me. הכישור שעושה את כל הכתיבה בשבילכם. אתם שופכים. דונה ממלאת את המוח.
+שיעור 3. רגע הוואו. מריצים /business-one-pager. היא מוכיחה שהיא הבינה אתכם.</div>
+        </div>
+
+        <hr class="script-divider">
+
+        <div class="script-part">
+          <div class="script-section-title">שיעור 1: הרעיון הגדול</div>
+          <div class="screen-cue">[SCREEN: שקף: שיעור 1: "הרעיון הגדול"]</div>
+          <div class="script-text">שיעור 1. הרעיון הגדול. שני מרכיבים. זיכרון וסגנון כתיבה.
+יום 2 הוא היום שדונה הופכת לדונה שלכם. לא של מישהו אחר. לא גנרית. שלכם.
+מה הופך אותה לשלכם? שני דברים.
+אחד. היא יודעת עליכם. על העסק שלכם. על האנשים שלכם. על ההחלטות שלכם. זה הזיכרון.
+שתיים. היא כותבת כמוכם. אם היא שולחת מייל בשמכם, הנמען לא יבין שזו AI. הוא יחשוב שאתם כתבתם. זה סגנון הכתיבה.
+
+זיכרון ללא סגנון כתיבה = AI שיודע הכל עליכם אבל נשמע כמו רובוט.
+סגנון כתיבה ללא זיכרון = AI שנשמע כמוכם אבל לא יודע מה אתם עושים.
+השניים ביחד? עובד AI אמיתי.</div>
+        </div>
+
+        <hr class="script-divider">
+
+        <div class="script-part">
+          <div class="script-section-title">שיעור 2: הכישור /learn-me</div>
+          <div class="screen-cue">[SCREEN: שקף: שיעור 2: "הכישור /learn-me"]</div>
+          <div class="script-text">שיעור 2. /learn-me. שני כישורים שפוגשים היום.
+הכישור הראשון. /learn-me.
+זו הפקודה שמפעילים עכשיו. אתם שופכים את שיעורי הבית שהכנתם. שמות, תפקידים, אנשים, מיילים לדוגמה. הכל. דונה הופכת את זה לזיכרון מובנה.
+
+הכישור השני. /business-one-pager.
+זה מריצים בשיעור 3. שיחה שלמה מזוקק לעמוד אחד. אם הוא נשמע כמוכם. יום 2 עבד.
+ביום 4 נעבור על כל הכישורים האחרים שלה. לגבי היום, אלה שניים בלבד.
+
+עכשיו. פתחו קלוד דסקטופ. הפעילו כישור חדש:
+'/learn-me'
+תנו לה לשאול אתכם שאלות. ענו בפירוט. שפכו הכל. ככל שהיא מקבלת יותר, כך היא נעשית יותר שלכם.</div>
+        </div>
+
+        <hr class="script-divider">
+
+        <div class="script-part">
+          <div class="script-section-title">שיעור 3: רגע הוואו</div>
+          <div class="screen-cue">[SCREEN: שקף: שיעור 3: "רגע הוואו"]</div>
+          <div class="script-text">שיעור 3. רגע הוואו.
+הריצו עכשיו:
+'/business-one-pager'
+היא מייצרת:
+- עמוד אחד על העסק שלכם
+- טיוטת מייל בסגנון הכתיבה שלכם
+
+אם זה נשמע כמוכם. יום 2 עבד.
+שלבו אם רוצים: שלחו לה מייל שקיבלתם היום ותראו איך היא עונה בסגנון שלכם.
+הוואו אמור להגיע כשאתם קוראים את הטיוטה ומחייכים. "כן. זה נשמע כמוני."
+אם לא. אל תדאגו. הריצו /learn-me שוב ותוסיפו עוד. זה לולאה, לא אירוע חד פעמי.</div>
+        </div>
+
+        <hr class="script-divider">
+
+        <div class="script-part">
+          <div class="script-section-title">סיכום יום 2</div>
+          <div class="script-text">זה יום 2.
+מה עשינו: הזנתם לדונה את הזיכרון שלה. את סגנון הכתיבה שלכם. את המוח שלה מלא.
+מה הגיע: עמוד עסקי. טיוטת מייל. שתיהן בקולכם.
+
+שיעורי בית ליום 3 (10 שניות): מחר מחברים את דונה לכלים האמיתיים שלכם. Gmail. יומן. Drive. תהיו מחוברים לחשבון Google שאתם רוצים שהיא תקרא ממנו. אם משתמשים במנהל משימות, שיהיה הלוגין בהישג יד.
+זה יום 2. מחר דונה עוברת מנתונים היפותטיים לחיים האמיתיים שלכם. נתראה מחר.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LESSON CARDS -->
+    <div class="lessons-section">
+      <h2>שיעורי יום 2</h2>
+
+      <!-- LESSON 1 -->
+      <div class="lesson-card open" id="lesson1">
+        <div class="lesson-card-header" onclick="toggleLesson('lesson1')">
+          <div class="lesson-num">1</div>
+          <h3>הרעיון הגדול: זיכרון וסגנון כתיבה</h3>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="lesson-card-body">
+          <div class="lesson-part">
+            <h3>שני דברים שהופכים AI גנרי ל-AI שלכם</h3>
+            <p>ביום 1 פגשתם את דונה. היא ידעה לדבר, לנסח, לחשוב. אבל היא לא ידעה מי אתם. היום זה משתנה.</p>
+
+            <div class="memory-diagram">
+              <div class="diagram-box">
+                <h4>זיכרון</h4>
+                <p>מי אתם. העסק שלכם. האנשים שלכם. ההחלטות שלכם.</p>
+              </div>
+              <div class="diagram-arrow">+</div>
+              <div class="diagram-box">
+                <h4>סגנון כתיבה</h4>
+                <p>איך אתם כותבים. הפתיחות שלכם. הסגירות שלכם. המילים שלכם.</p>
+              </div>
+            </div>
+            <div style="text-align: center; font-size: 22px; color: var(--orange); margin: 8px 0;">↓</div>
+            <div class="wow-box">
+              <h4>עובד AI אמיתי</h4>
+              <p>מייל שהיא כותבת בשמכם ישמע כמוכם. לא כמו AI. הנמען לא יבין ההבדל.</p>
+            </div>
+
+            <table class="data-table" style="margin-top: 20px;">
+              <thead><tr><th>בלי זיכרון</th><th>בלי סגנון כתיבה</th><th>עם שניהם</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>AI שנשמע כמוכם אבל לא יודע מה אתם עושים</td>
+                  <td>AI שיודע הכל עליכם אבל נשמע כמו רובוט</td>
+                  <td style="color: var(--green);">עובד AI אמיתי שנשמע כמוכם ויודע הכל</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- LESSON 2 -->
+      <div class="lesson-card" id="lesson2">
+        <div class="lesson-card-header" onclick="toggleLesson('lesson2')">
+          <div class="lesson-num">2</div>
+          <h3>/learn-me: מהגנרי לשלכם</h3>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="lesson-card-body">
+          <div class="lesson-part">
+            <h3>מה זה /learn-me</h3>
+            <p>זה הכישור הראשון שפוגשים היום. פקודה אחת שמתחילה תהליך: דונה שואלת, אתם עונים, והיא ממלאת את הזיכרון שלה.</p>
+            <div class="skill-card">
+              <div class="skill-name">/learn-me</div>
+              <p>מתחיל שיחת onboarding. דונה שואלת אתכם שאלות על עצמכם, על העסק, על האנשים, על הסגנון. כל תשובה נכנסת לזיכרון ב-brain/.</p>
+            </div>
+            <div class="callout info">
+              <strong>הערה על כישורים</strong>
+              ביום 4 נעבור על כל 14 הכישורים של דונה. לגבי יום 2, נתמקד רק בשניים: /learn-me ו-/business-one-pager. אל תנסו לגלות את כולם עכשיו.
+            </div>
+          </div>
+          <div class="lesson-part">
+            <h3>איך מריצים</h3>
+            <ul class="steps-list">
+              <li><div class="step-num">1</div><div class="step-content">פתחו קלוד דסקטופ בלשונית Code. וודאו שהתיקייה טעונה.</div></li>
+              <li><div class="step-num">2</div><div class="step-content">הקלידו את הפקודה בדיוק כך:</div></li>
+            </ul>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              <pre>/learn-me</pre>
+            </div>
+            <ul class="steps-list">
+              <li><div class="step-num">3</div><div class="step-content">דונה תתחיל לשאול אתכם שאלות. ענו על כולן בפירוט.</div></li>
+              <li><div class="step-num">4</div><div class="step-content">אם יש לכם את שיעורי הבית מיום 1, עכשיו הזמן להדביק הכל. שמות, תפקידים, מיילים לדוגמה, עדיפויות.</div></li>
+              <li><div class="step-num">5</div><div class="step-content">שפכו הכל. ככל שיותר, כך היא נעשית יותר שלכם.</div></li>
+            </ul>
+            <div class="callout orange">
+              <strong>טיפ חשוב</strong>
+              המיילים שאתם מדביקים זה הדלק. דונה מנתחת את הסגנון שלכם מתוכם. אל תדלגו על זה.
+            </div>
+            <ul class="checklist">
+              <li><input type="checkbox"> /learn-me הורץ</li>
+              <li><input type="checkbox"> עניתי על כל שאלות דונה</li>
+              <li><input type="checkbox"> הדבקתי מיילים לדוגמה</li>
+              <li><input type="checkbox"> הכנסתי אנשים חשובים</li>
+            </ul>
+          </div>
+          <div class="lesson-part">
+            <h3>מה קורה אחרי שמסיימים</h3>
+            <p>דונה כותבת קבצים לתוך תיקיות brain/ שלכם. אתם יכולים לראות אותם באובסידיאן. מה שכתוב שם = מה שהיא יודעת עליכם.</p>
+            <p>רוצים להוסיף עוד? פשוט הריצו /learn-me שוב. זה לא אירוע חד פעמי. זו לולאה שמשתפרת עם הזמן.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LESSON 3 -->
+      <div class="lesson-card" id="lesson3">
+        <div class="lesson-card-header" onclick="toggleLesson('lesson3')">
+          <div class="lesson-num">3</div>
+          <h3>רגע הוואו: /business-one-pager</h3>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="lesson-card-body">
+          <div class="lesson-part">
+            <h3>מה זה /business-one-pager</h3>
+            <p>הכישור השני שפוגשים היום. הוא מוכיח שדונה הבינה אתכם.</p>
+            <div class="skill-card">
+              <div class="skill-name">/business-one-pager</div>
+              <p>מזקק את כל מה שדונה יודעת עליכם לעמוד אחד מסודר. עסק, עדיפויות, אנשים, סגנון. ועוד טיוטת מייל לדוגמה בסגנון שלכם.</p>
+            </div>
+          </div>
+          <div class="lesson-part">
+            <h3>הריצו עכשיו</h3>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              <pre>/business-one-pager</pre>
+            </div>
+            <p>דונה תייצר:</p>
+            <ul class="steps-list">
+              <li><div class="step-num">1</div><div class="step-content">עמוד אחד מסודר על העסק שלכם (מה עשיתם, לאן אתם הולכים, מי חשוב)</div></li>
+              <li><div class="step-num">2</div><div class="step-content">טיוטת מייל לדוגמה שנכתבה בסגנון שלכם</div></li>
+            </ul>
+            <div class="wow-box">
+              <h4>איך נראה הוואו</h4>
+              <p>אתם קוראים את הטיוטה ומחייכים. "כן. זה נשמע כמוני." לא "זה נשמע כמו AI". כמוני. זה הרגע.</p>
+            </div>
+          </div>
+          <div class="lesson-part">
+            <h3>אם עדיין לא נשמע כמוכם</h3>
+            <p>זה נורמלי לחלוטין. אל תדאגו. אלה הצעדים:</p>
+            <ul class="steps-list">
+              <li><div class="step-num">1</div><div class="step-content">הריצו /learn-me שוב. הוסיפו יותר מיילים. תארו את הסגנון שלכם במילים.</div></li>
+              <li><div class="step-num">2</div><div class="step-content">אמרו לדונה ישירות: "הטיוטה שכתבת לא נשמעת כמוני. כך אני בדרך כלל כותב: [דוגמה]"</div></li>
+              <li><div class="step-num">3</div><div class="step-content">הריצו /business-one-pager שוב.</div></li>
+            </ul>
+            <div class="callout orange">
+              <strong>חצי שעה בהזנה = שבועות של עבודה טובה יותר</strong>
+              ככל שתשקיעו יותר ביום 2, כך כל יום אחרי יהיה מדויק יותר.
+            </div>
+            <p>בונוס: שלחו לדונה מייל שקיבלתם היום ובקשו ממנה לענות בסגנון שלכם:</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+              <pre>הנה מייל שקיבלתי היום. כתבי לי טיוטת תשובה בסגנון שלי:
+
+[הדביקו כאן את המייל]</pre>
+            </div>
+            <ul class="checklist">
+              <li><input type="checkbox"> /business-one-pager הורץ</li>
+              <li><input type="checkbox"> עמוד עסקי נוצר</li>
+              <li><input type="checkbox"> טיוטת מייל נשמעת כמוני (או שיפרתי ב-/learn-me)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HOMEWORK -->
+    <div class="homework-section">
+      <div class="homework-header">
+        <h2>הכנה ליום 3</h2>
+        <span class="hw-badge">10 שניות</span>
+      </div>
+      <div class="homework-body">
+        <div class="hw-item"><span class="hw-icon">📧</span><span>היו מחוברים לחשבון Google שאתם רוצים שדונה תקרא ממנו. Gmail. יומן. Drive.</span></div>
+        <div class="hw-item"><span class="hw-icon">📋</span><span>אם משתמשים במנהל משימות (Notion, Trello, Asana וכו'), שיהיה הלוגין בהישג יד.</span></div>
+        <div class="hw-item"><span class="hw-icon">🔒</span><span>הערת פרטיות: דונה רק קוראת כברירת מחדל. לא שולחת, לא מוחקת, לא מזיזה שום דבר בלי אישורכם.</span></div>
+        <div class="callout info">
+          <strong>אם משתמשים ב-Outlook ולא Gmail</strong>
+          רשמו לעצמכם. ביום 3 נדון בחלופות. יש פתרון.
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY CHECKLIST -->
+    <div class="day-checklist">
+      <h2>צ'קליסט יום 2</h2>
+      <div class="check-item"><input type="checkbox"><span>/learn-me הורץ בהצלחה</span></div>
+      <div class="check-item"><input type="checkbox"><span>עניתי על שאלות דונה ושפכתי את שיעורי הבית</span></div>
+      <div class="check-item"><input type="checkbox"><span>/business-one-pager הורץ</span></div>
+      <div class="check-item"><input type="checkbox"><span>עמוד עסקי נשמע כמוני</span></div>
+      <div class="check-item"><input type="checkbox"><span>הכנה ליום 3 מוכנה (חשבון Google מחובר)</span></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="next-day-cta">
+      <div class="cta-text">
+        <h3>מוכנים ליום 3?</h3>
+        <p>מחר דונה עוברת מנתונים היפותטיים לחיים האמיתיים שלכם.</p>
+      </div>
+      <a href="#" class="cta-btn">מוכנים ליום 3? ←</a>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>SOP יום 2: צעד-צעד</h3>
+      <div class="sop-step"><div class="sop-num">1</div><div>פתחו קלוד דסקטופ (לשונית Code)</div></div>
+      <div class="sop-step"><div class="sop-num">2</div><div>הריצו /learn-me</div></div>
+      <div class="sop-step"><div class="sop-num">3</div><div>ענו על שאלות דונה בפירוט</div></div>
+      <div class="sop-step"><div class="sop-num">4</div><div>הדביקו מיילים לדוגמה (חשוב)</div></div>
+      <div class="sop-step"><div class="sop-num">5</div><div>הריצו /business-one-pager</div></div>
+      <div class="sop-step"><div class="sop-num">6</div><div>קראו את הטיוטה. האם נשמע כמוכם?</div></div>
+      <div class="sop-step"><div class="sop-num">7</div><div>אם לא: הריצו /learn-me שוב עם יותר</div></div>
+      <div class="sop-step"><div class="sop-num">8</div><div>הכינו את עצמכם ליום 3 (Google מחובר)</div></div>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>שני הכישורים של יום 2</h3>
+      <div style="background: rgba(232,112,64,0.08); border: 1px solid rgba(232,112,64,0.2); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+        <div style="font-family: 'Courier New', monospace; font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px;">/learn-me</div>
+        <div style="font-size: 12px; color: var(--text-dim); line-height: 1.5;">שפכו הכל. דונה ממלאת את המוח.</div>
+      </div>
+      <div style="background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); border-radius: 8px; padding: 12px;">
+        <div style="font-family: 'Courier New', monospace; font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 4px;">/business-one-pager</div>
+        <div style="font-size: 12px; color: var(--text-dim); line-height: 1.5;">מוכיח שהיא הבינה אתכם. רגע הוואו.</div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-dim); margin-top: 12px; line-height: 1.5;">שאר 12 הכישורים נלמדים ביום 4.</p>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>מה בנינו עד עכשיו</h3>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--green);">אישיות</span><span style="color: var(--green); font-size: 11px;">✓ יום 1</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--orange);">זיכרון</span><span style="color: var(--orange); font-size: 11px;">✓ יום 2</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--orange);">סגנון כתיבה</span><span style="color: var(--orange); font-size: 11px;">✓ יום 2</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--text-dim);">גישה</span><span style="color: var(--text-dim); font-size: 11px;">יום 3</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--text-dim);">כישורים</span><span style="color: var(--text-dim); font-size: 11px;">יום 4</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="color: var(--text-dim);">שגרות</span><span style="color: var(--text-dim); font-size: 11px;">יום 5</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px;"><span style="color: var(--text-dim);">למידה</span><span style="color: var(--text-dim); font-size: 11px;">מתמשך</span></div>
+    </div>
+  </aside>
+</div>
+
+<button class="sop-fab" onclick="toggleSopModal()">📋 SOP מהיר</button>
+<div class="sop-modal" id="sopModal">
+  <h3>SOP יום 2: Quick Reference</h3>
+  <div class="sop-step"><div class="sop-num">1</div><div style="font-size: 13px;">קלוד דסקטופ, לשונית Code</div></div>
+  <div class="sop-step"><div class="sop-num">2</div><div style="font-size: 13px;">הריצו /learn-me, שפכו הכל</div></div>
+  <div class="sop-step"><div class="sop-num">3</div><div style="font-size: 13px;">הריצו /business-one-pager</div></div>
+  <div class="sop-step"><div class="sop-num">4</div><div style="font-size: 13px;">בדקו שנשמע כמוכם</div></div>
+  <div class="sop-step"><div class="sop-num">5</div><div style="font-size: 13px;">חשבון Google מחובר ליום 3</div></div>
+</div>
+
+<script>
+  function toggleScript() {
+    const body = document.getElementById('scriptBody');
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+  }
+  function toggleLesson(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+  function toggleSopModal() {
+    document.getElementById('sopModal').classList.toggle('open');
+  }
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'הועתק!';
+      btn.style.color = 'var(--green)';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+    });
+  }
+  document.addEventListener('click', function(e) {
+    const modal = document.getElementById('sopModal');
+    const fab = document.querySelector('.sop-fab');
+    if (modal && !modal.contains(e.target) && !fab.contains(e.target)) modal.classList.remove('open');
+  });
+</script>
+
+<script>
+(function(){
+  var KEY='bina_portal_v1';
+  if(localStorage.getItem(KEY)==='ok'){document.getElementById('bina-gate').style.display='none';return;}
+  // Participant codes (change here to update)
+  var CODES=['DONNA2025','BINAADMIN'];
+  document.getElementById('gate-btn').addEventListener('click',check);
+  document.getElementById('gate-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  function check(){
+    var v=document.getElementById('gate-input').value.trim().toUpperCase();
+    if(CODES.includes(v)){localStorage.setItem(KEY,'ok');document.getElementById('bina-gate').style.display='none';}
+    else{document.getElementById('gate-err').style.display='block';}
+  }
+})();
+</script>
+
+</body>
+</html>

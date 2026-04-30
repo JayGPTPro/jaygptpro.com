@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יום 0: הכנה לפני האתגר | שיטת ג'יי לבינה לעסקים</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+:root {
+  --bg: #08080c; --bg-card: #12121a; --bg-card-hover: #1a1a24;
+  --border: #2a2a3a; --orange: #e87040; --orange-bright: #ff8050;
+  --text: #e8e8ee; --text-dim: #8a8a9a; --text-bright: #ffffff;
+  --green: #4ade80; --red: #ef4444; --code-bg: #0f0f16; --purple: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; text-align: right; line-height: 1.7; font-size: 15px; }
+
+/* TOP BAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,12,0.96); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px); padding: 14px 24px;
+}
+.topbar-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { font-weight: 700; font-size: 15px; color: var(--text-bright); white-space: nowrap; }
+.brand span { color: var(--orange); }
+.day-tabs { display: flex; gap: 6px; flex: 1; justify-content: center; flex-wrap: wrap; }
+.day-tab {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim);
+  cursor: pointer; text-decoration: none; transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.day-tab:hover { color: var(--text); border-color: var(--orange); }
+.day-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.day-tab.locked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.day-tab.done { color: var(--green); border-color: rgba(74,222,128,0.3); }
+.user-chip { padding: 6px 14px; border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+
+/* MAIN */
+.container { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* LAYOUT */
+.layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; }
+@media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+.main-col { min-width: 0; }
+.side-col { min-width: 0; }
+.sticky-wrap { position: sticky; top: 100px; }
+
+/* HEADER */
+.day-header { margin-bottom: 40px; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.badge {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim);
+}
+.badge.day { background: rgba(232,112,64,0.15); color: var(--orange-bright); border-color: rgba(232,112,64,0.4); font-size: 14px; }
+.day-title { font-size: clamp(28px,5vw,44px); font-weight: 800; color: var(--text-bright); margin-bottom: 12px; line-height: 1.1; }
+.day-title span { color: var(--orange); }
+.day-subtitle { font-size: 17px; color: var(--text-dim); max-width: 680px; }
+
+/* INTRO CALLOUT */
+.intro-callout {
+  background: linear-gradient(135deg, rgba(232,112,64,0.08), rgba(232,112,64,0.04));
+  border: 1px solid rgba(232,112,64,0.3); border-radius: 16px; padding: 24px 28px; margin-bottom: 36px;
+}
+.intro-callout h3 { font-size: 16px; color: var(--orange); margin-bottom: 10px; }
+.intro-callout p { color: var(--text-dim); font-size: 15px; }
+
+/* STEP CARDS */
+.section-header { display: flex; align-items: center; gap: 16px; margin: 40px 0 20px; }
+.section-header h2 { font-size: 22px; font-weight: 700; color: var(--text-bright); }
+.section-header .line { flex: 1; height: 1px; background: var(--border); }
+
+.step-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px 28px; margin-bottom: 16px; transition: border-color 0.2s;
+}
+.step-card:hover { border-color: #3a3a50; }
+.step-card.highlight { border-color: var(--orange); }
+.step-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.step-num {
+  background: var(--orange); color: #fff;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; flex-shrink: 0;
+}
+.step-title h2 { font-size: 20px; color: var(--text-bright); margin-bottom: 4px; font-weight: 700; }
+.step-title small { font-size: 12px; color: var(--text-dim); }
+
+.step-body p { margin-bottom: 10px; color: var(--text); }
+.step-body strong { color: var(--text-bright); }
+
+/* PLATFORM OPTIONS */
+.platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+@media (max-width: 600px) { .platform-grid { grid-template-columns: 1fr; } }
+.platform-card {
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px;
+}
+.platform-card h4 { color: var(--orange); font-size: 14px; margin-bottom: 6px; }
+.platform-card p { font-size: 13px; color: var(--text-dim); margin: 0; }
+
+/* CALLOUTS */
+.callout {
+  border-right: 3px solid var(--orange);
+  background: rgba(232,112,64,0.05); padding: 12px 16px;
+  margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 14px;
+}
+.callout.info { border-color: var(--green); background: rgba(74,222,128,0.05); }
+.callout.warn { border-color: var(--red); background: rgba(239,68,68,0.05); }
+.callout strong { color: var(--text-bright); }
+
+/* LINK BUTTONS */
+.link-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: all 0.15s; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text); margin: 6px 4px;
+}
+.link-btn:hover { color: var(--orange); border-color: var(--orange); }
+.link-btn.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+.link-btn.primary:hover { background: var(--orange-bright); border-color: var(--orange-bright); color: #fff; }
+
+/* CHECKLIST */
+.checklist { margin: 20px 0; }
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.check-item:hover { border-color: #3a3a50; }
+.check-item input { accent-color: var(--orange); cursor: pointer; margin-top: 3px; flex-shrink: 0; }
+.check-item.done { opacity: 0.5; }
+.check-item.done span { text-decoration: line-through; }
+
+/* PLAN SECTION */
+.plan-card {
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin: 16px 0;
+}
+.plan-row {
+  display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.plan-row:last-child { border-bottom: none; }
+.plan-day { background: var(--orange); color: #fff; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 12px; flex-shrink: 0; min-width: 60px; text-align: center; }
+.plan-text strong { display: block; color: var(--text-bright); font-size: 14px; }
+.plan-text span { font-size: 13px; color: var(--text-dim); }
+
+/* SIDEBAR */
+.sidebar-card {
+  background: linear-gradient(135deg, #1a1a24, #12121a);
+  border: 1px solid var(--orange); border-radius: 16px; padding: 22px; margin-bottom: 16px;
+}
+.sidebar-card h3 { font-size: 13px; color: var(--orange); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; font-weight: 700; }
+.sop-step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.sop-step:last-child { border-bottom: none; }
+.sop-num { background: var(--orange); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.sop-content strong { display: block; color: var(--text-bright); font-size: 13px; }
+.sop-content small { color: var(--text-dim); font-size: 12px; }
+
+.info-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px;
+}
+.info-card h4 { color: var(--orange); font-size: 13px; margin-bottom: 8px; }
+.info-card p { font-size: 13px; color: var(--text-dim); margin: 0; }
+
+/* CTA */
+.next-cta {
+  background: linear-gradient(135deg, var(--orange), var(--orange-bright));
+  border-radius: 16px; padding: 32px; text-align: center; margin-top: 48px; color: #fff;
+}
+.next-cta h2 { margin-bottom: 8px; font-size: 24px; font-weight: 800; }
+.next-cta p { opacity: 0.9; margin-bottom: 20px; }
+.cta-btn {
+  display: inline-block; background: #fff; color: var(--orange);
+  padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;
+}
+.cta-btn:hover { background: #f0f0f0; }
+
+/* ===== GATE OVERLAY ===== */
+#bina-gate{position:fixed;inset:0;z-index:99999;background:rgba(8,8,12,0.97);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Heebo',sans-serif;direction:rtl;}
+.gate-box{background:#12121a;border:1px solid #2a2a3a;border-radius:20px;
+  padding:48px 40px;text-align:center;max-width:400px;width:90%;}
+.gate-logo{font-size:28px;font-weight:800;color:#e87040;margin-bottom:8px;}
+.gate-sub{font-size:13px;color:#8a8a9a;margin-bottom:28px;}
+.gate-box h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;}
+.gate-input{width:100%;padding:14px 16px;border-radius:10px;
+  border:1px solid #2a2a3a;background:#0f0f16;color:#e8e8ee;
+  font-size:16px;font-family:'Heebo',sans-serif;text-align:center;
+  margin-bottom:12px;letter-spacing:2px;outline:none;}
+.gate-input:focus{border-color:#e87040;}
+.gate-btn{width:100%;padding:14px;border-radius:10px;background:#e87040;
+  color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;transition:background .15s;}
+.gate-btn:hover{background:#ff8050;}
+.gate-err{color:#ef4444;font-size:13px;margin-top:10px;display:none;}
+
+</style>
+</head>
+<body>
+<div id="bina-gate">
+  <div class="gate-box">
+    <div class="gate-logo">אתגר בינה</div>
+    <p class="gate-sub">שיטת יצירת עובדי AI של ג'יי</p>
+    <h2>נדרש קוד גישה</h2>
+    <input id="gate-input" class="gate-input" type="password" placeholder="הכניסו קוד גישה" autocomplete="off" autofocus>
+    <button id="gate-btn" class="gate-btn">כניסה</button>
+    <p id="gate-err" class="gate-err">קוד שגוי. נסו שוב.</p>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">שיטת יצירת עובדי AI של ג'יי</div>
+    <nav class="day-tabs">
+      <a href="#" class="day-tab active">יום 0</a>
+      <a href="day-1-portal.html" class="day-tab locked">יום 1 🔒</a>
+      <a href="#" class="day-tab locked">יום 2 🔒</a>
+      <a href="#" class="day-tab locked">יום 3 🔒</a>
+      <a href="#" class="day-tab locked">יום 4 🔒</a>
+      <a href="#" class="day-tab locked">יום 5 🔒</a>
+    </nav>
+    <div class="user-chip">חבר | Pro</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="day-header">
+    <div class="badge-row">
+      <span class="badge day">יום 0</span>
+      <span class="badge">⏱️ 20-30 דקות</span>
+      <span class="badge">💻 הכנה חד-פעמית</span>
+      <span class="badge">✅ עשו את זה לפני יום 1</span>
+    </div>
+    <h1 class="day-title">ה<span>הכנה</span></h1>
+    <p class="day-subtitle">לפני שמתחילים, צריך שלושה דברים על המחשב. זה לוקח 20 דקות. עשו את זה עם הנחת הדעת לפני שיום 1 פותח.</p>
+  </div>
+
+  <div class="layout">
+    <!-- MAIN -->
+    <div class="main-col">
+
+      <div class="intro-callout">
+        <h3>למה יום 0 חשוב</h3>
+        <p>יום 1 מתחיל עם ההתקנה. אם תגיעו ללא קלוד דסקטופ ומנוי Pro, תאבדו 20 דקות של שיעור בהגדרות. עשו את זה עכשיו, ביום 1 נתחיל ישר מהעניינים.</p>
+      </div>
+
+      <div class="section-header">
+        <span style="font-size:24px;">🛠️</span>
+        <h2>3 דברים להכין</h2>
+        <div class="line"></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step-card highlight">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div class="step-title">
+            <h2>קלוד דסקטופ + מנוי Pro</h2>
+            <small>הכי חשוב. בלי זה האתגר לא עובד.</small>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>האתגר בנוי על <strong>קלוד דסקטופ</strong> (לא על ממשק הרשת). תורידו מכאן:</p>
+          <a href="https://claude.ai/download" target="_blank" class="link-btn primary">⬇️ הורד קלוד דסקטופ</a>
+          <p style="margin-top:16px;">אחרי ההתקנה, כנסו ל-claude.ai ושדרגו ל-<strong>Pro</strong> (20$/חודש).</p>
+          <div class="callout warn">
+            <strong>למה Pro?</strong> הגרסה החינמית מוגבלת ולא תוכלו להשלים את האתגר. ה-Pro הוא מה שמאפשר את כל הכלים שמשתמשים בהם.
+          </div>
+          <div class="callout info">
+            <strong>Mac או Windows?</strong> שניהם עובדים. יש גרסה לכל מערכת הפעלה.
+          </div>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox"><span><strong>הורדתי קלוד דסקטופ</strong> והתקנתי</span></label>
+            <label class="check-item"><input type="checkbox"><span><strong>שדרגתי ל-Pro</strong> ב-claude.ai</span></label>
+            <label class="check-item"><input type="checkbox"><span><strong>פתחתי את קלוד דסקטופ</strong> ומחובר לחשבון</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div class="step-title">
+            <h2>אובסידיאן (חינם)</h2>
+            <small>האפליקציה לצפות בזיכרון של דונה</small>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>אובסידיאן הוא אפליקציה חינמית שמציגה קבצי טקסט בצורה ויזואלית. כך תוכלו לראות את הזיכרון שדונה בונה לאורך האתגר.</p>
+          <a href="https://obsidian.md" target="_blank" class="link-btn">→ obsidian.md</a>
+          <p style="margin-top:14px; font-size:13px; color:var(--text-dim);">הורידו. התקינו. פתחו פעם אחת. <strong>לא צריך ליצור vault עדיין</strong>, נעשה את זה ביום 1.</p>
+          <div class="callout">
+            <strong>לא צריך ללמוד אובסידיאן.</strong> דונה מנהלת אותו בשבילכם. אתם רק פותחים אותו כדי לראות.
+          </div>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox"><span><strong>אובסידיאן מותקן</strong> ונפתח לפחות פעם אחת</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div class="step-title">
+            <h2>גוגל ורדי לחיבור מחר</h2>
+            <small>לא לחבר עכשיו, רק לוודא שיש לכם גישה</small>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>ביום 3 נחבר את דונה ל-Gmail, יומן Google, ו-Drive. לא צריך לעשות שום דבר עכשיו, רק לוודא:</p>
+          <ul style="padding-right:20px; margin:12px 0;">
+            <li style="margin-bottom:8px;">אתם יודעים <strong>באיזה חשבון Google</strong> אתם רוצים לעבוד (עבודה או פרטי)</li>
+            <li style="margin-bottom:8px;">אתם <strong>מחוברים לחשבון הזה</strong> בדפדפן</li>
+            <li style="margin-bottom:8px;">אם משתמשים ב-<strong>Outlook</strong> במקום Gmail, ציינו לעצמכם, נדון בחלופות ביום 3</li>
+          </ul>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox"><span>יודע/ת <strong>באיזה חשבון Google</strong> רוצה לעבוד</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5-DAY PLAN -->
+      <div class="section-header">
+        <span style="font-size:24px;">🗓️</span>
+        <h2>מפת 5 הימים</h2>
+        <div class="line"></div>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-row">
+          <span class="plan-day">יום 0</span>
+          <div class="plan-text"><strong>הכנה (היום)</strong><span>קלוד דסקטופ Pro. אובסידיאן. גוגל מוכן.</span></div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-day">יום 1</span>
+          <div class="plan-text"><strong>הכירו את דונה</strong><span>מתקינים את הערכה. לומדים את השיטה. שיחה ראשונה עם דונה.</span></div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-day">יום 2</span>
+          <div class="plan-text"><strong>דונה, הכירי את העסק שלי</strong><span>טוענים את הזיכרון. מרצים /learn-me. רגע הוואו הראשון.</span></div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-day">יום 3</span>
+          <div class="plan-text"><strong>תג וגישה</strong><span>מחברים Gmail, יומן, Drive. 7 פרומפטים חזקים.</span></div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-day">יום 4</span>
+          <div class="plan-text"><strong>יום האימון</strong><span>12 כישורים יומיים. /morning-briefing. בונים כישור משלכם.</span></div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-day">יום 5</span>
+          <div class="plan-text"><strong>היא עובדת בזמן שאתם ישנים</strong><span>שגרות אוטומטיות. לולאת הלמידה. סיום.</span></div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="next-cta">
+        <h2>מוכנים? יום 1 מחכה.</h2>
+        <p>ברגע שסיימתם את 3 הדברים למעלה, לחצו להתחיל.</p>
+        <a href="day-1-portal.html" class="cta-btn">מעבר ליום 1 ←</a>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="side-col">
+      <div class="sticky-wrap">
+
+        <div class="sidebar-card">
+          <h3>רשימת וידוא מהירה</h3>
+          <div class="sop-step">
+            <div class="sop-num">1</div>
+            <div class="sop-content"><strong>קלוד דסקטופ</strong><small>הורד, התקן, מחובר לחשבון</small></div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-num">2</div>
+            <div class="sop-content"><strong>מנוי Pro</strong><small>claude.ai/settings. צריך לראות "Pro"</small></div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-num">3</div>
+            <div class="sop-content"><strong>אובסידיאן</strong><small>מותקן, נפתח פעם אחת</small></div>
+          </div>
+          <div class="sop-step">
+            <div class="sop-num">4</div>
+            <div class="sop-content"><strong>גוגל</strong><small>יודעים באיזה חשבון לעבוד</small></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h4>כמה זמן זה לוקח?</h4>
+          <p>קלוד דסקטופ + Pro: 5-10 דקות.<br>אובסידיאן: 2 דקות.<br>גוגל: בדיקה של 1 דקה.</p>
+        </div>
+
+        <div class="info-card">
+          <h4>שאלות?</h4>
+          <p>לינק לקהילת הוואטסאפ נמצא באימייל הרישום שלכם. שלחו שאלה ויחזרו אליכם.</p>
+        </div>
+
+        <div class="info-card" style="border-color: rgba(74,222,128,0.3);">
+          <h4 style="color: var(--green);">יום 1 נפתח מתי?</h4>
+          <p>יום 1 יפתח לכם בתאריך שנשלח באימייל. הכפתור למעלה יהפוך לפעיל אז.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Checkbox done state
+document.querySelectorAll('.check-item input[type=checkbox]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    this.parentElement.classList.toggle('done', this.checked);
+  });
+});
+</script>
+
+<script>
+(function(){
+  var KEY='bina_portal_v1';
+  if(localStorage.getItem(KEY)==='ok'){document.getElementById('bina-gate').style.display='none';return;}
+  // Participant codes (change here to update)
+  var CODES=['DONNA2025','BINAADMIN'];
+  document.getElementById('gate-btn').addEventListener('click',check);
+  document.getElementById('gate-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  function check(){
+    var v=document.getElementById('gate-input').value.trim().toUpperCase();
+    if(CODES.includes(v)){localStorage.setItem(KEY,'ok');document.getElementById('bina-gate').style.display='none';}
+    else{document.getElementById('gate-err').style.display='block';}
+  }
+})();
+</script>
+
+</body>
+</html>
