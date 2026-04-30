@@ -2052,6 +2052,7 @@ section { position: relative; }
     gap: 24px;
     max-width: 940px;
     margin: 0 auto;
+    align-items: start;
 }
 .hosts-grid .about-card {
     max-width: none;
@@ -2064,7 +2065,9 @@ section { position: relative; }
 .hosts-grid .about-text { text-align: right; }
 [dir="rtl"] .hosts-grid .about-text { text-align: right; }
 .hosts-grid .about-text h3, .hosts-grid .about-text .about-role { text-align: center; }
-.hosts-grid .about-ps { text-align: center; }
+/* Equalize photo sizes */
+.hosts-grid .about-photo { width: 160px; height: 160px; }
+.hosts-grid .bio-photo-link { width: 160px; height: 160px; }
 @media (max-width: 760px) {
     .hosts-grid { grid-template-columns: 1fr; }
 }
@@ -2188,6 +2191,56 @@ section { position: relative; }
     position: relative;
 }
 .guarantee-box strong { color: var(--text); font-weight: 700; }
+
+/* ===== BINA PRICE BLOCK (RTL-safe, vertical) ===== */
+.bina-price-block { margin: 10px 0 6px; }
+.bina-old {
+    font-size: 22px; font-weight: 700; color: #8e8e93;
+    position: relative; display: inline-block; margin-bottom: 6px;
+}
+.bina-old::after {
+    content: ''; position: absolute;
+    top: 50%; right: -6px; left: -6px; height: 2.5px;
+    background: linear-gradient(90deg, rgba(220,38,38,0.8), #dc2626);
+    border-radius: 4px;
+    transform: scaleX(0); transform-origin: right;
+    animation: binaStrike 0.5s cubic-bezier(0.85,0,0.15,1) 1s forwards;
+}
+@keyframes binaStrike { to { transform: scaleX(1); } }
+.bina-new {
+    font-size: clamp(62px, 12vw, 82px); font-weight: 900;
+    color: var(--text); letter-spacing: -2px; line-height: 1;
+    opacity: 0; transform: translateY(20px);
+    animation: binaRise 0.7s cubic-bezier(0.2,1.4,0.4,1) 1.6s forwards;
+}
+@keyframes binaRise { to { opacity: 1; transform: translateY(0); } }
+
+/* ===== BINA ROUND BUTTONS ===== */
+.bina-round-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 28px;
+}
+.bina-round-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+    padding: 18px 16px 20px;
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    color: white;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    box-shadow: 0 8px 24px rgba(249,115,22,0.35);
+}
+.bina-round-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(249,115,22,0.45); filter: brightness(1.05); }
+.bina-round-btn:active { transform: translateY(0); }
+.bina-btn-round { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; opacity: 0.85; text-transform: uppercase; }
+.bina-btn-dates { font-size: 15px; font-weight: 700; }
+.bina-btn-cta { font-size: 13px; font-weight: 600; opacity: 0.9; margin-top: 4px; }
+@media (max-width: 460px) {
+    .bina-round-btns { grid-template-columns: 1fr; }
+}
 
 /* ===== PRICING ===== */
 .pricing-section { padding: 90px 0 120px; position: relative; background: var(--bg); overflow: hidden; }
@@ -3105,7 +3158,7 @@ section { position: relative; }
             <p data-en="Each round is limited to 50 spots." data-he="כל סבב מוגבל ל-50 מקומות.">כל סבב מוגבל ל-50 מקומות.</p>
         </div>
         <div class="rounds-grid reveal" style="grid-template-columns: 1fr 1fr; max-width: 560px;">
-            <a href="STRIPE_BINA_LINK_HERE" class="round-card">
+            <a href="STRIPE_BINA_R1_LINK" class="round-card">
                 <div class="round-lang-badge" data-en="🇮🇱 Hebrew" data-he="🇮🇱 עברית">🇮🇱 עברית</div>
                 <div class="round-label" data-en="Round 1" data-he="סבב 1">סבב 1</div>
                 <div class="round-dates">11–15 במאי</div>
@@ -3115,7 +3168,7 @@ section { position: relative; }
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
             </a>
-            <a href="STRIPE_BINA_LINK_HERE" class="round-card">
+            <a href="STRIPE_BINA_R2_LINK" class="round-card">
                 <div class="round-lang-badge" data-en="🇮🇱 Hebrew" data-he="🇮🇱 עברית">🇮🇱 עברית</div>
                 <div class="round-label" data-en="Round 2" data-he="סבב 2">סבב 2</div>
                 <div class="round-dates">25–29 במאי</div>
@@ -3499,7 +3552,6 @@ section { position: relative; }
                 <div class="about-role" data-en="AI Specialist · Builder · Entrepreneur" data-he="מומחה AI · בונה · יזם">AI Specialist · Builder · Entrepreneur</div>
                 <p data-en="I've been an eCommerce seller for over 10 years, and I run the AI Vault, a community of 250+ sellers and business owners using AI to grow their operations. My day job is helping eCommerce businesses integrate AI into their day-to-day work. Every day I publish practical Claude Code workflows and hacks." data-he="אני מוכר באיקומרס כבר מעל 10 שנים, ומנהל את קהילת AI Vault, שם יותר מ-250 מוכרים ובעלי עסקים משתמשים ב-AI כדי לצמוח. העבודה היומיומית שלי היא לעזור לעסקי איקומרס להטמיע AI בתוך השגרה שלהם, וכל יום אני מפרסם שיטות עבודה והאקים פרקטיים של קלוד קוד.">I've been an eCommerce seller for over 10 years, and I run the AI Vault, a community of 250+ sellers and business owners using AI to grow their operations. My day job is helping eCommerce businesses integrate AI into their day-to-day work. Every day I publish practical Claude Code workflows and hacks.</p>
                 <p data-en="I've spent the last year building my own AI Chief of Staff, Donna, who now runs large pieces of my day. This challenge is the concentrated version of everything I've learned, packaged into 5 days of hands-on building. It's exactly what I wish existed when I started." data-he="בשנה האחרונה בניתי לעצמי ראש מטה מבוסס AI בשם דונה, שהיום מנהלת חלקים גדולים מהיום שלי. האתגר הזה הוא הגרסה המרוכזת של כל מה שלמדתי, ארוזה ל-5 ימים של עבודה מעשית. זה בדיוק מה שהייתי רוצה שמישהו היה נותן לי כשאני התחלתי.">I've spent the last year building my own AI Chief of Staff, Donna, who now runs large pieces of my day. This challenge is the concentrated version of everything I've learned, packaged into 5 days of hands-on building. It's exactly what I wish existed when I started.</p>
-                <p class="about-ps"><span class="ps-label" data-en="P.S." data-he="נ.ב.">P.S.</span><span data-en=" Donna helped me build this page. She drafted most of the copy you just read, I just edited. Meta, I know." data-he=" דונה עזרה לי לבנות את הדף הזה. היא כתבה את רוב הטקסט שקראת עכשיו, אני רק ערכתי. מטא, אני יודע."> Donna helped me build this page. She drafted most of the copy you just read, I just edited. Meta, I know.</span></p>
             </div>
         </div>
         <div class="bio-card reveal">
@@ -3629,15 +3681,13 @@ section { position: relative; }
                 </div>
                 <div class="pricing-label" data-en="Secure Your Spot For" data-he="שריין את מקומך תמורת">שריין את מקומך תמורת</div>
 
-                <div class="price-theater" id="priceTheater" style="margin: 8px 0 4px;">
-                    <div class="price-slot">
-                        <div class="price-397"><bdi>999 ₪</bdi></div>
-                        <div class="price-247"><bdi>699 ₪</bdi></div>
-                    </div>
+                <div class="bina-price-block">
+                    <div class="bina-old">999 ₪</div>
+                    <div class="bina-new">699 ₪</div>
                 </div>
-                <div class="save-badge">
+                <div class="save-badge" style="opacity:1; transform:scale(1);">
                     <span>🎉</span>
-                    <span data-en="You save $300 · 30% off" data-he="חוסך 300 ₪ · 30% הנחה">חוסך 300 ₪ · 30% הנחה</span>
+                    <span>חוסך 300 ₪ · 30% הנחה</span>
                 </div>
                 <p class="pricing-desc" data-en="One-time payment. Full access." data-he="תשלום חד-פעמי. גישה מלאה.">One-time payment. Full access.</p>
 
@@ -3651,10 +3701,18 @@ section { position: relative; }
                     <li><span class="check">✓</span> <span data-en="48-hour money-back guarantee" data-he="אחריות החזר כספי תוך 48 שעות">48-hour money-back guarantee</span></li>
                 </ul>
 
-                <a href="STRIPE_BINA_LINK_HERE" class="btn-checkout">
-                    <span data-en="I'm In. Reserve My Spot →" data-he="אני בפנים. שמור לי מקום →">I'm In. Reserve My Spot →</span>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
+                <div class="bina-round-btns">
+                    <a href="STRIPE_BINA_R1_LINK" class="bina-round-btn">
+                        <span class="bina-btn-round">סבב 1</span>
+                        <span class="bina-btn-dates">11–15 במאי</span>
+                        <span class="bina-btn-cta">בחר סבב זה ←</span>
+                    </a>
+                    <a href="STRIPE_BINA_R2_LINK" class="bina-round-btn">
+                        <span class="bina-btn-round">סבב 2</span>
+                        <span class="bina-btn-dates">25–29 במאי</span>
+                        <span class="bina-btn-cta">בחר סבב זה ←</span>
+                    </a>
+                </div>
 
 
             </div>
@@ -3685,10 +3743,18 @@ section { position: relative; }
         <div class="final-cta-inner">
             <h2><span data-en="Your AI Employee is" data-he="עובד ה-AI שלך במרחק">Your AI Employee is</span><br><span class="hl" data-en="5 Days Away." data-he="של 5 ימים.">5 Days Away.</span></h2>
             <p data-en="30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up." data-he="30 עד 60 דקות ביום. בסוף, ראש מטה מבוסס AI שמנהל לך את הבוקר עוד לפני שהתעוררת.">30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up.</p>
-            <a href="STRIPE_BINA_LINK_HERE" class="btn-primary">
-                <span data-en="Yes, I'm Joining the Challenge" data-he="כן, אני מצטרף לאתגר">Yes, I'm Joining the Challenge</span>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <div class="bina-round-btns" style="max-width:480px; margin:0 auto;">
+                <a href="STRIPE_BINA_R1_LINK" class="bina-round-btn">
+                    <span class="bina-btn-round">סבב 1</span>
+                    <span class="bina-btn-dates">11–15 במאי</span>
+                    <span class="bina-btn-cta">בחר סבב זה ←</span>
+                </a>
+                <a href="STRIPE_BINA_R2_LINK" class="bina-round-btn">
+                    <span class="bina-btn-round">סבב 2</span>
+                    <span class="bina-btn-dates">25–29 במאי</span>
+                    <span class="bina-btn-cta">בחר סבב זה ←</span>
+                </a>
+            </div>
             <p class="hero-price-note" style="margin-top: 18px;">
                 <span data-en="48-hour refund" data-he="החזר תוך 48 שעות">48-hour refund</span>
             </p>
