@@ -754,28 +754,44 @@ async function signOut() {
 // ===== DATA LOADING =====
 async function loadData() {
   try {
-    const binaRes = await sb.from('bina_registrations')
-      .select('email, round, welcome_email_sent_at, welcome_email_error, notes, created_at')
-      .order('created_at', { ascending: false });
+    const [binaRes, stripeRes] = await Promise.all([
+      sb.from('bina_registrations')
+        .select('email, round, welcome_email_sent_at, welcome_email_error, notes, created_at')
+        .order('created_at', { ascending: false }),
+      sb.from('stripe_customers')
+        .select('email, amount_paid, coupon_used, country, name, payment_date, refunded, refund_amount')
+        .eq('currency', 'ils')
+    ]);
 
     if (binaRes.error) throw binaRes.error;
+    if (stripeRes.error) throw stripeRes.error;
 
-    // bina_registrations is the source of truth for Bina participants
-    allParticipants = (binaRes.data || []).map(r => ({
-      email: r.email,
-      name: '',
-      amount_paid: null,
-      coupon_used: '',
-      country: '',
-      created_at: r.created_at,
-      payment_date: r.created_at,
-      refunded: false,
-      refund_amount: 0,
-      round: r.round || null,
-      welcome_email_sent_at: r.welcome_email_sent_at || null,
-      welcome_email_error: r.welcome_email_error || null,
-      bina_notes: r.notes || null,
-    }));
+    // Build stripe lookup by email (lowercase)
+    const stripeMap: Record<string, any> = {};
+    (stripeRes.data || []).forEach(s => {
+      stripeMap[s.email.toLowerCase()] = s;
+    });
+
+    // bina_registrations is the source of truth for who registered
+    // stripe_customers enriches with payment data
+    allParticipants = (binaRes.data || []).map(r => {
+      const s = stripeMap[r.email.toLowerCase()] || null;
+      return {
+        email: r.email,
+        name: s?.name || '',
+        amount_paid: s?.amount_paid || null,
+        coupon_used: s?.coupon_used || '',
+        country: s?.country || '',
+        created_at: r.created_at,
+        payment_date: s?.payment_date || r.created_at,
+        refunded: s?.refunded || false,
+        refund_amount: s?.refund_amount || 0,
+        round: r.round || null,
+        welcome_email_sent_at: r.welcome_email_sent_at || null,
+        welcome_email_error: r.welcome_email_error || null,
+        bina_notes: r.notes || null,
+      };
+    });
 
     updateUI();
     lastRefresh = new Date();
