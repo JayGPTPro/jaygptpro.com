@@ -1938,12 +1938,7 @@ section { position: relative; }
                     </div>
                 </div>
 
-                <div id="form-mon" class="form-container active">
-                    <script type='text/javascript' src='//form2.ravpage.co.il/7ef6d821e59038431ad4d2f405ca4ca169E9095B' charset='UTF-8'></script>
-                </div>
-                <div id="form-wed" class="form-container">
-                    <script type='text/javascript' src='//form2.ravpage.co.il/0eb87114fa58010eeb7b1f71da58151469F459BF' charset='UTF-8'></script>
-                </div>
+                <iframe id="reg-iframe" src="form-mon.html" frameborder="0" scrolling="no" style="width: 100%; min-height: 540px; border: none; display: block; background: transparent;"></iframe>
             </div>
 
             <p class="form-privacy" style="margin-top: 24px;">
@@ -1959,33 +1954,23 @@ document.addEventListener('DOMContentLoaded', function() {
         'form-mon': 'הרשמה למועד 1 . שני 4.5 ב-11:00',
         'form-wed': 'הרשמה למועד 2 . רביעי 6.5 ב-21:00'
     };
+    const sources = {
+        'form-mon': 'form-mon.html',
+        'form-wed': 'form-wed.html'
+    };
+    const iframe = document.getElementById('reg-iframe');
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const target = this.getAttribute('data-target');
             document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.form-container').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
-            document.getElementById(target).classList.add('active');
             document.getElementById('form-zone-label').textContent = labels[target];
+            if (iframe) iframe.src = sources[target];
         });
     });
 });
 </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.date-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const target = this.getAttribute('data-target');
-            document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.form-container').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById(target).classList.add('active');
-        });
-    });
-});
-</script>
     </div>
 </section>
 
