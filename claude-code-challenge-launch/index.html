@@ -3636,14 +3636,9 @@ document.getElementById('langToggle').addEventListener('click', () => {
     setLanguage(current === 'en' ? 'he' : 'en');
 });
 
-// Init language from hash, URL param, or localStorage
+// This is the English-only page — always force English, ignore localStorage
 (function initLang() {
-    if (location.hash === '#he') { setLanguage('he'); return; }
-    const params = new URLSearchParams(location.search);
-    if (params.get('lang') === 'he') { setLanguage('he'); return; }
-    let saved = 'en';
-    try { saved = localStorage.getItem('lang') || 'en'; } catch (e) {}
-    if (saved === 'he') setLanguage('he');
+    setLanguage('en');
 })();
 
 // ===== REVEAL ON SCROLL =====
