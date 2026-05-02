@@ -1095,53 +1095,150 @@ section { position: relative; }
     letter-spacing: -0.5px;
 }
 
+/* Date selector label (clear hint) */
+.date-selector-label {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--orange-dark);
+    margin-bottom: 14px;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.date-selector-label .ds-arrow {
+    font-size: 22px;
+    animation: bounce 2s ease-in-out infinite;
+    display: inline-block;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+}
+
 /* Date selector tabs */
 .date-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 28px;
 }
 .date-tab {
     background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 18px 14px;
+    border: 2.5px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 16px 18px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.3s ease;
     font-family: inherit;
     text-align: center;
     color: var(--text-3);
+    position: relative;
+    overflow: hidden;
 }
-.date-tab:hover {
+.date-tab::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; left: 0;
+    height: 4px;
+    background: var(--border);
+    transition: background 0.3s ease;
+}
+.date-tab:not(.active)::after {
+    content: 'לחצו לבחירה';
+    position: absolute;
+    bottom: 6px; right: 0; left: 0;
+    text-align: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--orange-dark);
+    letter-spacing: 0.2px;
+    opacity: 0.65;
+    transition: opacity 0.3s ease;
+}
+.date-tab:not(.active):hover::after { opacity: 1; }
+.date-tab:hover:not(.active) {
     border-color: var(--orange-2);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow);
+    background: var(--bg-2);
 }
 .date-tab.active {
     background: linear-gradient(135deg, var(--orange-3), var(--orange), var(--orange-dark));
     border-color: var(--orange-dark);
     color: white;
     box-shadow: var(--shadow-orange);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+}
+.date-tab.active::before {
+    background: rgba(255,255,255,0.5);
+}
+.date-tab-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 800;
+    background: rgba(0,0,0,0.06);
+    color: var(--text-3);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 10px;
+    letter-spacing: 0.4px;
+}
+.date-tab.active .date-tab-badge {
+    background: rgba(255,255,255,0.25);
+    color: white;
 }
 .date-tab-day {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    opacity: 0.85;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    opacity: 0.9;
 }
 .date-tab-date {
     font-size: 22px;
     font-weight: 800;
-    line-height: 1;
-    margin-bottom: 6px;
+    line-height: 1.1;
+    margin-bottom: 3px;
     letter-spacing: -0.3px;
 }
-.date-tab-time {
-    font-size: 13px;
+.date-tab-hebrew {
+    font-size: 12.5px;
     font-weight: 600;
-    opacity: 0.85;
+    opacity: 0.7;
+    margin-bottom: 10px;
+}
+.date-tab-time {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+/* Form zone (where the active form lives) */
+.form-zone {
+    background: linear-gradient(180deg, rgba(249,115,22,0.06), rgba(249,115,22,0.02));
+    border: 2px solid rgba(249,115,22,0.2);
+    border-radius: 20px;
+    padding: 22px 22px 26px;
+    position: relative;
+}
+.form-zone-header {
+    margin-bottom: 18px;
+    text-align: center;
+}
+.form-zone-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1.5px solid var(--orange);
+    color: var(--orange-dark);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
 }
 .form-container {
     display: none;
@@ -1441,7 +1538,7 @@ section { position: relative; }
 <div class="announce-bar">
     🔴 וובינר חי חינמי
     <span>|</span>
-    <strong>שני 4.5 בבוקר</strong> או <strong>רביעי 6.5 בערב</strong>
+    <strong>שני 4.5 ב-11:00</strong> או <strong>רביעי 6.5 ב-21:00</strong>
     <span>|</span>
     מקומות מוגבלים
 </div>
@@ -1475,11 +1572,11 @@ section { position: relative; }
         <div class="hero-chips">
             <div class="chip chip-highlight">
                 <span class="chip-icon">📅</span>
-                שני 4.5 . 11:00 בבוקר
+                שני, י"ז באייר . 11:00
             </div>
             <div class="chip chip-highlight">
                 <span class="chip-icon">📅</span>
-                רביעי 6.5 . 21:00 בערב
+                רביעי, י"ט באייר . 21:00
             </div>
             <div class="chip">
                 <span class="chip-icon">💻</span>
@@ -1627,7 +1724,6 @@ section { position: relative; }
         <div class="section-header reveal">
             <div class="section-tag">מה תראו בוובינר</div>
             <h2>90 דקות.<br><span class="hl">6 רגעי וואו.</span> חיים.</h2>
-            <p>לא שקפים. לא סרטונים מוכנים מראש. הכל קורה בפניכם, בזמן אמת.</p>
         </div>
 
         <div class="demos-grid">
@@ -1649,33 +1745,33 @@ section { position: relative; }
 
             <div class="demo-card reveal reveal-d3">
                 <span class="demo-number">03</span>
-                <span class="demo-emoji">🔨</span>
-                <h3>בניית כלים חיה</h3>
-                <p>דוגמאות פרקטיות שתוכלו להשתמש בהן מחר בעסק. טופס לידים, כלי מעקב מלאי, דף הצעת מחיר, מה שצריך. נבנה בפניכם בפחות מ-2 דקות.</p>
-                <span class="demo-wow">🚀 פחות מ-2 דקות</span>
+                <span class="demo-emoji">🛒</span>
+                <h3>שולט בדפדפן בשבילכם</h3>
+                <p>מילוי עגלת קניות ברמי לוי, ניתוח ביקורות בית קפה בגוגל מפות, יצירת חשבונית במערכת. <strong>הסמן זז לבד. אתם רק מסתכלים.</strong></p>
+                <span class="demo-wow">🤯 כמו ללוות עוזר אישי</span>
             </div>
 
             <div class="demo-card reveal reveal-d4">
                 <span class="demo-number">04</span>
-                <span class="demo-emoji">🖼️</span>
-                <h3>יצירת תמונות בחינם</h3>
-                <p>20 תמונות פרופיל, תמונות שיווק, תמונות לפוסטים. מתוך קלוד קוד, בלי מנויים נוספים, בלי עלות נוספת.</p>
-                <span class="demo-wow">🆓 חינם לגמרי</span>
+                <span class="demo-emoji">🎨</span>
+                <h3>בניית אתרים וכלים בלייב</h3>
+                <p>אתר פיצרייה מעוצב, דשבורד ניהול עובדים, מחשבון תמחור. נבנים בפניכם, מ-0, בפחות מ-2 דקות.</p>
+                <span class="demo-wow">🚀 פחות מ-2 דקות</span>
             </div>
 
             <div class="demo-card reveal reveal-d1">
                 <span class="demo-number">05</span>
-                <span class="demo-emoji">📧</span>
-                <h3>חיבור לג'ימייל וליומן גוגל</h3>
-                <p>קלוד קוד מחובר למיילים האמיתיים שלכם. קורא, מסווג, מכין טיוטות תגובה. עובד על היומן האמיתי שלכם.</p>
-                <span class="demo-wow">🔗 עבודה אמיתית</span>
+                <span class="demo-emoji">🖼️</span>
+                <h3>יצירת תמונות וסרטונים</h3>
+                <p>20 תמונות פרופיל ללינקדאין בקליק. סרטוני אווטאר עם הקול שלכם. הכל מתוך קלוד קוד, בלי מנויים נוספים.</p>
+                <span class="demo-wow">🆓 חינם לחלוטין</span>
             </div>
 
             <div class="demo-card reveal reveal-d2">
                 <span class="demo-number">06</span>
-                <span class="demo-emoji">⚙️</span>
-                <h3>אוטומציה שעובדת בלילה</h3>
-                <p>משימות מתוזמנות שמגדירים פעם אחת ואז רצות לבד. כל בוקר, כל ערב. <strong>עובד גם כשאתם ישנים.</strong></p>
+                <span class="demo-emoji">👩‍💼</span>
+                <h3>שיחה חיה עם דונה (העוזרת AI)</h3>
+                <p>קביעת פגישות, הכנה לפגישות, ניהול משימות באסנה. <strong>היא מחוברת ליומן, למייל, ולכלים שלכם.</strong></p>
                 <span class="demo-wow">😴 24/7 בשבילכם</span>
             </div>
         </div>
@@ -1779,7 +1875,7 @@ section { position: relative; }
         </h2>
         <p class="urgency-sub">
             אנחנו לא מעלים את זה ליוטיוב. לא שולחים אחר כך. <strong>זה קורה פעם אחת.</strong><br>
-            שני 4.5 ב-11:00, או רביעי 6.5 ב-21:00. בחרו את המועד.
+            שני 4.5 ב-11:00 או רביעי 6.5 ב-21:00. בחרו מועד אחד והירשמו.
         </p>
         <a href="#registration" class="btn-primary">
             בטחו לי את המקום שלי
@@ -1806,37 +1902,75 @@ section { position: relative; }
             <div class="reg-card-header">
                 <div class="reg-tag">
                     <span class="pulse-dot"></span>
-                    2 מועדים. בחרו את המתאים לכם.
+                    שני מועדים זמינים. הרשמה נפרדת לכל אחד.
                 </div>
-                <h2>הרשמה לוובינר</h2>
-                <p>אחרי ההרשמה תקבלו מייל אישור עם לינק לזום ותזכורת אוטומטית לפני.</p>
+                <h2>בחרו מועד והירשמו</h2>
+                <p>אנחנו מעבירים את אותו וובינר בשני מועדים שונים. <strong>בחרו את המועד הנוח לכם וגוללו לטופס למטה.</strong></p>
+            </div>
+
+            <div class="date-selector-label">
+                <span class="ds-arrow">👇</span>
+                לחצו על המועד המבוקש
             </div>
 
             <div class="date-tabs">
                 <button class="date-tab active" data-target="form-mon" type="button">
+                    <div class="date-tab-badge">מועד 1</div>
                     <div class="date-tab-day">יום שני</div>
-                    <div class="date-tab-date">4 במאי</div>
-                    <div class="date-tab-time">11:00 בבוקר</div>
+                    <div class="date-tab-date">4 במאי 2026</div>
+                    <div class="date-tab-hebrew">י"ז באייר תשפ"ו</div>
+                    <div class="date-tab-time">🕚 11:00 בבוקר</div>
                 </button>
                 <button class="date-tab" data-target="form-wed" type="button">
+                    <div class="date-tab-badge">מועד 2</div>
                     <div class="date-tab-day">יום רביעי</div>
-                    <div class="date-tab-date">6 במאי</div>
-                    <div class="date-tab-time">21:00 בערב</div>
+                    <div class="date-tab-date">6 במאי 2026</div>
+                    <div class="date-tab-hebrew">י"ט באייר תשפ"ו</div>
+                    <div class="date-tab-time">🕘 21:00</div>
                 </button>
             </div>
 
-            <div id="form-mon" class="form-container active">
-                <script type='text/javascript' src='//form2.ravpage.co.il/7ef6d821e59038431ad4d2f405ca4ca169E9095B' charset='UTF-8'></script>
-            </div>
-            <div id="form-wed" class="form-container">
-                <script type='text/javascript' src='//form2.ravpage.co.il/0eb87114fa58010eeb7b1f71da58151469F459BF' charset='UTF-8'></script>
+            <div class="form-zone">
+                <div class="form-zone-header">
+                    <div class="form-zone-active-tag">
+                        <span class="pulse-dot"></span>
+                        <span id="form-zone-label">מתחילים הרשמה למועד 1 . שני 4.5 ב-11:00</span>
+                    </div>
+                </div>
+
+                <div id="form-mon" class="form-container active">
+                    <script type='text/javascript' src='//form2.ravpage.co.il/7ef6d821e59038431ad4d2f405ca4ca169E9095B' charset='UTF-8'></script>
+                </div>
+                <div id="form-wed" class="form-container">
+                    <script type='text/javascript' src='//form2.ravpage.co.il/0eb87114fa58010eeb7b1f71da58151469F459BF' charset='UTF-8'></script>
+                </div>
             </div>
 
-            <p class="form-privacy" style="margin-top: 20px;">
+            <p class="form-privacy" style="margin-top: 24px;">
                 <strong>לא ספאם. לא רשימת תפוצה מופרזת.</strong><br>
                 רק לינק לזום, זימון ליומן, ותזכורת לפני הלייב.
             </p>
         </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.date-tab');
+    const labels = {
+        'form-mon': 'מתחילים הרשמה למועד 1 . שני 4.5 ב-11:00',
+        'form-wed': 'מתחילים הרשמה למועד 2 . רביעי 6.5 ב-21:00'
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(target).classList.add('active');
+            document.getElementById('form-zone-label').textContent = labels[target];
+        });
+    });
+});
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
