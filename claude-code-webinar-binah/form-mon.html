@@ -17,5 +17,21 @@ body { padding: 4px; }
 </head>
 <body>
 <script type='text/javascript' src='//form2.ravpage.co.il/7ef6d821e59038431ad4d2f405ca4ca169E9095B' charset='UTF-8'></script>
+
+<script>
+function reportHeight() {
+    const h = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+    );
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: 'iframe-height', height: h }, '*');
+    }
+}
+window.addEventListener('load', () => setTimeout(reportHeight, 200));
+setInterval(reportHeight, 1000);
+</script>
 </body>
 </html>

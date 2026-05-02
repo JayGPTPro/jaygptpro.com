@@ -1938,13 +1938,8 @@ section { position: relative; }
                     </div>
                 </div>
 
-                <iframe id="reg-iframe" src="form-mon.html" frameborder="0" scrolling="no" style="width: 100%; min-height: 540px; border: none; display: block; background: transparent;"></iframe>
+                <iframe id="reg-iframe" src="form-mon.html" frameborder="0" scrolling="no" style="width: 100%; height: 420px; border: none; display: block; background: transparent;"></iframe>
             </div>
-
-            <p class="form-privacy" style="margin-top: 24px;">
-                <strong>לא ספאם. לא רשימת תפוצה מופרזת.</strong><br>
-                רק לינק לזום, זימון ליומן, ותזכורת לפני הלייב.
-            </p>
         </div>
 
 <script>
@@ -1965,8 +1960,19 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             document.getElementById('form-zone-label').textContent = labels[target];
-            if (iframe) iframe.src = sources[target];
+            if (iframe) {
+                iframe.style.height = '420px';
+                iframe.src = sources[target];
+            }
         });
+    });
+
+    // Auto-resize iframe to its actual content height (no dead space)
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'iframe-height' && iframe) {
+            const h = Math.max(320, Math.min(900, parseInt(e.data.height, 10)));
+            iframe.style.height = h + 'px';
+        }
     });
 });
 </script>
