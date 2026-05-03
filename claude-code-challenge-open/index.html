@@ -2678,6 +2678,96 @@ section { position: relative; }
     .sticky-cta { bottom: 16px; right: 16px; left: 16px; text-align: center; font-size: 14px; padding: 14px 22px; }
 }
 
+/* ── Testimonials Marquee ─────────────────────────────────── */
+.testimonials-section {
+    padding: 96px 0 88px;
+    background: linear-gradient(160deg, #0d0d1a 0%, #12121f 50%, #0f0f1c 100%);
+    overflow: hidden;
+    position: relative;
+}
+.testimonials-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(249,115,22,0.07) 0%, transparent 65%);
+    pointer-events: none;
+}
+.testi-header {
+    text-align: center;
+    max-width: 580px;
+    margin: 0 auto 56px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+.testi-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 18px;
+}
+.testi-header h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+}
+.testi-header h2 .hl { color: var(--orange); background: none; -webkit-text-fill-color: var(--orange); }
+.testi-header p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+}
+.testi-track-wrap {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+.testi-track {
+    display: flex;
+    gap: 22px;
+    width: max-content;
+    animation: testi-scroll 70s linear infinite;
+    padding: 12px 0 20px;
+}
+.testi-track:hover { animation-play-state: paused; }
+@keyframes testi-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.testi-card {
+    flex-shrink: 0;
+    height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        0 10px 28px rgba(0,0,0,0.35),
+        0 28px 56px rgba(0,0,0,0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: default;
+}
+.testi-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.4),
+        0 20px 48px rgba(0,0,0,0.4),
+        0 40px 72px rgba(0,0,0,0.25);
+}
+.testi-card img { height: 100%; width: auto; display: block; }
+@media (max-width: 640px) {
+    .testimonials-section { padding: 64px 0 56px; }
+    .testi-card { height: 220px; border-radius: 16px; }
+    .testi-track { gap: 14px; }
+    .testi-header { margin-bottom: 36px; }
+}
+
 </style>
 </head>
 <body>
@@ -2802,6 +2892,52 @@ section { position: relative; }
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="testimonials-section">
+    <div class="testi-header reveal">
+        <div class="testi-tag">From the WhatsApp Group</div>
+        <h2>Real people. <span class="hl">Real reactions.</span></h2>
+        <p>Unedited screenshots from past challengers, posted live during the 5 days.</p>
+    </div>
+    <div class="testi-track-wrap">
+        <div class="testi-track">
+            <div class="testi-card"><img src="testimonials/t01.jpg" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t02.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t03.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t04.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t05.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t06.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t07.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t08.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t09.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t10.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t11.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t12.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t13.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t14.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t15.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t16.png" alt="Testimonial" loading="lazy"></div>
+            <!-- duplicate set for seamless infinite loop -->
+            <div class="testi-card"><img src="testimonials/t01.jpg" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t02.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t03.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t04.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t05.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t06.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t07.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t08.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t09.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t10.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t11.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t12.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t13.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t14.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t15.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-card"><img src="testimonials/t16.png" alt="Testimonial" loading="lazy"></div>
         </div>
     </div>
 </section>
