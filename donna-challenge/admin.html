@@ -1023,10 +1023,6 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
       <button class="btn-primary" onclick="switchTab('engagement')" data-en="Open engagement" data-he="פתח מעורבות">Open engagement</button>
     </div>
 
-    <!-- ROUND STATUS CARDS -->
-    <div class="section-title" style="margin-top:8px">&#127919; <span data-en="Round status (paying users)" data-he="מצב הסבבים (משלמים)">Round status (paying users)</span></div>
-    <div class="round-cards" id="roundCards"></div>
-
     <!-- FAMILY / ADMIN STRIP -->
     <div class="family-strip" id="familyStrip"></div>
 
@@ -2093,9 +2089,24 @@ function formatDate(d){
   return new Date(d).toLocaleDateString(isRTL() ? 'he-IL' : 'en-US');
 }
 
+// Currency symbol for the active language filter ('en' -> $, 'he' -> ₪).
+// Returns null when filter is 'all' (caller should display both currencies separately).
+function filterCurrencySymbol(){
+  const lf = getLangFilter();
+  if(lf === 'he') return '₪';
+  if(lf === 'en') return '$';
+  return null;
+}
+
+// Format a money cents value with the right symbol for the active filter.
+// When filter is 'all', returns a combined string showing both USD and ILS sums of an array.
+function formatMoneyCents(cents, sym){
+  return (sym || '$') + ((cents || 0) / 100).toLocaleString();
+}
+
 // ===== RENDER ALL =====
 function renderAll(){
-  renderRoundCards();
+  renderFamilyStrip();
   renderActionQueue();
   renderOverview();
   renderEngagement();
@@ -2252,108 +2263,29 @@ function goToRound(key){
   renderAll();
 }
 
-// ===== ROUND STATUS CARDS =====
-function renderRoundCards(){
-  const container = document.getElementById('roundCards');
-  if(!container) return;
-
-  // Active participants only (no aliases, no revoked, no family/admin in main counts)
-  const active = allParticipants
-    .filter(p => !p.access_revoked_at)
-    .filter(p => p.customer_type === 'paid' || !p.customer_type);
-
-  // Helper: build a single round card
-  function buildCard(roundKey, title, dates, cssClass){
-    const inRound = active.filter(p => p.round === roundKey);
-    const total = inRound.length;
-    const roundRow = (allRounds || []).find(r => r.id === roundKey);
-    const isFull = roundRow && roundRow.status === 'full';
-    const fullBadge = isFull
-      ? '<span style="display:inline-block;margin-right:8px;font-size:0.65em;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:1px;vertical-align:middle">' + t('rc.full') + '</span>'
-      : '';
-    // Confidence breakdown
-    const confirmed = inRound.filter(p => p.in_whatsapp === roundKey).length;
-    const inBothWA = inRound.filter(p => p.in_whatsapp === 'both').length;
-    const wrongWA = inRound.filter(p =>
-      (roundKey === 'round1' && p.in_whatsapp === 'round2') ||
-      (roundKey === 'round2' && p.in_whatsapp === 'round1')
-    ).length;
-    const noWA = inRound.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown' || p.in_whatsapp === 'none').length;
-
-    const confirmedPct = total > 0 ? (confirmed / total) * 100 : 0;
-    const softPct = total > 0 ? ((inBothWA + noWA) / total) * 100 : 0;
-
-    return `
-      <div class="round-card ${cssClass}" onclick="filterToRound('${roundKey}')" style="${isFull ? 'opacity:0.85' : ''}">
-        <div class="round-card-title">${title}${fullBadge}</div>
-        <div class="round-card-num">${total}</div>
-        <div class="round-card-dates">${dates}</div>
-        <div class="conf-bar">
-          <div class="conf-seg conf-confirmed" style="width:${confirmedPct}%"></div>
-          <div class="conf-seg conf-soft" style="width:${softPct}%"></div>
-        </div>
-        <div class="conf-list">
-          <div class="row"><span class="label">&#9989; ${t('rc.confirmedWA')}</span><span class="num green">${confirmed}</span></div>
-          ${inBothWA > 0 ? `<div class="row"><span class="label">&#8644; ${t('rc.bothGroups')}</span><span class="num yellow">${inBothWA}</span></div>` : ''}
-          ${wrongWA > 0 ? `<div class="row"><span class="label">&#9888;&#65039; ${t('rc.wrongGroup')}</span><span class="num red">${wrongWA}</span></div>` : ''}
-          ${noWA > 0 ? `<div class="row"><span class="label">&#10067; ${t('rc.unknownWA')}</span><span class="num yellow">${noWA}</span></div>` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  // Build unknown round card
-  const unknownRound = active.filter(p => p.round === 'unknown');
-  const unkInWA1 = unknownRound.filter(p => p.in_whatsapp === 'round1').length;
-  const unkInWA2 = unknownRound.filter(p => p.in_whatsapp === 'round2').length;
-  const unkInBoth = unknownRound.filter(p => p.in_whatsapp === 'both').length;
-  const unkNoWA = unknownRound.filter(p => !p.in_whatsapp || p.in_whatsapp === 'unknown' || p.in_whatsapp === 'none').length;
-
-  const unknownCard = `
-    <div class="round-card unknown" onclick="filterToRound('unknown')">
-      <div class="round-card-title">${t('round.unknownLabel')}</div>
-      <div class="round-card-num">${unknownRound.length}</div>
-      <div class="round-card-dates">${t('round.unknownDesc')}</div>
-      <div class="conf-bar">
-        <div class="conf-seg conf-soft" style="width:${unknownRound.length > 0 ? ((unkInWA1+unkInWA2+unkInBoth) / unknownRound.length) * 100 : 0}%"></div>
-      </div>
-      <div class="conf-list">
-        ${unkInWA1 > 0 ? `<div class="row"><span class="label">&#128172; ${t('rc.inG1')}</span><span class="num green">${unkInWA1}</span></div>` : ''}
-        ${unkInWA2 > 0 ? `<div class="row"><span class="label">&#128172; ${t('rc.inG2')}</span><span class="num green">${unkInWA2}</span></div>` : ''}
-        ${unkInBoth > 0 ? `<div class="row"><span class="label">&#8644; ${t('rc.bothGroups')}</span><span class="num yellow">${unkInBoth}</span></div>` : ''}
-        ${unkNoWA > 0 ? `<div class="row"><span class="label">&#10071; ${t('rc.noGroup')}</span><span class="num red">${unkNoWA}</span></div>` : ''}
-      </div>
-    </div>
-  `;
-
-  container.innerHTML =
-    buildCard('round1', t('round.round1'), 'Apr 20-24', 'r1') +
-    buildCard('round2', t('round.round2'), 'Apr 27 - May 1', 'r2') +
-    unknownCard;
-
-  // Family / admin section (separate, doesn't affect paid counts)
+// Family / admin strip (rendered standalone now that renderRoundCards is gone).
+function renderFamilyStrip(){
   const family = allParticipants.filter(p => p.customer_type === 'family');
   const admin = allParticipants.filter(p => p.customer_type === 'admin');
   const familyEl = document.getElementById('familyStrip');
-  if(familyEl){
-    if(family.length === 0 && admin.length === 0){
-      familyEl.style.display = 'none';
-    } else {
-      familyEl.style.display = 'flex';
-      familyEl.innerHTML = `
-        <div class="family-strip-item" onclick="filterToCustomerType('family')">
-          <span class="family-icon">&#129489;&#8205;&#129489;&#8205;&#129489;&#8205;&#129489;</span>
-          <span class="family-num">${family.length}</span>
-          <span class="family-label">${t('fs.family')}</span>
-        </div>
-        <div class="family-strip-item" onclick="filterToCustomerType('admin')">
-          <span class="family-icon">&#128737;&#65039;</span>
-          <span class="family-num">${admin.length}</span>
-          <span class="family-label">${t('fs.admin')}</span>
-        </div>
-      `;
-    }
+  if(!familyEl) return;
+  if(family.length === 0 && admin.length === 0){
+    familyEl.style.display = 'none';
+    return;
   }
+  familyEl.style.display = 'flex';
+  familyEl.innerHTML = `
+    <div class="family-strip-item" onclick="filterToCustomerType('family')">
+      <span class="family-icon">&#129489;&#8205;&#129489;&#8205;&#129489;&#8205;&#129489;</span>
+      <span class="family-num">${family.length}</span>
+      <span class="family-label">${t('fs.family')}</span>
+    </div>
+    <div class="family-strip-item" onclick="filterToCustomerType('admin')">
+      <span class="family-icon">&#128737;&#65039;</span>
+      <span class="family-num">${admin.length}</span>
+      <span class="family-label">${t('fs.admin')}</span>
+    </div>
+  `;
 }
 
 function filterToCustomerType(type){
@@ -2766,8 +2698,24 @@ function renderOverview(){
   const paidParticipants = baseParticipants.filter(p => (p.customer_type || 'paid') === 'paid');
   const total = paidParticipants.length;
 
-  // Unique emails that have at least one event
-  const loggedInEmails = new Set(allEvents.map(e => eventEmail(e)).filter(Boolean));
+  // Unique emails that have at least one event AND pass the global filter.
+  // Roll alias events up to their primary so a single human counts once.
+  const filteredEmailsSet = new Set(baseParticipants.map(p => (p.email || '').toLowerCase()));
+  const aliasToPrimaryMap = new Map();
+  (allAliases || []).forEach(a => {
+    const aliasEmail = (a.email || '').toLowerCase();
+    const primary = (a.primary_email || '').toLowerCase();
+    if(aliasEmail && primary) aliasToPrimaryMap.set(aliasEmail, primary);
+  });
+  function eventPrimaryEmail(e){
+    const ee = eventEmail(e);
+    return aliasToPrimaryMap.get(ee) || ee;
+  }
+  const loggedInEmails = new Set(
+    allEvents
+      .map(e => eventPrimaryEmail(e))
+      .filter(em => em && filteredEmailsSet.has(em))
+  );
   const loggedIn = loggedInEmails.size;
 
   // Completed all 5 days (within filter)
@@ -2782,7 +2730,10 @@ function renderOverview(){
   const today = new Date();
   today.setHours(0,0,0,0);
   const activeToday = new Set(
-    allEvents.filter(e => new Date(e.created_at) >= today).map(e => eventEmail(e)).filter(Boolean)
+    allEvents
+      .filter(e => new Date(e.created_at) >= today)
+      .map(e => eventPrimaryEmail(e))
+      .filter(em => em && filteredEmailsSet.has(em))
   ).size;
 
   // Inactive 3+ days
@@ -2838,15 +2789,43 @@ function renderOverview(){
   );
   document.getElementById('statPaidNoAccess').textContent = paidNoAccess.length;
 
-  // Revenue (gross, refunds, net)
-  const grossCents = paidCustomers.reduce((s, c) => s + (c.amount_paid || 0), 0);
+  // Revenue (gross, refunds, net). Bucket by currency so we never mix USD and ILS.
   const refunded = paidCustomers.filter(c => c.refunded);
-  const refundCents = refunded.reduce((s, c) => s + (c.refund_amount || c.amount_paid || 0), 0);
-  const netCents = grossCents - refundCents;
-  document.getElementById('statRevenue').textContent = '$' + (grossCents / 100).toLocaleString();
-  document.getElementById('statRefunds').textContent = refunded.length;
-  document.getElementById('statRefundsAmount').textContent = '$' + (refundCents / 100).toLocaleString() + (isRTL() ? ' הוחזרו' : ' refunded');
-  document.getElementById('statRevenueNet').textContent = '$' + (netCents / 100).toLocaleString();
+  function sumByCurrency(rows, cur, field){
+    return rows
+      .filter(c => (c.currency || 'usd').toLowerCase() === cur)
+      .reduce((s, c) => s + (Number(c[field]) || 0), 0);
+  }
+  const usdGross = sumByCurrency(paidCustomers, 'usd', 'amount_paid');
+  const ilsGross = sumByCurrency(paidCustomers, 'ils', 'amount_paid');
+  const usdRefund = refunded.filter(c => (c.currency || 'usd').toLowerCase() === 'usd')
+    .reduce((s, c) => s + (Number(c.refund_amount || c.amount_paid) || 0), 0);
+  const ilsRefund = refunded.filter(c => (c.currency || 'usd').toLowerCase() === 'ils')
+    .reduce((s, c) => s + (Number(c.refund_amount || c.amount_paid) || 0), 0);
+  const lf = getLangFilter();
+  const refundedLbl = isRTL() ? ' הוחזרו' : ' refunded';
+  if(lf === 'he'){
+    document.getElementById('statRevenue').textContent = '₪' + (ilsGross / 100).toLocaleString();
+    document.getElementById('statRefunds').textContent = refunded.length;
+    document.getElementById('statRefundsAmount').textContent = '₪' + (ilsRefund / 100).toLocaleString() + refundedLbl;
+    document.getElementById('statRevenueNet').textContent = '₪' + ((ilsGross - ilsRefund) / 100).toLocaleString();
+  } else if(lf === 'en'){
+    document.getElementById('statRevenue').textContent = '$' + (usdGross / 100).toLocaleString();
+    document.getElementById('statRefunds').textContent = refunded.length;
+    document.getElementById('statRefundsAmount').textContent = '$' + (usdRefund / 100).toLocaleString() + refundedLbl;
+    document.getElementById('statRevenueNet').textContent = '$' + ((usdGross - usdRefund) / 100).toLocaleString();
+  } else {
+    // 'all': show both currencies separately, no conversion.
+    document.getElementById('statRevenue').innerHTML =
+      '<div style="font-size:0.7em;line-height:1.2">$' + (usdGross / 100).toLocaleString() +
+      '<br>₪' + (ilsGross / 100).toLocaleString() + '</div>';
+    document.getElementById('statRefunds').textContent = refunded.length;
+    document.getElementById('statRefundsAmount').textContent =
+      '$' + (usdRefund / 100).toLocaleString() + ' . ₪' + (ilsRefund / 100).toLocaleString() + refundedLbl;
+    document.getElementById('statRevenueNet').innerHTML =
+      '<div style="font-size:0.7em;line-height:1.2">$' + ((usdGross - usdRefund) / 100).toLocaleString() +
+      '<br>₪' + ((ilsGross - ilsRefund) / 100).toLocaleString() + '</div>';
+  }
 
   // Countdown to next round
   const today2 = new Date();
@@ -3898,12 +3877,54 @@ function renderRevenue(){
   const netDollars = netCents / 100;
   const avgDollars = active.length > 0 ? Math.round((active.reduce((s,c) => s + (c.amount_paid || 0), 0) / 100) / active.length) : 0;
 
-  document.getElementById('revTotal').textContent = '$' + (grossCents/100).toLocaleString();
-  document.getElementById('revRefunds').textContent = '$' + (refundCents/100).toLocaleString();
-  document.getElementById('revRefundsCount').textContent = refunded.length + (isRTL() ? ' החזרים' : ' refunds');
-  document.getElementById('revNet').textContent = '$' + netDollars.toLocaleString();
+  // Currency-aware top stats. When filter is 'all', show both currencies stacked.
+  const lfRev = getLangFilter();
+  function bucketSum(rows, cur, field){
+    return rows
+      .filter(c => (c.currency || 'usd').toLowerCase() === cur)
+      .reduce((s, c) => s + (Number(c[field]) || 0), 0);
+  }
+  const usdGrossR = bucketSum(realCustomers, 'usd', 'amount_paid');
+  const ilsGrossR = bucketSum(realCustomers, 'ils', 'amount_paid');
+  const usdRefR = refunded.filter(c => (c.currency || 'usd').toLowerCase() === 'usd')
+    .reduce((s, c) => s + (Number(c.refund_amount || c.amount_paid) || 0), 0);
+  const ilsRefR = refunded.filter(c => (c.currency || 'usd').toLowerCase() === 'ils')
+    .reduce((s, c) => s + (Number(c.refund_amount || c.amount_paid) || 0), 0);
+  const refundsLbl = (isRTL() ? ' החזרים' : ' refunds');
+  if(lfRev === 'he'){
+    document.getElementById('revTotal').textContent = '₪' + (ilsGrossR / 100).toLocaleString();
+    document.getElementById('revRefunds').textContent = '₪' + (ilsRefR / 100).toLocaleString();
+    document.getElementById('revNet').textContent = '₪' + ((ilsGrossR - ilsRefR) / 100).toLocaleString();
+  } else if(lfRev === 'en'){
+    document.getElementById('revTotal').textContent = '$' + (usdGrossR / 100).toLocaleString();
+    document.getElementById('revRefunds').textContent = '$' + (usdRefR / 100).toLocaleString();
+    document.getElementById('revNet').textContent = '$' + ((usdGrossR - usdRefR) / 100).toLocaleString();
+  } else {
+    document.getElementById('revTotal').innerHTML =
+      '<div style="font-size:0.7em;line-height:1.2">$' + (usdGrossR / 100).toLocaleString() +
+      '<br>₪' + (ilsGrossR / 100).toLocaleString() + '</div>';
+    document.getElementById('revRefunds').innerHTML =
+      '<div style="font-size:0.7em;line-height:1.2">$' + (usdRefR / 100).toLocaleString() +
+      '<br>₪' + (ilsRefR / 100).toLocaleString() + '</div>';
+    document.getElementById('revNet').innerHTML =
+      '<div style="font-size:0.7em;line-height:1.2">$' + ((usdGrossR - usdRefR) / 100).toLocaleString() +
+      '<br>₪' + ((ilsGrossR - ilsRefR) / 100).toLocaleString() + '</div>';
+  }
+  document.getElementById('revRefundsCount').textContent = refunded.length + refundsLbl;
   document.getElementById('revCustomers').textContent = active.length;
-  document.getElementById('revAvg').textContent = '$' + avgDollars.toLocaleString();
+  // Average is per-currency. When 'all', show '-' since mixing makes no sense.
+  if(lfRev === 'he'){
+    const avgIls = active.filter(c => (c.currency || 'usd').toLowerCase() === 'ils').length > 0
+      ? Math.round(ilsGrossR / 100 / active.filter(c => (c.currency || 'usd').toLowerCase() === 'ils').length)
+      : 0;
+    document.getElementById('revAvg').textContent = '₪' + avgIls.toLocaleString();
+  } else if(lfRev === 'en'){
+    const usdActive = active.filter(c => (c.currency || 'usd').toLowerCase() === 'usd').length;
+    const avgUsd = usdActive > 0 ? Math.round(usdGrossR / 100 / usdActive) : 0;
+    document.getElementById('revAvg').textContent = '$' + avgUsd.toLocaleString();
+  } else {
+    document.getElementById('revAvg').textContent = '$' + avgDollars.toLocaleString();
+  }
 
   // Revenue timeline chart (use payment_date first, then created_at)
   const byDate = {};
