@@ -700,6 +700,90 @@ tr.expandable{cursor:pointer}
 }
 .lang-toggle:hover{color:var(--orange);border-color:var(--orange)}
 
+/* ===== GLOBAL HEADER FILTERS ===== */
+.global-filter{
+  background:var(--bg);border:1px solid var(--glass-border);
+  color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);
+  font-family:inherit;font-size:0.82em;cursor:pointer;
+  outline:none;transition:0.2s;max-width:160px;
+}
+.global-filter:hover,.global-filter:focus{border-color:var(--orange);color:var(--orange)}
+@media(max-width:768px){
+  .global-filter{font-size:0.75em;padding:5px 8px;max-width:120px}
+}
+
+/* ===== ROUNDS TAB CARDS ===== */
+.rounds-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;margin-bottom:24px;
+}
+.round-tab-card{
+  background:var(--card);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:20px;cursor:pointer;
+  transition:0.2s;position:relative;overflow:hidden;
+}
+.round-tab-card:hover{transform:translateY(-2px);border-color:var(--orange)}
+.round-tab-card.lang-en{border-top:3px solid var(--blue)}
+.round-tab-card.lang-he{border-top:3px solid var(--orange)}
+.rtc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.rtc-name{font-size:1em;font-weight:700;color:var(--bright);flex:1;min-width:0}
+.rtc-flag{font-size:1.4em}
+.rtc-status{
+  display:inline-block;font-size:0.7em;font-weight:700;
+  padding:2px 8px;border-radius:10px;letter-spacing:0.04em;text-transform:uppercase;
+}
+.rtc-status.active{background:var(--green-bg);color:var(--green)}
+.rtc-status.upcoming{background:var(--blue-bg);color:var(--blue)}
+.rtc-status.full{background:var(--red-bg);color:var(--red)}
+.rtc-status.completed{background:rgba(152,152,168,0.12);color:var(--dim)}
+.rtc-dates{
+  font-size:0.78em;color:var(--dim);margin-bottom:14px;
+  direction:ltr;text-align:right;font-family:'JetBrains Mono',monospace;
+}
+.rtc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.rtc-stat{
+  background:var(--bg);border:1px solid var(--glass-border);
+  border-radius:8px;padding:10px;text-align:center;
+}
+.rtc-stat .v{font-size:1.4em;font-weight:800;color:var(--bright);line-height:1.1}
+.rtc-stat .l{font-size:0.7em;color:var(--dim);margin-top:2px}
+.rtc-health{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-radius:8px;font-size:0.82em;font-weight:600;
+  border:1px solid;
+}
+.rtc-health.green{background:var(--green-bg);color:var(--green);border-color:rgba(61,214,140,0.3)}
+.rtc-health.yellow{background:var(--yellow-bg);color:var(--yellow);border-color:rgba(245,197,66,0.3)}
+.rtc-health.red{background:var(--red-bg);color:var(--red);border-color:rgba(255,92,92,0.3)}
+.rtc-health-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px}
+.rtc-health.green .rtc-health-dot{background:var(--green)}
+.rtc-health.yellow .rtc-health-dot{background:var(--yellow)}
+.rtc-health.red .rtc-health-dot{background:var(--red)}
+.rtc-health-detail{font-size:0.72em;color:var(--dim);font-weight:500;margin-top:8px;line-height:1.5}
+
+/* Source badge */
+.src-badge{
+  display:inline-block;font-size:0.65em;font-weight:700;
+  padding:1px 6px;border-radius:4px;letter-spacing:0.04em;
+  margin-right:4px;text-transform:uppercase;
+}
+.src-badge.allowed{background:rgba(92,160,255,0.12);color:var(--blue)}
+.src-badge.bina{background:rgba(232,112,64,0.12);color:var(--orange)}
+
+/* Revenue language breakdown */
+.rev-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.rev-lang-card{
+  background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);padding:18px;
+}
+.rev-lang-card.en{border-top:3px solid var(--blue)}
+.rev-lang-card.he{border-top:3px solid var(--orange)}
+.rev-lang-card .l{font-size:0.78em;color:var(--dim);margin-bottom:6px}
+.rev-lang-card .v{font-size:1.6em;font-weight:800;color:var(--bright)}
+.rev-lang-card .s{font-size:0.75em;color:var(--dim);margin-top:4px}
+
 /* RTL/LTR direction handling */
 html[dir="rtl"] th{text-align:right}
 html[dir="ltr"] th{text-align:left}
@@ -801,8 +885,25 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
 <div id="dashboard" class="dashboard">
   <!-- Header -->
   <header class="dash-header">
-    <h1>&#128202; <span data-en="Admin Dashboard" data-he="לוח בקרה">Admin Dashboard</span> <span>. <span data-en="Donna Challenge" data-he="אתגר דונה">Donna Challenge</span></span></h1>
+    <h1>&#128202; <span data-en="Admin Dashboard" data-he="לוח בקרה">Admin Dashboard</span> <span>. <span data-en="Claude Code Challenge" data-he="אתגר קלוד קוד">Claude Code Challenge</span></span></h1>
     <div class="header-actions">
+      <select id="globalRoundFilter" class="global-filter" onchange="onGlobalFilterChange()" title="Round filter">
+        <option value="all" data-en="All rounds" data-he="כל הסבבים">All rounds</option>
+        <option value="active" data-en="Active only" data-he="פעילים בלבד">Active only</option>
+        <option value="upcoming" data-en="Upcoming only" data-he="עתידיים בלבד">Upcoming only</option>
+        <option value="past" data-en="Past only" data-he="הסתיימו בלבד">Past only</option>
+        <option value="round1" data-en="Round 1 EN" data-he="סבב 1 (אנגלית)">Round 1 EN</option>
+        <option value="round2" data-en="Round 2 EN" data-he="סבב 2 (אנגלית)">Round 2 EN</option>
+        <option value="round4" data-en="Round 4 EN" data-he="סבב 4 (אנגלית)">Round 4 EN</option>
+        <option value="round5" data-en="Round 5 EN" data-he="סבב 5 (אנגלית)">Round 5 EN</option>
+        <option value="bina_r1" data-en="Bina r1 (HE)" data-he="בינה סבב 1 (עברית)">Bina r1 (HE)</option>
+        <option value="bina_r2" data-en="Bina r2 (HE)" data-he="בינה סבב 2 (עברית)">Bina r2 (HE)</option>
+      </select>
+      <select id="globalLangFilter" class="global-filter" onchange="onGlobalFilterChange()" title="Language filter">
+        <option value="all" data-en="All languages" data-he="כל השפות">All languages</option>
+        <option value="en" data-en="English only" data-he="אנגלית בלבד">English only</option>
+        <option value="he" data-en="Hebrew only" data-he="עברית בלבד">Hebrew only</option>
+      </select>
       <div class="refresh-indicator">
         <span class="dot"></span>
         <span id="lastRefresh" data-en="Refreshing..." data-he="מתעדכן...">Refreshing...</span>
@@ -1429,7 +1530,50 @@ const I18N = {
   'eng.cmpActive24':      { en: 'Active in last 24h', he: 'פעילים ב-24 שעות' },
   'eng.cmpAvgTime':       { en: 'Avg time on site',   he: 'זמן ממוצע באתר' },
   'eng.cmpLogins':        { en: 'Total logins',       he: 'סך כניסות' },
-  'eng.cmpCopies':        { en: 'Commands copied',    he: 'פקודות שהועתקו' }
+  'eng.cmpCopies':        { en: 'Commands copied',    he: 'פקודות שהועתקו' },
+  // Tabs
+  'tab.overview':         { en: 'Overview',           he: 'סקירה' },
+  'tab.rounds':           { en: 'Rounds',             he: 'סבבים' },
+  'tab.participants':     { en: 'Participants',       he: 'משתתפים' },
+  'tab.engagement':       { en: 'Engagement',         he: 'מעורבות' },
+  'tab.revenue':          { en: 'Revenue',            he: 'הכנסות' },
+  'tab.wa':               { en: 'WhatsApp recon',     he: 'השוואת WhatsApp' },
+  'tab.manage':           { en: 'Manage',             he: 'ניהול' },
+  // Round names (full set)
+  'round.round4':         { en: 'Round 4 EN',         he: 'סבב 4 (אנגלית)' },
+  'round.round5':         { en: 'Round 5 EN',         he: 'סבב 5 (אנגלית)' },
+  'round.bina_r1':        { en: 'Bina r1 (HE)',       he: 'בינה סבב 1 (עברית)' },
+  'round.bina_r2':        { en: 'Bina r2 (HE)',       he: 'בינה סבב 2 (עברית)' },
+  // Source labels
+  'src.allowed':          { en: 'EN',                 he: 'אנגלית' },
+  'src.bina':             { en: 'HE',                 he: 'עברית' },
+  'src.column':           { en: 'Source',             he: 'מקור' },
+  // Rounds tab
+  'rt.title':             { en: 'All challenge rounds',         he: 'כל סבבי האתגר' },
+  'rt.subtitle':          { en: 'Health, registrations, revenue per round', he: 'בריאות, הרשמות והכנסות לכל סבב' },
+  'rt.registered':        { en: 'Registered',         he: 'נרשמו' },
+  'rt.paid':              { en: 'Paid',               he: 'שילמו' },
+  'rt.active24':          { en: 'Active 24h',         he: 'פעילים 24ש' },
+  'rt.welcome':           { en: 'Welcome sent',       he: 'מייל welcome' },
+  'rt.revenue':           { en: 'Revenue',            he: 'הכנסות' },
+  'rt.health.green':      { en: 'Healthy',            he: 'בריא' },
+  'rt.health.yellow':     { en: 'Needs attention',    he: 'דורש תשומת לב' },
+  'rt.health.red':        { en: 'Critical',           he: 'קריטי' },
+  'rt.healthCriteria':    { en: 'Target: paid >= goal, active 24h >= 50%, welcome >= 90%', he: 'יעד: משלמים >= מטרה, פעילים 24ש >= 50%, welcome >= 90%' },
+  'rt.statusActive':      { en: 'Active',             he: 'פעיל' },
+  'rt.statusUpcoming':    { en: 'Upcoming',           he: 'עתידי' },
+  'rt.statusFull':        { en: 'Full',               he: 'מלא' },
+  'rt.statusCompleted':   { en: 'Completed',          he: 'הסתיים' },
+  // Engagement compare
+  'eng.compareLabel':     { en: 'Compare rounds',     he: 'השוואת סבבים' },
+  'eng.left':             { en: 'Left',               he: 'שמאל' },
+  'eng.right':            { en: 'Right',              he: 'ימין' },
+  // Revenue language breakdown
+  'rev.byLang':           { en: 'Revenue by language', he: 'הכנסות לפי שפה' },
+  'rev.byRound':          { en: 'Revenue by round',   he: 'הכנסות לפי סבב' },
+  'rev.english':          { en: 'English (USD)',      he: 'אנגלית (USD)' },
+  'rev.hebrew':           { en: 'Hebrew (ILS)',       he: 'עברית (ILS)' },
+  'rev.transactions':     { en: 'transactions',       he: 'עסקאות' }
 };
 
 function t(key){
@@ -1483,13 +1627,185 @@ function toggleLanguage(){
 applyLanguageToDOM();
 
 // ===== GLOBAL STATE =====
-let allParticipants = []; // primary accounts only (no aliases)
+let allParticipants = []; // unified primary accounts (allowed + bina), no aliases
 let allAliases = [];      // alias rows (primary_email is set)
 let allEvents = [];
 let allProgress = [];     // user_progress rows (server-side completion + checks per day)
 let allRounds = [];
 let authUsers = [];
 let stripeCustomers = [];
+let binaRegistrations = []; // raw bina_registrations rows (kept for ref)
+
+// ===== ROUND METADATA =====
+// Canonical list of rounds. Used for filters when DB rounds table is empty/missing entries.
+const ALL_ROUND_KEYS = ['round1','round2','round4','round5','bina_r1','bina_r2'];
+const ROUND_LANG = {
+  round1:'en', round2:'en', round4:'en', round5:'en',
+  bina_r1:'he', bina_r2:'he',
+  // legacy values
+  both:'en', unknown:'en'
+};
+function roundLanguage(roundKey){
+  if(!roundKey) return null;
+  return ROUND_LANG[roundKey] || null;
+}
+// Map bina_registrations.round ('r1','r2') to canonical key ('bina_r1','bina_r2')
+function normalizeBinaRound(r){
+  if(r === 'r1') return 'bina_r1';
+  if(r === 'r2') return 'bina_r2';
+  return r || null;
+}
+function roundDisplayName(roundKey){
+  const meta = (allRounds || []).find(r => r.id === roundKey);
+  if(meta && meta.name) return meta.name;
+  // Fall back to t() if we have a translation
+  const k = 'round.' + roundKey;
+  if(I18N[k]) return t(k);
+  return roundKey || (isRTL() ? 'לא ידוע' : 'Unknown');
+}
+// Status of a round given current date + DB status if any
+function roundStatus(roundKey){
+  const meta = (allRounds || []).find(r => r.id === roundKey);
+  if(meta && meta.status === 'full') return 'full';
+  if(meta && meta.status === 'completed') return 'completed';
+  if(!meta || !meta.start_date) return 'upcoming';
+  const now = new Date();
+  const start = new Date(meta.start_date);
+  const end = meta.end_date ? new Date(meta.end_date) : null;
+  if(end && now > new Date(end.getTime() + 24*60*60*1000)) return 'completed';
+  if(now >= start) return 'active';
+  return 'upcoming';
+}
+
+// Merge allowed_emails + bina_registrations into a unified participants list.
+// Each row gets a `_source` field ('allowed' or 'bina').
+function mergeParticipants(allowedRows, binaRows, stripeRows){
+  // allowed_emails primaries (no primary_email set)
+  const out = (allowedRows || [])
+    .filter(r => !r.primary_email)
+    .map(r => Object.assign({}, r, { _source: 'allowed', _language: roundLanguage(r.round) || 'en' }));
+
+  // Bina rows: derive missing fields, never duplicate emails already in allowed
+  const allowedLowerEmails = new Set(out.map(p => (p.email || '').toLowerCase()));
+  (binaRows || []).forEach(b => {
+    const lower = (b.email || '').toLowerCase();
+    if(!lower || allowedLowerEmails.has(lower)) return;
+    const stripeMatch = (stripeRows || []).find(c => c.email && c.email.toLowerCase() === lower);
+    out.push({
+      id: 'bina:' + lower,
+      email: b.email,
+      name: stripeMatch && stripeMatch.name ? stripeMatch.name : '',
+      round: normalizeBinaRound(b.round),
+      phone: stripeMatch && stripeMatch.phone ? stripeMatch.phone : null,
+      in_whatsapp: 'unknown',
+      welcome_email_sent_at: b.welcome_email_sent_at || null,
+      welcome_email_error: b.welcome_email_error || null,
+      access_revoked_at: null,
+      customer_type: 'paid',
+      round_confirmed: true,
+      notes: b.notes || null,
+      created_at: b.created_at,
+      stripe_payment_id: null,
+      _source: 'bina',
+      _language: 'he'
+    });
+  });
+  return out;
+}
+
+// ===== GLOBAL FILTER STATE =====
+function getRoundFilter(){
+  return localStorage.getItem('admin-round-filter') || 'all';
+}
+function getLangFilter(){
+  return localStorage.getItem('admin-lang-filter') || 'all';
+}
+function setRoundFilter(v){ localStorage.setItem('admin-round-filter', v || 'all'); }
+function setLangFilter(v){ localStorage.setItem('admin-lang-filter', v || 'all'); }
+
+// Returns true if participant passes the global round + language filter.
+function passesGlobalFilter(p){
+  const rf = getRoundFilter();
+  const lf = getLangFilter();
+  // Language filter (based on participant's round language)
+  const pLang = p._language || roundLanguage(p.round) || 'en';
+  if(lf !== 'all' && pLang !== lf) return false;
+  // Round filter
+  if(rf === 'all') return true;
+  if(rf === 'active' || rf === 'upcoming' || rf === 'past'){
+    const st = roundStatus(p.round);
+    if(rf === 'active' && st !== 'active' && st !== 'full') return false;
+    if(rf === 'upcoming' && st !== 'upcoming') return false;
+    if(rf === 'past' && st !== 'completed') return false;
+    return true;
+  }
+  return p.round === rf;
+}
+// Returns subset of allParticipants passing global filter.
+function filteredParticipants(){
+  return allParticipants.filter(passesGlobalFilter);
+}
+
+// Determine the round of a Stripe customer (best effort). Returns canonical round key or null.
+function stripeRoundFor(c){
+  if(!c) return null;
+  if(c.round) return c.round;
+  // Match by email to participants for a definitive answer
+  const lower = (c.email || '').toLowerCase();
+  if(lower){
+    const p = allParticipants.find(x => (x.email || '').toLowerCase() === lower);
+    if(p && p.round && p.round !== 'unknown' && p.round !== 'both') return p.round;
+  }
+  // Fall back by currency
+  if((c.currency || '').toLowerCase() === 'ils') return null; // we know language but not which bina round
+  return null;
+}
+function stripeLanguageFor(c){
+  if(!c) return null;
+  const cur = (c.currency || '').toLowerCase();
+  if(cur === 'ils') return 'he';
+  if(cur === 'usd') return 'en';
+  const r = stripeRoundFor(c);
+  return r ? roundLanguage(r) : null;
+}
+// Returns true if a stripe row passes the global filter.
+function stripePassesGlobalFilter(c){
+  const rf = getRoundFilter();
+  const lf = getLangFilter();
+  if(lf !== 'all'){
+    const cl = stripeLanguageFor(c);
+    if(cl !== lf) return false;
+  }
+  if(rf === 'all') return true;
+  if(rf === 'active' || rf === 'upcoming' || rf === 'past'){
+    const r = stripeRoundFor(c);
+    if(!r) return rf === 'all';
+    const st = roundStatus(r);
+    if(rf === 'active' && st !== 'active' && st !== 'full') return false;
+    if(rf === 'upcoming' && st !== 'upcoming') return false;
+    if(rf === 'past' && st !== 'completed') return false;
+    return true;
+  }
+  // Specific round
+  return stripeRoundFor(c) === rf;
+}
+
+// Wire up the global filter UI to localStorage + re-render on change
+function onGlobalFilterChange(){
+  const rEl = document.getElementById('globalRoundFilter');
+  const lEl = document.getElementById('globalLangFilter');
+  if(rEl) setRoundFilter(rEl.value);
+  if(lEl) setLangFilter(lEl.value);
+  if(typeof renderAll === 'function') {
+    try { renderAll(); } catch(e){ console.warn('renderAll on filter:', e); }
+  }
+}
+function initGlobalFilterUI(){
+  const rEl = document.getElementById('globalRoundFilter');
+  const lEl = document.getElementById('globalLangFilter');
+  if(rEl) rEl.value = getRoundFilter();
+  if(lEl) lEl.value = getLangFilter();
+}
 
 // Get aliases for a primary email
 function getAliases(primaryEmail){
@@ -1530,6 +1846,7 @@ async function checkAuth(){
   document.getElementById('adminEmail').textContent = email;
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
+  initGlobalFilterUI();
 
   await loadAllData();
   renderAll();
@@ -1546,43 +1863,26 @@ async function checkAuth(){
 
 // ===== DATA LOADING =====
 async function loadAllData(){
-  // Fetch all rows from allowed_emails, then split primaries from aliases.
-  const participantsRes = await sb.from('allowed_emails').select('*');
-  const rows = participantsRes.data || [];
-  allParticipants = rows.filter(r => !r.primary_email);
-  allAliases = rows.filter(r => r.primary_email);
+  // Fetch allowed_emails + bina_registrations + stripe + rounds in parallel
+  const [allowedRes, binaRes, eventsRes, progressRes, roundsRes, stripeRes] = await Promise.all([
+    sb.from('allowed_emails').select('*'),
+    sb.from('bina_registrations').select('*').then(r => r).catch(e => ({ data: [], error: e })),
+    sb.from('user_events').select('*').then(r => r).catch(e => ({ data: [], error: e })),
+    sb.from('user_progress').select('*').then(r => r).catch(e => ({ data: [], error: e })),
+    sb.from('rounds').select('*').then(r => r).catch(e => ({ data: [], error: e })),
+    sb.from('stripe_customers').select('*').order('created_at', { ascending: false }).then(r => r).catch(e => ({ data: [], error: e }))
+  ]);
 
-  // Fetch events (table may not exist yet)
-  try {
-    const eventsRes = await sb.from('user_events').select('*');
-    allEvents = eventsRes.data || [];
-  } catch(e) {
-    allEvents = [];
-  }
+  const allowedRows = allowedRes.data || [];
+  allAliases = allowedRows.filter(r => r.primary_email);
+  binaRegistrations = binaRes.data || [];
+  allEvents = eventsRes.data || [];
+  allProgress = progressRes.data || [];
+  allRounds = roundsRes.data || [];
+  stripeCustomers = stripeRes.data || [];
 
-  // Fetch user_progress (server-side source of truth for completion + checklist)
-  try {
-    const progressRes = await sb.from('user_progress').select('*');
-    allProgress = progressRes.data || [];
-  } catch(e) {
-    allProgress = [];
-  }
-
-  // Fetch rounds (table may not exist yet)
-  try {
-    const roundsRes = await sb.from('rounds').select('*');
-    allRounds = roundsRes.data || [];
-  } catch(e) {
-    allRounds = [];
-  }
-
-  // Fetch Stripe customers from Supabase
-  try {
-    const { data: stripeData } = await sb.from('stripe_customers').select('*').order('created_at', { ascending: false });
-    stripeCustomers = stripeData || [];
-  } catch(e) {
-    stripeCustomers = [];
-  }
+  // Merge into a single unified participant list (with _source field)
+  allParticipants = mergeParticipants(allowedRows, binaRegistrations, stripeCustomers);
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -2843,10 +3143,19 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Helper: bina rows have synthetic ids ("bina:email") and live in bina_registrations only.
+function isBinaRow(p){ return p && (p._source === 'bina' || (typeof p.id === 'string' && p.id.startsWith('bina:'))); }
+
 // ===== EDIT PARTICIPANT MODAL =====
 function openEditModal(participantId){
   const p = allParticipants.find(x => x.id === participantId);
   if(!p) return;
+  if(isBinaRow(p)){
+    alert(isRTL()
+      ? 'משתתפי בינה (HE) מנוהלים דרך טבלת bina_registrations. אין אפשרות לערוך אותם מהדשבורד הזה.'
+      : 'Bina (HE) participants live in bina_registrations. They cannot be edited from this dashboard.');
+    return;
+  }
   document.getElementById('editParticipantId').value = p.id;
   document.getElementById('editEmailDisplay').value = p.email;
   document.getElementById('editName').value = p.name || '';
@@ -3024,8 +3333,13 @@ async function sendWelcomeNow(participantId, email){
   const verb = isResend ? 'לשלוח שוב' : 'לשלוח עכשיו';
   if(!confirm(verb + ' מייל welcome ל-' + email + '?\n\nהמייל יבחר אוטומטית בגרסה הנכונה לפי סטטוס הסבבים כרגע.')) return;
 
+  // Bina (HE) participants use a different edge function
+  const url = isBinaRow(p)
+    ? 'https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/send-welcome-bina'
+    : SEND_WELCOME_URL;
+
   try{
-    const res = await fetch(SEND_WELCOME_URL, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-form-secret': FORM_SECRET_PUBLIC_FOR_WELCOME },
       body: JSON.stringify({ email })
@@ -3044,6 +3358,8 @@ async function sendWelcomeNow(participantId, email){
 }
 
 async function confirmRound(participantId, email){
+  const p = allParticipants.find(x => x.id === participantId);
+  if(isBinaRow(p)){ alert(isRTL() ? 'לא רלוונטי לבינה.' : 'Not applicable to Bina.'); return; }
   if(!confirm('לאשר שהסבב של ' + email + ' נכון?\n\n(לחץ אוקיי רק אם וידאת ב-WhatsApp או ישירות.)')) return;
   const { error } = await sb.from('allowed_emails').update({
     round_confirmed: true
@@ -3054,6 +3370,13 @@ async function confirmRound(participantId, email){
 }
 
 async function revokeAccess(participantId, email){
+  const p = allParticipants.find(x => x.id === participantId);
+  if(isBinaRow(p)){
+    alert(isRTL()
+      ? 'משתתפי בינה (HE) מנוהלים בטבלה אחרת. אין אפשרות לבטל גישה מכאן.'
+      : 'Bina participants are managed in a separate table. Cannot revoke from here.');
+    return;
+  }
   if(!confirm('לבטל את הגישה של ' + email + ' לפורטל?\n\n(אפשר תמיד לשחזר. ההיסטוריה והנתונים נשמרים.)')) return;
   const { error } = await sb.from('allowed_emails').update({
     access_revoked_at: new Date().toISOString(),
@@ -3065,6 +3388,11 @@ async function revokeAccess(participantId, email){
 }
 
 async function restoreAccess(participantId, email){
+  const p = allParticipants.find(x => x.id === participantId);
+  if(isBinaRow(p)){
+    alert(isRTL() ? 'לא רלוונטי לבינה (HE).' : 'Not applicable to Bina (HE).');
+    return;
+  }
   // Warn if Stripe shows this customer is still refunded with no active payment
   const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === (email || '').toLowerCase());
   let warn = '';
