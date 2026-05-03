@@ -919,6 +919,7 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
     <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')"><span data-en="&#128200; Overview" data-he="&#128200; סקירה כללית">&#128200; Overview</span></button>
     <button class="tab-btn" data-tab="rounds" onclick="switchTab('rounds')"><span data-en="&#127919; Rounds" data-he="&#127919; סבבים">&#127919; Rounds</span></button>
     <button class="tab-btn" data-tab="participants" onclick="switchTab('participants')"><span data-en="&#128101; Participants" data-he="&#128101; משתתפים">&#128101; Participants</span></button>
+    <button class="tab-btn" data-tab="engagement" onclick="switchTab('engagement')"><span data-en="&#128293; Engagement" data-he="&#128293; מעורבות">&#128293; Engagement</span></button>
     <button class="tab-btn" data-tab="days" onclick="switchTab('days')"><span data-en="&#128197; Day analytics" data-he="&#128197; ניתוח לפי יום">&#128197; Day analytics</span></button>
     <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')"><span data-en="&#128176; Revenue" data-he="&#128176; הכנסות">&#128176; Revenue</span></button>
     <button class="tab-btn" data-tab="wa-recon" onclick="switchTab('wa-recon')"><span data-en="&#128172; WhatsApp recon" data-he="&#128172; השוואת WhatsApp">&#128172; WhatsApp recon</span></button>
@@ -932,6 +933,15 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
     </div>
     <p style="font-size:0.82em;color:var(--dim);margin-bottom:18px;line-height:1.6" data-en="Per round: status, registered, paid, active in last 24h, welcome email rate, revenue, and a health badge. Target = 50 paid per round by default." data-he="לכל סבב: סטטוס, נרשמו, שילמו, פעילים ב-24 שעות, אחוז מייל welcome, הכנסות, ותג בריאות. יעד ברירת מחדל = 50 משלמים לסבב.">Per round: status, registered, paid, active in last 24h, welcome email rate, revenue, and a health badge.</p>
     <div class="rounds-grid" id="roundsTabGrid"></div>
+  </div>
+
+  <!-- ===== TAB: ENGAGEMENT ===== -->
+  <div id="tab-engagement" class="tab-content">
+    <div class="section-title" style="margin-top:0">
+      &#128293; <span data-en="Engagement" data-he="מעורבות">Engagement</span>
+    </div>
+    <p style="font-size:0.82em;color:var(--dim);margin-bottom:18px;line-height:1.6" data-en="Top active users, sleeping users, top copied prompts, top opened FAQs, hourly activity heatmap, and round-vs-round comparison. Honors the global round + language filter." data-he="הפעילים ביותר, משתמשים רדומים, פרומפטים מועתקים, FAQ נפתחים, מפת חום שעתית, והשוואה בין סבבים. מתחשב בפילטר העליון.">Top active, sleeping users, prompts, FAQs, heatmap, round comparison.</p>
+    <div class="engagement-grid" id="engagementGrid"></div>
   </div>
 
   <!-- ===== TAB 1: OVERVIEW ===== -->
@@ -1004,9 +1014,14 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
       </div>
     </div>
 
-    <!-- ENGAGEMENT SECTION (top users, sleeping, prompts, FAQs, heatmap, R1 vs R2) -->
-    <div class="section-title" style="margin-top:8px">&#128293; <span data-en="Engagement" data-he="מעורבות">Engagement</span></div>
-    <div class="engagement-grid" id="engagementGrid"></div>
+    <!-- Engagement now lives in its own tab. Quick CTA stays here. -->
+    <div style="background:var(--card);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:600;color:var(--bright)" data-en="&#128293; Engagement moved" data-he="&#128293; המעורבות עברה">&#128293; Engagement moved</div>
+        <div style="font-size:0.82em;color:var(--dim)" data-en="Top active, sleeping users, prompts, FAQs, heatmap and round comparison are in the Engagement tab." data-he="פעילים, ישנוניים, פרומפטים, FAQ, חום ומשווה סבבים נמצאים בטאב המעורבות.">Top active, sleeping users, prompts, FAQs, heatmap and round comparison are in the Engagement tab.</div>
+      </div>
+      <button class="btn-primary" onclick="switchTab('engagement')" data-en="Open engagement" data-he="פתח מעורבות">Open engagement</button>
+    </div>
 
     <!-- ROUND STATUS CARDS -->
     <div class="section-title" style="margin-top:8px">&#127919; <span data-en="Round status (paying users)" data-he="מצב הסבבים (משלמים)">Round status (paying users)</span></div>
@@ -1054,9 +1069,13 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
     <div class="table-wrapper">
       <div class="table-controls">
         <select id="filterRound" onchange="renderParticipants()">
-          <option value="all" data-en="All rounds" data-he="כל הסבבים">All rounds</option>
-          <option value="round1" data-en="Round 1" data-he="סבב 1">Round 1</option>
-          <option value="round2" data-en="Round 2" data-he="סבב 2">Round 2</option>
+          <option value="all" data-en="All (uses header filter)" data-he="הכל (לפי פילטר עליון)">All (uses header filter)</option>
+          <option value="round1" data-en="Round 1 EN" data-he="סבב 1 (אנגלית)">Round 1 EN</option>
+          <option value="round2" data-en="Round 2 EN" data-he="סבב 2 (אנגלית)">Round 2 EN</option>
+          <option value="round4" data-en="Round 4 EN" data-he="סבב 4 (אנגלית)">Round 4 EN</option>
+          <option value="round5" data-en="Round 5 EN" data-he="סבב 5 (אנגלית)">Round 5 EN</option>
+          <option value="bina_r1" data-en="Bina r1 (HE)" data-he="בינה סבב 1 (עברית)">Bina r1 (HE)</option>
+          <option value="bina_r2" data-en="Bina r2 (HE)" data-he="בינה סבב 2 (עברית)">Bina r2 (HE)</option>
           <option value="unknown" data-en="No round" data-he="ללא סבב">No round</option>
           <option value="both" data-en="Admin" data-he="אדמין">Admin</option>
         </select>
@@ -1088,6 +1107,7 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
               <th data-en="Name" data-he="שם">Name</th>
               <th data-en="Email" data-he="אימייל">Email</th>
               <th data-en="Round" data-he="סבב">Round</th>
+              <th id="thSource" data-en="Source" data-he="מקור">Source</th>
               <th data-en="Paid" data-he="שילם">Paid</th>
               <th data-en="Phone" data-he="טלפון">Phone</th>
               <th data-en="WhatsApp" data-he="וואטסאפ">WhatsApp</th>
@@ -1178,6 +1198,14 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
 
   <!-- ===== TAB 4: REVENUE ===== -->
   <div id="tab-revenue" class="tab-content">
+    <!-- Language breakdown -->
+    <div class="section-title" style="margin-top:0">&#127760; <span data-en="Revenue by language" data-he="הכנסות לפי שפה">Revenue by language</span></div>
+    <div class="rev-lang-grid" id="revLangGrid"></div>
+
+    <!-- Per-round breakdown -->
+    <div class="section-title">&#127919; <span data-en="Revenue by round" data-he="הכנסות לפי סבב">Revenue by round</span></div>
+    <div class="stat-grid" id="revRoundGrid" style="margin-bottom:32px"></div>
+
     <div class="stat-grid" id="revenueStats">
       <div class="stat-card">
         <div class="stat-label" data-en="Gross revenue" data-he="הכנסות גרוס">Gross revenue</div>
@@ -2441,6 +2469,14 @@ function renderEngagement(){
   const fortyEightHoursAgo = now - 48 * 60 * 60 * 1000;
   const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
 
+  // Restrict participants to current global header filter
+  const filteredEmails = new Set(
+    allParticipants.filter(passesGlobalFilter).map(p => (p.email || '').toLowerCase())
+  );
+  function inFilter(email){
+    return filteredEmails.has((email || '').toLowerCase());
+  }
+
   // Map every event email to its primary participant (so aliases roll up).
   // Returns lowercased primary email or the event email itself if no alias maps to it.
   const aliasToPrimary = new Map();
@@ -2470,6 +2506,7 @@ function renderEngagement(){
     const eEmail = (e.user_email || '').toLowerCase();
     if(!eEmail) return;
     const primary = primaryEmailFor(eEmail);
+    if(!inFilter(primary)) return;
     if(!activityByPrimary.has(primary)) activityByPrimary.set(primary, { seconds: 0, logins: 0 });
     const rec = activityByPrimary.get(primary);
     if(e.event_type === 'time_on_day') rec.seconds += Number(eventDataObj(e).seconds) || 0;
@@ -2504,6 +2541,7 @@ function renderEngagement(){
   // ===== Sleeping users (paid, no login in 48h) =====
   let sleepingHtml = `<div class="eng-card"><h4>&#128164; ${t('eng.sleeping')}</h4>`;
   const sleepers = allParticipants
+    .filter(passesGlobalFilter)
     .filter(p => !p.access_revoked_at)
     .filter(p => (p.customer_type || 'paid') === 'paid')
     .map(p => {
@@ -2642,7 +2680,7 @@ function renderEngagement(){
   }
   heatmapHtml += '</div>';
 
-  // ===== R1 vs R2 comparison =====
+  // ===== Compare any two rounds =====
   function roundStats(roundKey){
     const inRound = allParticipants.filter(p =>
       !p.access_revoked_at &&
@@ -2667,18 +2705,24 @@ function renderEngagement(){
     const avgSec = registered > 0 ? Math.round(totalSec / registered) : 0;
     return { registered, active24, avgSec, logins, copies };
   }
-  const r1 = roundStats('round1');
-  const r2 = roundStats('round2');
-  const cmpRow = (lbl, v1, v2) => `
-    <div class="compare-row"><span class="lbl">${lbl}</span><span class="val">${v1}</span></div>
-    <div class="compare-row"><span class="lbl">${lbl}</span><span class="val">${v2}</span></div>
-  `;
-  // Use side-by-side mirrored layout
+  // Persisted compare selection
+  const cmpLeftKey = localStorage.getItem('admin-cmp-left') || 'round1';
+  const cmpRightKey = localStorage.getItem('admin-cmp-right') || 'round2';
+  const r1 = roundStats(cmpLeftKey);
+  const r2 = roundStats(cmpRightKey);
+  // Build round options
+  const roundOptions = ALL_ROUND_KEYS.map(k =>
+    `<option value="${esc(k)}">${esc(roundDisplayName(k))}</option>`
+  ).join('');
   let compareHtml = `<div class="eng-card" style="grid-column:span 2;min-width:0">
-    <h4>&#9878;&#65039; ${t('eng.compare')}</h4>
+    <h4>&#9878;&#65039; ${t('eng.compareLabel')}</h4>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <select class="global-filter" id="cmpLeftSel" onchange="onCmpChange()" style="max-width:none;flex:1">${roundOptions}</select>
+      <select class="global-filter" id="cmpRightSel" onchange="onCmpChange()" style="max-width:none;flex:1">${roundOptions}</select>
+    </div>
     <div class="compare-grid">
       <div class="compare-side r1">
-        <h5>Round 1</h5>
+        <h5>${esc(roundDisplayName(cmpLeftKey))}</h5>
         <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r1.registered}</span></div>
         <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r1.active24}</span></div>
         <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r1.avgSec)}</span></div>
@@ -2686,7 +2730,7 @@ function renderEngagement(){
         <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${r1.copies}</span></div>
       </div>
       <div class="compare-side r2">
-        <h5>Round 2</h5>
+        <h5>${esc(roundDisplayName(cmpRightKey))}</h5>
         <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r2.registered}</span></div>
         <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r2.active24}</span></div>
         <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r2.avgSec)}</span></div>
@@ -2697,20 +2741,37 @@ function renderEngagement(){
   </div>`;
 
   container.innerHTML = topActiveHtml + sleepingHtml + promptsHtml + faqHtml + heatmapHtml + compareHtml;
+
+  // Set the dropdown values after render
+  const lSel = document.getElementById('cmpLeftSel');
+  const rSel = document.getElementById('cmpRightSel');
+  if(lSel) lSel.value = cmpLeftKey;
+  if(rSel) rSel.value = cmpRightKey;
+}
+
+// Persist + re-render compare
+function onCmpChange(){
+  const lSel = document.getElementById('cmpLeftSel');
+  const rSel = document.getElementById('cmpRightSel');
+  if(lSel) localStorage.setItem('admin-cmp-left', lSel.value);
+  if(rSel) localStorage.setItem('admin-cmp-right', rSel.value);
+  renderEngagement();
 }
 
 // ===== TAB 1: OVERVIEW =====
 function renderOverview(){
+  // Apply global header filter to participants used in overview stats
+  const baseParticipants = allParticipants.filter(passesGlobalFilter);
   // Only paying customers count toward main stats
-  const paidParticipants = allParticipants.filter(p => (p.customer_type || 'paid') === 'paid');
+  const paidParticipants = baseParticipants.filter(p => (p.customer_type || 'paid') === 'paid');
   const total = paidParticipants.length;
 
   // Unique emails that have at least one event
   const loggedInEmails = new Set(allEvents.map(e => eventEmail(e)).filter(Boolean));
   const loggedIn = loggedInEmails.size;
 
-  // Completed all 5 days
-  const graduated = allParticipants.filter(p => {
+  // Completed all 5 days (within filter)
+  const graduated = baseParticipants.filter(p => {
     const days = getCompletedDays(p.email);
     return [1,2,3,4,5].every(d => days.includes(d));
   }).length;
@@ -2725,13 +2786,13 @@ function renderOverview(){
   ).size;
 
   // Inactive 3+ days
-  const inactive3 = allParticipants.filter(p => {
+  const inactive3 = baseParticipants.filter(p => {
     const last = getLastEvent(p.email) || getLastLogin(p.email);
     return daysSince(last) >= 3;
   }).length;
 
   // No phone / unknown WhatsApp counts (skip revoked)
-  const activeParticipants = allParticipants.filter(p => !p.access_revoked_at);
+  const activeParticipants = baseParticipants.filter(p => !p.access_revoked_at);
   const noPhone = activeParticipants.filter(p => {
     const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
     return !p.phone && !(stripeMatch && stripeMatch.phone);
@@ -2744,7 +2805,7 @@ function renderOverview(){
   document.getElementById('statInactive').textContent = inactive3;
   document.getElementById('statNoPhone').textContent = noPhone;
   document.getElementById('statUnknownWA').textContent = unknownWA;
-  document.getElementById('statRevokedAccess').textContent = allParticipants.filter(p => p.access_revoked_at).length;
+  document.getElementById('statRevokedAccess').textContent = baseParticipants.filter(p => p.access_revoked_at).length;
 
   // Welcome email stats (paid only)
   const paidActive = paidParticipants.filter(p => !p.access_revoked_at);
@@ -2763,12 +2824,14 @@ function renderOverview(){
     }
   }
 
-  // Stripe stats (exclude TEST coupon and refunded for "active paid")
-  const paidCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
+  // Stripe stats (exclude TEST coupon and refunded for "active paid"). Apply global filter.
+  const paidCustomers = stripeCustomers
+    .filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST')
+    .filter(stripePassesGlobalFilter);
   const activePaid = paidCustomers.filter(c => !c.refunded);
   document.getElementById('statPaid').textContent = activePaid.length;
 
-  // Cross-reference: paid (and not refunded) but not in allowed_emails
+  // Cross-reference: paid (and not refunded) but not in allowed_emails OR bina_registrations
   const allowedEmails = new Set(allParticipants.map(p => p.email.toLowerCase()));
   const paidNoAccess = activePaid.filter(c =>
     c.email && !allowedEmails.has(c.email.toLowerCase())
@@ -2927,7 +2990,17 @@ function renderParticipants(){
   const dataFilter = document.getElementById('filterDataMissing')?.value || 'all';
   const search = document.getElementById('searchInput').value.toLowerCase();
 
+  // Show/hide source column based on language filter (informative when "all")
+  const thSource = document.getElementById('thSource');
+  if(thSource){
+    const lf = getLangFilter();
+    thSource.style.display = (lf === 'all') ? '' : 'none';
+  }
+
   let filtered = allParticipants.filter(p => {
+    // Apply global header filter first (round + language)
+    if(!passesGlobalFilter(p)) return false;
+
     // Customer type filter (encoded as __type_X in the round dropdown)
     if(roundFilter && roundFilter.startsWith('__type_')){
       const wantedType = roundFilter.substring(7);
@@ -2997,8 +3070,18 @@ function renderParticipants(){
     const name = p.name || p.email.split('@')[0];
     const roundLabel = p.round === 'round1' ? t('round.round1')
       : p.round === 'round2' ? t('round.round2')
+      : p.round === 'round4' ? t('round.round4')
+      : p.round === 'round5' ? t('round.round5')
+      : p.round === 'bina_r1' ? t('round.bina_r1')
+      : p.round === 'bina_r2' ? t('round.bina_r2')
       : p.round === 'both' ? t('round.both')
       : t('round.unknown');
+    // Source cell (only visible when global lang filter == 'all')
+    const lfNow = getLangFilter();
+    const showSource = lfNow === 'all';
+    const srcCls = p._source === 'bina' ? 'bina' : 'allowed';
+    const srcLabel = p._source === 'bina' ? t('src.bina') : t('src.allowed');
+    const sourceCell = showSource ? `<td><span class="src-badge ${srcCls}">${esc(srcLabel)}</span></td>` : '<td style="display:none"></td>';
 
     // Main row
     const tr = document.createElement('tr');
@@ -3090,6 +3173,7 @@ function renderParticipants(){
       <td>${esc(name)}${aliasBadge}</td>
       <td style="direction:ltr;text-align:right;font-size:0.82em;color:var(--dim)">${esc(p.email)}</td>
       <td>${esc(roundLabel)}${unconfirmedBadge}</td>
+      ${sourceCell}
       <td>${paidCell}</td>
       <td>${phoneCell}</td>
       <td>${waCell}</td>
@@ -3157,7 +3241,7 @@ function renderParticipants(){
       }).join('') + '</div>';
     }
 
-    expandTr.innerHTML = `<td colspan="13">${timelineHtml}</td>`;
+    expandTr.innerHTML = `<td colspan="14">${timelineHtml}</td>`;
     tbody.appendChild(expandTr);
   });
 }
@@ -3723,7 +3807,67 @@ function renderDayAnalytics(){
 }
 
 // ===== TAB 4: REVENUE =====
+function renderRevenueLangBreakdown(){
+  const grid = document.getElementById('revLangGrid');
+  if(!grid) return;
+  const en = { gross: 0, refunds: 0, count: 0 };
+  const he = { gross: 0, refunds: 0, count: 0 };
+  stripeCustomers.forEach(c => {
+    if((c.coupon_used || '').toUpperCase() === 'TEST') return;
+    const lang = stripeLanguageFor(c);
+    const bucket = lang === 'he' ? he : (lang === 'en' ? en : null);
+    if(!bucket) return;
+    if(c.refunded){
+      bucket.refunds += (c.refund_amount || c.amount_paid || 0);
+    } else {
+      bucket.count++;
+      bucket.gross += (c.amount_paid || 0);
+    }
+  });
+  const txWord = t('rev.transactions');
+  grid.innerHTML = `
+    <div class="rev-lang-card en">
+      <div class="l">${t('rev.english')}</div>
+      <div class="v">$${(en.gross / 100).toLocaleString()}</div>
+      <div class="s">${en.count} ${txWord} . ${isRTL() ? 'החזרים: $' : 'Refunded: $'}${(en.refunds / 100).toLocaleString()}</div>
+    </div>
+    <div class="rev-lang-card he">
+      <div class="l">${t('rev.hebrew')}</div>
+      <div class="v">₪${(he.gross / 100).toLocaleString()}</div>
+      <div class="s">${he.count} ${txWord} . ${isRTL() ? 'החזרים: ₪' : 'Refunded: ₪'}${(he.refunds / 100).toLocaleString()}</div>
+    </div>
+  `;
+}
+function renderRevenueRoundBreakdown(){
+  const grid = document.getElementById('revRoundGrid');
+  if(!grid) return;
+  const rows = ALL_ROUND_KEYS.map(k => {
+    const lang = roundLanguage(k);
+    const sym = lang === 'he' ? '₪' : '$';
+    let gross = 0, count = 0;
+    stripeCustomers.forEach(c => {
+      if((c.coupon_used || '').toUpperCase() === 'TEST') return;
+      if(c.refunded) return;
+      if(stripeRoundFor(c) !== k) return;
+      gross += (c.amount_paid || 0);
+      count++;
+    });
+    return { key: k, gross, count, sym, lang };
+  });
+  grid.innerHTML = rows.map(r => `
+    <div class="stat-card">
+      <div class="stat-label">${esc(roundDisplayName(r.key))}</div>
+      <div class="stat-value" style="font-size:1.4em">${r.sym}${(r.gross / 100).toLocaleString()}</div>
+      <div class="stat-sub">${r.count} ${t('rev.transactions')}</div>
+    </div>
+  `).join('');
+}
+
 function renderRevenue(){
+  // New language + round breakdowns (run even if no stripeCustomers yet)
+  renderRevenueLangBreakdown();
+  renderRevenueRoundBreakdown();
+
   if(!stripeCustomers.length){
     document.getElementById('revTotal').textContent = '$0';
     document.getElementById('revRefunds').textContent = '$0';
@@ -3741,8 +3885,10 @@ function renderRevenue(){
     return;
   }
 
-  // Real customers = excluding TEST coupon
-  const realCustomers = stripeCustomers.filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST');
+  // Real customers = excluding TEST coupon, then apply global filter for top-line stats
+  const realCustomers = stripeCustomers
+    .filter(c => (c.coupon_used || '').toUpperCase() !== 'TEST')
+    .filter(stripePassesGlobalFilter);
   const refunded = realCustomers.filter(c => c.refunded);
   const active = realCustomers.filter(c => !c.refunded);
 
