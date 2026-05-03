@@ -753,6 +753,27 @@ tr.expandable{cursor:pointer}
 .rtc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
 .rtc-name{font-size:1em;font-weight:700;color:var(--bright);flex:1;min-width:0}
 .rtc-flag{font-size:1.4em}
+.rtc-wa-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:6px;
+  background:rgba(37,211,102,0.12);color:#25d366;
+  text-decoration:none;font-size:0.95em;
+  border:1px solid rgba(37,211,102,0.25);
+  transition:all 0.15s ease;
+}
+.rtc-wa-btn:hover{background:rgba(37,211,102,0.22);transform:scale(1.05)}
+.rtc-actions{
+  margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--glass-border);
+  display:flex;flex-direction:column;gap:4px;
+}
+.rtc-action-row{
+  display:flex;align-items:baseline;gap:6px;
+  font-size:0.78em;color:var(--dim);cursor:pointer;
+  padding:3px 6px;border-radius:4px;transition:background 0.12s ease;
+}
+.rtc-action-row:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.rtc-action-count{color:var(--orange);font-weight:700;min-width:22px;text-align:right}
 .rtc-status{
   display:inline-block;font-size:0.7em;font-weight:700;
   padding:2px 8px;border-radius:10px;letter-spacing:0.04em;text-transform:uppercase;
@@ -1118,6 +1139,7 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
           <option value="refunded" data-en="Refunded" data-he="קיבלו החזר">Refunded</option>
         </select>
         <input type="text" id="searchInput" data-en-placeholder="&#128269; Search by name or email..." data-he-placeholder="&#128269; חיפוש לפי שם או אימייל..." placeholder="&#128269; Search by name or email..." oninput="renderParticipants()">
+        <button class="btn-primary" onclick="exportParticipantsCSV()" data-en="&#128229; Export CSV" data-he="&#128229; ייצוא CSV" style="white-space:nowrap">&#128229; Export CSV</button>
       </div>
       <div class="table-scroll">
         <table>
@@ -2240,6 +2262,58 @@ function renderRoundsTab(){
     const m = roundMetrics(key);
     const health = roundHealth(m, key);
     const targetPaid = health.target;
+
+    // Action items for this round: simple counts that link into a filtered view.
+    const inRoundParticipants = allParticipants.filter(p =>
+      !p.access_revoked_at &&
+      (p.customer_type || 'paid') === 'paid' &&
+      p.round === key
+    );
+    const allowedEmailsLower = new Set(allParticipants.map(p => (p.email || '').toLowerCase()));
+    const paidStripeForRound = stripeCustomers.filter(c =>
+      (c.coupon_used || '').toUpperCase() !== 'TEST' &&
+      !c.refunded &&
+      stripeRoundFor(c) === key
+    );
+    const paidNoAccessCount = paidStripeForRound.filter(c =>
+      c.email && !allowedEmailsLower.has(c.email.toLowerCase())
+    ).length;
+    const noPhoneCount = inRoundParticipants.filter(p => {
+      const sm = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
+      return !p.phone && !(sm && sm.phone);
+    }).length;
+    const waUnknownCount = inRoundParticipants.filter(p =>
+      !p.in_whatsapp || p.in_whatsapp === 'unknown'
+    ).length;
+    const fortyEightAgo = Date.now() - 48 * 60 * 60 * 1000;
+    const sleepingCount = inRoundParticipants.filter(p => {
+      const last = getLastEvent(p.email);
+      return !last || new Date(last).getTime() < fortyEightAgo;
+    }).length;
+    const aiList = [
+      { count: paidNoAccessCount,
+        label: isRTL() ? 'משלמים בלי גישה לפורטל' : 'paid users without portal access',
+        action: 'paidNoAccess' },
+      { count: noPhoneCount,
+        label: isRTL() ? 'משתתפים בלי טלפון' : 'participants without phone',
+        action: 'noPhone' },
+      { count: waUnknownCount,
+        label: isRTL() ? 'משלמים עם סטטוס וואטסאפ לא ידוע' : 'paid users with WhatsApp status unknown',
+        action: 'waUnknown' },
+      { count: sleepingCount,
+        label: isRTL() ? 'משתמשים רדומים (אין כניסה ב-48ש)' : 'sleeping users (no login in 48h)',
+        action: 'sleeping' },
+    ].filter(it => it.count > 0).slice(0, 3);
+    const actionItemsHtml = aiList.length === 0 ? '' : `
+      <div class="rtc-actions">
+        ${aiList.map(it => `
+          <div class="rtc-action-row" onclick="event.stopPropagation();roundActionClick('${esc(key)}','${it.action}')">
+            <span class="rtc-action-count">${it.count}</span>
+            <span class="rtc-action-label">${esc(it.label)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
     const flag = lang === 'he' ? '🇮🇱' : '🇺🇸';
     const statusLabel = st === 'active' ? t('rt.statusActive')
       : st === 'upcoming' ? t('rt.statusUpcoming')
@@ -2260,11 +2334,19 @@ function renderRoundsTab(){
       if(m.registered > 0 && m.welcomePct < 90) notes.push((isRTL() ? 'מייל welcome: ' : 'Welcome: ') + m.welcomePct + '%');
       return notes.length ? notes.join(' , ') : '';
     })();
+    const waHref = meta.whatsapp_link ? encodeURI(meta.whatsapp_link) : '';
+    const waBtnTitle = isRTL() ? 'פתח קבוצת וואטסאפ' : 'Open WhatsApp group';
+    const waBtn = waHref
+      ? `<a class="rtc-wa-btn" href="${esc(waHref)}" target="_blank" title="${waBtnTitle}" onclick="event.stopPropagation()">&#128172;</a>`
+      : '';
     return `
       <div class="round-tab-card lang-${lang}" onclick="goToRound('${esc(key)}')">
         <div class="rtc-header">
           <div class="rtc-name">${esc(roundDisplayName(key))}</div>
-          <span class="rtc-flag" title="${lang === 'he' ? 'Hebrew' : 'English'}">${flag}</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            ${waBtn}
+            <span class="rtc-flag" title="${lang === 'he' ? 'Hebrew' : 'English'}">${flag}</span>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span class="rtc-status ${esc(st)}">${esc(statusLabel)}</span>
@@ -2282,9 +2364,36 @@ function renderRoundsTab(){
           <span style="font-size:0.78em;font-weight:500">${health.fails === 0 ? '✓' : ('⚠ ' + health.fails)}</span>
         </div>
         ${failNote ? `<div class="rtc-health-detail">${esc(failNote)}</div>` : ''}
+        ${actionItemsHtml}
       </div>
     `;
   }).join('');
+}
+
+// Action item click on a round card. Switches tab + sets filters.
+function roundActionClick(roundKey, action){
+  if(action === 'sleeping'){
+    setRoundFilter(roundKey);
+    const rEl = document.getElementById('globalRoundFilter');
+    if(rEl) rEl.value = roundKey;
+    switchTab('engagement');
+    renderAll();
+    return;
+  }
+  // All other actions: jump to participants and apply matching filters.
+  setRoundFilter(roundKey);
+  const rEl = document.getElementById('globalRoundFilter');
+  if(rEl) rEl.value = roundKey;
+  switchTab('participants');
+  const filterRoundEl = document.getElementById('filterRound');
+  if(filterRoundEl) filterRoundEl.value = roundKey;
+  const dataMissingEl = document.getElementById('filterDataMissing');
+  if(dataMissingEl){
+    if(action === 'noPhone') dataMissingEl.value = 'no_phone';
+    else if(action === 'waUnknown') dataMissingEl.value = 'wa_unknown';
+    else dataMissingEl.value = 'all';
+  }
+  renderAll();
 }
 
 // Click a round card: switch to participants tab and filter to that round.
@@ -2673,34 +2782,53 @@ function renderEngagement(){
   // Persisted compare selection
   const cmpLeftKey = localStorage.getItem('admin-cmp-left') || 'round1';
   const cmpRightKey = localStorage.getItem('admin-cmp-right') || 'round2';
+  const cmpMode = localStorage.getItem('admin-compare-mode') || 'count'; // 'count' | 'pct'
   const r1 = roundStats(cmpLeftKey);
   const r2 = roundStats(cmpRightKey);
   // Build round options
   const roundOptions = ALL_ROUND_KEYS.map(k =>
     `<option value="${esc(k)}">${esc(roundDisplayName(k))}</option>`
   ).join('');
+  // Render a metric value as count or % of registered. avgSec is always a duration.
+  function fmtCmp(side, fieldKey){
+    if(fieldKey === 'registered'){
+      return cmpMode === 'pct' ? '100%' : String(side.registered);
+    }
+    if(fieldKey === 'avgSec'){
+      return formatDuration(side.avgSec);
+    }
+    if(cmpMode === 'pct'){
+      if(!side.registered) return 'n/a';
+      return Math.round((side[fieldKey] / side.registered) * 100) + '%';
+    }
+    return String(side[fieldKey]);
+  }
+  const toggleLabel = cmpMode === 'pct'
+    ? (isRTL() ? 'הצג כמספר' : 'Show as count')
+    : (isRTL() ? 'הצג כ-% מהנרשמים' : 'Show as % of registered');
   let compareHtml = `<div class="eng-card" style="grid-column:span 2;min-width:0">
     <h4>&#9878;&#65039; ${t('eng.compareLabel')}</h4>
-    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
       <select class="global-filter" id="cmpLeftSel" onchange="onCmpChange()" style="max-width:none;flex:1">${roundOptions}</select>
       <select class="global-filter" id="cmpRightSel" onchange="onCmpChange()" style="max-width:none;flex:1">${roundOptions}</select>
+      <button class="btn-primary" onclick="toggleCompareMode()" style="padding:8px 14px;font-size:0.82em">${esc(toggleLabel)}</button>
     </div>
     <div class="compare-grid">
       <div class="compare-side r1">
         <h5>${esc(roundDisplayName(cmpLeftKey))}</h5>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r1.registered}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r1.active24}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r1.avgSec)}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${r1.logins}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${r1.copies}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${fmtCmp(r1, 'registered')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${fmtCmp(r1, 'active24')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${fmtCmp(r1, 'avgSec')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${fmtCmp(r1, 'logins')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${fmtCmp(r1, 'copies')}</span></div>
       </div>
       <div class="compare-side r2">
         <h5>${esc(roundDisplayName(cmpRightKey))}</h5>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${r2.registered}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${r2.active24}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${formatDuration(r2.avgSec)}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${r2.logins}</span></div>
-        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${r2.copies}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpRegistered')}</span><span class="val">${fmtCmp(r2, 'registered')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpActive24')}</span><span class="val">${fmtCmp(r2, 'active24')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpAvgTime')}</span><span class="val">${fmtCmp(r2, 'avgSec')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpLogins')}</span><span class="val">${fmtCmp(r2, 'logins')}</span></div>
+        <div class="compare-row"><span class="lbl">${t('eng.cmpCopies')}</span><span class="val">${fmtCmp(r2, 'copies')}</span></div>
       </div>
     </div>
   </div>`;
@@ -2720,6 +2848,13 @@ function onCmpChange(){
   const rSel = document.getElementById('cmpRightSel');
   if(lSel) localStorage.setItem('admin-cmp-left', lSel.value);
   if(rSel) localStorage.setItem('admin-cmp-right', rSel.value);
+  renderEngagement();
+}
+
+// Toggle the compare-rounds view between absolute counts and % of registered.
+function toggleCompareMode(){
+  const cur = localStorage.getItem('admin-compare-mode') || 'count';
+  localStorage.setItem('admin-compare-mode', cur === 'pct' ? 'count' : 'pct');
   renderEngagement();
 }
 
@@ -3045,41 +3180,28 @@ function renderAlerts(){
 }
 
 // ===== TAB 2: PARTICIPANTS =====
-function renderParticipants(){
-  const roundFilter = document.getElementById('filterRound').value;
-  const statusFilter = document.getElementById('filterStatus').value;
+// Encapsulated filter so the CSV export and the table view always agree.
+function currentParticipantsView(){
+  const roundFilter = document.getElementById('filterRound')?.value || 'all';
+  const statusFilter = document.getElementById('filterStatus')?.value || 'all';
   const dataFilter = document.getElementById('filterDataMissing')?.value || 'all';
-  const search = document.getElementById('searchInput').value.toLowerCase();
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
-  // Show/hide source column based on language filter (informative when "all")
-  const thSource = document.getElementById('thSource');
-  if(thSource){
-    const lf = getLangFilter();
-    thSource.style.display = (lf === 'all') ? '' : 'none';
-  }
-
-  let filtered = allParticipants.filter(p => {
-    // Apply global header filter first (round + language)
+  return allParticipants.filter(p => {
     if(!passesGlobalFilter(p)) return false;
-
-    // Customer type filter (encoded as __type_X in the round dropdown)
     if(roundFilter && roundFilter.startsWith('__type_')){
       const wantedType = roundFilter.substring(7);
       if((p.customer_type || 'paid') !== wantedType) return false;
     } else {
-      // Default: hide family/admin from regular round views (they have their own strip)
       if(roundFilter === 'all' && (p.customer_type === 'family' || p.customer_type === 'admin')) return false;
       if(roundFilter !== 'all' && !roundFilter.startsWith('__type_') && p.round !== roundFilter) return false;
     }
-
     const info = getStatusInfo(p.email);
     if(statusFilter === 'active' && info.status !== 'active') return false;
     if(statusFilter === 'inactive' && info.status !== 'inactive') return false;
     if(statusFilter === 'never' && info.status !== 'never') return false;
     if(statusFilter === 'completed' && info.status !== 'completed') return false;
     if(statusFilter === 'revoked' && info.status !== 'revoked') return false;
-
-    // Data-quality filter
     if(dataFilter !== 'all'){
       const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
       const hasPhone = !!(p.phone || (stripeMatch && stripeMatch.phone));
@@ -3096,16 +3218,71 @@ function renderParticipants(){
       if(dataFilter === 'no_welcome_email' && p.welcome_email_sent_at) return false;
       if(dataFilter === 'email_failed' && !p.welcome_email_error) return false;
     }
-
     if(search){
       const name = (p.name || '').toLowerCase();
       const email = p.email.toLowerCase();
       const phone = (p.phone || '').toLowerCase();
       if(!name.includes(search) && !email.includes(search) && !phone.includes(search)) return false;
     }
-
     return true;
   });
+}
+
+// Export the currently-filtered participants list to CSV.
+function exportParticipantsCSV(){
+  const rows = currentParticipantsView();
+  const csvEsc = v => {
+    const s = v == null ? '' : String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const header = [
+    'Name','Email','Round','Source','Paid','Phone','WhatsApp status',
+    'Logins','Time on site (minutes)','Last seen','Current day','Welcome sent at'
+  ];
+  const lines = [header.map(csvEsc).join(',')];
+  rows.forEach(p => {
+    const stripeMatch = stripeCustomers.find(c => c.email && c.email.toLowerCase() === p.email.toLowerCase());
+    const phone = p.phone || (stripeMatch && stripeMatch.phone) || '';
+    const paid = (stripeMatch && !stripeMatch.refunded) ? 'yes' : (stripeMatch && stripeMatch.refunded ? 'refunded' : 'no');
+    const totalSec = getTotalSeconds(p.email);
+    const minutes = totalSec > 0 ? Math.round(totalSec / 60) : 0;
+    const lastSeen = getLastEvent(p.email);
+    const cells = [
+      p.name || '',
+      p.email || '',
+      p.round || '',
+      p._source || 'allowed',
+      paid,
+      phone,
+      p.in_whatsapp || 'unknown',
+      getLoginCount(p.email),
+      minutes,
+      lastSeen ? new Date(lastSeen).toISOString() : '',
+      getCurrentDay(p.email),
+      p.welcome_email_sent_at ? new Date(p.welcome_email_sent_at).toISOString() : '',
+    ];
+    lines.push(cells.map(csvEsc).join(','));
+  });
+  const csv = lines.join('\n');
+  const today = new Date().toISOString().slice(0, 10);
+  const roundLabel = (document.getElementById('filterRound')?.value || 'all');
+  const fname = `participants-${roundLabel}-${today}.csv`;
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+function renderParticipants(){
+  // Show/hide source column based on language filter (informative when "all")
+  const thSource = document.getElementById('thSource');
+  if(thSource){
+    const lf = getLangFilter();
+    thSource.style.display = (lf === 'all') ? '' : 'none';
+  }
+
+  let filtered = currentParticipantsView();
 
   // Sort: active first, then by last event
   filtered.sort((a,b) => {
@@ -4365,6 +4542,8 @@ function switchTab(tabName){
   document.querySelectorAll('.tab-content').forEach(el => {
     el.classList.toggle('active', el.id === 'tab-' + tabName);
   });
+  // Scroll to the tab strip so the user lands at the top of the new view.
+  try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
 }
 
 // ============================================================================
