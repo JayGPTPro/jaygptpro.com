@@ -2879,6 +2879,119 @@ section { position: relative; }
     .sticky-cta { bottom: 16px; right: 16px; left: 16px; text-align: center; font-size: 14px; padding: 14px 22px; }
     [dir="rtl"] .sticky-cta { right: 16px; left: 16px; }
 }
+
+/* ===== Payment Method Modal ===== */
+.pmm-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(15, 15, 25, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+}
+.pmm-overlay.active {
+    display: flex;
+    animation: pmmFadeIn 0.25s ease-out;
+}
+@keyframes pmmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.pmm-modal {
+    background: white;
+    border-radius: 24px;
+    max-width: 460px;
+    width: 100%;
+    padding: 32px 26px 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    position: relative;
+    animation: pmmScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pmmScaleIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pmm-close {
+    position: absolute; top: 14px; left: 14px;
+    background: #f0f0f0; border: none;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 22px; cursor: pointer;
+    color: #555; line-height: 1;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.pmm-close:hover { background: #e5e5e7; transform: scale(1.05); color: #000; }
+.pmm-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: #1a1a2e;
+}
+.pmm-subtitle {
+    text-align: center;
+    color: #f97316;
+    font-weight: 700;
+    margin: 0 0 22px;
+    font-size: 14px;
+}
+.pmm-options {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+.pmm-option { cursor: pointer; display: block; }
+.pmm-option input { display: none; }
+.pmm-option-card {
+    border: 2px solid #e5e5e7;
+    border-radius: 16px;
+    padding: 16px 20px;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.pmm-option-card:hover { border-color: #fb923c; }
+.pmm-option input:checked + .pmm-option-card {
+    border-color: #f97316;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    box-shadow: 0 0 0 4px rgba(249,115,22,0.12);
+}
+.pmm-option-text { display: flex; flex-direction: column; gap: 4px; text-align: start; }
+.pmm-option-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.pmm-option-sub { font-size: 13px; color: #666; }
+.pmm-option-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f97316;
+    white-space: nowrap;
+}
+.pmm-continue {
+    width: 100%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    border: none;
+    padding: 17px;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+}
+.pmm-continue:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(249,115,22,0.45); filter: brightness(1.05); }
+.pmm-continue:active { transform: translateY(0); }
+.pmm-note { text-align: center; font-size: 12px; color: #999; margin: 12px 0 0; line-height: 1.5; }
+@media (max-width: 480px) {
+    .pmm-modal { padding: 26px 20px 20px; }
+    .pmm-title { font-size: 19px; }
+    .pmm-option-card { padding: 14px 16px; }
+    .pmm-option-price { font-size: 19px; }
+}
 </style>
 </head>
 <body>
@@ -3298,7 +3411,7 @@ section { position: relative; }
             <p data-en="Each round is limited to 50 spots." data-he="כל סבב מוגבל ל-50 מקומות.">כל סבב מוגבל ל-50 מקומות.</p>
         </div>
         <div class="rounds-grid reveal" style="grid-template-columns: 1fr 1fr; max-width: 560px;">
-            <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" class="round-card">
+            <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" data-payment-trigger="1" class="round-card">
                 <div class="round-lang-badge" data-en="🇮🇱 Hebrew" data-he="🇮🇱 עברית">🇮🇱 עברית</div>
                 <div class="round-label" data-en="Round 1" data-he="סבב 1">סבב 1</div>
                 <div class="round-dates">11-15 במאי</div>
@@ -3309,7 +3422,7 @@ section { position: relative; }
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
             </a>
-            <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" class="round-card">
+            <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" data-payment-trigger="2" class="round-card">
                 <div class="round-lang-badge" data-en="🇮🇱 Hebrew" data-he="🇮🇱 עברית">🇮🇱 עברית</div>
                 <div class="round-label" data-en="Round 2" data-he="סבב 2">סבב 2</div>
                 <div class="round-dates">25-29 במאי</div>
@@ -3663,13 +3776,13 @@ section { position: relative; }
                 </ul>
 
                 <div class="bina-round-btns">
-                    <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" class="bina-round-btn">
+                    <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" data-payment-trigger="1" class="bina-round-btn">
                         <span class="bina-btn-round">סבב 1</span>
                         <span class="bina-btn-dates">11-15 במאי</span>
                         <span style="font-size:11px; opacity:0.7;">כ"ד-כ"ח אייר</span>
                         <span class="bina-btn-cta">בחר סבב זה ←</span>
                     </a>
-                    <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" class="bina-round-btn">
+                    <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" data-payment-trigger="2" class="bina-round-btn">
                         <span class="bina-btn-round">סבב 2</span>
                         <span class="bina-btn-dates">25-29 במאי</span>
                         <span style="font-size:11px; opacity:0.7;">ט'-י"ג סיון</span>
@@ -3707,12 +3820,12 @@ section { position: relative; }
             <h2><span data-en="Your AI Employee is" data-he="עובד ה-AI שלך במרחק">Your AI Employee is</span><br><span class="hl" data-en="5 Days Away." data-he="של 5 ימים.">5 Days Away.</span></h2>
             <p data-en="30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up." data-he="30 עד 60 דקות ביום. בסוף, עוזרת AI אישי שמנהלת לך את הבוקר עוד לפני שהתעוררת.">30 to 60 minutes a day. By the end, a working AI Chief of Staff who runs your morning before you wake up.</p>
             <div class="bina-round-btns" style="max-width:480px; margin:0 auto;">
-                <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" class="bina-round-btn">
+                <a href="https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300" data-payment-trigger="1" class="bina-round-btn">
                     <span class="bina-btn-round">סבב 1</span>
                     <span class="bina-btn-dates">11-15 במאי</span>
                     <span class="bina-btn-cta">בחר סבב זה ←</span>
                 </a>
-                <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" class="bina-round-btn">
+                <a href="https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300" data-payment-trigger="2" class="bina-round-btn">
                     <span class="bina-btn-round">סבב 2</span>
                     <span class="bina-btn-dates">25-29 במאי</span>
                     <span class="bina-btn-cta">בחר סבב זה ←</span>
@@ -3724,6 +3837,41 @@ section { position: relative; }
         </div>
     </div>
 </section>
+
+<!-- ===== Payment Method Modal ===== -->
+<div id="pmmOverlay" class="pmm-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="pmm-modal" role="document">
+        <button class="pmm-close" id="pmmClose" aria-label="סגור" type="button">×</button>
+        <h3 class="pmm-title">בחר אופן תשלום</h3>
+        <div class="pmm-subtitle" id="pmmRoundLabel">סבב 1 · 11-15 במאי</div>
+
+        <div class="pmm-options">
+            <label class="pmm-option">
+                <input type="radio" name="pmm-method" value="onetime" checked>
+                <div class="pmm-option-card">
+                    <div class="pmm-option-text">
+                        <div class="pmm-option-title">תשלום אחד</div>
+                        <div class="pmm-option-sub">חיוב מיידי · גישה מלאה</div>
+                    </div>
+                    <div class="pmm-option-price">₪699</div>
+                </div>
+            </label>
+            <label class="pmm-option">
+                <input type="radio" name="pmm-method" value="installments">
+                <div class="pmm-option-card">
+                    <div class="pmm-option-text">
+                        <div class="pmm-option-title">תשלומים</div>
+                        <div class="pmm-option-sub">3 תשלומים חודשיים · ללא ריבית</div>
+                    </div>
+                    <div class="pmm-option-price">₪233 × 3</div>
+                </div>
+            </label>
+        </div>
+
+        <button class="pmm-continue" id="pmmContinue" type="button">המשך לתשלום ←</button>
+        <p class="pmm-note">תועברו לעמוד סליקה מאובטח להשלמת התשלום</p>
+    </div>
+</div>
 
 <!-- ===== FOOTER ===== -->
 <footer class="footer">
@@ -4050,6 +4198,60 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
+});
+
+// ===== Payment Method Modal =====
+const PAYMENT_LINKS = {
+    '1': {
+        onetime: 'https://buy.stripe.com/6oU3cx4Zr18e3FsaImbwk01?prefilled_promo_code=BINA300',
+        installments: 'https://secure.cardcom.solutions/EA/EA5/xBvxU9CWokejf8uGJRKNA/PaymentSP'
+    },
+    '2': {
+        onetime: 'https://buy.stripe.com/8x25kF0Jbg38dg2bMqbwk02?prefilled_promo_code=BINA300',
+        installments: 'https://secure.cardcom.solutions/EA/EA5/kIYvTOU5U6gXki70yzQ/PaymentSP'
+    }
+};
+const ROUND_DATES = { '1': '11-15 במאי', '2': '25-29 במאי' };
+let pmmCurrentRound = '1';
+
+function pmmOpen(round) {
+    pmmCurrentRound = String(round);
+    const label = document.getElementById('pmmRoundLabel');
+    if (label) label.textContent = `סבב ${pmmCurrentRound} · ${ROUND_DATES[pmmCurrentRound]}`;
+    const onetime = document.querySelector('input[name="pmm-method"][value="onetime"]');
+    if (onetime) onetime.checked = true;
+    const overlay = document.getElementById('pmmOverlay');
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+function pmmClose() {
+    const overlay = document.getElementById('pmmOverlay');
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+document.querySelectorAll('[data-payment-trigger]').forEach(el => {
+    el.addEventListener('click', e => {
+        e.preventDefault();
+        pmmOpen(el.getAttribute('data-payment-trigger'));
+    });
+});
+const pmmCloseBtn = document.getElementById('pmmClose');
+if (pmmCloseBtn) pmmCloseBtn.addEventListener('click', pmmClose);
+const pmmOv = document.getElementById('pmmOverlay');
+if (pmmOv) pmmOv.addEventListener('click', e => { if (e.target === e.currentTarget) pmmClose(); });
+const pmmCont = document.getElementById('pmmContinue');
+if (pmmCont) pmmCont.addEventListener('click', () => {
+    const checked = document.querySelector('input[name="pmm-method"]:checked');
+    const method = checked ? checked.value : 'onetime';
+    const url = PAYMENT_LINKS[pmmCurrentRound] && PAYMENT_LINKS[pmmCurrentRound][method];
+    if (url) window.location.href = url;
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('pmmOverlay').classList.contains('active')) {
+        pmmClose();
+    }
 });
 </script>
 </body>
