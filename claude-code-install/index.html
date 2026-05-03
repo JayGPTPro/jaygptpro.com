@@ -76,6 +76,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes floatSlow { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(20px, -30px) rotate(8deg); } 66% { transform: translate(-15px, 20px) rotate(-6deg); } }
+@keyframes drawLine { from { stroke-dashoffset: 200; } to { stroke-dashoffset: 0; } }
+@keyframes iconBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes iconSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes popIn { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.15) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+@keyframes glowPulse { 0%, 100% { box-shadow: 0 12px 30px rgba(249, 115, 22, 0.25); } 50% { box-shadow: 0 12px 40px rgba(249, 115, 22, 0.45); } }
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.2,0.8,0.2,1), transform 0.7s cubic-bezier(0.2,0.8,0.2,1); }
 .reveal.in { opacity: 1; transform: translateY(0); }
@@ -129,6 +139,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     background: radial-gradient(ellipse at top, var(--orange-soft) 0%, transparent 60%);
     position: relative;
     overflow: hidden;
+}
+.hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 0;
+}
+.hero-blob.b1 { width: 380px; height: 380px; background: rgba(249, 115, 22, 0.35); top: -120px; right: -100px; animation: floatSlow 18s ease-in-out infinite; }
+.hero-blob.b2 { width: 280px; height: 280px; background: rgba(251, 191, 36, 0.3); bottom: -80px; left: -60px; animation: floatSlow 22s ease-in-out infinite reverse; }
+.hero-blob.b3 { width: 200px; height: 200px; background: rgba(217, 119, 87, 0.25); top: 40%; left: 30%; animation: floatSlow 26s ease-in-out infinite; }
+.hero > .wrap { position: relative; z-index: 1; }
+
+/* Scroll progress bar */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, var(--orange) 0%, var(--orange-dark) 100%);
+    z-index: 300;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px var(--orange-glow, rgba(249,115,22,0.4));
 }
 .hero-eyebrow {
     display: inline-flex;
@@ -297,19 +332,76 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     gap: 18px;
 }
 .step-badge {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
     background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
     color: #fff;
-    font-size: 22px;
-    font-weight: 800;
     box-shadow: var(--shadow-orange);
     flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+.step-card:hover .step-badge { transform: scale(1.1) rotate(-6deg); }
+.step-badge svg { width: 32px; height: 32px; }
+.step-badge .step-num-chip {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--bg-2);
+    color: var(--orange-dark);
+    border: 2px solid var(--orange);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+[dir="rtl"] .step-badge .step-num-chip { right: auto; left: -8px; }
+.step-badge svg .icon-anim { transform-origin: center; transform-box: fill-box; }
+.step-card.in-view .step-badge svg .icon-anim { animation: iconBob 2.4s ease-in-out infinite; }
+
+/* Connecting line between step cards */
+.step-connector {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -16px 0;
+    position: relative;
+    z-index: 0;
+}
+.step-connector::before {
+    content: '';
+    width: 2px;
+    height: 100%;
+    background: repeating-linear-gradient(to bottom, var(--orange) 0 6px, transparent 6px 12px);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.step-connector.in::before { opacity: 0.6; transform: scaleY(1); }
+.step-connector::after {
+    content: '↓';
+    position: absolute;
+    bottom: -4px;
+    color: var(--orange);
+    font-size: 14px;
+    font-weight: 800;
+    background: var(--bg);
+    padding: 0 6px;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.4s;
+}
+.step-connector.in::after { opacity: 0.7; }
 .step-title-block { flex: 1; }
 .step-title-block h2 {
     font-size: clamp(22px, 3vw, 28px);
@@ -618,7 +710,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     justify-content: center;
     font-size: 12px;
     font-weight: 800;
+    opacity: 0;
+    transform: scale(0);
 }
+.cta-card.in-view .cta-check:nth-child(1) .cta-check-icon { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards; }
+.cta-card.in-view .cta-check:nth-child(2) .cta-check-icon { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s forwards; }
+.cta-card.in-view .cta-check:nth-child(3) .cta-check-icon { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.8s forwards; }
 
 footer {
     text-align: center;
@@ -644,7 +741,12 @@ footer a { color: var(--orange-dark); font-weight: 600; }
     </div>
 </nav>
 
+<div class="scroll-progress" id="scrollProgress"></div>
+
 <section class="hero">
+    <div class="hero-blob b1"></div>
+    <div class="hero-blob b2"></div>
+    <div class="hero-blob b3"></div>
     <div class="wrap">
         <div class="hero-eyebrow reveal">
             <span class="dot"></span>
@@ -661,12 +763,6 @@ footer a { color: var(--orange-dark); font-weight: 600; }
             <span class="hero-byline-dot"></span>
             מאת <b>מנדי קוריץ</b> ו<a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" class="subtle-link"><b>ג'יי מרגליות</b></a>
         </div>
-        <div class="hero-stats reveal reveal-d3">
-            <div class="hero-stat"><span class="hero-stat-icon">▶</span> 3 סרטוני וידאו</div>
-            <div class="hero-stat"><span class="hero-stat-icon">⏱</span> 10 דקות סך הכל</div>
-            <div class="hero-stat"><span class="hero-stat-icon">✓</span> מק + ווינדוס</div>
-        </div>
-
         <div class="stepper reveal reveal-d3">
             <div class="stepper-item"><span class="stepper-num">1</span> Git</div>
             <div class="stepper-divider"></div>
@@ -683,7 +779,18 @@ footer a { color: var(--orange-dark); font-weight: 600; }
         <!-- ============ STEP 1: GIT ============ -->
         <article class="step-card reveal" id="step-1">
             <div class="step-card-header">
-                <div class="step-badge">1</div>
+                <div class="step-badge">
+                    <span class="step-num-chip">1</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <g class="icon-anim">
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="6" r="3"></circle>
+                            <line x1="6" y1="9" x2="6" y2="15"></line>
+                            <path d="M18 9c0 4-3 5-6 5"></path>
+                        </g>
+                    </svg>
+                </div>
                 <div class="step-title-block">
                     <h2>התקנת Git</h2>
                     <p class="step-purpose">
@@ -720,10 +827,23 @@ footer a { color: var(--orange-dark); font-weight: 600; }
             </div>
         </article>
 
+        <div class="step-connector reveal"></div>
+
         <!-- ============ STEP 2: CLAUDE ============ -->
         <article class="step-card reveal" id="step-2">
             <div class="step-card-header">
-                <div class="step-badge">2</div>
+                <div class="step-badge">
+                    <span class="step-num-chip">2</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <g class="icon-anim">
+                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                            <path d="M9 10l3 3 3-3"></path>
+                            <line x1="12" y1="6" x2="12" y2="13"></line>
+                        </g>
+                    </svg>
+                </div>
                 <div class="step-title-block">
                     <h2>התקנת Claude למחשב</h2>
                     <p class="step-purpose">
@@ -757,10 +877,19 @@ footer a { color: var(--orange-dark); font-weight: 600; }
             </div>
         </article>
 
+        <div class="step-connector reveal"></div>
+
         <!-- ============ STEP 3: CHROME EXT ============ -->
         <article class="step-card reveal" id="step-3">
             <div class="step-card-header">
-                <div class="step-badge">3</div>
+                <div class="step-badge">
+                    <span class="step-num-chip">3</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <g class="icon-anim">
+                            <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 01-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 10-3.214 3.214c.446.166.855.497.925.968a.979.979 0 01-.276.837l-1.61 1.61a2.404 2.404 0 01-1.705.707 2.402 2.402 0 01-1.704-.706l-1.568-1.568a1.026 1.026 0 00-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 11-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 00-.289-.877L1.706 13.04A2.408 2.408 0 011 11.336c0-.617.235-1.234.706-1.704L2.317 8.02a.98.98 0 01.837-.276c.47.07.802.48.968.925a2.501 2.501 0 103.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 01.276-.837l1.61-1.61a2.404 2.404 0 011.705-.707c.617 0 1.234.235 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 113.237 3.237c-.464.18-.894.527-.967 1.02z"></path>
+                        </g>
+                    </svg>
+                </div>
                 <div class="step-title-block">
                     <h2>התקנת התוסף לכרום</h2>
                     <p class="step-purpose">
@@ -899,6 +1028,30 @@ const io = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// In-view class for step cards (icon bob) and CTA (checkmark stagger)
+const ioView = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('in-view');
+        } else {
+            e.target.classList.remove('in-view');
+        }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.step-card, .cta-card').forEach(el => ioView.observe(el));
+
+// Scroll progress bar
+const progressBar = document.getElementById('scrollProgress');
+const updateProgress = () => {
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const max = h.scrollHeight - h.clientHeight;
+    const pct = max > 0 ? (scrolled / max) * 100 : 0;
+    progressBar.style.width = pct + '%';
+};
+window.addEventListener('scroll', updateProgress, { passive: true });
+updateProgress();
 
 // FAQ toggle
 document.querySelectorAll('.faq-q').forEach(q => {
