@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-en="Donna Challenge . Admin Dashboard" data-he="אתגר דונה . לוח בקרה">Donna Challenge . Admin Dashboard</title>
+<title data-en="Donna Challenge, Admin Dashboard" data-he="אתגר דונה, לוח בקרה">Donna Challenge, Admin Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -209,6 +209,29 @@ body::after{
 }
 .funnel-drop{
   font-size:0.65em;color:var(--red);font-weight:600;
+}
+/* Horizontal engagement funnel (replaces vertical bar mode when class is applied) */
+.funnel-steps.funnel-horizontal{
+  display:flex;flex-direction:column;gap:10px;height:auto;padding:6px 0;
+}
+.funnel-h-row{
+  display:grid;grid-template-columns:200px 1fr 110px;align-items:center;gap:14px;
+}
+.funnel-h-label{font-size:0.85em;color:var(--text);font-weight:500}
+.funnel-h-bar-track{
+  background:rgba(255,255,255,0.05);border-radius:6px;height:22px;overflow:hidden;
+}
+.funnel-h-bar{
+  background:linear-gradient(90deg,var(--orange),var(--orange-light));
+  height:100%;border-radius:6px;
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.funnel-h-value{font-size:0.9em;color:var(--bright);text-align:right;direction:ltr}
+[dir=rtl] .funnel-h-value{text-align:left}
+@media(max-width:640px){
+  .funnel-h-row{grid-template-columns:130px 1fr 90px;gap:8px}
+  .funnel-h-label{font-size:0.78em}
+  .funnel-h-value{font-size:0.8em}
 }
 
 /* ===== ALERTS ===== */
@@ -2158,18 +2181,26 @@ function roundMetrics(roundKey){
   return { registered, paid, active24, welcomeSent, welcomePct, revenueCents, refundCents, lang };
 }
 
-// Health: green if revenue >= target * avg_price_estimate AND active24 >= 50% AND welcome >= 90%
-function roundHealth(metrics){
-  const target = ROUND_TARGET_PAID_DEFAULT;
+// Resolve the paid target for a given round (DB column rounds.target_paid),
+// falling back to the global default.
+function targetPaidFor(roundKey){
+  const r = (allRounds || []).find(x => x.id === roundKey);
+  if(r && r.target_paid != null) return Number(r.target_paid) || ROUND_TARGET_PAID_DEFAULT;
+  return ROUND_TARGET_PAID_DEFAULT;
+}
+
+// Health: green if paid >= target AND active24 >= 50% AND welcome >= 90%.
+function roundHealth(metrics, roundKey){
+  const target = targetPaidFor(roundKey);
   const failPaid = metrics.paid < target;
   const failActive = metrics.registered > 0 && (metrics.active24 / metrics.registered) < 0.5;
   // If no one is registered yet we don't penalize active rate.
   const failActiveCount = metrics.registered === 0 ? false : failActive;
   const failWelcome = metrics.registered > 0 && metrics.welcomePct < 90;
   const fails = [failPaid, failActiveCount, failWelcome].filter(Boolean).length;
-  if(fails === 0) return { level: 'green', label: t('rt.health.green'), fails };
-  if(fails === 1) return { level: 'yellow', label: t('rt.health.yellow'), fails };
-  return { level: 'red', label: t('rt.health.red'), fails };
+  if(fails === 0) return { level: 'green', label: t('rt.health.green'), fails, target };
+  if(fails === 1) return { level: 'yellow', label: t('rt.health.yellow'), fails, target };
+  return { level: 'red', label: t('rt.health.red'), fails, target };
 }
 
 function renderRoundsTab(){
@@ -2207,25 +2238,27 @@ function renderRoundsTab(){
     const lang = roundLanguage(key) || 'en';
     const st = roundStatus(key);
     const m = roundMetrics(key);
-    const health = roundHealth(m);
+    const health = roundHealth(m, key);
+    const targetPaid = health.target;
     const flag = lang === 'he' ? '🇮🇱' : '🇺🇸';
     const statusLabel = st === 'active' ? t('rt.statusActive')
       : st === 'upcoming' ? t('rt.statusUpcoming')
       : st === 'full' ? t('rt.statusFull')
       : st === 'completed' ? t('rt.statusCompleted')
       : st;
+    const dateJoiner = isRTL() ? ' עד ' : ' to ';
     const dates = (meta.start_date || meta.end_date)
-      ? (formatDate(meta.start_date) + (meta.end_date ? ' . ' + formatDate(meta.end_date) : ''))
+      ? (formatDate(meta.start_date) + (meta.end_date ? dateJoiner + formatDate(meta.end_date) : ''))
       : '';
     const currency = lang === 'he' ? '₪' : '$';
     const revenueDisplay = currency + (m.revenueCents / 100).toLocaleString();
     const activePct = m.registered > 0 ? Math.round((m.active24 / m.registered) * 100) : 0;
     const failNote = (() => {
       const notes = [];
-      if(m.paid < ROUND_TARGET_PAID_DEFAULT) notes.push((isRTL() ? 'משלמים: ' : 'Paid: ') + m.paid + '/' + ROUND_TARGET_PAID_DEFAULT);
+      if(m.paid < targetPaid) notes.push((isRTL() ? 'משלמים: ' : 'Paid: ') + m.paid + '/' + targetPaid);
       if(m.registered > 0 && (m.active24 / m.registered) < 0.5) notes.push((isRTL() ? 'פעילים 24ש: ' : 'Active 24h: ') + activePct + '%');
       if(m.registered > 0 && m.welcomePct < 90) notes.push((isRTL() ? 'מייל welcome: ' : 'Welcome: ') + m.welcomePct + '%');
-      return notes.length ? notes.join(' . ') : '';
+      return notes.length ? notes.join(' , ') : '';
     })();
     return `
       <div class="round-tab-card lang-${lang}" onclick="goToRound('${esc(key)}')">
@@ -2603,7 +2636,7 @@ function renderEngagement(){
     heatmapHtml += '<div class="hour-heatmap">'
       + hourBuckets.map((n, h) => {
           const heightPct = (n / maxBucket) * 100;
-          return `<div class="hour-bar" style="height:${Math.max(heightPct, 2)}%" data-count="${n}" title="${h}:00 . ${n}"></div>`;
+          return `<div class="hour-bar" style="height:${Math.max(heightPct, 2)}%" data-count="${n}" title="${h}:00, ${n}"></div>`;
         }).join('')
       + '</div>'
       + '<div class="hour-labels">'
@@ -2840,7 +2873,7 @@ function renderOverview(){
     document.getElementById('countdownLabel').textContent = isRTL()
       ? (diffDays === 1 ? 'יום לסבב הבא' : 'ימים לסבב הבא')
       : (diffDays === 1 ? 'day to next round' : 'days to next round');
-    document.getElementById('countdownRound').textContent = nextRound.name + ' . ' + formatDate(nextRound.start_date);
+    document.getElementById('countdownRound').textContent = nextRound.name + (isRTL() ? ' מתחיל ' : ' starts ') + formatDate(nextRound.start_date);
     countdownCard.style.display = 'block';
   } else {
     countdownCard.style.display = 'none';
@@ -2855,7 +2888,7 @@ function renderOverview(){
         <div class="alert-info">
           <span class="alert-name">${esc(c.name) || '-'}</span>
           <span class="alert-email">${esc(c.email)}</span>
-          <span class="alert-meta">$${(c.amount_paid / 100).toFixed(0)} . ${esc(c.coupon_used) || 'ללא קופון'} . ${esc(c.country) || '-'}</span>
+          <span class="alert-meta">$${(c.amount_paid / 100).toFixed(0)}, ${esc(c.coupon_used) || 'ללא קופון'}, ${esc(c.country) || '-'}</span>
         </div>
       </div>
     `).join('');
@@ -2863,58 +2896,107 @@ function renderOverview(){
     syncAlert.style.display = 'none';
   }
 
-  // Funnel
-  renderFunnel(total, loggedIn, graduated);
+  // Funnel (engagement-style, honors global filter)
+  renderFunnel(baseParticipants);
 
   // Alerts
   renderAlerts();
 }
 
-function renderFunnel(totalRegistered, totalLoggedIn, totalGraduated){
-  // Paid count (excluding TEST and refunded)
-  const paidCount = stripeCustomers.filter(c =>
-    (c.coupon_used || '').toUpperCase() !== 'TEST' && !c.refunded
-  ).length;
+// Engagement funnel. Honors the global filter (passed in via baseParticipants).
+// Steps: Registered -> Logged in -> Viewed Day 1 -> 5+ min on Day 1 -> Viewed Day 5.
+function renderFunnel(baseParticipants){
+  // Build the filtered email set so we look at events for the right cohort only.
+  const inFilter = new Set(baseParticipants.map(p => (p.email || '').toLowerCase()));
 
-  const steps = [
-    { label: t('fn.paid'), count: paidCount },
-    { label: t('fn.registered'), count: totalRegistered },
-    { label: t('fn.loggedIn'), count: totalLoggedIn }
-  ];
-
-  for(let d = 0; d <= 5; d++){
-    const count = allParticipants.filter(p => {
-      const lower = p.email.toLowerCase();
-      const views = allEvents.filter(e =>
-        eventEmail(e) === lower &&
-        (e.event_type === 'day_view' || e.event_type === 'complete_day') &&
-        eventDay(e) >= d
-      );
-      return views.length > 0;
-    }).length;
-    steps.push({ label: d === 0 ? t('fn.day0') : (t('fn.day') + d), count });
+  // Map alias events -> primary so a single human counts once per step.
+  const aliasMap = new Map();
+  (allAliases || []).forEach(a => {
+    const al = (a.email || '').toLowerCase();
+    const pr = (a.primary_email || '').toLowerCase();
+    if(al && pr) aliasMap.set(al, pr);
+  });
+  const eventsForCohort = allEvents.filter(e => {
+    const ee = (e.user_email || '').toLowerCase();
+    const primary = aliasMap.get(ee) || ee;
+    return inFilter.has(primary);
+  });
+  function primaryFor(eventEmailLower){
+    return aliasMap.get(eventEmailLower) || eventEmailLower;
   }
 
-  steps.push({ label: t('fn.graduated'), count: totalGraduated });
+  // Step 1: registered
+  const step1 = baseParticipants.filter(p => !p.access_revoked_at).length;
 
-  const maxCount = Math.max(...steps.map(s => s.count), 1);
+  // Step 2: logged in at least once
+  const loggedInSet = new Set();
+  eventsForCohort.forEach(e => {
+    if(e.event_type !== 'login') return;
+    loggedInSet.add(primaryFor((e.user_email || '').toLowerCase()));
+  });
+  const step2 = loggedInSet.size;
+
+  // Step 3: viewed Day 1 at least once
+  const viewedDay1 = new Set();
+  eventsForCohort.forEach(e => {
+    if(e.event_type !== 'day_view') return;
+    if(Number(e.day_number) !== 1) return;
+    viewedDay1.add(primaryFor((e.user_email || '').toLowerCase()));
+  });
+  const step3 = viewedDay1.size;
+
+  // Step 4: 5+ minutes on Day 1 (sum of time_on_day, day=1)
+  const secondsByPrimary = new Map();
+  eventsForCohort.forEach(e => {
+    if(e.event_type !== 'time_on_day') return;
+    if(Number(e.day_number) !== 1) return;
+    const pr = primaryFor((e.user_email || '').toLowerCase());
+    const sec = Number((e.event_data || {}).seconds) || 0;
+    secondsByPrimary.set(pr, (secondsByPrimary.get(pr) || 0) + sec);
+  });
+  let step4 = 0;
+  secondsByPrimary.forEach(v => { if(v >= 300) step4++; });
+
+  // Step 5: viewed Day 5 at least once
+  const viewedDay5 = new Set();
+  eventsForCohort.forEach(e => {
+    if(e.event_type !== 'day_view') return;
+    if(Number(e.day_number) !== 5) return;
+    viewedDay5.add(primaryFor((e.user_email || '').toLowerCase()));
+  });
+  const step5 = viewedDay5.size;
+
+  const labels = isRTL()
+    ? ['נרשמו', 'התחברו לפחות פעם אחת', 'צפו ביום 1', 'בילו 5+ דקות ביום 1', 'צפו ביום 5']
+    : ['Registered', 'Logged in 1+ times', 'Viewed Day 1', '5+ minutes on Day 1', 'Viewed Day 5'];
+
+  const steps = [
+    { label: labels[0], count: step1 },
+    { label: labels[1], count: step2 },
+    { label: labels[2], count: step3 },
+    { label: labels[3], count: step4 },
+    { label: labels[4], count: step5 },
+  ];
+
   const container = document.getElementById('funnelChart');
+  if(!container) return;
   container.innerHTML = '';
-
-  steps.forEach((step, i) => {
-    const pct = (step.count / maxCount) * 100;
-    const dropPct = i > 0 && steps[i-1].count > 0
-      ? Math.round(((steps[i-1].count - step.count) / steps[i-1].count) * 100)
-      : 0;
-
-    const el = document.createElement('div');
-    el.className = 'funnel-step';
-    el.innerHTML = `
-      <div class="funnel-bar" style="height:${Math.max(pct, 3)}%" data-count="${step.count}"></div>
-      <div class="funnel-label">${step.label}</div>
-      ${i > 0 && dropPct > 0 ? `<div class="funnel-drop">-${dropPct}%</div>` : ''}
+  // Switch to a horizontal bar layout so labels are readable and we can show count + % of step 1.
+  container.classList.add('funnel-horizontal');
+  const baseCount = step1 || 1;
+  steps.forEach(step => {
+    const pctOfStep1 = Math.round((step.count / baseCount) * 100);
+    const widthPct = Math.max((step.count / baseCount) * 100, 2);
+    const row = document.createElement('div');
+    row.className = 'funnel-h-row';
+    row.innerHTML = `
+      <div class="funnel-h-label">${esc(step.label)}</div>
+      <div class="funnel-h-bar-track">
+        <div class="funnel-h-bar" style="width:${widthPct}%"></div>
+      </div>
+      <div class="funnel-h-value"><strong>${step.count}</strong> <span style="color:var(--dim);font-size:0.85em">(${pctOfStep1}%)</span></div>
     `;
-    container.appendChild(el);
+    container.appendChild(row);
   });
 }
 
@@ -2952,7 +3034,7 @@ function renderAlerts(){
       <div class="alert-info">
         <span class="alert-name">${esc(name)}</span>
         <span class="alert-email">${esc(p.email)}</span>
-        <span class="alert-meta">${daysText} . ${esc(p.round)}</span>
+        <span class="alert-meta">${daysText}, ${esc(p.round)}</span>
       </div>
       <div class="alert-actions" style="display:flex;gap:8px;align-items:center">
         <a href="mailto:${encodeURI(p.email)}?subject=Donna Challenge&body=Hey ${encodeURIComponent(name)},%0A%0A" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:rgba(92,160,255,0.12);color:var(--blue);border:1px solid rgba(92,160,255,0.3);border-radius:6px;font-size:0.78em;text-decoration:none;transition:0.2s;white-space:nowrap">&#128231; ${emailLabel}</a>
@@ -3808,12 +3890,12 @@ function renderRevenueLangBreakdown(){
     <div class="rev-lang-card en">
       <div class="l">${t('rev.english')}</div>
       <div class="v">$${(en.gross / 100).toLocaleString()}</div>
-      <div class="s">${en.count} ${txWord} . ${isRTL() ? 'החזרים: $' : 'Refunded: $'}${(en.refunds / 100).toLocaleString()}</div>
+      <div class="s">${en.count} ${txWord}, ${isRTL() ? 'החזרים: $' : 'Refunded: $'}${(en.refunds / 100).toLocaleString()}</div>
     </div>
     <div class="rev-lang-card he">
       <div class="l">${t('rev.hebrew')}</div>
       <div class="v">₪${(he.gross / 100).toLocaleString()}</div>
-      <div class="s">${he.count} ${txWord} . ${isRTL() ? 'החזרים: ₪' : 'Refunded: ₪'}${(he.refunds / 100).toLocaleString()}</div>
+      <div class="s">${he.count} ${txWord}, ${isRTL() ? 'החזרים: ₪' : 'Refunded: ₪'}${(he.refunds / 100).toLocaleString()}</div>
     </div>
   `;
 }
@@ -4007,7 +4089,7 @@ function renderRevenue(){
       const isTest = (c.coupon_used || '').toUpperCase() === 'TEST';
       let statusCell;
       if(c.refunded){
-        const refundDate = c.refunded_at ? ' . ' + formatDate(c.refunded_at) : '';
+        const refundDate = c.refunded_at ? ', ' + formatDate(c.refunded_at) : '';
         statusCell = `<span class="badge badge-red" title="${esc(c.refund_reason) || ''}">${t('misc.refunded')}${refundDate}</span>`;
       } else if(isTest){
         statusCell = `<span class="badge badge-gray">${isRTL() ? 'בדיקה' : 'Test'}</span>`;
@@ -4301,7 +4383,7 @@ function onWaFileChange(round, files){
     const drop = document.getElementById('waDrop' + round);
     drop.classList.add('loaded');
     document.getElementById('waFile' + round + 'Status').textContent =
-      file.name + ' . ' + members.length + ' חברים פעילים';
+      file.name + ', ' + members.length + ' חברים פעילים';
     runWaReconcile();
   };
   reader.readAsText(file, 'UTF-8');
@@ -4493,7 +4575,7 @@ function renderWaReconcile(round, members){
       + '<td>' + esc(m.wa.displayName) + '</td>'
       + '<td>' + (m.wa.phone ? esc(m.wa.phone) : '<span style="color:var(--dim)">.</span>') + '</td>'
       + '<td><span style="color:var(--bright)">' + esc(m.db.name || '(no name)') + '</span><br><span style="font-size:0.8em;color:var(--dim);direction:ltr;display:inline-block">' + esc(m.db.email) + '</span></td>'
-      + '<td>' + (roundMatch ? '<span class="wa-status-pill ok">' + (m.db.round === 'round1' ? 'R1' : m.db.round === 'round2' ? 'R2' : m.db.round) + '</span>' : '<span class="wa-status-pill bad">' + esc(m.db.round || '?') + ' . סבב לא תואם!</span>') + '</td>'
+      + '<td>' + (roundMatch ? '<span class="wa-status-pill ok">' + (m.db.round === 'round1' ? 'R1' : m.db.round === 'round2' ? 'R2' : m.db.round) + '</span>' : '<span class="wa-status-pill bad">' + esc(m.db.round || '?') + ', סבב לא תואם!</span>') + '</td>'
       + '<td><span class="wa-status-pill ' + conf + '" title="' + m.reason + ' (' + m.score + ')">' + (m.score >= 90 ? '✓ תואם' : m.score >= 70 ? 'תואם חלקי' : 'התאמה חלשה') + '</span></td>'
       + '</tr>';
   }
