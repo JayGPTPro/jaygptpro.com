@@ -2986,6 +2986,18 @@ section { position: relative; }
 .pmm-continue:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(249,115,22,0.45); filter: brightness(1.05); }
 .pmm-continue:active { transform: translateY(0); }
 .pmm-note { text-align: center; font-size: 12px; color: #999; margin: 12px 0 0; line-height: 1.5; }
+.pmm-hint {
+    text-align: center; font-size: 13px;
+    color: #c2410c; margin: 10px 0 0;
+    line-height: 1.55;
+    background: #fff7ed;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #fed7aa;
+    animation: pmmHintIn 0.25s ease-out;
+}
+.pmm-hint strong { color: #9a3412; }
+@keyframes pmmHintIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 480px) {
     .pmm-modal { padding: 26px 20px 20px; }
     .pmm-title { font-size: 19px; }
@@ -3861,15 +3873,16 @@ section { position: relative; }
                 <div class="pmm-option-card">
                     <div class="pmm-option-text">
                         <div class="pmm-option-title">תשלומים</div>
-                        <div class="pmm-option-sub">3 תשלומים חודשיים · ללא ריבית</div>
+                        <div class="pmm-option-sub">עד 3 תשלומים חודשיים · ללא ריבית</div>
                     </div>
-                    <div class="pmm-option-price">₪233 × 3</div>
+                    <div class="pmm-option-price">₪699 סה"כ</div>
                 </div>
             </label>
         </div>
 
         <button class="pmm-continue" id="pmmContinue" type="button">המשך לתשלום ←</button>
-        <p class="pmm-note">תועברו לעמוד סליקה מאובטח להשלמת התשלום</p>
+        <p class="pmm-note" id="pmmNote">תועברו לעמוד סליקה מאובטח להשלמת התשלום</p>
+        <p class="pmm-hint" id="pmmHint" style="display:none;">💳 בעמוד הסליקה: בחרו <strong>"כרטיס אשראי"</strong>, ואז את מספר התשלומים הרצוי (1, 2 או 3)</p>
     </div>
 </div>
 
@@ -4220,6 +4233,10 @@ function pmmOpen(round) {
     if (label) label.textContent = `סבב ${pmmCurrentRound} · ${ROUND_DATES[pmmCurrentRound]}`;
     const onetime = document.querySelector('input[name="pmm-method"][value="onetime"]');
     if (onetime) onetime.checked = true;
+    const hint = document.getElementById('pmmHint');
+    const note = document.getElementById('pmmNote');
+    if (hint) hint.style.display = 'none';
+    if (note) note.style.display = 'block';
     const overlay = document.getElementById('pmmOverlay');
     overlay.classList.add('active');
     overlay.setAttribute('aria-hidden', 'false');
@@ -4235,6 +4252,21 @@ document.querySelectorAll('[data-payment-trigger]').forEach(el => {
     el.addEventListener('click', e => {
         e.preventDefault();
         pmmOpen(el.getAttribute('data-payment-trigger'));
+    });
+});
+// Toggle installments hint based on selected method
+document.querySelectorAll('input[name="pmm-method"]').forEach(input => {
+    input.addEventListener('change', () => {
+        const hint = document.getElementById('pmmHint');
+        const note = document.getElementById('pmmNote');
+        if (!hint || !note) return;
+        if (input.value === 'installments' && input.checked) {
+            hint.style.display = 'block';
+            note.style.display = 'none';
+        } else if (input.checked) {
+            hint.style.display = 'none';
+            note.style.display = 'block';
+        }
     });
 });
 const pmmCloseBtn = document.getElementById('pmmClose');
