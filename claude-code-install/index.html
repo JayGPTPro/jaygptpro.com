@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>התקנת הכלים | אתגר קלוד עם ג'יי מרגליות</title>
+<meta name="description" content="3 התקנות. 10 דקות. וזהו, אתם מוכנים לוובינר ולאתגר.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-M4RK6H5NMH');
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #f5f5f7;
+    --bg-2: #ffffff;
+    --bg-3: #fafafc;
+    --bg-soft: #eeeef2;
+    --bg-cream: #fff9f2;
+    --bg-dark: #0a0a14;
+    --border: #e5e5eb;
+    --border-hi: #d4d4dc;
+    --text: #0a0a0f;
+    --text-2: #2a2a35;
+    --text-3: #55556a;
+    --text-4: #8a8a98;
+    --orange: #f97316;
+    --orange-2: #fb923c;
+    --orange-dark: #ea580c;
+    --orange-light: #ffedd5;
+    --orange-soft: rgba(249, 115, 22, 0.08);
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --blue: #2563eb;
+    --blue-soft: #dbeafe;
+    --shadow-sm: 0 1px 3px rgba(20, 20, 40, 0.04), 0 1px 2px rgba(20, 20, 40, 0.03);
+    --shadow: 0 4px 12px rgba(20, 20, 40, 0.05), 0 2px 4px rgba(20, 20, 40, 0.04);
+    --shadow-lg: 0 20px 50px rgba(20, 20, 40, 0.08), 0 8px 20px rgba(20, 20, 40, 0.04);
+    --shadow-orange: 0 12px 30px rgba(249, 115, 22, 0.25);
+    --radius: 20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.55); }
+    70% { box-shadow: 0 0 0 16px rgba(249,115,22,0); }
+    100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+}
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.2,0.8,0.2,1), transform 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.wrap-sm { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== HEADER ===== */
+.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(245, 245, 247, 0.85);
+    backdrop-filter: saturate(140%) blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+.topnav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.brand { font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+.brand span { color: var(--orange); }
+.topnav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+.topnav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 4px var(--green-soft);
+}
+
+/* ===== HERO ===== */
+.hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    background: radial-gradient(ellipse at top, var(--orange-soft) 0%, transparent 60%);
+    position: relative;
+    overflow: hidden;
+}
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-hi);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+}
+.hero-eyebrow .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+    animation: pulseRing 2s infinite;
+}
+.hero h1 {
+    font-size: clamp(36px, 5.5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin-bottom: 22px;
+}
+.hero h1 .accent {
+    background: linear-gradient(120deg, var(--orange-dark) 0%, var(--orange) 50%, var(--orange-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub {
+    font-size: clamp(17px, 2vw, 21px);
+    color: var(--text-3);
+    max-width: 640px;
+    margin: 0 auto 36px;
+    line-height: 1.55;
+}
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.hero-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-3);
+    font-weight: 600;
+}
+.hero-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--orange-soft);
+    border-radius: 8px;
+    color: var(--orange-dark);
+    font-size: 14px;
+}
+
+/* ===== STEPPER ===== */
+.stepper {
+    margin-top: 60px;
+    padding: 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.stepper-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
+    flex: 1;
+    justify-content: center;
+}
+.stepper-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--orange-light);
+    color: var(--orange-dark);
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.stepper-divider {
+    flex: 0 0 24px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+}
+
+/* ===== STEP CARDS ===== */
+.steps-section {
+    padding: 80px 0 40px;
+}
+
+.step-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 32px;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+.step-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.step-card-header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+.step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    box-shadow: var(--shadow-orange);
+    flex-shrink: 0;
+}
+.step-title-block { flex: 1; }
+.step-title-block h2 {
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+.step-title-block .step-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-4);
+    font-weight: 600;
+}
+.step-purpose {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--text-3);
+    line-height: 1.6;
+}
+.step-purpose b { color: var(--text); font-weight: 700; }
+
+.step-card-body {
+    padding: 28px 32px 32px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 28px;
+}
+@media (max-width: 880px) {
+    .step-card-body { grid-template-columns: 1fr; gap: 24px; }
+    .step-card-header { padding: 22px 22px 18px; }
+    .step-card-body { padding: 22px; }
+}
+
+.video-wrap {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+.video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.video-label {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-4);
+    font-weight: 600;
+    text-align: center;
+    direction: rtl;
+}
+
+.actions { display: flex; flex-direction: column; gap: 14px; }
+
+.os-block {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+}
+.os-block.windows { border-left: 4px solid var(--blue); border-right: none; }
+.os-block.mac { border-left: 4px solid var(--text-3); border-right: none; }
+[dir="rtl"] .os-block.windows { border-right: 4px solid var(--blue); border-left: none; }
+[dir="rtl"] .os-block.mac { border-right: 4px solid var(--text-3); border-left: none; }
+
+.os-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 10px;
+}
+.os-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+.os-icon.win { background: var(--blue-soft); color: var(--blue); }
+.os-icon.mac { background: var(--bg-soft); color: var(--text-2); }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+    width: 100%;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
+    color: #fff;
+    box-shadow: var(--shadow-orange);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(249, 115, 22, 0.35); }
+.btn-secondary {
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--border-hi);
+}
+.btn-secondary:hover { background: var(--bg-soft); border-color: var(--text-4); }
+.btn-arrow { transition: transform 0.2s; }
+.btn:hover .btn-arrow { transform: translateX(-4px); }
+
+.mac-note {
+    font-size: 14px;
+    color: var(--text-3);
+    line-height: 1.55;
+}
+.mac-note b { color: var(--text); font-weight: 700; }
+.mac-note code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-soft);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: var(--orange-dark);
+    direction: ltr;
+    display: inline-block;
+}
+
+.tip {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--bg-cream);
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    font-size: 13.5px;
+    color: var(--text-2);
+    line-height: 1.55;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.tip-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 1px;
+}
+
+/* ===== FAQ ===== */
+.faq-section {
+    padding: 60px 0 80px;
+}
+.section-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.section-title h2 {
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+}
+.section-title p {
+    color: var(--text-3);
+    font-size: 17px;
+}
+
+.faq-list { max-width: 720px; margin: 0 auto; }
+.faq-item {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.faq-item:hover { box-shadow: var(--shadow); }
+.faq-q {
+    padding: 18px 22px;
+    width: 100%;
+    text-align: right;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.faq-q-toggle {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--orange-light);
+    color: var(--orange-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    transition: transform 0.2s;
+    font-size: 16px;
+}
+.faq-item.open .faq-q-toggle { transform: rotate(45deg); }
+.faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 22px;
+    font-size: 14.5px;
+    color: var(--text-3);
+    line-height: 1.65;
+}
+.faq-item.open .faq-a {
+    max-height: 400px;
+    padding: 0 22px 20px;
+}
+.faq-a code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-soft);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: var(--orange-dark);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== FOOTER CTA ===== */
+.cta-section {
+    padding: 60px 0 100px;
+    text-align: center;
+}
+.cta-card {
+    background: var(--bg-dark);
+    color: #fff;
+    border-radius: 28px;
+    padding: 56px 32px;
+    position: relative;
+    overflow: hidden;
+}
+.cta-card::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.25) 0%, transparent 50%);
+    pointer-events: none;
+}
+.cta-card * { position: relative; z-index: 1; }
+.cta-card h2 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+    line-height: 1.15;
+}
+.cta-card p {
+    color: rgba(255,255,255,0.7);
+    font-size: 17px;
+    max-width: 520px;
+    margin: 0 auto 28px;
+    line-height: 1.55;
+}
+.cta-checkmarks {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+}
+.cta-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+}
+.cta-check-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+footer {
+    text-align: center;
+    padding: 30px 24px 40px;
+    color: var(--text-4);
+    font-size: 13px;
+    line-height: 1.8;
+}
+footer a { color: var(--orange-dark); font-weight: 600; }
+.footer-credit { color: var(--text-4); font-size: 12px; opacity: 0.8; }
+
+/* ===== FLOATING WHATSAPP BUTTON ===== */
+.fab-whatsapp {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 200;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #25D366;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 12px 30px rgba(37, 211, 102, 0.35), 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.fab-whatsapp:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(37, 211, 102, 0.45), 0 6px 12px rgba(0,0,0,0.12); }
+.fab-whatsapp svg { width: 22px; height: 22px; }
+@media (max-width: 600px) {
+    .fab-whatsapp { padding: 12px 16px; font-size: 13px; bottom: 16px; left: 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+    <div class="topnav-inner">
+        <div class="brand">אתגר <span>קלוד</span></div>
+        <div class="topnav-right">
+            <span class="topnav-dot"></span>
+            הכנה לוובינר ולאתגר
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="wrap">
+        <div class="hero-eyebrow reveal">
+            <span class="dot"></span>
+            השלב הראשון לפני הוובינר
+        </div>
+        <h1 class="reveal reveal-d1">
+            3 התקנות. <span class="accent">10 דקות.</span><br>
+            ואתם מוכנים להתחיל.
+        </h1>
+        <p class="hero-sub reveal reveal-d2">
+            כל מה שצריך כדי להפעיל את קלוד קוד על המחשב שלכם. סרטון לכל התקנה, לינק להורדה, והוראות גם למק וגם לווינדוס. עברו על הכל לפי הסדר ותגיעו מוכנים לחלוטין.
+        </p>
+        <div class="hero-stats reveal reveal-d3">
+            <div class="hero-stat"><span class="hero-stat-icon">▶</span> 3 סרטוני וידאו</div>
+            <div class="hero-stat"><span class="hero-stat-icon">⏱</span> 10 דקות סך הכל</div>
+            <div class="hero-stat"><span class="hero-stat-icon">✓</span> מק + ווינדוס</div>
+        </div>
+
+        <div class="stepper reveal reveal-d3">
+            <div class="stepper-item"><span class="stepper-num">1</span> Git</div>
+            <div class="stepper-divider"></div>
+            <div class="stepper-item"><span class="stepper-num">2</span> Claude</div>
+            <div class="stepper-divider"></div>
+            <div class="stepper-item"><span class="stepper-num">3</span> Chrome</div>
+        </div>
+    </div>
+</section>
+
+<section class="steps-section">
+    <div class="wrap">
+
+        <!-- ============ STEP 1: GIT ============ -->
+        <article class="step-card reveal" id="step-1">
+            <div class="step-card-header">
+                <div class="step-badge">1</div>
+                <div class="step-title-block">
+                    <h2>התקנת Git</h2>
+                    <span class="step-time">⏱ כ. 3 דקות</span>
+                    <p class="step-purpose">
+                        Git זה הכלי שבעזרתו קלוד קוד שומר היסטוריה של כל מה שהוא משנה לכם בקבצים. <b>בלי גיט אין אפשרות לחזור אחורה אם משהו השתבש.</b> זה הביטוח שלכם.
+                    </p>
+                </div>
+            </div>
+            <div class="step-card-body">
+                <div>
+                    <div class="video-wrap">
+                        <iframe src="https://player.vimeo.com/video/1188770431?h=45d13338a5&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-label">סרטון הדרכה: התקנה על Windows</div>
+                </div>
+                <div class="actions">
+                    <div class="os-block windows">
+                        <div class="os-head"><span class="os-icon win">⊞</span> Windows</div>
+                        <a class="btn btn-primary" href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">
+                            הורדת Git ל-Windows
+                            <span class="btn-arrow">←</span>
+                        </a>
+                    </div>
+                    <div class="os-block mac">
+                        <div class="os-head"><span class="os-icon mac">⌘</span> Mac</div>
+                        <p class="mac-note">
+                            במק <b>Git כבר מותקן ברוב המקרים.</b> כדי לוודא, פתחו את Terminal והקלידו <code>git --version</code>. אם לא מותקן, המערכת תציע להתקין את Xcode Command Line Tools. לחצו Install וזהו.
+                        </p>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">!</span>
+                        <div>במהלך ההתקנה ב-Windows, פשוט לחצו <b>Next</b> בכל החלונות. אין צורך לשנות שום הגדרה.</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ============ STEP 2: CLAUDE ============ -->
+        <article class="step-card reveal" id="step-2">
+            <div class="step-card-header">
+                <div class="step-badge">2</div>
+                <div class="step-title-block">
+                    <h2>התקנת Claude למחשב</h2>
+                    <span class="step-time">⏱ כ. 4 דקות</span>
+                    <p class="step-purpose">
+                        זה <b>השחקן הראשי.</b> Claude Desktop זה האפליקציה שדרכה תעבדו עם Claude Code. תורידו, תתקינו, ותתחברו עם החשבון שלכם (אם אין לכם, תיצרו עכשיו, חינם).
+                    </p>
+                </div>
+            </div>
+            <div class="step-card-body">
+                <div>
+                    <div class="video-wrap">
+                        <iframe src="https://player.vimeo.com/video/1188770360?h=069f4af017&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-label">סרטון הדרכה: התקנה על Windows</div>
+                </div>
+                <div class="actions">
+                    <div class="os-block windows">
+                        <div class="os-head"><span class="os-icon win">⊞</span> Windows + Mac</div>
+                        <a class="btn btn-primary" href="https://claude.com/download" target="_blank" rel="noopener">
+                            הורדת Claude Desktop
+                            <span class="btn-arrow">←</span>
+                        </a>
+                        <p class="mac-note" style="margin-top: 12px;">
+                            הלינק מזהה אוטומטית באיזו מערכת אתם ומציע את הקובץ הנכון. <b>במק:</b> תורידו .dmg, תפתחו, תגררו את Claude לתיקיית Applications. <b>בווינדוס:</b> תורידו .exe ותריצו.
+                        </p>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">!</span>
+                        <div>אחרי ההתקנה, פתחו את Claude ותתחברו עם המייל שלכם. <b>אין לכם חשבון בכלל?</b> צרו עכשיו (חינמי) ואז שדרגו ל-Pro של 20$ לחודש. בלי Pro אי אפשר להשתמש ב-Code tab ולא תוכלו לעקוב אחרי האתגר. זו ההוצאה היחידה.</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ============ STEP 3: CHROME EXT ============ -->
+        <article class="step-card reveal" id="step-3">
+            <div class="step-card-header">
+                <div class="step-badge">3</div>
+                <div class="step-title-block">
+                    <h2>התקנת התוסף לכרום</h2>
+                    <span class="step-time">⏱ כ. 2 דקות</span>
+                    <p class="step-purpose">
+                        תוסף <b>Claude in Chrome</b> מאפשר ל-Claude לעבוד ישירות בדפדפן שלכם. לקרוא דפים, ללחוץ על כפתורים, למלא טפסים. בלעדיו, לא תוכלו להריץ חצי מהדברים שנעשה באתגר.
+                    </p>
+                </div>
+            </div>
+            <div class="step-card-body">
+                <div>
+                    <div class="video-wrap">
+                        <iframe src="https://player.vimeo.com/video/1188770418?h=83179b93ef&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-label">סרטון הדרכה: התקנה על Windows (זהה במק)</div>
+                </div>
+                <div class="actions">
+                    <div class="os-block windows">
+                        <div class="os-head"><span class="os-icon win">⊞</span> זהה בכל המערכות</div>
+                        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn" target="_blank" rel="noopener">
+                            התקנת התוסף מ-Chrome Store
+                            <span class="btn-arrow">←</span>
+                        </a>
+                        <p class="mac-note" style="margin-top: 12px;">
+                            התוסף עובד <b>אך ורק על Google Chrome</b>. אם אתם משתמשים ב-Safari, ב-Edge או בדפדפן אחר, תצטרכו להוריד גם את Chrome. הוא חינמי וזה ייקח עוד דקה.
+                        </p>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">!</span>
+                        <div>אחרי ההתקנה, לחצו על אייקון התוסף בכרום, תתחברו עם החשבון שלכם, <b>ותאשרו את ההרשאות שהוא מבקש</b>. בלי האישור התוסף לא יוכל לעבוד.</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</section>
+
+<section class="faq-section">
+    <div class="wrap-sm">
+        <div class="section-title">
+            <h2>שאלות נפוצות</h2>
+            <p>אם נתקלתם בבעיה, כנראה שמישהו כבר נתקל בה לפניכם.</p>
+        </div>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>האם זה חובה לעשות את כל ההתקנות לפני הוובינר?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    כן. הוובינר הוא <b>הדגמה חיה</b>, ואם תרצו להריץ במקביל את מה שאני מראה, אתם חייבים את הכלים מותקנים. גם אם אתם רק מסתכלים, מומלץ שיהיה הכל מוכן כי זה החלק הכי משעמם והכי טכני, ועדיף להוריד מעליכם את זה לפני שמתחילים.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>אני במק. למה אני צריך את כל זה אם הסרטונים בווינדוס?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    הסרטונים מראים את התהליך בווינדוס כי הוא קצת יותר מורכב. <b>במק זה הרבה יותר פשוט,</b> ולכן הספקנו זאת בכמה שורות טקסט. עברו לפי ההוראות בכל קלף ויהיה לכם הכל תוך 5 דקות.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>הקובץ Git לא מתחיל להוריד. מה לעשות?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    אם הלינק לא עובד, היכנסו ידנית ל-<b>git-scm.com</b>, לחצו על Downloads, ובחרו את מערכת ההפעלה שלכם. ההורדה תתחיל אוטומטית. אם עדיין לא, ייתכן שיש לכם חוסם פרסומות (Adblock) שחוסם את הסקריפט. כבו אותו לרגע.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>אני רואה שיש Claude Free וגם Claude Pro. מה צריך לאתגר?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    <b>Claude Pro של 20$ לחודש זה החובה.</b> בלעדיו אין גישה ל-Code tab, ל-Skills ול-Scheduled Tasks. כל האתגר מבוסס על הפיצ'רים האלה. גם אחרי האתגר, ה-20$ האלה יחזירו את עצמם שורה תחתונה תוך שעת עבודה אחת בחודש.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>התוסף לכרום ביקש המון הרשאות. זה בטוח?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    כן, זה בטוח. התוסף הזה רשמי של <b>Anthropic</b> (החברה שמאחורי Claude). ההרשאות הרחבות נחוצות כי התוסף צריך לראות מה יש בדפים שאתם פותחים, וללחוץ עליהם בשמכם. זה בדיוק מה שעושה אותו כל כך חזק. אם זה לא נוח לכם, אל תתקינו, אבל אז לא תוכלו להשתמש ביכולות של דפדפן באתגר.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q">
+                    <span>נתקלתי בבעיה שלא מופיעה כאן. למי לפנות?</span>
+                    <span class="faq-q-toggle">+</span>
+                </button>
+                <div class="faq-a">
+                    הצטרפו ל<a href="https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t" target="_blank" rel="noopener"><b>קבוצת WhatsApp של בינה</b></a> ושאלו שם. תכתבו את שם השלב שנתקעתם בו (1, 2 או 3), צרפו צילום מסך, ותכתבו אם אתם על מק או על ווינדוס. ככה נוכל לעזור הכי מהר. הקהילה ערה ופעילה.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="wrap-sm">
+        <div class="cta-card reveal">
+            <h2>סיימתם את כל 3? יופי. עכשיו אתם מוכנים.</h2>
+            <p>הצעד הבא הוא להגיע לוובינר עם הראש פתוח ועם המחשב מוכן. נתראה שם.</p>
+            <div class="cta-checkmarks">
+                <div class="cta-check"><span class="cta-check-icon">✓</span> Git מותקן</div>
+                <div class="cta-check"><span class="cta-check-icon">✓</span> Claude מותקן</div>
+                <div class="cta-check"><span class="cta-check-icon">✓</span> תוסף Chrome מותקן</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    תקלות? הצטרפו לקבוצת <a href="https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t" target="_blank" rel="noopener">בינה ב-WhatsApp</a> &nbsp;·&nbsp; הוובינר והאתגר של ג'יי מרגליות
+    <div class="footer-credit" style="margin-top: 8px;">סרטוני ההדרכה: מנדי קוריץ</div>
+</footer>
+
+<a href="https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t" target="_blank" rel="noopener" class="fab-whatsapp" aria-label="קבוצת WhatsApp של בינה">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+    </svg>
+    תקועים? לקבוצה
+</a>
+
+<script>
+// Reveal on scroll
+const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// FAQ toggle
+document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+        const item = q.closest('.faq-item');
+        item.classList.toggle('open');
+    });
+});
+</script>
+
+</body>
+</html>
