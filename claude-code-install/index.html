@@ -554,6 +554,65 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     align-items: flex-start;
     gap: 10px;
 }
+
+/* Warning callout (red, prominent, between steps) */
+.warning-callout {
+    margin: 32px auto;
+    max-width: 880px;
+    padding: 22px 26px;
+    background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
+    border: 2px solid var(--red);
+    border-radius: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+.warning-callout::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+.warning-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--red);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    box-shadow: 0 6px 14px rgba(220, 38, 38, 0.35);
+    animation: glowPulseRed 2.5s ease-in-out infinite;
+}
+@keyframes glowPulseRed {
+    0%, 100% { box-shadow: 0 6px 14px rgba(220, 38, 38, 0.35); }
+    50% { box-shadow: 0 6px 24px rgba(220, 38, 38, 0.6); }
+}
+.warning-body { flex: 1; position: relative; }
+.warning-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--red);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.warning-text {
+    font-size: 14.5px;
+    color: var(--text-2);
+    line-height: 1.6;
+}
+.warning-text b { color: var(--text); font-weight: 700; }
 .tip-icon {
     flex-shrink: 0;
     display: inline-flex;
@@ -828,6 +887,16 @@ footer a { color: var(--orange-dark); font-weight: 600; }
         </article>
 
         <div class="step-connector reveal"></div>
+
+        <div class="warning-callout reveal" role="alert">
+            <div class="warning-icon">!</div>
+            <div class="warning-body">
+                <div class="warning-title">חשוב לפני שעוברים לשלב 2</div>
+                <div class="warning-text">
+                    אחרי שהתקנתם את Git, <b>כבו והדליקו את המחשב</b> לפני שתפתחו את Claude. זה נשמע מוזר, אבל זה הצעד שפותר את רוב הבעיות שאנשים נתקלים בהן בהמשך. אל תדלגו עליו.
+                </div>
+            </div>
+        </div>
 
         <!-- ============ STEP 2: CLAUDE ============ -->
         <article class="step-card reveal" id="step-2">
