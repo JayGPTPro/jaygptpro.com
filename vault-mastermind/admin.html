@@ -965,6 +965,9 @@
     } else {
       actions.push(`<button class="btn btn-secondary" onclick="runAction('t7','${ns.key}')">Send T-7 to new signups</button>`);
     }
+    if (ns.topic && days <= 7) {
+      actions.push(`<button class="btn btn-secondary" onclick="runLevelSurvey('${ns.key}')">📋 Send Level Survey</button>`);
+    }
     if (ns.topic && days <= 3 && !ns.groupsAssigned) {
       actions.push(`<button class="btn" onclick="runAction('assign','${ns.key}')">Assign Groups</button>`);
     }
@@ -1051,6 +1054,24 @@
       await apiPost({ action, sessionKey });
       toast('Done. (Reload to see updated state.)', 'success');
       setTimeout(() => loadAll(true), 1500);
+    } catch (err) {
+      toast('Failed: ' + err.message, 'error');
+    }
+  }
+
+  async function runLevelSurvey(sessionKey) {
+    const choice = prompt(
+      'Send Level Survey for ' + sessionKey + '?\n\n' +
+      'Type "preview" to send only to Jay first.\n' +
+      'Type "all" to send to ALL attendees.\n' +
+      'Anything else cancels.'
+    );
+    if (choice !== 'preview' && choice !== 'all') return;
+    const previewOnly = (choice === 'preview');
+    toast('Sending level survey' + (previewOnly ? ' (preview)' : ' to all') + '...', 'success');
+    try {
+      const res = await apiPost({ action: 'levelSurvey', sessionKey, previewOnly });
+      toast(res.message || 'Done.', 'success');
     } catch (err) {
       toast('Failed: ' + err.message, 'error');
     }
