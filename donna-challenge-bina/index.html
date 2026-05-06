@@ -4329,11 +4329,11 @@ async function showPickRoundScreen(email){
   // Render available rounds based on current Supabase state
   let rounds = [];
   try {
-    const { data } = await sb.from('rounds').select('id,name,start_date,end_date,status').in('id',['round1','round2']);
+    const { data } = await sb.from('rounds').select('id,name,start_date,end_date,status').in('id',['bina_r1','bina_r2']);
     rounds = data || [];
   } catch(e){}
-  const r1 = rounds.find(r => r.id==='round1');
-  const r2 = rounds.find(r => r.id==='round2');
+  const r1 = rounds.find(r => r.id==='bina_r1');
+  const r2 = rounds.find(r => r.id==='bina_r2');
   const r1Open = r1 && (r1.status==='upcoming' || r1.status==='active');
   const r2Open = r2 && (r2.status==='upcoming' || r2.status==='active');
   const monthsEn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -4543,15 +4543,15 @@ async function checkAuth(){
 // Day 2 = opens the day after, same NY time, and so on
 // Admin (round='both') = everything always open
 //
-// Round start_date comes from Supabase rounds table (single source of truth).
-// Cached in localStorage as 'donna-bina-round-dates' = {round1:'2026-04-20', round2:'2026-04-27'}.
+// Round start_date comes from Supabase rounds table (bina_r1 / bina_r2 rows).
+// Cached in localStorage as 'donna-bina-round-dates-v2' = {round1:'2026-05-11', round2:'2026-05-25'}.
 // Hardcoded fallback used only if Supabase is unreachable on first load.
 
-const FALLBACK_ROUND_DATES = { round1: '2026-04-20', round2: '2026-04-27' };
+const FALLBACK_ROUND_DATES = { round1: '2026-05-11', round2: '2026-05-25' };
 
 function getCachedRoundDates(){
   try{
-    const raw = localStorage.getItem('donna-bina-round-dates');
+    const raw = localStorage.getItem('donna-bina-round-dates-v2');
     if(raw){
       const parsed = JSON.parse(raw);
       if(parsed && parsed.round1 && parsed.round2) return parsed;
@@ -4563,39 +4563,36 @@ function getCachedRoundDates(){
 // Refresh round start_date from Supabase (called on login). Non-blocking.
 async function refreshRoundDates(){
   try{
-    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['round1','round2']);
+    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['bina_r1','bina_r2']);
     if(error || !data) return;
     const out = {};
-    data.forEach(r => { if(r.id && r.start_date) out[r.id] = r.start_date; });
+    data.forEach(r => {
+      if(r.id === 'bina_r1' && r.start_date) out.round1 = r.start_date;
+      if(r.id === 'bina_r2' && r.start_date) out.round2 = r.start_date;
+    });
     if(out.round1 && out.round2){
-      localStorage.setItem('donna-bina-round-dates', JSON.stringify(out));
+      localStorage.setItem('donna-bina-round-dates-v2', JSON.stringify(out));
     }
   }catch(e){ /* keep cached */ }
 }
 
 // Build the unlock Date for a given round id + day number.
-// NY time 14:00. EDT (Mar-Nov) = UTC-4 → 18:00Z. EST (Nov-Mar) = UTC-5 → 19:00Z.
-// We do the math at 12:00Z first, then shift to 14:00 NY using Intl.
+// Israel time 11:00. IDT (Mar-Oct) = UTC+3 → 08:00Z. IST (Oct-Mar) = UTC+2 → 09:00Z.
 function buildUnlockDate(startDateStr, dayNum){
   // startDateStr is YYYY-MM-DD. Day 1 = startDateStr itself; Day N = startDateStr + (N-1) days
   const [y,m,d] = startDateStr.split('-').map(Number);
-  // Work in UTC to avoid local-timezone drift during arithmetic
-  const base = new Date(Date.UTC(y, m-1, d, 12, 0, 0));
-  base.setUTCDate(base.getUTCDate() + (dayNum - 1));
-  // Compute the right UTC hour for 14:00 in America/New_York on that date (DST-safe).
-  // Strategy: format `base` as NY time, get the UTC-offset diff, and resolve.
-  const nyFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', hour12: false, timeZoneName: 'short'
-  });
-  const parts = nyFormatter.formatToParts(base);
-  const tzn = (parts.find(p => p.type === 'timeZoneName')||{}).value || 'EDT';
-  // Determine UTC offset for NY at this date. EDT=-4, EST=-5.
-  const offsetHours = tzn === 'EST' ? 5 : 4;
   const unlock = new Date(Date.UTC(y, m-1, d, 0, 0, 0));
   unlock.setUTCDate(unlock.getUTCDate() + (dayNum - 1));
-  unlock.setUTCHours(14 + offsetHours, 0, 0, 0); // 14:00 NY → (14+offset):00 UTC
+  // Detect IDT vs IST on the unlock date (DST-safe via Intl).
+  const ilFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jerusalem',
+    timeZoneName: 'short'
+  });
+  const parts = ilFormatter.formatToParts(unlock);
+  const tzn = (parts.find(p => p.type === 'timeZoneName')||{}).value || 'IDT';
+  // IDT = UTC+3 → 11:00 IL = 08:00 UTC. IST = UTC+2 → 11:00 IL = 09:00 UTC.
+  const utcHour = tzn.includes('IDT') ? 8 : 9;
+  unlock.setUTCHours(utcHour, 0, 0, 0);
   return unlock;
 }
 
@@ -4620,17 +4617,16 @@ function isDayUnlocked(dayNum){
   const check = localStorage.getItem('donna-bina-round-check') || '';
   const expectedCheck = btoa(round + ':donna2026');
   // If check doesn't match, someone tampered with localStorage.
-  // Don't silently downgrade to round1 (could wrongly demote round2 user). Show "pick round" instead.
   if(check !== expectedCheck) {
     return false;
   }
   // Admin always sees all days.
   if(round === 'both') return true;
-  // סבב 1 finished, all days remain open for them as a permanent archive.
-  if(round === 'round1') return true;
-  // סבב 2 + unknown rounds are gated to the current R2 day.
-  // (Set above via R1_R2_GATE_DAY.)
-  return dayNum <= R1_R2_GATE_DAY;
+  // Date-based unlock for all rounds (round1 + round2).
+  // Each day unlocks at 11:00 Israel time on its scheduled date.
+  const unlockDate = getDayUnlockDate(dayNum);
+  if(!unlockDate) return false;
+  return new Date() >= unlockDate;
 }
 
 function formatDate(d){
