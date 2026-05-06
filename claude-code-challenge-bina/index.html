@@ -2851,6 +2851,29 @@ section { position: relative; }
     .formula-result .term-word { font-size: 16px; }
 }
 
+/* ===== MOBILE TIGHT-UP (reduce empty space, faster scroll) ===== */
+@media (max-width: 768px) {
+    .solution-section,
+    .skills-section,
+    .features-section,
+    .who-section,
+    .about-section,
+    .nocode-section,
+    .roi-section,
+    .rounds-section,
+    .pricing-section { padding: 60px 0 !important; }
+    .timeline-section { padding: 60px 0 !important; }
+    .freeze-section { padding: 50px 0 !important; }
+    .final-cta { padding: 60px 0 !important; }
+    .question-callout { padding: 60px 24px !important; }
+    .section-header { margin: 0 auto 32px !important; }
+    .section-header h2 { font-size: 28px !important; line-height: 1.25 !important; }
+    .hero { padding-top: 30px !important; padding-bottom: 30px !important; }
+    h1 { font-size: 32px !important; line-height: 1.2 !important; }
+    /* Sticky CTA shouldn't cover bottom content */
+    body { padding-bottom: 80px; }
+}
+
 /* ===== STICKY CTA ===== */
 .sticky-cta {
     position: fixed;
@@ -3027,7 +3050,7 @@ section { position: relative; }
 
     <div class="wrap hero-inner">
         <h1>
-            <span data-en="Building Your First " data-he="בונים את עובד ה">Building Your First </span><span class="accent" data-en="AI Employee" data-he="AI הראשון שלכם">AI Employee</span><br><span data-en="in 5 Days with Claude Code" data-he="ב 5 ימים עם קלוד קוד">ב-5 ימים עם Claude Code</span>
+            <span data-en="Building Your First " data-he="בונים את עובד ">Building Your First </span><span class="accent" data-en="AI Employee" data-he="ה‑AI הראשון שלכם">AI Employee</span><br><span data-en="in 5 Days with Claude Code" data-he="ב‑5 ימים עם קלוד קוד">ב-5 ימים עם Claude Code</span>
         </h1>
 
         <!-- VSL VIDEO -->
@@ -3850,6 +3873,14 @@ section { position: relative; }
     </div>
 </section>
 
+<!-- ===== Sticky CTA (mobile + desktop) ===== -->
+<button id="stickyCTA" class="sticky-cta" type="button" data-payment-trigger="1" aria-label="הירשם לאתגר">
+    <span style="display:inline-flex; align-items:center; gap:8px;">
+        <span>🚀</span>
+        <span>הירשם לאתגר . ₪699</span>
+    </span>
+</button>
+
 <!-- ===== Payment Method Modal ===== -->
 <div id="pmmOverlay" class="pmm-overlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="pmm-modal" role="document">
@@ -4212,6 +4243,39 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// ===== Sticky CTA visibility =====
+(function() {
+    const sticky = document.getElementById('stickyCTA');
+    if (!sticky) return;
+    const hideZoneSelectors = ['.rounds-section', '.pricing-section', '.final-cta'];
+    let ticking = false;
+    function updateSticky() {
+        const scrollY = window.scrollY;
+        const hero = document.querySelector('.hero');
+        const heroBottom = hero ? hero.offsetTop + hero.offsetHeight - 100 : 600;
+        const docBottom = document.documentElement.scrollHeight - window.innerHeight - 100;
+        const nearBottom = scrollY >= docBottom;
+        const inHideZone = hideZoneSelectors.some(sel => {
+            const el = document.querySelector(sel);
+            if (!el) return false;
+            const top = el.offsetTop - 200;
+            const bottom = el.offsetTop + el.offsetHeight;
+            return scrollY >= top && scrollY <= bottom;
+        });
+        const modalOpen = document.getElementById('pmmOverlay')?.classList.contains('active');
+        if (scrollY > heroBottom && !inHideZone && !nearBottom && !modalOpen) {
+            sticky.classList.add('show');
+        } else {
+            sticky.classList.remove('show');
+        }
+        ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+        if (!ticking) { window.requestAnimationFrame(updateSticky); ticking = true; }
+    }, { passive: true });
+    updateSticky();
+})();
 
 // ===== Payment Method Modal =====
 const PAYMENT_LINKS = {
