@@ -4577,22 +4577,24 @@ async function refreshRoundDates(){
 }
 
 // Build the unlock Date for a given round id + day number.
-// Israel time 11:00. IDT (Mar-Oct) = UTC+3 → 08:00Z. IST (Oct-Mar) = UTC+2 → 09:00Z.
+// Israel time 11:00. Calculates UTC offset directly (browser-safe, no tzName string matching).
 function buildUnlockDate(startDateStr, dayNum){
   // startDateStr is YYYY-MM-DD. Day 1 = startDateStr itself; Day N = startDateStr + (N-1) days
   const [y,m,d] = startDateStr.split('-').map(Number);
   const unlock = new Date(Date.UTC(y, m-1, d, 0, 0, 0));
   unlock.setUTCDate(unlock.getUTCDate() + (dayNum - 1));
-  // Detect IDT vs IST on the unlock date (DST-safe via Intl).
-  const ilFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Jerusalem',
-    timeZoneName: 'short'
-  });
-  const parts = ilFormatter.formatToParts(unlock);
-  const tzn = (parts.find(p => p.type === 'timeZoneName')||{}).value || 'IDT';
-  // IDT = UTC+3 → 11:00 IL = 08:00 UTC. IST = UTC+2 → 11:00 IL = 09:00 UTC.
-  const utcHour = tzn.includes('IDT') ? 8 : 9;
-  unlock.setUTCHours(utcHour, 0, 0, 0);
+  // Calculate Jerusalem UTC offset for this specific date (DST-safe).
+  // Use noon UTC as reference to avoid midnight edge cases.
+  const refUTC = new Date(Date.UTC(
+    unlock.getUTCFullYear(), unlock.getUTCMonth(), unlock.getUTCDate(), 12, 0, 0
+  ));
+  const ilHour = parseInt(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jerusalem', hour: '2-digit', hour12: false
+  }).format(refUTC), 10);
+  // offset = ilHour - 12  (e.g. IDT=UTC+3 → ilHour=15 → offset=3)
+  const offsetHours = ilHour - 12;
+  // 11:00 Jerusalem = (11 - offsetHours) UTC
+  unlock.setUTCHours(11 - offsetHours, 0, 0, 0);
   return unlock;
 }
 
