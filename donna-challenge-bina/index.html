@@ -4451,7 +4451,7 @@ async function checkAuth(){
 // Cached in localStorage as 'donna-bina-round-dates-v2' = {round1:'2026-05-11', round2:'2026-05-25'}.
 // Hardcoded fallback used only if Supabase is unreachable on first load.
 
-const FALLBACK_ROUND_DATES = { round1: '2026-05-11', round2: '2026-05-25' };
+const FALLBACK_ROUND_DATES = { round1: '2026-05-09', round2: '2026-05-25' };
 
 function getCachedRoundDates(){
   try{
@@ -4621,12 +4621,22 @@ window.addEventListener('hashchange', () => {
 // Toast shown when user clicks a locked day tab.
 function showLockedToast(dayNum){
   const unlock = getDayUnlockDate(dayNum);
+  const lang = getLang();
   const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  const localStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: userTz, weekday: 'short', month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true
-  }).format(unlock);
-  const msg = 'Day ' + dayNum + ' opens ' + localStr + ' (your time)';
+  let msg;
+  if(lang === 'he'){
+    const weekday = new Intl.DateTimeFormat('he-IL', { timeZone: userTz, weekday: 'long' }).format(unlock);
+    const day = new Intl.DateTimeFormat('he-IL', { timeZone: userTz, day: 'numeric' }).format(unlock);
+    const month = new Intl.DateTimeFormat('he-IL', { timeZone: userTz, month: 'long' }).format(unlock);
+    const time = new Intl.DateTimeFormat('he-IL', { timeZone: userTz, hour: '2-digit', minute: '2-digit', hour12: false }).format(unlock);
+    msg = 'יום ' + dayNum + ' ייפתח ב' + weekday + ', ' + day + ' ב' + month + ' בשעה ' + time + ' (שעון מקומי)';
+  } else {
+    const localStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: userTz, weekday: 'short', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    }).format(unlock);
+    msg = 'Day ' + dayNum + ' opens ' + localStr + ' (your time)';
+  }
   let t = document.getElementById('locked-toast');
   if(!t){
     t = document.createElement('div');
