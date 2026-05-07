@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add a Second Email to Donna</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --white: #ffffff;
+    --border: #e2e0da;
+    --accent: #1a6b4a;
+    --accent-light: #eef6f1;
+    --text: #1a1a1a;
+    --muted: #888580;
+    --code-bg: #1e1e24;
+    --code-text: #d4d4d8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0 24px;
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 72px 0 100px;
+  }
+
+  /* Header */
+  header { margin-bottom: 48px; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid #c2ddd0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .tab {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--muted);
+    background: var(--white);
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeUp 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Step cards */
+  .step {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px 24px 16px;
+  }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid #c2ddd0;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .step-desc a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid #c2ddd0;
+  }
+  .step-desc a:hover { border-color: var(--accent); }
+
+  .substeps {
+    padding: 0 24px 20px 70px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .substep {
+    font-size: 14px;
+    color: #666360;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .substep::before {
+    content: '→';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #bbb8b2;
+    flex-shrink: 0;
+  }
+
+  /* Code block */
+  .code-wrap {
+    margin: 0 24px 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #d0cec8;
+  }
+
+  .code-bar {
+    background: #2a2a32;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .code-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .copy-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9dd4b8;
+    background: none;
+    border: 1px solid rgba(157,212,184,0.3);
+    padding: 3px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .copy-btn:hover { background: rgba(157,212,184,0.1); }
+  .copy-btn.copied { color: #fff; border-color: transparent; background: rgba(157,212,184,0.2); }
+
+  pre {
+    background: var(--code-bg);
+    padding: 20px;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--code-text);
+  }
+
+  .hl  { color: #9dd4b8; font-weight: 500; }
+  .dim { color: #666672; }
+  .str { color: #ffd580; }
+
+  /* Warning */
+  .warn {
+    margin: 0 24px 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #fffbeb;
+    border: 1px solid #f0d070;
+    font-size: 13px;
+    color: #856a20;
+    line-height: 1.6;
+  }
+  .warn strong { color: #a07820; }
+
+  /* Done box */
+  .done {
+    background: var(--accent-light);
+    border: 1.5px solid #c2ddd0;
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .done-check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    font-size: 13px;
+    margin-top: 1px;
+  }
+
+  .done-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .done-text {
+    font-size: 13px;
+    color: #5a7a6a;
+    line-height: 1.6;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #bbb8b2;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">Donna · Email Setup</div>
+    <h1>Add a Second Email to Donna</h1>
+    <p class="subtitle">Two steps. You get a password, Donna does the rest.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event,'gmail')">Gmail</button>
+    <button class="tab" onclick="switchTab(event,'outlook')">Outlook</button>
+  </div>
+
+  <!-- GMAIL -->
+  <div class="section active" id="section-gmail">
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Get an App Password from Google</div>
+          <div class="step-desc">The one thing only you can do — Google needs to confirm it's you.<br>
+            Go to <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a> (requires 2FA to be active).
+          </div>
+        </div>
+      </div>
+      <div class="substeps">
+        <div class="substep">Type any name (e.g. <strong>Donna</strong>) → click <strong>Create</strong></div>
+        <div class="substep">Copy the <strong>16-character code</strong> that appears</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Paste this to Donna — she handles everything else</div>
+          <div class="step-desc">Open Claude Code and send her this. Replace the two green parts.</div>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <span class="code-label">Prompt to paste</span>
+          <button class="copy-btn" onclick="copyCode(this,'gmail-prompt')">Copy</button>
+        </div>
+        <pre><code id="gmail-prompt"><span class="dim">I want to give you access to my second email account:</span>
+<span class="hl">[your@gmail.com]</span>
+
+<span class="dim">My Google App Password for this account is:</span>
+<span class="hl">[paste 16 chars here]</span>
+
+<span class="dim">Please:
+1. Build a Python IMAP client that lets you read,
+   search, and send emails from this account.
+   Save it to ~/Downloads/Claude/donna-imap/imap.py
+2. Test it — show me the last 5 emails.
+3. Add a section to my global CLAUDE.md so you
+   remember this account in every future session.</span></code></pre>
+      </div>
+    </div>
+
+    <div class="done">
+      <div class="done-check">✓</div>
+      <div>
+        <div class="done-title">That's it.</div>
+        <div class="done-text">Donna builds the script, tests it, and updates her own memory. From now on, in any session, in any folder — she knows about the second email.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OUTLOOK -->
+  <div class="section" id="section-outlook">
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Get an App Password from Microsoft</div>
+          <div class="step-desc">
+            Go to <a href="https://account.microsoft.com/security" target="_blank">account.microsoft.com/security</a>
+            → Advanced security options → App passwords (requires 2FA to be active).
+          </div>
+        </div>
+      </div>
+      <div class="substeps">
+        <div class="substep">Click <strong>Create a new app password</strong></div>
+        <div class="substep">Copy the password that appears</div>
+      </div>
+      <div class="warn">
+        <strong>Work / company email?</strong> Some Microsoft 365 Business accounts block this at the IT level. If it doesn't work, check with your IT team.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Paste this to Donna — she handles everything else</div>
+          <div class="step-desc">Open Claude Code and send her this. Replace the two green parts.</div>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <span class="code-label">Prompt to paste</span>
+          <button class="copy-btn" onclick="copyCode(this,'outlook-prompt')">Copy</button>
+        </div>
+        <pre><code id="outlook-prompt"><span class="dim">I want to give you access to my second email account:</span>
+<span class="hl">[your@outlook.com]</span>
+
+<span class="dim">My Microsoft App Password for this account is:</span>
+<span class="hl">[paste password here]</span>
+
+<span class="dim">Please:
+1. Build a Python IMAP client that lets you read,
+   search, and send emails from this account.
+   Use imap-mail.outlook.com port 993 SSL
+   and smtp-mail.outlook.com port 587 TLS.
+   Save it to ~/Downloads/Claude/donna-imap/imap.py
+2. Test it — show me the last 5 emails.
+3. Add a section to my global CLAUDE.md so you
+   remember this account in every future session.</span></code></pre>
+      </div>
+    </div>
+
+    <div class="done">
+      <div class="done-check">✓</div>
+      <div>
+        <div class="done-title">That's it.</div>
+        <div class="done-text">Donna builds the script, tests it, and updates her own memory. From now on, in any session, in any folder — she knows about the second email.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Donna · AI Challenge</span>
+    <span>Works with Gmail · Outlook · Yahoo · any provider</span>
+  </footer>
+
+</div>
+
+<script>
+  function switchTab(e, provider) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.getElementById('section-' + provider).classList.add('active');
+  }
+
+  function copyCode(btn, id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
