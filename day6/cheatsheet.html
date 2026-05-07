@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 6 . הפתק של ג'יי</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fffaf0;
+  --bg-card:#ffffff;
+  --orange:#f97316;
+  --orange-dark:#ea580c;
+  --orange-faint:#ffedd5;
+  --text:#1a1a1a;
+  --dim:#666;
+  --border:#e8e1d4;
+  --green:#15803d;
+  --red:#dc2626;
+  --blue:#2563eb;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Heebo','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  font-size:14px;
+  padding:16px;
+}
+.container{max-width:780px;margin:0 auto}
+
+/* English content stays LTR even in RTL doc */
+.en{direction:ltr;text-align:left;font-family:'Inter',-apple-system,sans-serif}
+
+/* Sticky timer */
+.timer{
+  position:sticky;top:0;z-index:10;
+  background:var(--orange);color:#fff;
+  padding:10px 16px;border-radius:10px;
+  margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 4px 12px rgba(249,115,22,0.3);
+  font-weight:600;
+}
+.timer .time{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.3rem;font-weight:700;
+}
+.timer .controls button{
+  background:rgba(255,255,255,0.2);
+  color:#fff;border:none;
+  padding:6px 12px;border-radius:6px;
+  font-family:inherit;font-weight:600;
+  cursor:pointer;font-size:0.85rem;
+  margin-left:6px;
+}
+.timer .controls button:hover{background:rgba(255,255,255,0.35)}
+
+/* Section card */
+.section{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+.section-head{
+  padding:12px 16px;
+  background:linear-gradient(to left,var(--orange-faint),transparent);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+  user-select:none;
+}
+.section-head:hover{background:linear-gradient(to left,#ffe0b8,#fff5e8)}
+.section-head .time-badge{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--orange);color:#fff;
+  padding:3px 8px;border-radius:6px;
+  font-size:0.78rem;font-weight:600;
+  white-space:nowrap;
+  direction:ltr;
+}
+.section-head h2{
+  font-size:1.05rem;font-weight:700;
+  flex:1;
+}
+.section-head .toggle{
+  font-size:0.85rem;color:var(--dim);
+  transition:transform 0.2s;
+}
+.section.collapsed .toggle{transform:rotate(-90deg)}
+.section-body{padding:16px;border-top:1px solid var(--border)}
+.section.collapsed .section-body{display:none}
+
+/* Pre-call checklist */
+.checklist{list-style:none}
+.checklist li{
+  padding:8px 0;display:flex;align-items:start;gap:10px;
+  border-bottom:1px dashed var(--border);
+}
+.checklist li:last-child{border-bottom:none}
+.checklist input[type="checkbox"]{
+  width:18px;height:18px;
+  accent-color:var(--orange);
+  margin-top:2px;flex-shrink:0;
+  cursor:pointer;
+}
+.checklist label{flex:1;cursor:pointer}
+.checklist input:checked + label{text-decoration:line-through;color:var(--dim)}
+
+/* Script blocks (English) */
+.script{
+  background:#fff8ec;
+  border-left:4px solid var(--orange);
+  padding:14px 16px;
+  border-radius:6px;
+  margin:12px 0;
+  font-style:italic;
+  color:#4a3520;
+  line-height:1.65;
+  direction:ltr;
+  text-align:left;
+  font-family:'Inter',sans-serif;
+}
+.script::before{content:'💬 ';font-style:normal;font-size:1.1em}
+.script strong{color:var(--orange-dark);font-style:normal}
+.script-label{
+  display:inline-block;
+  background:var(--orange-dark);color:#fff;
+  font-size:0.7rem;font-weight:700;
+  padding:2px 8px;border-radius:4px;
+  letter-spacing:0.05em;
+  margin-bottom:4px;
+}
+
+/* Favor block */
+.favor{
+  background:linear-gradient(135deg,#fff,#ffedd5);
+  border:2px solid var(--orange);
+  border-radius:12px;
+  padding:18px 20px;
+  margin:14px 0;
+  font-size:0.95rem;
+  line-height:1.7;
+  font-style:italic;
+  color:#3d2810;
+  position:relative;
+  direction:ltr;
+  text-align:left;
+  font-family:'Inter',sans-serif;
+}
+.favor::before{
+  content:'🎯 THE FAVOR (לדבר באנגלית, לשנן את הקצב)';
+  position:absolute;top:-12px;right:14px;
+  background:var(--orange);color:#fff;
+  font-style:normal;font-size:0.7rem;
+  padding:3px 10px;border-radius:6px;
+  letter-spacing:0.02em;font-weight:700;
+  font-family:'Heebo',sans-serif;
+  direction:rtl;
+}
+
+/* Prompts */
+.prompt{
+  background:#1a1a1a;color:#7dd3fc;
+  font-family:'JetBrains Mono',monospace;
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:0.82rem;
+  margin:8px 0;
+  position:relative;
+  cursor:pointer;
+  direction:ltr;
+  text-align:left;
+}
+.prompt::after{
+  content:'click to copy';
+  position:absolute;top:8px;left:10px;
+  font-size:0.65rem;color:#666;
+}
+.prompt:hover::after{color:#aaa}
+.prompt.copied::after{content:'✓ copied';color:#4ade80}
+
+/* QA */
+.qa{margin-bottom:14px;border-bottom:1px dashed var(--border);padding-bottom:14px}
+.qa:last-child{border-bottom:none;padding-bottom:0}
+.qa .q{font-weight:700;color:var(--orange-dark);margin-bottom:6px}
+.qa .a{color:var(--text);font-size:0.92rem}
+.qa .a code{
+  background:var(--orange-faint);color:var(--orange-dark);
+  padding:1px 6px;border-radius:4px;
+  font-family:'JetBrains Mono',monospace;font-size:0.85em;
+  direction:ltr;display:inline-block;
+}
+.qa .answer-en{
+  background:#fff8ec;border-right:3px solid var(--orange-faint);
+  padding:8px 12px;border-radius:4px;margin-top:6px;
+  direction:ltr;text-align:left;
+  font-family:'Inter',sans-serif;font-size:0.88rem;
+  color:#4a3520;
+}
+
+/* Links */
+.links{display:flex;flex-direction:column;gap:6px}
+.links a{
+  display:block;
+  color:var(--blue);text-decoration:none;
+  padding:8px 12px;background:#f0f6ff;
+  border-radius:6px;font-size:0.88rem;
+  border:1px solid #d6e3ff;
+  word-break:break-all;
+  direction:ltr;text-align:left;
+}
+.links a:hover{background:#e0eaff}
+.links a strong{
+  color:var(--text);display:block;margin-bottom:2px;
+  font-size:0.8rem;letter-spacing:0.02em;
+  font-family:'Heebo',sans-serif;direction:rtl;text-align:right;
+}
+
+/* Reminders */
+.reminders{
+  background:#fef9f3;
+  border-right:4px solid var(--orange);
+  padding:14px 16px;
+  border-radius:6px;
+}
+.reminders ul{list-style:none;margin:0}
+.reminders li{
+  padding:5px 0;font-size:0.9rem;color:#4a3520;
+}
+.reminders li::before{content:'• ';color:var(--orange);font-weight:700;margin-left:6px}
+
+/* Demo prompt names */
+.demo-name{
+  font-weight:700;color:var(--orange-dark);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.95rem;
+  margin-top:14px;margin-bottom:4px;
+  direction:ltr;text-align:left;
+}
+.demo-name:first-child{margin-top:0}
+
+/* Print */
+@media print{
+  .timer{display:none}
+  .section.collapsed .section-body{display:block !important}
+  body{background:#fff;font-size:11px}
+  .section{break-inside:avoid;page-break-inside:avoid}
+}
+
+/* Hint */
+.hint{
+  font-size:0.82rem;color:var(--dim);
+  margin-top:6px;font-style:italic;
+}
+
+.subtitle{
+  color:var(--dim);font-size:0.88rem;
+  margin-bottom:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TIMER -->
+  <div class="timer">
+    <span>⏱ Day 6 . הפתק שלך</span>
+    <span class="time" id="timer">00:00</span>
+    <span class="controls">
+      <button onclick="startTimer()">Start</button>
+      <button onclick="pauseTimer()">Pause</button>
+      <button onclick="resetTimer()">Reset</button>
+    </span>
+  </div>
+
+  <!-- 0. Pre-call -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">PRE</span>
+      <h2>לפני שאתה לוחץ Join</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <ul class="checklist">
+        <li><input type="checkbox" id="c1"><label for="c1">ההקלטה דולקת ב-Zoom (נקודה אדומה למעלה)</label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">דף הבונוס פתוח בטאב נוסף: <span class="en">jaygptpro.com/day6/bonus</span></label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">Claude Code Desktop פתוח עם דונה מוכנה (לדמואים)</label></li>
+        <li><input type="checkbox" id="c4"><label for="c4">התראות מושתקות (Slack, Mac, טלפון על שקט)</label></li>
+        <li><input type="checkbox" id="c5"><label for="c5">מים ליד</label></li>
+        <li><input type="checkbox" id="c6"><label for="c6">הפתק הזה בצד של חלון ה-Zoom</label></li>
+        <li><input type="checkbox" id="c7"><label for="c7">מצלמה + תאורה בסדר (בדיקה אחת)</label></li>
+        <li><input type="checkbox" id="c8"><label for="c8">רשימת המשתתפים מוכנה (לסבב הטסטמוניאלים)</label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1. Opening -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">0-5</span>
+      <h2>פתיחה . קבע את הטון</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: לאותת ש"זו לא הצגה. זה מאסטרמיינד."</p>
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        Good evening. So glad you're all here. Quick reality check before we start: <strong>this is not a presentation. This is a mastermind.</strong> You graduated. So today is about you, your problems, and what you've built. I'll show you a couple of new things at some point, and there's a favor I'll ask later. But first I want to hear from you.
+      </div>
+      <p class="hint">אחרי זה תזכיר: ~60 דקות, ההקלטה תצא, ולינקים יורדים לצ'אט תוך כדי.</p>
+    </div>
+  </section>
+
+  <!-- 2. Round of wins/struggles -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">5-15</span>
+      <h2>סבב 1 . הצלחות ותקיעות</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: לחמם את כולם + לזהות רגעי טסטמוניאל לעתיד.</p>
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        Let's do a quick round. <strong>1 to 2 minutes each.</strong> Two things: one thing that's working with Donna, and one thing you're stuck on. Doesn't have to be perfect. Just real. <strong>Who wants to start?</strong> Just unmute and go.
+      </div>
+      <div class="reminders">
+        <strong>תזכורות לעצמך:</strong>
+        <ul>
+          <li>אם דממה אחרי השאלה. תחכה 5 שניות. אל תציל. תמיד מישהו ידבר.</li>
+          <li>אם מישהו מתפזר מעבר ל-2 דק' . "Great . let me jump to the next person, we'll loop back."</li>
+          <li>הקשב לשורות שיכולות להיות טסטמוניאל. תסמן בראש "אני אחזור לזה".</li>
+          <li>אם 20+ אנשים. תעשה את הסבב בקבוצות של 3-4 ("just the first three to unmute").</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Open Q&A -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">15-30</span>
+      <h2>שאלות ותשובות פתוחות . הליבה</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: לפתור תקיעות אמיתיות. דמו על המסך אם צריך.</p>
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        OK, I'm hearing some common themes. <strong>Let's open the floor.</strong> What's confusing? What's broken? What questions do you have? Anything goes.
+      </div>
+
+      <h3 style="margin-top:16px;margin-bottom:8px;font-size:1rem">תשובות מוכנות לשאלות שחזרו:</h3>
+
+      <div class="qa">
+        <div class="q">"Routines לא מופיעים אצלי בסיידבר"</div>
+        <div class="a">שני פתרונות:
+          <br>1. פתח <code>claude.ai/code/routines</code> בדפדפן. צור את הראוטין שם.
+          <br>2. בדסקטופ, פתח שיחה חדשה והקלד <code>/schedule</code>. זה יוצר ראוטין בחשבון שלך.
+        </div>
+        <div class="answer-en">
+          <strong>EN:</strong> Two fixes. One: open <code>claude.ai/code/routines</code> in your browser and create the routine there. Two: in Desktop, open a new session and type <code>/schedule</code>. That creates a routine on your account.
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">"איך לחבר חשבון מייל שאינו Gmail?"</div>
+        <div class="a">
+          יש לך מדריך מלא ב-<a href="https://jaygptpro.com/donna-imap-guide.html" target="_blank" style="color:var(--blue);font-weight:600">jaygptpro.com/donna-imap-guide.html</a>. שלח אותו לצ'אט.
+          <br><br>תקציר: תגיד לדונה לבנות לך IMAP client לחשבון. היא תבקש שרת, פורט, וסיסמה. עובד עם כל ספק.
+        </div>
+        <div class="answer-en">
+          <strong>EN:</strong> I have a full guide at <strong>jaygptpro.com/donna-imap-guide.html</strong>. I'll drop it in chat. Short version: tell Donna to build you an IMAP client for that account. She'll ask for the server, port, and credentials. Works with any provider that supports IMAP.
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">"איך מתקינים את הסקילים החדשים?"</div>
+        <div class="a">
+          פתח את ה-zip. בפיינדר, <code>Cmd + Shift + .</code> כדי לראות תיקיות מוסתרות. גרור את <code>.claude/skills/</code> לתוך פרויקט הדונה שלך, ליד ה-<code>.claude/</code> הקיים. פתח Claude Code בתיקייה. זהו.
+        </div>
+        <div class="answer-en">
+          <strong>EN:</strong> Unzip. Press <code>Cmd + Shift + .</code> to see hidden folders. Drag <code>.claude/skills/</code> into your Donna project alongside your existing <code>.claude/</code>. Open Claude Code in that folder. Done.
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">"דונה לא נשמעת כמוני"</div>
+        <div class="a">
+          השתמש ב-<code>/learn</code> אחרי כל אינטראקציה. היא מעדכנת את <code>brain/Preferences/Style.md</code>. לוקח כמה שבועות עד שזה ממש יוצא טוב.
+        </div>
+        <div class="answer-en">
+          <strong>EN:</strong> Use <code>/learn</code> after every interaction. She updates <code>brain/Preferences/Style.md</code>. Takes a couple of weeks to really nail it.
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">"לסמוך עליה עם כסף / לשלוח מיילים?"</div>
+        <div class="a">
+          לא. היא מנסחת. אתה שולח. זה הכלל בכל הסקילים. אוטו-שליחה זה עוד שנה לפחות.
+        </div>
+        <div class="answer-en">
+          <strong>EN:</strong> No. She drafts. You send. That's the rule across all skills. Auto-send is a year away.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Bonus pack -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">30-40</span>
+      <h2>חבילת הבונוס . 11 סקילים חדשים</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: לתת להם את הדף ולעשות 1-2 דמואים מהמרשימים ביותר.</p>
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        Great. So you have 14 skills now. <strong>I want to give you 11 more today.</strong> Stuff I use every day that didn't make the starter kit. Open this in another tab: <strong>jaygptpro.com/day6/bonus</strong>. I'll drop it in chat. Download the zip. Drop the .claude/skills folder into your Donna project. Done. Let me show you 2 of my favorites quickly.
+      </div>
+
+      <h3 style="margin-top:14px;font-size:1rem">פרומפטים לדמו (לחץ להעתקה)</h3>
+
+      <div class="demo-name">/quality-check</div>
+      <div class="prompt" onclick="copyMe(this)">Check this LinkedIn post: "I'd be happy to share that we've been on an incredible journey to leverage AI to drive synergistic outcomes for our clients..."</div>
+      <p class="hint">דונה תקרע את זה לחתיכות. הקהל יצחק. דמו חזק.</p>
+
+      <div class="demo-name">/patterns</div>
+      <div class="prompt" onclick="copyMe(this)">analyze my last 30 days</div>
+      <p class="hint">רגע ה-WOW הכי חזק אם הדאטה שלך אמיתי. דפוסים על פגישות, מיילים, החלטות.</p>
+
+      <div class="demo-name">/subscriptions</div>
+      <div class="prompt" onclick="copyMe(this)">show my subscriptions</div>
+      <p class="hint">חיסכון של כסף = ROI אמיתי. תריץ אם הדאטה טעון.</p>
+
+      <div class="demo-name">/remember</div>
+      <div class="prompt" onclick="copyMe(this)">remember that we decided to focus on solo business owners as our main target for the next quarter, based on data showing they have 3x higher conversion than agencies</div>
+      <p class="hint">אחר כך: <code>/recall target audience</code>. שולפת מיד.</p>
+    </div>
+  </section>
+
+  <!-- 5. THE FAVOR -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">40-50</span>
+      <h2>🎯 הבקשה לטובה . הסקשן הכי חשוב</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: 5-15 טסטמוניאלים מוקלטים בעשר דקות.</p>
+
+      <div class="favor">
+        Hey, before we wrap up, <strong>I have a favor to ask.</strong> And I'll be straight with you. I'm launching another round of the challenge in a few days. <strong>Nothing sells it better than people who actually went through it.</strong>
+        <br><br>
+        I know making selfies and recording yourself is a pain. So while we're all here on Zoom: would each of you, when I call your name, take <strong>30 to 60 seconds</strong> and share two things:
+        <br><br>
+        <strong>1. What changed for you.</strong>
+        <br>
+        <strong>2. What you'd tell someone considering this.</strong>
+        <br><br>
+        The Zoom is recording. I'll cut clips for marketing. <strong>If you don't want to be on camera, just turn off your video and I won't include you.</strong> Fair?
+      </div>
+
+      <div class="reminders">
+        <strong>במהלך הסבב:</strong>
+        <ul>
+          <li>לך לפי שם פרטי, באלפבית. יותר קל מ"מי הבא?".</li>
+          <li>אם מישהו אומר "אני לא יודע מה להגיד": "Just one moment from the challenge that stuck with you. Anything."</li>
+          <li>חייך והנהן בזמן שמדברים. הם ייזונים מהאנרגיה שלך.</li>
+          <li>תודה לכל אחד בשם אחרי. "Thanks Sara, that meant a lot."</li>
+          <li>אל תנסה לגרום להם להגיד דברים מסוימים. אמיתי עוקף מלוטש.</li>
+          <li>השאיפה: 10-15 קליפים. גם 5 זה זהב.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Vault -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">50-55</span>
+      <h2>הכספת . הצעה רכה</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="subtitle">המטרה: להזכיר. לא לדחוף. לא להתנצל.</p>
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        Last 5 minutes. <strong>For those who want to keep going further with me.</strong> The Vault has the rest of my skills (35+ today, more every month), plus 1-on-1 calls with me, plus a community of people running this seriously. <strong>The coupon I gave you in the challenge is still active</strong>. I'm closing this round of the discount tonight. Page is jaygptpro.com/day6/bonus, the link is there too. <strong>Take it or leave it. No pressure.</strong>
+      </div>
+      <p class="hint">אל תתעכב. 30 שניות מקסימום. הקליפים שזה עתה אספת חשובים יותר מהפיץ' הזה.</p>
+    </div>
+  </section>
+
+  <!-- 7. Closing -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">55-60</span>
+      <h2>סיום</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <span class="script-label">EN . תגיד את זה:</span>
+      <div class="script">
+        OK. <strong>Recording will go out within the hour</strong> with the link to the bonus pack. Email me anything I didn't answer. Thank you for being here. <strong>This is what mastermind actually means.</strong> Real people, real problems, real help. See you on the next one.
+      </div>
+    </div>
+  </section>
+
+  <!-- LINKS -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">🔗</span>
+      <h2>לינקים להוריד לצ'אט</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="links">
+        <a href="https://jaygptpro.com/day6/bonus" target="_blank" onclick="copyText(this.href, this)">
+          <strong>דף הבונוס (העיקרי)</strong>
+          https://jaygptpro.com/day6/bonus
+        </a>
+        <a href="https://jaygptpro.com/day6/bonus-pack.zip" target="_blank" onclick="copyText(this.href, this)">
+          <strong>ZIP להורדה ישירה</strong>
+          https://jaygptpro.com/day6/bonus-pack.zip
+        </a>
+        <a href="https://jaygptpro.com/donna-imap-guide.html" target="_blank" onclick="copyText(this.href, this)">
+          <strong>מדריך IMAP (לשאלה על מייל לא-Gmail)</strong>
+          https://jaygptpro.com/donna-imap-guide.html
+        </a>
+        <a href="https://www.topdog.community/checkout/ai-vault" target="_blank" onclick="copyText(this.href, this)">
+          <strong>Checkout כספת</strong>
+          https://www.topdog.community/checkout/ai-vault
+        </a>
+        <a href="https://claude.ai/code/routines" target="_blank" onclick="copyText(this.href, this)">
+          <strong>דף Routines (לפתרון Q&A)</strong>
+          https://claude.ai/code/routines
+        </a>
+        <a href="mailto:info@jaygptpro.com" onclick="copyText('info@jaygptpro.com', this)">
+          <strong>המייל שלך (לתשובות)</strong>
+          info@jaygptpro.com
+        </a>
+      </div>
+      <p class="hint" style="margin-top:10px">לחיצה על כל אחד פותחת + מעתיקה את הקישור אוטומטית. הדבק לצ'אט של Zoom.</p>
+    </div>
+  </section>
+
+  <!-- REMINDERS -->
+  <section class="section">
+    <div class="section-head" onclick="toggle(this)">
+      <span class="time-badge">🧠</span>
+      <h2>תזכורות לעצמך</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="reminders">
+        <ul>
+          <li><strong>נשום.</strong> דממה זה בסדר. אל תמלא אותה.</li>
+          <li><strong>חייך</strong> כשאתה מבקש את הטובה. תסתכל ישר למצלמה.</li>
+          <li><strong>אל תתנצל</strong> על הבונוס, על הקופון, או על הזמן שלך.</li>
+          <li>אם שכחת מה הבא, פשוט תסתכל בדף הזה.</li>
+          <li>אם משהו נשבר בדמו, צחק ותגיד "this is real, that's why we're not in a presentation."</li>
+          <li><strong>הבקשה לטובה היא הדבר הכי יקר היום.</strong> אל תדלג עליה.</li>
+          <li>ההקלטה דולקת. אל תגיד דברים שלא היית רוצה בשיווק.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+function toggle(head){head.parentElement.classList.toggle('collapsed')}
+
+function copyMe(el){
+  const t = el.innerText;
+  navigator.clipboard.writeText(t).then(()=>{
+    el.classList.add('copied');
+    setTimeout(()=>el.classList.remove('copied'), 1500);
+  });
+}
+
+function copyText(t, el){
+  navigator.clipboard.writeText(t);
+  el.style.background = '#dcfce7';
+  setTimeout(()=>{el.style.background=''}, 800);
+}
+
+let secs = 0, tHandle = null;
+function fmt(s){
+  const m = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  return `${m}:${ss}`;
+}
+function tick(){
+  secs++;
+  document.getElementById('timer').textContent = fmt(secs);
+  const t = document.querySelector('.timer');
+  if(secs >= 50*60) t.style.background = '#dc2626';
+  else if(secs >= 40*60) t.style.background = '#15803d';
+  else if(secs >= 30*60) t.style.background = '#2563eb';
+  else if(secs >= 5*60) t.style.background = '#9333ea';
+  else t.style.background = 'var(--orange)';
+}
+function startTimer(){if(!tHandle) tHandle = setInterval(tick,1000)}
+function pauseTimer(){clearInterval(tHandle); tHandle=null}
+function resetTimer(){pauseTimer(); secs=0; document.getElementById('timer').textContent='00:00'; document.querySelector('.timer').style.background='var(--orange)'}
+</script>
+
+</body>
+</html>
