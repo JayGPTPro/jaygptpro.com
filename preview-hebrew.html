@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ג'יי מרגליות | מומחה שילוב AI לעסקים - גרסת סקירה</title>
+<script src="https://cdn.lordicon.com/lordicon.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1e;
+  --surface:#111827;
+  --card:rgba(17,24,39,0.85);
+  --card-hover:#1e293b;
+  --blue:#3b82f6;
+  --blue-light:#60a5fa;
+  --blue-dark:#2563eb;
+  --cyan:#06b6d4;
+  --violet:#8b5cf6;
+  --green:#10b981;
+  --text:#e2e8f0;
+  --dim:#94a3b8;
+  --bright:#ffffff;
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --radius:16px;
+  --radius-sm:10px;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Heebo',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.8;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 30% 0%,rgba(59,130,246,0.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 100%,rgba(139,92,246,0.04) 0%,transparent 50%);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:-1;opacity:0.015;pointer-events:none;background-image:repeating-conic-gradient(rgba(255,255,255,0.08) 0% 25%,transparent 0% 50%);background-size:4px 4px}
+.container{max-width:1120px;margin:0 auto;padding:0 clamp(20px,5vw,48px)}
+h1,h2,h3,h4{font-weight:800;letter-spacing:0;line-height:1.3}
+.mono{font-family:'JetBrains Mono',monospace}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--blue);display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.section-label::before{content:'';flex:1;height:1px;background:rgba(59,130,246,0.15)}
+.section-label::after{display:none}
+
+/* Review banner */
+.review-banner{background:linear-gradient(90deg,#f59e0b,#f97316);color:#000;text-align:center;padding:10px;font-weight:700;font-size:0.85rem;position:fixed;top:0;left:0;right:0;z-index:2000}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
+.reveal.v{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.08s}.d2{transition-delay:0.16s}.d3{transition-delay:0.24s}
+.d4{transition-delay:0.32s}.d5{transition-delay:0.4s}.d6{transition-delay:0.48s}
+
+.glass{background:var(--card);border:1px solid var(--glass-border);border-radius:var(--radius);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform 0.3s var(--ease),border-color 0.3s ease,box-shadow 0.3s ease}
+.glass:hover{transform:translateY(-4px);border-color:rgba(59,130,246,0.18);box-shadow:0 16px 48px rgba(0,0,0,0.25)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:0.95rem;padding:13px 26px;border-radius:12px;text-decoration:none;transition:all 0.3s var(--ease);cursor:pointer;border:none;font-family:inherit}
+.btn-blue{background:var(--blue);color:var(--bright);box-shadow:0 4px 16px rgba(59,130,246,0.3)}
+.btn-blue:hover{background:var(--blue-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,0.35)}
+.btn-ghost{background:var(--glass);color:var(--text);border:1px solid var(--glass-border)}
+.btn-ghost:hover{border-color:rgba(59,130,246,0.25);background:rgba(59,130,246,0.06)}
+
+.pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:5px 12px;border-radius:100px}
+.pill-blue{background:rgba(59,130,246,0.12);color:var(--blue-light);border:1px solid rgba(59,130,246,0.2)}
+.pill-violet{background:rgba(139,92,246,0.12);color:var(--violet);border:1px solid rgba(139,92,246,0.2)}
+.pill-green{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
+.pill-cyan{background:rgba(6,182,212,0.12);color:var(--cyan);border:1px solid rgba(6,182,212,0.2)}
+
+/* NAV */
+.nav{position:fixed;top:36px;left:0;right:0;z-index:1000;padding:14px 0;background:rgba(10,15,30,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid transparent;transition:transform 0.3s var(--ease),background 0.3s ease,border-color 0.3s ease}
+.nav.solid{background:rgba(10,15,30,0.95);border-color:var(--glass-border)}
+.nav.hidden{transform:translateY(-140%)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.2rem;font-weight:900;color:var(--blue-light);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:24px;list-style:none}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:0.85rem;font-weight:500;transition:color 0.2s}
+.nav-links a:hover{color:var(--bright)}
+.nav-cta{background:var(--blue);color:var(--bright);padding:8px 18px;border-radius:10px;font-weight:600;font-size:0.82rem;text-decoration:none;transition:all 0.2s;font-family:inherit}
+.nav-cta:hover{background:var(--blue-light)}
+.hamburger{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+.hamburger svg{width:24px;height:24px}
+.mobile-menu{display:none;position:fixed;top:92px;left:0;right:0;background:rgba(10,15,30,0.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);padding:20px;z-index:999}
+.mobile-menu.open{display:block}
+.mobile-menu a{display:block;padding:12px 0;color:var(--text);text-decoration:none;font-size:1rem;border-bottom:1px solid var(--glass-border)}
+.mobile-menu a:last-child{border:none}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:block}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;padding:160px 0 80px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:60px;align-items:center}
+.hero-text h1{font-size:clamp(2rem,4vw,3.2rem);color:var(--bright);margin-bottom:20px}
+.hero-text h1 .accent{color:var(--blue-light)}
+.hero-text .sub{font-size:1.05rem;color:var(--dim);margin-bottom:32px;max-width:500px;line-height:1.9}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+.hero-proof{display:flex;gap:20px;flex-wrap:wrap}
+.hero-proof .stat{font-size:0.82rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+.hero-proof .stat .num{color:var(--bright);font-weight:700}
+.hero-photo{position:relative;display:flex;justify-content:center}
+.hero-photo img{width:100%;max-width:400px;border-radius:18px;box-shadow:0 24px 64px rgba(59,130,246,0.12),0 0 0 1px rgba(255,255,255,0.06);object-fit:cover;aspect-ratio:1/1}
+.hero-photo::before{content:'';position:absolute;width:120%;height:120%;top:-10%;right:-10%;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 65%);z-index:-1;filter:blur(40px)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:-1}
+.orb-1{width:350px;height:350px;background:rgba(59,130,246,0.06);top:-5%;left:15%;animation:float 9s ease-in-out infinite}
+.orb-2{width:280px;height:280px;background:rgba(139,92,246,0.05);bottom:15%;right:5%;animation:float 11s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-25px) scale(1.04)}}
+@media(max-width:768px){
+  .hero{min-height:auto;padding:140px 0 60px}
+  .hero-grid{grid-template-columns:1fr;gap:36px;text-align:center}
+  .hero-ctas{justify-content:center}
+  .hero-proof{justify-content:center}
+  .hero-photo{order:-1}
+  .hero-photo img{max-width:260px}
+  .hero-text .sub{margin:0 auto 32px}
+}
+
+section{padding:100px 0}
+.section-dark{background:var(--surface)}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.about-content p{color:var(--dim);font-size:1rem;margin-bottom:14px}
+.about-content .quote{font-size:1.1rem;font-style:italic;color:var(--blue-light);border-right:3px solid var(--blue);padding-right:20px;margin:24px 0}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.stat-card{background:var(--card);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:22px;text-align:center;transition:border-color 0.3s}
+.stat-card:hover{border-color:rgba(59,130,246,0.2)}
+.stat-card .number{font-size:1.8rem;font-weight:900;color:var(--blue-light);display:block;margin-bottom:2px}
+.stat-card .label{font-size:0.75rem;color:var(--dim)}
+@media(max-width:768px){.about-grid{grid-template-columns:1fr}}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.svc{padding:30px;position:relative}
+.svc h3{font-size:1.1rem;color:var(--bright);margin:16px 0 8px}
+.svc p{color:var(--dim);font-size:0.9rem;line-height:1.8;margin-bottom:14px}
+.svc-link{color:var(--blue-light);text-decoration:none;font-size:0.83rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:gap 0.2s}
+.svc-link:hover{gap:9px}
+@media(max-width:768px){.services-grid{grid-template-columns:1fr}}
+
+/* PORTFOLIO */
+.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.proj{padding:26px;position:relative}
+.proj .accent-bar{position:absolute;top:0;right:18px;left:18px;height:2px;border-radius:0 0 2px 2px}
+.proj h3{font-size:1rem;color:var(--bright);margin:10px 0 8px}
+.proj p{color:var(--dim);font-size:0.83rem;line-height:1.8;margin-bottom:14px}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:'JetBrains Mono',monospace;font-size:0.62rem;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.04);color:var(--dim);border:1px solid rgba(255,255,255,0.06)}
+@media(max-width:900px){.port-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.port-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;padding-bottom:8px;scrollbar-width:none;direction:ltr}.proj{min-width:82%;scroll-snap-align:start;flex-shrink:0;direction:rtl}.port-grid::-webkit-scrollbar{display:none}}
+
+/* TESTIMONIALS */
+.test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:768px){.test-grid{grid-template-columns:1fr}}
+
+/* RESOURCES */
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.res{padding:22px;display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;cursor:pointer}
+.res:hover{transform:translateX(-4px)}
+.res-icon{width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.res h3{font-size:0.9rem;color:var(--bright);margin-bottom:3px}
+.res p{font-size:0.78rem;color:var(--dim)}
+.res-arrow{margin-inline-start:auto;color:var(--dim);transition:transform 0.2s,color 0.2s;flex-shrink:0;transform:scaleX(-1)}
+.res:hover .res-arrow{transform:scaleX(-1) translateX(4px);color:var(--blue-light)}
+@media(max-width:768px){.res-grid{grid-template-columns:1fr}}
+
+/* FOOTER */
+.footer{padding:56px 0 28px;border-top:1px solid var(--glass-border);background:var(--bg)}
+.footer-top{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:40px;margin-bottom:36px}
+.footer-brand{color:var(--blue-light);font-size:1.15rem;font-weight:900;margin-bottom:8px}
+.footer-tagline{color:var(--dim);font-size:0.85rem}
+.footer-links{list-style:none}
+.footer-links li{margin-bottom:7px}
+.footer-links a{color:var(--dim);text-decoration:none;font-size:0.85rem;transition:color 0.2s}
+.footer-links a:hover{color:var(--blue-light)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid var(--glass-border);flex-wrap:wrap;gap:14px}
+.footer-copy{color:var(--dim);font-size:0.75rem}
+.social-links{display:flex;gap:14px}
+.social-links a{color:var(--dim);text-decoration:none;font-size:1rem;transition:color 0.2s,transform 0.2s;display:flex}
+.social-links a:hover{color:var(--blue-light);transform:translateY(-2px)}
+.built-badge{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--dim);opacity:0.5}
+@media(max-width:768px){.footer-top{grid-template-columns:1fr;gap:24px}.footer-bottom{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<!-- REVIEW BANNER -->
+<div class="review-banner">גרסת סקירה בעברית בלבד. לא לפרסום. תן הערות ואני אתקן.</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">JAY GPT</a>
+    <ul class="nav-links">
+      <li><a href="#about">אודות</a></li>
+      <li><a href="#services">מה אני עושה</a></li>
+      <li><a href="#built">מה בניתי</a></li>
+      <li><a href="#resources">משאבים</a></li>
+      <li><a href="#" class="nav-cta">קבע שיחה</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="תפריט">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#about" onclick="closeMobile()">אודות</a>
+  <a href="#services" onclick="closeMobile()">מה אני עושה</a>
+  <a href="#built" onclick="closeMobile()">מה בניתי</a>
+  <a href="#resources" onclick="closeMobile()">משאבים</a>
+  <a href="#" onclick="closeMobile()" style="color:var(--blue-light);font-weight:600">קבע שיחה</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text reveal">
+        <span class="pill pill-blue" style="margin-bottom:20px">AI Integration Specialist</span>
+        <h1>הופך AI ל<span class="accent">יתרון תחרותי</span> אמיתי לעסקים</h1>
+        <p class="sub">אני עוזר לבעלי עסקים לצאת מעבר להייפ. דרך סדנאות מעשיות, קהילה פעילה ואסטרטגיה אישית, אני מראה איך באמת לשים את ה-AI לעבודה.</p>
+        <div class="hero-ctas">
+          <a href="#services" class="btn btn-blue">
+            מה אני עושה
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#" class="btn btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            הצטרף לקהילה
+          </a>
+        </div>
+        <div class="hero-proof">
+          <div class="stat"><span class="num">+500</span> חברי קהילה</div>
+          <div class="stat"><span class="num">+10</span> כלי AI שבניתי</div>
+          <div class="stat"><span class="num">8</span> שנים באיקומרס</div>
+        </div>
+      </div>
+      <div class="hero-photo reveal d2">
+        <img src="jay-hero.jpeg" alt="ג'יי מרגליות" loading="eager" width="400" height="400">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section-dark" id="about">
+  <div class="container">
+    <div class="reveal"><div class="section-label">אודות</div></div>
+    <div class="about-grid">
+      <div class="about-content reveal d1">
+        <h2 style="font-size:clamp(1.5rem,2.8vw,2rem);color:var(--bright);margin-bottom:18px">ממוכר באמזון לבונה AI</h2>
+        <p>לפני שמונה שנים הייתי מוכר באמזון שמחפש כל יתרון אפשרי. כשכלי AI התחילו להופיע, קפצתי פנימה עם שתי הרגליים. לא כמפתח. כבעל עסק שרוצה תוצאות.</p>
+        <p>בדקתי מאות כלים, בניתי יותר מ-10 בעצמי, וגיליתי משהו שרוב האנשים מפספסים: לא צריך לדעת לקודד כדי לבנות מערכות AI שבאמת מנהלות חלקים מהעסק שלך.</p>
+        <p class="quote">"אני לא מפתח. אני בעל עסק שלמד לגרום ל-AI לעבוד בשבילו, ועכשיו אני מלמד אחרים איך."</p>
+        <p>היום אני מוביל קהילה של 500+ בעלי עסקים, מעביר סדנאות מעשיות, מרצה בכנסים, ועוזר לחברות לשלב AI בפעילות היומיומית שלהן.</p>
+      </div>
+      <div class="reveal d2">
+        <div class="stats-row">
+          <div class="stat-card"><span class="number">+8</span><span class="label">שנים באיקומרס</span></div>
+          <div class="stat-card"><span class="number">+500</span><span class="label">חברי קהילה</span></div>
+          <div class="stat-card"><span class="number">+10</span><span class="label">כלי AI שבניתי</span></div>
+          <div class="stat-card"><span class="number">+50</span><span class="label">הרצאות וסדנאות</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT I DO -->
+<section id="services">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">מה אני עושה</div>
+      <h2 style="font-size:clamp(1.5rem,2.8vw,2rem);color:var(--bright);margin-bottom:36px">כמה דרכים שאני יכול לעזור לך</h2>
+    </div>
+    <div class="services-grid">
+
+      <div class="glass svc reveal d1">
+        <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" delay="2500" colors="primary:#3b82f6,secondary:#60a5fa" style="width:48px;height:48px"></lord-icon>
+        <h3>קהילת The AI Vault</h3>
+        <p>קהילה של 500+ מוכרי איקומרס ובעלי עסקים שמשלבים AI באופן פעיל. מפגשים שבועיים, כלים שנבדקו, מקרי בוחן אמיתיים, וקבוצת וואטסאפ עם עדכונים שוטפים.</p>
+        <a href="#" class="svc-link">הצטרף ל-Vault <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="glass svc reveal d2">
+        <lord-icon src="https://cdn.lordicon.com/aklfruoc.json" trigger="loop" delay="2500" colors="primary:#8b5cf6,secondary:#a78bfa" style="width:48px;height:48px"></lord-icon>
+        <h3>סדנאות ואתגרים</h3>
+        <p>תוכניות מעשיות שבהן אתה בונה כלי AI אמיתיים לעסק שלך. בלי מצגות, בלי תיאוריה. אתה יוצא עם משהו שעובד. נושאים קודמים: Claude Code, עוזרי AI, אוטומציה.</p>
+        <a href="#" class="svc-link">ראה תוכניות <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="glass svc reveal d3">
+        <lord-icon src="https://cdn.lordicon.com/aycieyht.json" trigger="loop" delay="2500" colors="primary:#06b6d4,secondary:#22d3ee" style="width:48px;height:48px"></lord-icon>
+        <h3>שיחות אסטרטגיה 1-on-1</h3>
+        <p>פגישות עומק שבהן אני בונה לך מפת דרכים אישית לשילוב AI בעסק הספציפי שלך. מזהים הזדמנויות עם ההשפעה הגבוהה ביותר ומתכננים בדיוק איך ליישם.</p>
+        <a href="#" class="svc-link">קבע שיחה <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="glass svc reveal d4">
+        <lord-icon src="https://cdn.lordicon.com/wloilxuq.json" trigger="loop" delay="2500" colors="primary:#10b981,secondary:#34d399" style="width:48px;height:48px"></lord-icon>
+        <h3>הרצאות ואירועים</h3>
+        <p>הרצאות בכנסים, דמואים חיים ומפגשי אורח. אני הופך מושגי AI מורכבים לצעדים מעשיים שכל בעל עסק יכול ליישם כבר למחרת.</p>
+        <a href="#" class="svc-link">צפה ביוטיוב <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- THINGS I'VE BUILT -->
+<section class="section-dark" id="built">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">פורטפוליו</div>
+      <h2 style="font-size:clamp(1.5rem,2.8vw,2rem);color:var(--bright);margin-bottom:36px">דברים שבניתי עם AI</h2>
+    </div>
+    <div class="port-grid">
+      <div class="glass proj reveal d1">
+        <div class="accent-bar" style="background:linear-gradient(90deg,var(--blue),var(--blue-light))"></div>
+        <span class="pill pill-blue" style="font-size:0.58rem">פעיל . שימוש יומיומי</span>
+        <h3>Donna: ראש סגל AI</h3>
+        <p>54 מיומנויות אוטומטיות. מנהלת את המייל, היומן והמשימות שלי. שולחת תדריך בוקר וסיכום ערב כל יום. נבנתה לגמרי עם Claude Code.</p>
+        <div class="tags"><span class="tag">Claude Code</span><span class="tag">MCP</span><span class="tag">אוטומציה</span></div>
+      </div>
+      <div class="glass proj reveal d2">
+        <div class="accent-bar" style="background:linear-gradient(90deg,var(--green),#34d399)"></div>
+        <h3>בוט משימות בוואטסאפ</h3>
+        <p>שלח הודעה קולית בוואטסאפ, קבל משימה באסנה. AI מחלץ את הפרטים, מאשר ויוצר. עובד בעברית ובאנגלית.</p>
+        <div class="tags"><span class="tag">WhatsApp API</span><span class="tag">Asana</span><span class="tag">Claude AI</span></div>
+      </div>
+      <div class="glass proj reveal d3">
+        <div class="accent-bar" style="background:linear-gradient(90deg,var(--violet),#a78bfa)"></div>
+        <h3>Daily Me</h3>
+        <p>העיתון האישי שלי ב-AI. אוסף חדשות לפי התחומים שמעניינים אותי, פעמיים ביום, עם מזג אוויר ויומן מובנים.</p>
+        <div class="tags"><span class="tag">AI אצירה</span><span class="tag">אוטומציה</span><span class="tag">אישי</span></div>
+      </div>
+      <div class="glass proj reveal d4">
+        <div class="accent-bar" style="background:linear-gradient(90deg,var(--cyan),#22d3ee)"></div>
+        <span class="pill pill-cyan" style="font-size:0.58rem">קוד פתוח</span>
+        <h3>AI Website Cloner</h3>
+        <p>תכוון לכל URL. הוא מפרק את העיצוב ובונה אותו מחדש עם סוכני AI שעובדים במקביל. קוד פתוח בגיטהאב.</p>
+        <div class="tags"><span class="tag">קוד פתוח</span><span class="tag">Claude Code</span><span class="tag">Next.js</span></div>
+      </div>
+      <div class="glass proj reveal d5">
+        <div class="accent-bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
+        <h3>Prompt Vault</h3>
+        <p>אפליקציה לניהול פרומפטים לקהילה. שמור, שתף, דרג וארגן פרומפטים לפי קטגוריות.</p>
+        <div class="tags"><span class="tag">קהילה</span><span class="tag">ווב אפ</span><span class="tag">פרודוקטיביות</span></div>
+      </div>
+      <div class="glass proj reveal d6">
+        <div class="accent-bar" style="background:linear-gradient(90deg,#ec4899,#f472b6)"></div>
+        <h3>מערכת סרטוני נדל"ן</h3>
+        <p>סרטוני נכסים של 45 שניות מתמונות. אווטאר מציג, B-roll קולנועי, אנימציית מפה. נבנה לתחום ה-Wholesale.</p>
+        <div class="tags"><span class="tag">Video AI</span><span class="tag">נדל"ן</span><span class="tag">HeyGen</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">המלצות</div>
+      <lord-icon src="https://cdn.lordicon.com/jkzgajyr.json" trigger="loop" delay="3000" colors="primary:#3b82f6,secondary:#10b981" style="width:48px;height:48px;margin-bottom:6px"></lord-icon>
+      <h2 style="font-size:clamp(1.5rem,2.8vw,2rem);color:var(--bright);margin-bottom:36px">מה אנשים אומרים</h2>
+    </div>
+    <div class="test-grid">
+      <div class="glass reveal d1" style="padding:26px">
+        <div style="color:var(--blue-light);font-size:0.85rem;margin-bottom:14px;letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote style="color:var(--dim);font-size:0.9rem;font-style:italic;line-height:1.9;margin-bottom:18px;position:relative"><span style="position:absolute;top:-18px;right:-6px;font-size:3.5rem;color:rgba(59,130,246,0.08);font-style:normal;line-height:1">&#x201C;</span>"ג'יי עזר לי לשלב AI בכל הפעילות שלי. הכל אוטומטי ומבצע טוב יותר מתמיד."</blockquote>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:var(--bright)">SM</div>
+          <div><div style="font-weight:600;font-size:0.85rem;color:var(--bright)">Sarah M.</div><div style="font-size:0.72rem;color:var(--dim)">מוכרת באמזון, 7 ספרות</div></div>
+        </div>
+      </div>
+      <div class="glass reveal d2" style="padding:26px">
+        <div style="color:var(--blue-light);font-size:0.85rem;margin-bottom:14px;letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote style="color:var(--dim);font-size:0.9rem;font-style:italic;line-height:1.9;margin-bottom:18px;position:relative"><span style="position:absolute;top:-18px;right:-6px;font-size:3.5rem;color:rgba(139,92,246,0.08);font-style:normal;line-height:1">&#x201C;</span>"הכלים והטיפים שג'יי חולק הם דברים שלעולם לא הייתי מוצא לבד. שינה לגמרי את איך שאני עובד."</blockquote>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:var(--bright)">MR</div>
+          <div><div style="font-weight:600;font-size:0.85rem;color:var(--bright)">Mike R.</div><div style="font-size:0.72rem;color:var(--dim)">בעל עסק איקומרס</div></div>
+        </div>
+      </div>
+      <div class="glass reveal d3" style="padding:26px">
+        <div style="color:var(--blue-light);font-size:0.85rem;margin-bottom:14px;letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote style="color:var(--dim);font-size:0.9rem;font-style:italic;line-height:1.9;margin-bottom:18px;position:relative"><span style="position:absolute;top:-18px;right:-6px;font-size:3.5rem;color:rgba(16,185,129,0.08);font-style:normal;line-height:1">&#x201C;</span>"סוף סוף מישהו שהופך AI למשהו מעשי. הגישה של ג'יי עזרה לי ליישם פתרונות שבאמת מזיזים את המחט."</blockquote>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:var(--bright)">LK</div>
+          <div><div style="font-weight:600;font-size:0.85rem;color:var(--bright)">Lisa K.</div><div style="font-size:0.72rem;color:var(--dim)">בעלת מותג</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<section class="section-dark" id="resources">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">משאבים</div>
+      <h2 style="font-size:clamp(1.4rem,2.5vw,1.7rem);color:var(--bright);margin-bottom:30px">תוכן חינמי להתחלה</h2>
+    </div>
+    <div class="res-grid">
+      <a href="#" class="glass res reveal d1">
+        <div class="res-icon" style="background:rgba(59,130,246,0.1)">
+          <lord-icon src="https://cdn.lordicon.com/aycieyht.json" trigger="loop" delay="3000" colors="primary:#3b82f6,secondary:#60a5fa" style="width:24px;height:24px"></lord-icon>
+        </div>
+        <div><h3>Daily Claude Hacks</h3><p>טיפי AI קצרים כל יום</p></div>
+        <svg class="res-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#" class="glass res reveal d2">
+        <div class="res-icon" style="background:rgba(239,68,68,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
+        </div>
+        <div><h3>ערוץ יוטיוב</h3><p>הדרכות מלאות והרצאות מכנסים</p></div>
+        <svg class="res-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#" class="glass res reveal d3">
+        <div class="res-icon" style="background:rgba(16,185,129,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div><h3>קבוצת וואטסאפ</h3><p>כלים, פרומפטים ומקרי בוחן שבועיים</p></div>
+        <svg class="res-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">JAY GPT</div>
+        <p class="footer-tagline">עוזר לבעלי עסקים לשים את ה-AI לעבודה.</p>
+      </div>
+      <div>
+        <ul class="footer-links">
+          <li><a href="#about">אודות</a></li>
+          <li><a href="#services">מה אני עושה</a></li>
+          <li><a href="#">AI Vault</a></li>
+          <li><a href="#">קבע שיחה</a></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="footer-links">
+          <li><a href="#">Daily Claude Hacks</a></li>
+          <li><a href="#">יוטיוב</a></li>
+          <li><a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2026 Jay GPT PRO LLC. כל הזכויות שמורות.</div>
+      <div class="social-links">
+        <a href="#" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg></a>
+        <a href="#" aria-label="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+        <a href="#" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a>
+        <a href="#" aria-label="TikTok"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.88 2.89 2.89 0 0 1 2.88-2.88c.28 0 .56.04.82.11v-3.5a6.37 6.37 0 0 0-.82-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.81a8.27 8.27 0 0 0 4.76 1.5V6.86a4.85 4.85 0 0 1-1-.17z"/></svg></a>
+        <a href="#" aria-label="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
+      </div>
+      <div class="built-badge">נבנה עם AI</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('v')})},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+const nav=document.getElementById('nav');let lastY=0,ticking=false;
+window.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{const y=window.scrollY;nav.classList.toggle('hidden',y>100&&y>lastY);nav.classList.toggle('solid',y>80);lastY=y;ticking=false});ticking=true}},{passive:true});
+document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.toggle('open'));
+function closeMobile(){document.getElementById('mobileMenu').classList.remove('open')}
+</script>
+</body>
+</html>
