@@ -243,6 +243,92 @@ body{
   line-height:1.55;font-style:italic;
 }
 .skill-detail strong{color:var(--orange-dark);font-style:normal}
+
+/* COPY BOX . unified style for anything Jay needs to copy */
+.copy-box{
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin:8px 0;
+  overflow:hidden;
+}
+.copy-box.block{flex-direction:column}
+.copy-box .text{
+  flex:1;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.85rem;
+  direction:ltr;text-align:left;
+  word-break:break-all;
+  color:var(--text);
+  padding:10px 14px;
+  line-height:1.5;
+  background:#fafafa;
+}
+.copy-box.block .text{
+  white-space:pre-wrap;font-size:0.83rem;
+  border-bottom:1px solid var(--border);
+  max-height:280px;overflow-y:auto;
+}
+.copy-box .copy-btn{
+  background:var(--orange);
+  color:#fff;border:none;
+  padding:0 18px;
+  font-family:'Heebo',sans-serif;
+  font-weight:700;font-size:0.88rem;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all 0.2s;
+  display:flex;align-items:center;gap:6px;
+}
+.copy-box.block .copy-btn{padding:10px}
+.copy-box .copy-btn:hover{background:var(--orange-dark)}
+.copy-box .copy-btn.copied{background:var(--green)}
+.copy-box .copy-btn::before{content:'📋';font-size:1em}
+.copy-box .copy-btn.copied::before{content:'✓'}
+
+/* Link with copy + open */
+.link-row{
+  display:flex;align-items:stretch;gap:0;
+  background:#fff;border:1px solid var(--border);
+  border-radius:8px;margin-bottom:6px;overflow:hidden;
+}
+.link-row .label{
+  padding:10px 14px;flex:1;
+  display:flex;flex-direction:column;
+  gap:3px;min-width:0;
+}
+.link-row .label .he{
+  font-size:0.88rem;font-weight:600;color:var(--text);
+}
+.link-row .label .url{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;color:var(--blue);
+  direction:ltr;text-align:left;
+  word-break:break-all;
+}
+.link-row .actions{display:flex}
+.link-row button, .link-row a.btn{
+  border:none;padding:0 14px;
+  font-family:'Heebo',sans-serif;
+  font-weight:700;font-size:0.82rem;
+  cursor:pointer;
+  white-space:nowrap;
+  display:flex;align-items:center;gap:5px;
+  text-decoration:none;
+  border-right:1px solid var(--border);
+  transition:all 0.2s;
+}
+.link-row .copy-btn{background:var(--orange);color:#fff}
+.link-row .copy-btn:hover{background:var(--orange-dark)}
+.link-row .copy-btn.copied{background:var(--green)}
+.link-row .copy-btn::before{content:'📋'}
+.link-row .copy-btn.copied::before{content:'✓'}
+.link-row .open-btn{background:#f0f6ff;color:var(--blue)}
+.link-row .open-btn:hover{background:#e0eaff}
+.link-row .open-btn::before{content:'🔗'}
 </style>
 </head>
 <body>
@@ -375,13 +461,19 @@ body{
       <div class="script">
         רבים שאלו איך לחבר חשבון מייל שאינו Gmail. הפתרון: <strong>תגידו לדונה לבנות לכם IMAP client לחשבון.</strong> היא תבקש שרת, פורט, וסיסמה. עובד עם כל ספק. בניתי לכם מדריך מלא, אני זורק לצ'אט. <strong>jaygptpro.com/donna-imap-guide.html</strong>
       </div>
-      <p class="hint">📋 לזרוק לצ'אט עכשיו: <span class="en" style="font-family:monospace">https://jaygptpro.com/donna-imap-guide.html</span></p>
+      <div class="copy-box">
+        <span class="text">https://jaygptpro.com/donna-imap-guide.html</span>
+        <button class="copy-btn" onclick="copyBox(this)">העתק לצ'אט</button>
+      </div>
 
       <h3 style="margin-top:18px;margin-bottom:8px;color:var(--orange-dark)">פתרון 2 . Routines לא מופיעים</h3>
       <div class="script">
         השני שחזר הרבה: Routines לא מופיעים בסיידבר אצל חלק מכם. <strong>שני פתרונות.</strong> אחד: פותחים <strong>claude.ai/code/routines</strong> בדפדפן, יוצרים את הראוטין שם. שתיים: בדסקטופ, פותחים שיחה חדשה ומקלידים <strong>/schedule</strong>. זה יוצר ראוטין בחשבון שלכם.
       </div>
-      <p class="hint">📋 לזרוק לצ'אט: <span class="en" style="font-family:monospace">https://claude.ai/code/routines</span></p>
+      <div class="copy-box">
+        <span class="text">https://claude.ai/code/routines</span>
+        <button class="copy-btn" onclick="copyBox(this)">העתק לצ'אט</button>
+      </div>
 
     </div>
   </section>
@@ -554,7 +646,10 @@ body{
       <div class="script" style="margin-top:14px">
         <strong>הכל מוכן להורדה כאן:</strong> <span class="en">jaygptpro.com/day6/bonus</span>. אני זורק לצ'אט. <strong>הוראות התקנה ב-README שבתוך ה-zip.</strong> 2 דקות וכל הסקילים אצלכם.
       </div>
-      <p class="hint">📋 לזרוק לצ'אט עכשיו: <span class="en" style="font-family:monospace">https://jaygptpro.com/day6/bonus</span></p>
+      <div class="copy-box">
+        <span class="text">https://jaygptpro.com/day6/bonus</span>
+        <button class="copy-btn" onclick="copyBox(this)">העתק לצ'אט</button>
+      </div>
     </div>
   </section>
 
@@ -580,8 +675,9 @@ body{
       <span class="toggle">▼</span>
     </div>
     <div class="section-body">
-      <p class="subtitle">לחץ להעתקה. הדבק ב-Zoom chat ברגע שהסשן מתחיל. כל הלינקים שיעלו במהלך הסשן.</p>
-      <div class="prompt" onclick="copyMe(this)" style="white-space:pre-wrap;line-height:1.6">Welcome to Day 6 🎁 . here are all the links we'll talk about today (save this message):
+      <p class="subtitle">לחץ "העתק" והדבק ב-Zoom chat ברגע שהסשן מתחיל. כל הלינקים שיעלו במהלך הסשן.</p>
+      <div class="copy-box block">
+        <div class="text">Welcome to Day 6 🎁 . here are all the links we'll talk about today (save this message):
 
 📧 Connect a non-Gmail email to Donna (the IMAP guide):
 https://jaygptpro.com/donna-imap-guide.html
@@ -598,6 +694,8 @@ https://www.topdog.community/checkout/ai-vault?coupon=Q8812X
 Replay + bonus pack will be in your inbox within an hour after we finish.
 
 Questions: info@jaygptpro.com</div>
+        <button class="copy-btn" onclick="copyBox(this)">העתק את כל ההודעה לצ'אט של Zoom</button>
+      </div>
       <p class="hint">💡 ההמלצה: זרוק את זה בהתחלה ואז שכח. מי שמצטרף מאוחר רואה הכל, מי שיוצא מוקדם לא מפספס.</p>
     </div>
   </section>
@@ -610,33 +708,73 @@ Questions: info@jaygptpro.com</div>
       <span class="toggle">▼</span>
     </div>
     <div class="section-body">
-      <div class="links">
-        <a href="https://jaygptpro.com/donna-imap-guide.html" target="_blank" onclick="copyText(this.href, this)">
-          <strong>1. מדריך IMAP (פתרון מייל לא-Gmail)</strong>
-          https://jaygptpro.com/donna-imap-guide.html
-        </a>
-        <a href="https://claude.ai/code/routines" target="_blank" onclick="copyText(this.href, this)">
-          <strong>2. דף Routines (פתרון לתקלה בסיידבר)</strong>
-          https://claude.ai/code/routines
-        </a>
-        <a href="https://www.topdog.community/checkout/ai-vault?coupon=Q8812X" target="_blank" onclick="copyText(this.href, this)">
-          <strong>3. Vault Checkout עם הקופון מוחל</strong>
-          https://www.topdog.community/checkout/ai-vault?coupon=Q8812X
-        </a>
-        <a href="https://jaygptpro.com/day6/bonus" target="_blank" onclick="copyText(this.href, this)">
-          <strong>4. דף הבונוס (חבילת הסקילים)</strong>
-          https://jaygptpro.com/day6/bonus
-        </a>
-        <a href="https://jaygptpro.com/day6/bonus-pack.zip" target="_blank" onclick="copyText(this.href, this)">
-          <strong>4א. הורדת ZIP ישירה</strong>
-          https://jaygptpro.com/day6/bonus-pack.zip
-        </a>
-        <a href="mailto:info@jaygptpro.com" onclick="copyText('info@jaygptpro.com', this)">
-          <strong>המייל שלך (לתשובות)</strong>
-          info@jaygptpro.com
-        </a>
+      <div class="link-row">
+        <div class="label">
+          <span class="he">1. מדריך IMAP (פתרון מייל לא-Gmail)</span>
+          <span class="url">https://jaygptpro.com/donna-imap-guide.html</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'https://jaygptpro.com/donna-imap-guide.html')">העתק</button>
+          <a class="open-btn" href="https://jaygptpro.com/donna-imap-guide.html" target="_blank">פתח</a>
+        </div>
       </div>
-      <p class="hint" style="margin-top:10px">לחיצה על כל אחד פותחת + מעתיקה את הקישור. הדבק לצ'אט של Zoom.</p>
+
+      <div class="link-row">
+        <div class="label">
+          <span class="he">2. דף Routines (פתרון לתקלה בסיידבר)</span>
+          <span class="url">https://claude.ai/code/routines</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'https://claude.ai/code/routines')">העתק</button>
+          <a class="open-btn" href="https://claude.ai/code/routines" target="_blank">פתח</a>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <div class="label">
+          <span class="he">3. Vault Checkout עם הקופון מוחל</span>
+          <span class="url">https://www.topdog.community/checkout/ai-vault?coupon=Q8812X</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'https://www.topdog.community/checkout/ai-vault?coupon=Q8812X')">העתק</button>
+          <a class="open-btn" href="https://www.topdog.community/checkout/ai-vault?coupon=Q8812X" target="_blank">פתח</a>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <div class="label">
+          <span class="he">4. דף הבונוס (חבילת הסקילים)</span>
+          <span class="url">https://jaygptpro.com/day6/bonus</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'https://jaygptpro.com/day6/bonus')">העתק</button>
+          <a class="open-btn" href="https://jaygptpro.com/day6/bonus" target="_blank">פתח</a>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <div class="label">
+          <span class="he">5. הורדת ZIP ישירה</span>
+          <span class="url">https://jaygptpro.com/day6/bonus-pack.zip</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'https://jaygptpro.com/day6/bonus-pack.zip')">העתק</button>
+          <a class="open-btn" href="https://jaygptpro.com/day6/bonus-pack.zip" target="_blank">פתח</a>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <div class="label">
+          <span class="he">המייל שלך (לתשובות)</span>
+          <span class="url">info@jaygptpro.com</span>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" onclick="copyBox(this, 'info@jaygptpro.com')">העתק</button>
+          <a class="open-btn" href="mailto:info@jaygptpro.com">פתח</a>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:10px">💡 לחיצה על "העתק" שמה את הלינק בלוח. אז הדבק ב-Zoom chat.</p>
     </div>
   </section>
 
@@ -680,6 +818,30 @@ function copyText(t, el){
   navigator.clipboard.writeText(t);
   el.style.background = '#dcfce7';
   setTimeout(()=>{el.style.background=''}, 800);
+}
+
+function copyBox(btn, customText){
+  // For .copy-box: text is in the previous sibling .text element
+  // For .link-row: text is passed in as customText
+  let text = customText;
+  if(!text){
+    const box = btn.closest('.copy-box');
+    if(box){
+      const textEl = box.querySelector('.text');
+      if(textEl) text = textEl.innerText;
+    }
+  }
+  if(!text) return;
+
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = btn.innerText;
+    btn.classList.add('copied');
+    btn.innerText = 'הועתק!';
+    setTimeout(()=>{
+      btn.classList.remove('copied');
+      btn.innerText = orig;
+    }, 1500);
+  });
 }
 
 let secs = 0, tHandle = null;
