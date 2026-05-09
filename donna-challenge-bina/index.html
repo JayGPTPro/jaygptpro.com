@@ -4556,9 +4556,12 @@ function isDayUnlocked(dayNum){
   if(round === 'both') return true;
   // Date-based unlock for all rounds (round1 + round2).
   // Each day unlocks at 11:00 Israel time on its scheduled date.
+  // Ops buffer: actually open 20 minutes EARLY (10:40 IL) so Jay has time to fix
+  // any issue before the 11:00 announcement. Display/toast still shows 11:00.
   const unlockDate = getDayUnlockDate(dayNum);
   if(!unlockDate) return false;
-  return new Date() >= unlockDate;
+  const earlyUnlock = new Date(unlockDate.getTime() - 20 * 60 * 1000);
+  return new Date() >= earlyUnlock;
 }
 
 function formatDate(d){
