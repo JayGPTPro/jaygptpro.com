@@ -385,6 +385,74 @@ img { display: block; max-width: 100%; }
     opacity: 0.6;
 }
 
+/* ===== AMBIENT MESSAGE STREAM (floating chat bubbles) ===== */
+.msg-stream {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+.msg-bubble {
+    position: absolute;
+    background: rgba(20, 20, 32, 0.78);
+    border: 1.5px solid rgba(249, 115, 22, 0.35);
+    color: rgba(255, 200, 150, 0.95);
+    padding: 9px 16px;
+    border-radius: 18px;
+    font-size: 13.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 20px rgba(249, 115, 22, 0.12);
+    opacity: 0;
+    transform: translateY(28px) scale(0.85);
+    transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+    letter-spacing: 0.1px;
+    will-change: opacity, transform;
+}
+.msg-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: rgba(20, 20, 32, 0.78);
+    border-right: 1.5px solid rgba(249, 115, 22, 0.35);
+    border-bottom: 1.5px solid rgba(249, 115, 22, 0.35);
+    transform: rotate(45deg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.msg-bubble.msg-tail-left::after {
+    right: auto;
+    left: 24px;
+}
+.msg-bubble.in {
+    opacity: 0.95;
+    transform: translateY(0) scale(1);
+    animation: msgFloat 7s ease-in-out infinite;
+}
+@keyframes msgFloat {
+    0%, 100% { transform: translateY(0) rotate(-0.8deg); }
+    50% { transform: translateY(-10px) rotate(0.8deg); }
+}
+.msg-bubble.out {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.92);
+}
+@media (prefers-reduced-motion: reduce) {
+    .msg-bubble, .msg-bubble.in { animation: none; transition: opacity 0.4s ease; }
+}
+@media (max-width: 768px) {
+    .msg-bubble {
+        font-size: 12px;
+        padding: 7px 13px;
+    }
+}
+
 @media (max-width: 768px) {
     .hero-title { letter-spacing: -1px; }
     .hero-dates {
@@ -1805,6 +1873,9 @@ section { position: relative; }
 </head>
 <body>
 
+<!-- Ambient message stream (floating chat bubbles, no people - just the buzz) -->
+<div class="msg-stream" aria-hidden="true"></div>
+
 <!-- Claude logo SVG symbol (reused throughout) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
@@ -2365,6 +2436,110 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 });
 
 // Registration form handled by Ravpage embed (no custom JS needed)
+
+// ===== AMBIENT MESSAGE STREAM (floating chat bubbles) =====
+(function initMsgStream() {
+    const stream = document.querySelector('.msg-stream');
+    if (!stream) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const MESSAGES = [
+        'קלוד קוד!',
+        'תראו מה בניתי',
+        'השתמשתי בזה לאוטומציה',
+        'העבודה שלי נהייתה מהירה',
+        'הצלחתי להפעיל את זה',
+        'חסך לי שעות',
+        'Claude Code',
+        'זה משנה הכל',
+        'פשוט וואו',
+        'אני מאוהב מזה',
+        'בניתי אתר ב-3 דקות',
+        'הוא עושה הכל בשבילי',
+        'התחבר לג׳ימייל שלי',
+        'שילבתי את זה ביומן',
+        'איך לא הכרתי קודם?',
+        'תפסיקו לעבוד קשה',
+        'זה כמו קסם',
+        'AI שעובד באמת'
+    ];
+
+    const isMobile = window.innerWidth < 768;
+    const NUM_BUBBLES = isMobile ? 9 : 14;
+    // Edge zones only (avoid blocking central content)
+    const LEFT_ZONE = [2, 22];   // 2% to 22% from left
+    const RIGHT_ZONE = [70, 92]; // 70% to 92% from left (RTL viewer left of viewport)
+    const Y_RANGE = [8, 82];     // 8% to 82% of viewport height
+
+    const usedSlots = [];
+    function pickSlot(zone) {
+        // Avoid overlapping with previously placed bubbles
+        for (let tries = 0; tries < 30; tries++) {
+            const x = zone[0] + Math.random() * (zone[1] - zone[0]);
+            const y = Y_RANGE[0] + Math.random() * (Y_RANGE[1] - Y_RANGE[0]);
+            const tooClose = usedSlots.some(s => Math.abs(s.x - x) < 18 && Math.abs(s.y - y) < 14);
+            if (!tooClose) {
+                usedSlots.push({ x, y });
+                return { x, y };
+            }
+        }
+        return { x: zone[0] + Math.random() * (zone[1] - zone[0]), y: Y_RANGE[0] + Math.random() * (Y_RANGE[1] - Y_RANGE[0]) };
+    }
+
+    const bubbles = [];
+    const docHeight = () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+
+    // Spread bubbles across the scroll progress
+    for (let i = 0; i < NUM_BUBBLES; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        bubble.textContent = MESSAGES[i % MESSAGES.length];
+        const zone = i % 2 === 0 ? LEFT_ZONE : RIGHT_ZONE;
+        const slot = pickSlot(zone);
+        bubble.style.left = slot.x + '%';
+        bubble.style.top = slot.y + '%';
+        bubble.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
+        // Tail direction (right by default, flip for left-edge bubbles)
+        if (zone === LEFT_ZONE) bubble.classList.add('msg-tail-left');
+
+        // Each bubble has a scroll window where it appears
+        const start = (i / NUM_BUBBLES) * 0.9 + Math.random() * 0.04;
+        const length = 0.13 + Math.random() * 0.1;
+        bubble.dataset.start = start.toFixed(3);
+        bubble.dataset.end = (start + length).toFixed(3);
+
+        stream.appendChild(bubble);
+        bubbles.push(bubble);
+    }
+
+    let rafPending = false;
+    function update() {
+        rafPending = false;
+        const progress = window.scrollY / docHeight();
+        bubbles.forEach(b => {
+            const s = parseFloat(b.dataset.start);
+            const e = parseFloat(b.dataset.end);
+            if (progress >= s && progress <= e) {
+                b.classList.add('in');
+                b.classList.remove('out');
+            } else if (progress > e) {
+                b.classList.remove('in');
+                b.classList.add('out');
+            } else {
+                b.classList.remove('in', 'out');
+            }
+        });
+    }
+    function onScroll() {
+        if (!rafPending) {
+            rafPending = true;
+            requestAnimationFrame(update);
+        }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+})();
 </script>
 
 </body>
