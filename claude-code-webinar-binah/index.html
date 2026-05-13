@@ -16,39 +16,39 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg: #f5f5f7;
-    --bg-2: #ffffff;
-    --bg-3: #fafafc;
-    --bg-soft: #eeeef2;
-    --bg-cream: #fff9f2;
-    --bg-dark: #0a0a14;
-    --border: #e5e5eb;
-    --border-hi: #d4d4dc;
-    --text: #0a0a0f;
-    --text-2: #2a2a35;
-    --text-3: #55556a;
-    --text-4: #8a8a98;
-    --text-5: #b0b0ba;
+    --bg: #0a0a12;
+    --bg-2: #14141f;
+    --bg-3: #1c1c28;
+    --bg-soft: #1a1a26;
+    --bg-cream: #1f1a14;
+    --bg-dark: #050509;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-hi: rgba(255, 255, 255, 0.18);
+    --text: #ffffff;
+    --text-2: #e4e4ec;
+    --text-3: #b8b8c8;
+    --text-4: #8a8a9a;
+    --text-5: #5a5a6a;
     --orange: #f97316;
     --orange-2: #fb923c;
     --orange-3: #fbbf24;
     --orange-dark: #ea580c;
     --orange-darker: #c2410c;
     --orange-light: #ffedd5;
-    --orange-soft: rgba(249, 115, 22, 0.08);
-    --orange-glow: rgba(249, 115, 22, 0.2);
+    --orange-soft: rgba(249, 115, 22, 0.12);
+    --orange-glow: rgba(249, 115, 22, 0.3);
     --claude: #d97757;
-    --green: #16a34a;
-    --green-soft: #dcfce7;
-    --red: #dc2626;
-    --red-soft: #fee2e2;
-    --purple: #8b5cf6;
-    --shadow-sm: 0 1px 3px rgba(20, 20, 40, 0.04), 0 1px 2px rgba(20, 20, 40, 0.03);
-    --shadow: 0 4px 12px rgba(20, 20, 40, 0.05), 0 2px 4px rgba(20, 20, 40, 0.04);
-    --shadow-lg: 0 20px 50px rgba(20, 20, 40, 0.08), 0 8px 20px rgba(20, 20, 40, 0.04);
-    --shadow-xl: 0 40px 80px rgba(20, 20, 40, 0.1), 0 15px 30px rgba(20, 20, 40, 0.06);
-    --shadow-orange: 0 20px 50px rgba(249, 115, 22, 0.25), 0 10px 20px rgba(249, 115, 22, 0.15);
-    --shadow-orange-lg: 0 30px 80px rgba(249, 115, 22, 0.4), 0 15px 30px rgba(249, 115, 22, 0.25);
+    --green: #22c55e;
+    --green-soft: rgba(34, 197, 94, 0.15);
+    --red: #ef4444;
+    --red-soft: rgba(239, 68, 68, 0.15);
+    --purple: #a78bfa;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6), 0 8px 20px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 40px 80px rgba(0, 0, 0, 0.7), 0 15px 30px rgba(0, 0, 0, 0.5);
+    --shadow-orange: 0 20px 50px rgba(249, 115, 22, 0.4), 0 10px 20px rgba(249, 115, 22, 0.25);
+    --shadow-orange-lg: 0 30px 80px rgba(249, 115, 22, 0.55), 0 15px 30px rgba(249, 115, 22, 0.35);
     --radius: 20px;
 }
 
@@ -158,12 +158,40 @@ img { display: block; max-width: 100%; }
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(10,10,15,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(10,10,15,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
     background-size: 64px 64px;
     mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, black 0%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, black 0%, transparent 75%);
     pointer-events: none;
+}
+
+/* Hero banner image (replaces text title) */
+.hero-banner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto 36px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    animation: fadeUp 0.8s ease both;
+    position: relative;
+}
+.hero-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.hero-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05);
+    border-radius: 24px;
+}
+@media (max-width: 768px) {
+    .hero-banner { margin-bottom: 28px; border-radius: 18px; }
 }
 
 .hero-inner {
@@ -1231,14 +1259,50 @@ section { position: relative; }
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: white;
+    background: var(--bg-2);
     border: 1.5px solid var(--orange);
-    color: var(--orange-dark);
+    color: var(--orange-2);
     padding: 8px 16px;
     border-radius: 100px;
     font-size: 13px;
     font-weight: 700;
     box-shadow: var(--shadow-sm);
+}
+
+/* Email check note (below registration form) */
+.email-check-note {
+    margin-top: 22px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(249,115,22,0.05));
+    border: 1.5px solid rgba(249,115,22,0.35);
+    border-radius: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    box-shadow: 0 6px 20px rgba(249,115,22,0.08);
+}
+.email-check-note .email-check-icon {
+    color: var(--orange-2);
+    flex-shrink: 0;
+    margin-top: 3px;
+    filter: drop-shadow(0 0 8px rgba(249,115,22,0.5));
+}
+.email-check-note .email-check-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text-2);
+}
+.email-check-note .email-check-text strong:first-child {
+    color: var(--orange-2);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: 0.1px;
+}
+.email-check-note .email-check-text strong {
+    color: var(--text);
+    font-weight: 800;
 }
 .form-container {
     display: none;
@@ -1553,39 +1617,8 @@ section { position: relative; }
     <svg class="claude-star cs-hero-3" aria-hidden="true"><use href="#claude-star"/></svg>
 
     <div class="wrap hero-inner">
-        <h1><span class="accent">קלוד קוד.</span><br>הכלי שמשנה את כל הכללים של AI.</h1>
-
-        <p class="hero-sub">
-            עד היום שאלתם את ה<strong>AI</strong>. הוא ענה.<br>
-            ואתם <strong>עשיתם את העבודה.</strong><br>
-            עכשיו? אתם מבקשים. <span class="hl">הוא עושה.</span>
-        </p>
-
-        <div class="hero-hosts">
-            <div class="hero-hosts-avatars">
-                <div class="avatar a1" style="background-image: url('webinar-assets/jay-profile.png'); background-position: center 20%; background-size: cover;"></div>
-                <div class="avatar a2" style="background-image: url('webinar-assets/mandy-profile.png'); background-position: center 30%; background-size: cover;"></div>
-            </div>
-            <span>ג'יי מרגליות <span class="with-text">+</span> מנדי קוריץ</span>
-        </div>
-
-        <div class="hero-chips">
-            <div class="chip chip-highlight">
-                <span class="chip-icon">📅</span>
-                ראשון 17.5 ב-21:00
-            </div>
-            <div class="chip chip-highlight">
-                <span class="chip-icon">📅</span>
-                רביעי 20.5 ב-11:00
-            </div>
-            <div class="chip">
-                <span class="chip-icon">💻</span>
-                בזום, חינם
-            </div>
-            <div class="chip">
-                <span class="chip-icon">⏱️</span>
-                90 דקות
-            </div>
+        <div class="hero-banner">
+            <img src="webinar-assets/banner.png" alt="וובינר Claude Code עם ג'יי מרגליות ומנדי קוריץ. ראשון 17.5 ב-21:00 או רביעי 20.5 ב-11:00" loading="eager" fetchpriority="high">
         </div>
 
         <div class="hero-cta">
@@ -1748,7 +1781,7 @@ section { position: relative; }
                 <span class="demo-emoji">🛒</span>
                 <h3>שולט בדפדפן בשבילכם</h3>
                 <p>מילוי עגלת קניות ברמי לוי, ניתוח ביקורות בית קפה בגוגל מפות, יצירת חשבונית במערכת. <strong>הסמן זז לבד. אתם רק מסתכלים.</strong></p>
-                <span class="demo-wow">🤯 כמו ללוות עוזר אישי</span>
+                <span class="demo-wow">🤯 כמו עוזר אישי לידכם</span>
             </div>
 
             <div class="demo-card reveal reveal-d4">
@@ -1804,7 +1837,7 @@ section { position: relative; }
             <div class="who-card reveal reveal-d3">
                 <span class="who-icon">👔</span>
                 <h3>חולמים על עוזר אישי</h3>
-                <p>רוצים ראש אישי שינהל יומן, מיילים, משימות ומידע? בוובינר נראה בדיוק איך בונים עוזר AI כזה.</p>
+                <p>רוצים עוזר אישי שינהל לכם יומן, מיילים ומשימות? בוובינר נראה בדיוק איך בונים עוזר AI כזה.</p>
             </div>
         </div>
     </div>
@@ -1878,7 +1911,7 @@ section { position: relative; }
             ראשון 17.5 ב-21:00 או רביעי 20.5 ב-11:00. שמרו מקום עכשיו.
         </p>
         <a href="#registration" class="btn-primary">
-            בטחו לי את המקום שלי
+            שמרו לי מקום עכשיו
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 5v14M5 12l7 7 7-7"/>
             </svg>
@@ -1908,14 +1941,25 @@ section { position: relative; }
                 <p>בחרו את המועד הנוח לכם. אחרי ההרשמה תקבלו מייל אישור עם לינק לזום ותזכורת אוטומטית לפני.</p>
             </div>
 
-            <div class="date-tabs" role="tablist" aria-label="בחירת מועד" style="display: flex; gap: 10px; padding: 0 22px; margin-bottom: 18px; flex-wrap: wrap;">
-                <button type="button" class="date-tab active" data-target="reg-iframe-sun" role="tab" aria-selected="true" style="flex: 1 1 200px; min-width: 0; padding: 14px 16px; border-radius: 14px; border: 2px solid #ff8a4c; background: rgba(255, 138, 76, 0.12); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.4;">
-                    <span style="display: block; font-size: 12px; font-weight: 600; color: #ff8a4c; margin-bottom: 4px;">אפשרות 1</span>
-                    יום ראשון, 17.5 ב-21:00
+            <div class="date-selector-label">
+                <span class="ds-arrow">👇</span>
+                בחרו מועד
+            </div>
+
+            <div class="date-tabs" role="tablist" aria-label="בחירת מועד">
+                <button type="button" class="date-tab active" data-target="reg-iframe-sun" role="tab" aria-selected="true">
+                    <span class="date-tab-badge">אפשרות 1</span>
+                    <div class="date-tab-day">יום ראשון</div>
+                    <div class="date-tab-date">17 במאי</div>
+                    <div class="date-tab-hebrew">בשעה</div>
+                    <div class="date-tab-time">21:00</div>
                 </button>
-                <button type="button" class="date-tab" data-target="reg-iframe-wed" role="tab" aria-selected="false" style="flex: 1 1 200px; min-width: 0; padding: 14px 16px; border-radius: 14px; border: 2px solid rgba(255, 138, 76, 0.3); background: rgba(255, 255, 255, 0.03); color: #e8e8e8; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.4;">
-                    <span style="display: block; font-size: 12px; font-weight: 600; color: #ff8a4c; margin-bottom: 4px;">אפשרות 2</span>
-                    יום רביעי, 20.5 ב-11:00
+                <button type="button" class="date-tab" data-target="reg-iframe-wed" role="tab" aria-selected="false">
+                    <span class="date-tab-badge">אפשרות 2</span>
+                    <div class="date-tab-day">יום רביעי</div>
+                    <div class="date-tab-date">20 במאי</div>
+                    <div class="date-tab-hebrew">בשעה</div>
+                    <div class="date-tab-time">11:00</div>
                 </button>
             </div>
 
@@ -1924,14 +1968,14 @@ section { position: relative; }
                 <iframe id="reg-iframe-wed" class="reg-iframe" src="form-wed.html" frameborder="0" scrolling="no" style="width: 100%; height: 420px; border: none; display: none; background: transparent;"></iframe>
             </div>
 
-            <div class="email-check-note" style="margin: 18px 22px 22px; padding: 16px 18px; background: rgba(255, 138, 76, 0.08); border: 1px solid rgba(255, 138, 76, 0.25); border-radius: 14px; display: flex; gap: 12px; align-items: flex-start;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff8a4c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true">
+            <div class="email-check-note">
+                <svg class="email-check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                     <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                <div style="font-size: 15px; line-height: 1.55; color: #e8e8e8;">
-                    <strong style="color: #ff8a4c; display: block; margin-bottom: 4px;">חשוב. בדקו את המייל מיד אחרי ההרשמה</strong>
-                    לפעמים האישור נופל לתיקיית קידומי מכירות או ספאם. כדאי לוודא שקיבלתם אותו, כי יחד איתו מגיע <strong>מדריך ההתקנה המצולם</strong> שתצטרכו לפני הוובינר.
+                <div class="email-check-text">
+                    <strong>חשוב. בדקו את המייל מיד אחרי ההרשמה</strong>
+                    לפעמים האישור נופל לתיקיית קידומי מכירות או ספאם. ודאו שקיבלתם אותו, כי יחד איתו מגיע <strong>מדריך ההתקנה המצולם</strong> שתצטרכו לפני הוובינר.
                 </div>
             </div>
         </div>
@@ -1960,9 +2004,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const active = t === tab;
                 t.classList.toggle('active', active);
                 t.setAttribute('aria-selected', active ? 'true' : 'false');
-                t.style.borderColor = active ? '#ff8a4c' : 'rgba(255, 138, 76, 0.3)';
-                t.style.background = active ? 'rgba(255, 138, 76, 0.12)' : 'rgba(255, 255, 255, 0.03)';
-                t.style.color = active ? '#fff' : '#e8e8e8';
             });
 
             iframes.forEach(function(f) {
