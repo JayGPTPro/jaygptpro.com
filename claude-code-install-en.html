@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Install Claude Code | Jay Margaliot</title>
+<meta name="description" content="3 installs. 10 minutes. Everything you need to get Claude Code running on your computer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #f5f5f7;
+    --bg-2: #ffffff;
+    --bg-3: #fafafc;
+    --bg-soft: #eeeef2;
+    --bg-cream: #fff9f2;
+    --bg-dark: #0a0a14;
+    --border: #e5e5eb;
+    --border-hi: #d4d4dc;
+    --text: #0a0a0f;
+    --text-2: #2a2a35;
+    --text-3: #55556a;
+    --text-4: #8a8a98;
+    --orange: #f97316;
+    --orange-2: #fb923c;
+    --orange-dark: #ea580c;
+    --orange-light: #ffedd5;
+    --orange-soft: rgba(249, 115, 22, 0.08);
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --blue: #2563eb;
+    --blue-soft: #dbeafe;
+    --red: #dc2626;
+    --shadow-sm: 0 1px 3px rgba(20,20,40,0.04), 0 1px 2px rgba(20,20,40,0.03);
+    --shadow: 0 4px 12px rgba(20,20,40,0.05), 0 2px 4px rgba(20,20,40,0.04);
+    --shadow-lg: 0 20px 50px rgba(20,20,40,0.08), 0 8px 20px rgba(20,20,40,0.04);
+    --shadow-orange: 0 12px 30px rgba(249,115,22,0.25);
+    --radius: 20px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.55); } 70% { box-shadow: 0 0 0 16px rgba(249,115,22,0); } 100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); } }
+@keyframes floatSlow { 0%, 100% { transform: translate(0,0) rotate(0deg); } 33% { transform: translate(20px,-30px) rotate(8deg); } 66% { transform: translate(-15px,20px) rotate(-6deg); } }
+@keyframes iconBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes popIn { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.15) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+@keyframes glowPulse { 0%, 100% { box-shadow: 0 12px 30px rgba(249,115,22,0.25); } 50% { box-shadow: 0 12px 40px rgba(249,115,22,0.45); } }
+@keyframes glowPulseRed { 0%, 100% { box-shadow: 0 6px 14px rgba(220,38,38,0.35); } 50% { box-shadow: 0 6px 24px rgba(220,38,38,0.6); } }
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.2,0.8,0.2,1), transform 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.wrap-sm { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+/* PROGRESS BAR */
+.scroll-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--orange) 0%, var(--orange-dark) 100%); z-index: 300; transition: width 0.1s linear; }
+
+/* NAV */
+.topnav { position: sticky; top: 0; z-index: 100; background: rgba(245,245,247,0.88); backdrop-filter: saturate(140%) blur(14px); border-bottom: 1px solid var(--border); }
+.topnav-inner { max-width: 1080px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+.brand span { color: var(--orange); }
+.topnav-right { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-3); font-weight: 500; }
+.topnav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); animation: pulseRing 2s infinite; }
+
+/* HERO */
+.hero { padding: 80px 0 60px; text-align: center; background: radial-gradient(ellipse at top, var(--orange-soft) 0%, transparent 60%); position: relative; overflow: hidden; }
+.hero-blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.55; pointer-events: none; z-index: 0; }
+.hero-blob.b1 { width: 380px; height: 380px; background: rgba(249,115,22,0.35); top: -120px; right: -100px; animation: floatSlow 18s ease-in-out infinite; }
+.hero-blob.b2 { width: 280px; height: 280px; background: rgba(251,191,36,0.3); bottom: -80px; left: -60px; animation: floatSlow 22s ease-in-out infinite reverse; }
+.hero-blob.b3 { width: 200px; height: 200px; background: rgba(217,119,87,0.25); top: 40%; left: 30%; animation: floatSlow 26s ease-in-out infinite; }
+.hero > .wrap { position: relative; z-index: 1; }
+
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--bg-2); border: 1px solid var(--border-hi); border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--text-3); margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+.hero-eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); animation: pulseRing 2s infinite; }
+.hero h1 { font-size: clamp(36px, 5.5vw, 62px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 22px; }
+.hero h1 .accent { background: linear-gradient(120deg, var(--orange-dark) 0%, var(--orange) 50%, var(--orange-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: clamp(17px, 2vw, 20px); color: var(--text-3); max-width: 600px; margin: 0 auto 36px; line-height: 1.6; }
+.hero-byline { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-3); background: var(--bg-2); border: 1px solid var(--border); padding: 8px 16px; border-radius: 999px; margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+.hero-byline b { color: var(--text); font-weight: 700; }
+.hero-byline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+
+/* STEPPER */
+.stepper { margin: 40px auto 0; padding: 22px 28px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 640px; }
+.stepper-item { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-3); flex: 1; justify-content: center; }
+.stepper-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--orange-light); color: var(--orange-dark); font-weight: 800; font-size: 14px; flex-shrink: 0; }
+.stepper-divider { flex: 0 0 24px; height: 2px; background: var(--border); border-radius: 2px; }
+
+/* STEP CARDS */
+.steps-section { padding: 72px 0 40px; }
+.step-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 32px; transition: box-shadow 0.3s, transform 0.3s; }
+.step-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.step-card-header { padding: 28px 32px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 18px; }
+.step-badge { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%); color: #fff; box-shadow: var(--shadow-orange); flex-shrink: 0; animation: glowPulse 3s ease-in-out infinite; }
+.step-badge svg { width: 30px; height: 30px; }
+.step-num-chip { position: absolute; top: -8px; right: -8px; background: var(--bg-2); color: var(--orange-dark); border: 2px solid var(--orange); border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
+.step-title-block { flex: 1; }
+.step-title-block h2 { font-size: clamp(20px, 3vw, 26px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 6px; }
+.step-time { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-4); font-weight: 600; }
+.step-purpose { margin-top: 12px; font-size: 15px; color: var(--text-3); line-height: 1.6; }
+.step-purpose b { color: var(--text); font-weight: 700; }
+
+.step-card-body { padding: 28px 32px 32px; }
+
+/* CONNECTOR */
+.step-connector { height: 48px; display: flex; align-items: center; justify-content: center; margin: -16px 0; position: relative; z-index: 0; }
+.step-connector::before { content: ''; width: 2px; height: 100%; background: repeating-linear-gradient(to bottom, var(--orange) 0 6px, transparent 6px 12px); opacity: 0; transform: scaleY(0); transform-origin: top; transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.4,0,0.2,1); }
+.step-connector.in::before { opacity: 0.6; transform: scaleY(1); }
+.step-connector::after { content: '↓'; position: absolute; bottom: -4px; color: var(--orange); font-size: 14px; font-weight: 800; background: var(--bg); padding: 0 6px; opacity: 0; transition: opacity 0.6s ease 0.4s; }
+.step-connector.in::after { opacity: 0.7; }
+
+/* OS TABS */
+.os-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.os-tab { display: flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: 2px solid var(--border); background: var(--bg-3); color: var(--text-3); transition: all 0.2s; }
+.os-tab.active-mac { border-color: var(--text-3); background: var(--bg-soft); color: var(--text); }
+.os-tab.active-win { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); }
+.os-tab:hover { transform: translateY(-1px); }
+.os-panel { display: none; }
+.os-panel.active { display: block; }
+
+/* INSTRUCTION LIST */
+.instruction-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.instruction-list li { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 12px; font-size: 14.5px; color: var(--text-2); line-height: 1.55; }
+.instruction-list li .step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--orange-light); color: var(--orange-dark); font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.instruction-list li .step-text { flex: 1; }
+.instruction-list li .step-text b { color: var(--text); font-weight: 700; }
+.instruction-list li .step-text code { font-family: 'JetBrains Mono', monospace; background: var(--bg-soft); padding: 2px 8px; border-radius: 5px; font-size: 12.5px; color: var(--orange-dark); display: inline-block; }
+
+/* DOWNLOAD BTN */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s; width: 100%; margin-top: 6px; }
+.btn-primary { background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%); color: #fff; box-shadow: var(--shadow-orange); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(249,115,22,0.35); }
+.btn-secondary { background: var(--bg-2); color: var(--text); border: 1.5px solid var(--border-hi); }
+.btn-secondary:hover { background: var(--bg-soft); }
+.btn-blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; box-shadow: 0 12px 28px rgba(37,99,235,0.25); }
+.btn-blue:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(37,99,235,0.35); }
+
+/* TIP */
+.tip { margin-top: 16px; padding: 14px 16px; background: var(--bg-cream); border: 1px solid #fed7aa; border-radius: 12px; font-size: 13.5px; color: var(--text-2); line-height: 1.55; display: flex; align-items: flex-start; gap: 10px; }
+.tip-icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--orange); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 800; margin-top: 1px; }
+
+/* WARNING */
+.warning-callout { margin: 28px 0; padding: 20px 24px; background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%); border: 2px solid var(--red); border-radius: 16px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 8px 24px rgba(220,38,38,0.1); }
+.warning-icon { flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--red); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; animation: glowPulseRed 2.5s ease-in-out infinite; }
+.warning-title { font-size: 15px; font-weight: 800; color: var(--red); margin-bottom: 5px; }
+.warning-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.warning-text b { color: var(--text); font-weight: 700; }
+
+/* CHECK SECTION */
+.check-section { padding: 48px 0 80px; }
+.check-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px 40px; box-shadow: var(--shadow); max-width: 720px; margin: 0 auto; text-align: center; }
+.check-card h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.check-card p { color: var(--text-3); font-size: 15px; margin-bottom: 28px; }
+.check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; text-align: left; max-width: 440px; margin: 0 auto 28px; }
+.check-list li { display: flex; align-items: center; gap: 12px; font-size: 14.5px; font-weight: 600; color: var(--text-2); }
+.check-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+
+/* CTA */
+.cta-section { padding: 20px 0 80px; }
+.cta-card { background: var(--bg-dark); color: #fff; border-radius: 28px; padding: 56px 32px; text-align: center; position: relative; overflow: hidden; }
+.cta-card::before { content: ''; position: absolute; inset: -40%; background: radial-gradient(circle at 30% 30%, rgba(249,115,22,0.2) 0%, transparent 50%); pointer-events: none; }
+.cta-card * { position: relative; z-index: 1; }
+.cta-card h2 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; line-height: 1.15; }
+.cta-card p { color: rgba(255,255,255,0.7); font-size: 17px; max-width: 500px; margin: 0 auto 28px; line-height: 1.55; }
+.cta-btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 36px; background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%); color: #fff; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: var(--shadow-orange); transition: all 0.2s; }
+.cta-btn:hover { transform: translateY(-3px); box-shadow: 0 20px 48px rgba(249,115,22,0.4); }
+
+footer { text-align: center; padding: 24px; color: var(--text-4); font-size: 13px; }
+footer a { color: var(--orange-dark); font-weight: 600; }
+
+@media (max-width: 640px) {
+    .step-card-header { padding: 20px; }
+    .step-card-body { padding: 20px; }
+    .os-tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">Claude Code <span>Challenge</span> · Jay</div>
+    <div class="topnav-right">
+      <span class="topnav-dot"></span>
+      Get Started
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-blob b1"></div>
+  <div class="hero-blob b2"></div>
+  <div class="hero-blob b3"></div>
+  <div class="wrap">
+    <div class="hero-eyebrow reveal">
+      <span class="dot"></span>
+      Get Claude Code running in 10 minutes
+    </div>
+    <h1 class="reveal reveal-d1">
+      3 installs. <span class="accent">10 minutes.</span><br>
+      You're ready.
+    </h1>
+    <p class="hero-sub reveal reveal-d2">
+      Everything you need to run Claude Code on your computer. Clear step-by-step instructions for both Mac and Windows. Follow them in order and you'll arrive fully prepared.
+    </p>
+    <div class="hero-byline reveal reveal-d2">
+      <span class="hero-byline-dot"></span>
+      By <b>Jay Margaliot</b>
+    </div>
+    <div class="stepper reveal reveal-d3">
+      <div class="stepper-item"><span class="stepper-num">1</span> Git</div>
+      <div class="stepper-divider"></div>
+      <div class="stepper-item"><span class="stepper-num">2</span> Claude Code</div>
+      <div class="stepper-divider"></div>
+      <div class="stepper-item"><span class="stepper-num">3</span> Chrome Extension</div>
+    </div>
+  </div>
+</section>
+
+<section class="steps-section">
+  <div class="wrap">
+
+    <!-- ===== STEP 1: GIT ===== -->
+    <article class="step-card reveal" id="step-1">
+      <div class="step-card-header">
+        <div class="step-badge">
+          <span class="step-num-chip">1</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="6" y1="9" x2="6" y2="15"/><path d="M18 9c0 4-3 5-6 5"/></svg>
+        </div>
+        <div class="step-title-block">
+          <h2>Install Git</h2>
+          <div class="step-time">⏱ About 3 minutes</div>
+          <p class="step-purpose">Git is a version control tool that Claude Code uses under the hood to manage files. <b>Mac users usually already have it. Windows users must install it.</b></p>
+        </div>
+      </div>
+      <div class="step-card-body">
+
+        <div class="os-tabs">
+          <button class="os-tab active-mac" onclick="switchOS('git','mac',this,'active-mac')">🍎 Mac</button>
+          <button class="os-tab" onclick="switchOS('git','win',this,'active-win')">🪟 Windows</button>
+        </div>
+
+        <div id="git-mac" class="os-panel active">
+          <div class="tip" style="margin-bottom: 16px; background: #f0fdf4; border-color: #86efac;">
+            <span class="tip-icon" style="background: var(--green);">✓</span>
+            <span><b>Most Mac users can skip this step entirely.</b> Git comes pre-installed on macOS. Move on to Step 2. Only come back here if Step 2 fails.</span>
+          </div>
+          <p style="font-size: 14px; color: var(--text-3); margin-bottom: 14px;">If you run into issues, here's how to check and install Git:</p>
+          <ul class="instruction-list">
+            <li><span class="step-num">1</span><span class="step-text">Open <b>Terminal</b> (press <code>Cmd + Space</code>, type "Terminal", press Enter).</span></li>
+            <li><span class="step-num">2</span><span class="step-text">Type <code>git --version</code> and press Enter. If you see a version number, you're good.</span></li>
+            <li><span class="step-num">3</span><span class="step-text">If a popup appears asking to install developer tools, click <b>Install</b>. Takes about 2 minutes. Then proceed to Step 2.</span></li>
+          </ul>
+        </div>
+
+        <div id="git-win" class="os-panel">
+          <div class="warning-callout">
+            <div class="warning-icon">!</div>
+            <div>
+              <div class="warning-title">Windows users: this step is required.</div>
+              <div class="warning-text">Claude Code on Windows requires Git to be installed <b>and added to your system PATH.</b> Without this, Claude Code will not run at all. Follow the steps carefully.</div>
+            </div>
+          </div>
+          <ul class="instruction-list">
+            <li><span class="step-num">1</span><span class="step-text">Go to <a href="https://git-scm.com/download/win" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">git-scm.com/download/win</a> and download the installer.</span></li>
+            <li><span class="step-num">2</span><span class="step-text">Run the installer. When you reach the screen that says <b>"Adjusting your PATH environment"</b>, choose <b>"Git from the command line and also from 3rd-party software"</b>. This is critical.</span></li>
+            <li><span class="step-num">3</span><span class="step-text">Keep all other options as default and click <b>Next</b> through to the end. Click <b>Install</b>.</span></li>
+            <li><span class="step-num">4</span><span class="step-text"><b>Restart your computer now.</b> This makes sure Windows picks up the new Git installation. It takes 1 minute and prevents most problems.</span></li>
+          </ul>
+          <div class="tip">
+            <span class="tip-icon">i</span>
+            <span>If Claude Code still shows an error after installing Git, a restart is almost always the fix. The PATH change requires it.</span>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <div class="step-connector reveal" id="conn-1"></div>
+
+    <!-- ===== STEP 2: CLAUDE CODE ===== -->
+    <article class="step-card reveal" id="step-2">
+      <div class="step-card-header">
+        <div class="step-badge">
+          <span class="step-num-chip">2</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="step-title-block">
+          <h2>Install Claude Code Desktop</h2>
+          <div class="step-time">⏱ About 5 minutes</div>
+          <p class="step-purpose">Claude Code is the tool. You need a <b>Claude Pro subscription ($20/month)</b> to use it. The free plan does not include Claude Code.</p>
+        </div>
+      </div>
+      <div class="step-card-body">
+
+        <div class="os-tabs">
+          <button class="os-tab active-mac" onclick="switchOS('claude','mac',this,'active-mac')">🍎 Mac</button>
+          <button class="os-tab" onclick="switchOS('claude','win',this,'active-win')">🪟 Windows</button>
+        </div>
+
+        <div id="claude-mac" class="os-panel active">
+          <ul class="instruction-list">
+            <li><span class="step-num">1</span><span class="step-text">Go to <a href="https://claude.ai" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">claude.ai</a> and sign in (or create a free account first).</span></li>
+            <li><span class="step-num">2</span><span class="step-text">Upgrade to <b>Claude Pro</b> for $20/month. Click your profile icon → <b>Upgrade Plan</b>.</span></li>
+            <li><span class="step-num">3</span><span class="step-text">Once on Pro, go to <a href="https://claude.ai/download" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">claude.ai/download</a> and download the <b>Mac</b> version.</span></li>
+            <li><span class="step-num">4</span><span class="step-text">Open the downloaded file and drag <b>Claude.app</b> to your Applications folder.</span></li>
+            <li><span class="step-num">5</span><span class="step-text">Open Claude from your Applications. Sign in with your account. You should see three tabs at the top: <b>Chat, Cowork, Code.</b></span></li>
+            <li><span class="step-num">6</span><span class="step-text">Click the <b>Code</b> tab. This is Claude Code. You're in.</span></li>
+          </ul>
+        </div>
+
+        <div id="claude-win" class="os-panel">
+          <ul class="instruction-list">
+            <li><span class="step-num">1</span><span class="step-text">Go to <a href="https://claude.ai" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">claude.ai</a> and sign in (or create a free account first).</span></li>
+            <li><span class="step-num">2</span><span class="step-text">Upgrade to <b>Claude Pro</b> for $20/month. Click your profile icon → <b>Upgrade Plan</b>.</span></li>
+            <li><span class="step-num">3</span><span class="step-text">Once on Pro, go to <a href="https://claude.ai/download" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">claude.ai/download</a> and download the <b>Windows</b> version.</span></li>
+            <li><span class="step-num">4</span><span class="step-text">Run the installer. Click through the setup wizard. Claude will install automatically.</span></li>
+            <li><span class="step-num">5</span><span class="step-text">Open Claude from the Start menu. Sign in with your account. You should see three tabs at the top: <b>Chat, Cowork, Code.</b></span></li>
+            <li><span class="step-num">6</span><span class="step-text">Click the <b>Code</b> tab. This is Claude Code. You're in.</span></li>
+          </ul>
+          <div class="tip">
+            <span class="tip-icon">i</span>
+            <span>If Claude Code shows an error on first launch, make sure you completed <b>Step 1 (Git)</b> first and restarted your computer afterwards.</span>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <div class="step-connector reveal" id="conn-2"></div>
+
+    <!-- ===== STEP 3: CHROME EXTENSION ===== -->
+    <article class="step-card reveal" id="step-3">
+      <div class="step-card-header">
+        <div class="step-badge">
+          <span class="step-num-chip">3</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+        </div>
+        <div class="step-title-block">
+          <h2>Install the Chrome Extension</h2>
+          <div class="step-time">⏱ About 1 minute</div>
+          <p class="step-purpose">This extension lets Claude Code see and control your browser. We'll use it during the demos. <b>Works on Mac and Windows, same steps.</b></p>
+        </div>
+      </div>
+      <div class="step-card-body">
+        <ul class="instruction-list">
+          <li><span class="step-num">1</span><span class="step-text">Make sure you have <b>Google Chrome</b> installed. If not, download it first from <a href="https://www.google.com/chrome" target="_blank" rel="noopener" style="color:var(--orange-dark);font-weight:700;">google.com/chrome</a>.</span></li>
+          <li><span class="step-num">2</span><span class="step-text">Open Claude Code Desktop. Go to the <b>Code</b> tab.</span></li>
+          <li><span class="step-num">3</span><span class="step-text">Type this in the chat: <code>install chrome extension</code> and press Enter. Claude will give you the direct link.</span></li>
+          <li><span class="step-num">4</span><span class="step-text">Click the link, then click <b>Add to Chrome</b> on the Chrome Web Store page. Confirm when prompted.</span></li>
+          <li><span class="step-num">5</span><span class="step-text">Once installed, you'll see the Claude icon appear in your Chrome toolbar. <b>You're done.</b></span></li>
+        </ul>
+        <div class="tip">
+          <span class="tip-icon">i</span>
+          <span>If you don't see the icon after installing, click the puzzle piece 🧩 icon in Chrome's toolbar and pin the Claude extension so it stays visible.</span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- FINAL CHECK -->
+<section class="check-section">
+  <div class="wrap-sm">
+    <div class="check-card reveal">
+      <h2>You're ready. Here's the checklist.</h2>
+      <p>Before you start, confirm you have all three:</p>
+      <ul class="check-list">
+        <li><span class="check-icon">✓</span> Git is installed and working</li>
+        <li><span class="check-icon">✓</span> Claude Pro subscription is active ($20/month)</li>
+        <li><span class="check-icon">✓</span> Claude Code Desktop is installed and you can see the Code tab</li>
+        <li><span class="check-icon">✓</span> Chrome extension is installed and pinned</li>
+      </ul>
+      <p style="font-size: 15px; color: var(--text-3);">If something didn't work, reach out and we'll sort it out.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="wrap-sm">
+    <div class="cta-card reveal">
+      <h2>Now build your first AI employee.</h2>
+      <p>Join the 5-day challenge and learn how to build a real AI employee using Claude Code. Step by step, with Jay.</p>
+      <a href="https://jaygptpro.com/claude-code-challenge-launch/" class="cta-btn">
+        Join the 5-Day Challenge →
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Claude Code Challenge · <a href="https://jaygptpro.com" target="_blank">jaygptpro.com</a></p>
+</footer>
+
+<script>
+// Scroll progress
+const bar = document.getElementById('scrollProgress');
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+  bar.style.width = (p * 100) + '%';
+});
+
+// Reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      if (e.target.classList.contains('step-connector')) e.target.classList.add('in');
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal, .step-connector').forEach(el => observer.observe(el));
+
+// OS tab switcher
+function switchOS(step, os, btn, activeClass) {
+  // deactivate all tabs in this card
+  btn.closest('.step-card-body').querySelectorAll('.os-tab').forEach(t => {
+    t.classList.remove('active-mac', 'active-win');
+  });
+  // hide all panels
+  btn.closest('.step-card-body').querySelectorAll('.os-panel').forEach(p => p.classList.remove('active'));
+  // activate selected
+  btn.classList.add(activeClass);
+  document.getElementById(step + '-' + os).classList.add('active');
+}
+</script>
+</body>
+</html>
