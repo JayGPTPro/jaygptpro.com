@@ -1022,6 +1022,11 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
         <div class="stat-sub" data-en="Paid but not in allowed_emails" data-he="שילמו אבל לא רשומים בפורטל">Paid but not in allowed_emails</div>
       </div>
       <div class="stat-card fade-in">
+        <div class="stat-label" data-en="Stripe customers without round" data-he="לקוחות Stripe ללא סבב">Stripe customers without round</div>
+        <div class="stat-value" id="statNullRound" style="color:var(--yellow)">0</div>
+        <div class="stat-sub" data-en="stripe_customers.round IS NULL, needs manual triage" data-he="stripe_customers.round ריק, דורש טיפול ידני">stripe_customers.round IS NULL, needs manual triage</div>
+      </div>
+      <div class="stat-card fade-in">
         <div class="stat-label" data-en="Missing phone" data-he="חסר טלפון">Missing phone</div>
         <div class="stat-value" id="statNoPhone">0</div>
         <div class="stat-sub" data-en="Add manually" data-he="נדרש להוסיף ידנית">Add manually</div>
@@ -2956,6 +2961,16 @@ function renderOverview(){
     c.email && !allowedEmails.has(c.email.toLowerCase())
   );
   document.getElementById('statPaidNoAccess').textContent = paidNoAccess.length;
+
+  // Stripe customers whose round is NULL. These are payments the webhook
+  // couldn't map to a round (usually because checkout.session.completed
+  // didn't arrive). They need manual triage. See runbook 'reconcile-stripe-nulls'.
+  const nullRoundCount = activePaid.filter(c => !c.round).length;
+  const nullRoundEl = document.getElementById('statNullRound');
+  if(nullRoundEl){
+    nullRoundEl.textContent = nullRoundCount;
+    nullRoundEl.style.color = nullRoundCount > 0 ? 'var(--yellow)' : 'var(--green)';
+  }
 
   // Revenue (gross, refunds, net). Bucket by currency so we never mix USD and ILS.
   const refunded = paidCustomers.filter(c => c.refunded);
