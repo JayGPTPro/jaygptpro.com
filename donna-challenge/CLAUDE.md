@@ -9,23 +9,22 @@ This folder is the **English** Donna Challenge. Different product, different cus
 1. **All copy stays in English.** No Hebrew strings anywhere. Not in headings, not in buttons, not in checklist labels, not in code comments meant to be read by users.
 2. **All file references stay in English.** `donna-starter-kit` (English filename). NEVER `דונה - ערכת התחלה`.
 3. **Never edit `donna-challenge-bina/` in the same commit.** One folder per commit.
-4. **WhatsApp links here:**
-   - Round 1: `https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS`
-   - Round 2: `https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB`
-5. **Stripe products tied to this portal:**
-   - Generic English: `prod_UCzffM0SU6fWW5` (currently selling Round 2)
-   - Round 4: `prod_URZEzjLnIA9yPX`
-   - Round 5: `prod_URZEKiFdSoJTO6`
-6. **Resend env var for sending email from this portal: `RESEND_API_KEY`** (not `RESEND_API_KEY_BINA`)
-7. **Welcome email function:** `send-welcome-email` or `send-welcome-english` (NOT `send-welcome-bina`)
+4. **All round metadata lives in Supabase `rounds` table.** Do NOT hardcode WhatsApp links, dates, product IDs, or payment link IDs in this folder or in any edge function. To inspect: `SELECT * FROM rounds WHERE language='en';`. To change: UPDATE the row, do not edit code.
+5. **Resend env var for sending email from this portal: `RESEND_API_KEY`** (not `RESEND_API_KEY_BINA`)
+6. **Welcome email function:** `send-welcome-email` or `send-welcome-english` (NOT `send-welcome-bina`)
 
 ## Customers in this portal
 
-International, mostly US/UK/Europe. Pay in USD. ~80+ active in `allowed_emails` for `round1`/`round2` (English semantics, NOT Bina).
+International, mostly US/UK/Europe. Pay in USD. English rounds use canonical IDs `round1`, `round2`, `round4`, `round5` in `rounds`. NOT `bina_r1`/`bina_r2`. `allowed_emails.round` for these customers is the matching id (or `unknown`/`both`).
 
-## Round dates
+## Procedures
 
-Live rounds dynamic from `rounds` table. English rounds use IDs `round1`, `round2`, `round4`, `round5`. NOT `bina_r1`/`bina_r2`.
+How to launch a new round, send welcome emails, reconcile NULL-round payments, etc., all live in the `runbooks` table:
+
+```sql
+SELECT id, title FROM runbooks ORDER BY id;
+SELECT body FROM runbooks WHERE id = 'launch-new-round';
+```
 
 ## Before pushing anything
 
