@@ -17,6 +17,8 @@ for img in ['jay-photo.jpg', 'donna-avatar.jpg']:
     template = template.replace(f'src="{img}"', f'src="{base_url}{img}"')
 template = template.replace('content="og-image.png"', f'content="{base_url}og-image.png"')
 template = template.replace('href="og-image.png"', f'href="{base_url}og-image.png"')
+# Testimonials folder: point all variants to the master's copy so we don't duplicate 16 images per variant
+template = template.replace('src="testimonials/', f'src="{base_url}testimonials/')
 
 for variant in config['variants']:
     slug = variant['slug']

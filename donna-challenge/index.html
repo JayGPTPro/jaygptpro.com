@@ -4015,6 +4015,8 @@ function toggleLanguage(){
 const WHATSAPP_LINKS = {
   round1: 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS',
   round2: 'https://chat.whatsapp.com/GZLCWjQAKmILir6X40caUB',
+  round4: 'https://chat.whatsapp.com/GmlS7mkK0zfGHEI3W9FaTp?mode=gi_t',
+  round5: 'https://chat.whatsapp.com/DfLQHp00JQf5IRWfjNTMtE?mode=gi_t',
   both: 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS'
 };
 
@@ -4287,14 +4289,29 @@ async function checkAuth(){
 // Cached in localStorage as 'donna-challenge-round-dates' = {round1:'2026-04-20', round2:'2026-04-27'}.
 // Hardcoded fallback used only if Supabase is unreachable on first load.
 
-const FALLBACK_ROUND_DATES = { round1: '2026-04-20', round2: '2026-04-27' };
+const FALLBACK_ROUND_DATES = {
+  round1: '2026-04-20',
+  round2: '2026-04-27',
+  round4: '2026-05-18',
+  round5: '2026-06-01'
+};
+
+// 20-minute buffer applied to day unlocks. Lets the portal open content slightly
+// earlier than the scheduled 14:00 NY, so a timezone math drift never causes
+// a customer to see "still locked" right at the unlock moment. The countdown
+// timer still ticks toward the scheduled 14:00 NY, the actual unlock check
+// just accepts now + buffer as already unlocked.
+const UNLOCK_BUFFER_MS = 20 * 60 * 1000;
 
 function getCachedRoundDates(){
   try{
     const raw = localStorage.getItem('donna-challenge-round-dates');
     if(raw){
       const parsed = JSON.parse(raw);
-      if(parsed && parsed.round1 && parsed.round2) return parsed;
+      if(parsed && parsed.round1 && parsed.round2){
+        // Merge with fallbacks so r4/r5 are always present, even if cached blob predates them.
+        return Object.assign({}, FALLBACK_ROUND_DATES, parsed);
+      }
     }
   }catch(e){}
   return FALLBACK_ROUND_DATES;
@@ -4303,7 +4320,7 @@ function getCachedRoundDates(){
 // Refresh round start_date from Supabase (called on login). Non-blocking.
 async function refreshRoundDates(){
   try{
-    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['round1','round2']);
+    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['round1','round2','round4','round5']);
     if(error || !data) return;
     const out = {};
     data.forEach(r => { if(r.id && r.start_date) out[r.id] = r.start_date; });
@@ -4359,8 +4376,6 @@ function isDayUnlocked(dayNum){
   const round = localStorage.getItem('donna-challenge-round') || 'round1';
   const check = localStorage.getItem('donna-challenge-round-check') || '';
   const expectedCheck = btoa(round + ':donna2026');
-  // If check doesn't match, someone tampered with localStorage.
-  // Don't silently downgrade to round1 (could wrongly demote round2 user). Show "pick round" instead.
   if(check !== expectedCheck) {
     return false;
   }
@@ -4368,6 +4383,16 @@ function isDayUnlocked(dayNum){
   if(round === 'both') return true;
   // Round 1 finished, all days remain open for them as a permanent archive.
   if(round === 'round1') return true;
+  // Round 4 and Round 5 use dynamic day-by-day unlocking based on rounds.start_date.
+  // Days unlock at 14:00 New York time on the appropriate day, with a 20-minute buffer
+  // (so customers don't get locked out by a few seconds of timezone drift at the moment).
+  if(round === 'round4' || round === 'round5'){
+    const dates = getCachedRoundDates();
+    const startDateStr = dates[round];
+    if(!startDateStr) return false; // shouldn't happen given FALLBACK_ROUND_DATES, but safe default
+    const unlock = buildUnlockDate(startDateStr, dayNum);
+    return Date.now() >= (unlock.getTime() - UNLOCK_BUFFER_MS);
+  }
   // Round 2 + unknown rounds are gated to the current R2 day.
   // (Set above via R1_R2_GATE_DAY.)
   return dayNum <= R1_R2_GATE_DAY;

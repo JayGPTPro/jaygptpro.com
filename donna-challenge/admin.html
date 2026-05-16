@@ -990,6 +990,7 @@ html[dir="ltr"] .alert-info,html[dir="ltr"] .stat-label{text-align:left}
 
   <!-- ===== TAB 1: OVERVIEW ===== -->
   <div id="tab-overview" class="tab-content active">
+    <div id="opsAlertsBanner" style="display:none;margin-bottom:20px"></div>
     <div class="stat-grid" id="overviewStats">
       <div class="stat-card fade-in">
         <div class="stat-label" data-en="Registered" data-he="נרשמו">Registered</div>
@@ -1946,15 +1947,17 @@ async function checkAuth(){
 }
 
 // ===== DATA LOADING =====
+let opsAlerts = [];
 async function loadAllData(){
-  // Fetch allowed_emails + bina_registrations + stripe + rounds in parallel
-  const [allowedRes, binaRes, eventsRes, progressRes, roundsRes, stripeRes] = await Promise.all([
+  // Fetch allowed_emails + bina_registrations + stripe + rounds + alerts in parallel
+  const [allowedRes, binaRes, eventsRes, progressRes, roundsRes, stripeRes, alertsRes] = await Promise.all([
     sb.from('allowed_emails').select('*'),
     sb.from('bina_registrations').select('*').then(r => r).catch(e => ({ data: [], error: e })),
     sb.from('user_events').select('*').then(r => r).catch(e => ({ data: [], error: e })),
     sb.from('user_progress').select('*').then(r => r).catch(e => ({ data: [], error: e })),
     sb.from('rounds').select('*').then(r => r).catch(e => ({ data: [], error: e })),
-    sb.from('stripe_customers').select('*').order('created_at', { ascending: false }).then(r => r).catch(e => ({ data: [], error: e }))
+    sb.from('stripe_customers').select('*').order('created_at', { ascending: false }).then(r => r).catch(e => ({ data: [], error: e })),
+    sb.from('alerts').select('*').is('resolved_at', null).order('severity', { ascending: true }).then(r => r).catch(e => ({ data: [], error: e }))
   ]);
 
   const allowedRows = allowedRes.data || [];
@@ -1964,9 +1967,46 @@ async function loadAllData(){
   allProgress = progressRes.data || [];
   allRounds = roundsRes.data || [];
   stripeCustomers = stripeRes.data || [];
+  opsAlerts = alertsRes.data || [];
 
   // Merge into a single unified participant list (with _source field)
   allParticipants = mergeParticipants(allowedRows, binaRegistrations, stripeCustomers);
+}
+
+// Render the ops alerts banner. Critical alerts are red, warnings yellow, info gray.
+function renderOpsAlerts(){
+  const banner = document.getElementById('opsAlertsBanner');
+  if(!banner) return;
+  if(!opsAlerts || opsAlerts.length === 0){
+    banner.style.display = 'none';
+    banner.innerHTML = '';
+    return;
+  }
+  const sevColor = { critical: 'var(--red)', warning: 'var(--yellow)', info: 'var(--blue)' };
+  const sevBg = { critical: 'var(--red-bg)', warning: 'var(--yellow-bg)', info: 'var(--blue-bg)' };
+  const sevIcon = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+  const sortedAlerts = [...opsAlerts].sort((a,b) => {
+    const order = { critical: 0, warning: 1, info: 2 };
+    return (order[a.severity] || 9) - (order[b.severity] || 9);
+  });
+  const items = sortedAlerts.map(a => {
+    const runbook = a.context && a.context.runbook ? `<span style="margin-left:8px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace">runbook: ${esc(a.context.runbook)}</span>` : '';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-left:3px solid ${sevColor[a.severity] || 'var(--dim)'};background:${sevBg[a.severity] || 'rgba(255,255,255,0.04)'};border-radius:6px;margin-bottom:6px">
+      <span style="font-size:18px;line-height:1">${sevIcon[a.severity] || '•'}</span>
+      <div style="flex:1">
+        <div style="color:var(--text);font-size:14px;font-weight:500">${esc(a.message)}</div>
+        <div style="margin-top:3px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace">${esc(a.category)}${runbook}</div>
+      </div>
+    </div>`;
+  }).join('');
+  banner.style.display = 'block';
+  banner.innerHTML = `<div style="background:var(--card);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px 22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--bright);letter-spacing:0.4px;text-transform:uppercase">${isRTL() ? '🚨 התראות תפעוליות' : '🚨 Ops alerts'}</div>
+      <div style="font-size:11px;color:var(--dim)">${opsAlerts.length} ${isRTL() ? 'פעילות' : 'active'}</div>
+    </div>
+    ${items}
+  </div>`;
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -2156,6 +2196,7 @@ function formatMoneyCents(cents, sym){
 
 // ===== RENDER ALL =====
 function renderAll(){
+  renderOpsAlerts();
   renderFamilyStrip();
   renderActionQueue();
   renderOverview();
