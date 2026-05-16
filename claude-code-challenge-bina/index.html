@@ -3165,9 +3165,10 @@ section { position: relative; }
 
 /* ── Testimonials Marquee (Bina HE) ─────────────────────────── */
 .testimonials-section {
-    padding: 96px 0 88px;
+    padding: 160px 0 140px;
     background: linear-gradient(160deg, #0d0d1a 0%, #12121f 50%, #0f0f1c 100%);
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     position: relative;
 }
 .testimonials-section::before {
@@ -3220,7 +3221,8 @@ section { position: relative; }
 }
 [dir="rtl"] .testi-header p { font-family: 'Assistant', sans-serif; }
 .testi-track-wrap {
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
@@ -3230,11 +3232,14 @@ section { position: relative; }
     width: max-content;
     animation: testi-scroll 50s linear infinite;
     padding: 12px 0 20px;
+    /* --loop-shift compensates for the trailing gap that's missing after the last card,
+       making the duplicate set land exactly where the original was (seamless loop) */
+    --loop-shift: 11px;
 }
 .testi-track:hover { animation-play-state: paused; }
 @keyframes testi-scroll {
     from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+    to   { transform: translateX(calc(-50% - var(--loop-shift, 11px))); }
 }
 .testi-card {
     flex-shrink: 0;
@@ -3246,22 +3251,44 @@ section { position: relative; }
         0 2px 6px rgba(0,0,0,0.4),
         0 10px 28px rgba(0,0,0,0.35),
         0 28px 56px rgba(0,0,0,0.2);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: default;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, z-index 0s linear;
+    cursor: zoom-in;
+    position: relative;
+    z-index: 1;
+    transform-origin: center center;
 }
 .testi-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: scale(1.6);
+    z-index: 50;
     box-shadow:
-        0 4px 10px rgba(0,0,0,0.4),
-        0 20px 48px rgba(0,0,0,0.4),
-        0 40px 72px rgba(0,0,0,0.25);
+        0 12px 32px rgba(0,0,0,0.55),
+        0 40px 90px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(249,115,22,0.25);
+    border-color: rgba(249,115,22,0.35);
 }
 .testi-card img { height: 100%; width: auto; display: block; }
 @media (max-width: 640px) {
     .testimonials-section { padding: 64px 0 56px; }
-    .testi-card { height: 220px; border-radius: 16px; }
-    .testi-track { gap: 14px; }
+    .testi-card { height: 220px; border-radius: 16px; cursor: default; }
+    .testi-track { gap: 14px; --loop-shift: 7px; }
     .testi-header { margin-bottom: 36px; }
+    /* No hover zoom on mobile (no hover, would blow past viewport) */
+    .testi-card:hover {
+        transform: none;
+        z-index: 1;
+        box-shadow:
+            0 2px 6px rgba(0,0,0,0.4),
+            0 10px 28px rgba(0,0,0,0.35);
+        border-color: rgba(255,255,255,0.07);
+    }
+}
+@media (hover: none) {
+    /* Touch devices: also disable hover zoom even on larger touch screens (tablets) */
+    .testi-card { cursor: default; }
+    .testi-card:hover {
+        transform: none;
+        z-index: 1;
+    }
 }
 
 </style>
