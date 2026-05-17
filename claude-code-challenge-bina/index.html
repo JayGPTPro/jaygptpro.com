@@ -3165,10 +3165,9 @@ section { position: relative; }
 
 /* ── Testimonials Marquee (Bina HE) ─────────────────────────── */
 .testimonials-section {
-    padding: 160px 0 140px;
+    padding: 96px 0 88px;
     background: linear-gradient(160deg, #0d0d1a 0%, #12121f 50%, #0f0f1c 100%);
-    overflow-x: clip;
-    overflow-y: visible;
+    overflow: hidden;
     position: relative;
 }
 .testimonials-section::before {
@@ -3221,25 +3220,30 @@ section { position: relative; }
 }
 [dir="rtl"] .testi-header p { font-family: 'Assistant', sans-serif; }
 .testi-track-wrap {
-    overflow-x: clip;
-    overflow-y: visible;
+    overflow: hidden;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
+/* Two-set seamless marquee. Each .testi-set holds a full copy of all cards.
+   padding-inline-end on each set provides the boundary gap so translateX(-50%)
+   moves exactly one full set width and the next set lands pixel-perfect where
+   the previous was. No magic numbers, no var() inside keyframes. */
 .testi-track {
     display: flex;
-    gap: 22px;
     width: max-content;
-    animation: testi-scroll 50s linear infinite;
+    animation: testi-scroll 55s linear infinite;
     padding: 12px 0 20px;
-    /* --loop-shift compensates for the trailing gap that's missing after the last card,
-       making the duplicate set land exactly where the original was (seamless loop) */
-    --loop-shift: 11px;
 }
 .testi-track:hover { animation-play-state: paused; }
+.testi-set {
+    display: flex;
+    gap: 22px;
+    flex-shrink: 0;
+    padding-inline-end: 22px;
+}
 @keyframes testi-scroll {
     from { transform: translateX(0); }
-    to   { transform: translateX(calc(-50% - var(--loop-shift, 11px))); }
+    to   { transform: translateX(-50%); }
 }
 .testi-card {
     flex-shrink: 0;
@@ -3251,44 +3255,88 @@ section { position: relative; }
         0 2px 6px rgba(0,0,0,0.4),
         0 10px 28px rgba(0,0,0,0.35),
         0 28px 56px rgba(0,0,0,0.2);
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, z-index 0s linear;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: zoom-in;
     position: relative;
-    z-index: 1;
-    transform-origin: center center;
 }
 .testi-card:hover {
-    transform: scale(1.6);
-    z-index: 50;
+    transform: translateY(-6px);
     box-shadow:
-        0 12px 32px rgba(0,0,0,0.55),
-        0 40px 90px rgba(0,0,0,0.6),
-        0 0 0 1px rgba(249,115,22,0.25);
-    border-color: rgba(249,115,22,0.35);
+        0 12px 28px rgba(0,0,0,0.5),
+        0 30px 70px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(249,115,22,0.35);
+    border-color: rgba(249,115,22,0.45);
 }
-.testi-card img { height: 100%; width: auto; display: block; }
+.testi-card img { height: 100%; width: auto; display: block; pointer-events: none; }
 @media (max-width: 640px) {
     .testimonials-section { padding: 64px 0 56px; }
-    .testi-card { height: 220px; border-radius: 16px; cursor: default; }
-    .testi-track { gap: 14px; --loop-shift: 7px; }
+    .testi-card { height: 240px; border-radius: 16px; }
+    .testi-set { gap: 14px; padding-inline-end: 14px; }
     .testi-header { margin-bottom: 36px; }
-    /* No hover zoom on mobile (no hover, would blow past viewport) */
-    .testi-card:hover {
-        transform: none;
-        z-index: 1;
-        box-shadow:
-            0 2px 6px rgba(0,0,0,0.4),
-            0 10px 28px rgba(0,0,0,0.35);
-        border-color: rgba(255,255,255,0.07);
-    }
 }
-@media (hover: none) {
-    /* Touch devices: also disable hover zoom even on larger touch screens (tablets) */
-    .testi-card { cursor: default; }
-    .testi-card:hover {
-        transform: none;
-        z-index: 1;
-    }
+
+/* ── Testimonials Lightbox ──────────────────────────────────── */
+.testi-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 12, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    cursor: zoom-out;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.testi-lightbox.open {
+    display: flex;
+    opacity: 1;
+}
+.testi-lightbox-img {
+    max-width: min(95vw, 720px);
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    border-radius: 14px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(249,115,22,0.2);
+    object-fit: contain;
+    cursor: default;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.testi-lightbox.open .testi-lightbox-img { transform: scale(1); }
+.testi-lightbox-close {
+    position: absolute;
+    top: 22px;
+    inset-inline-end: 22px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.18);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: background 0.2s ease, transform 0.2s ease;
+    padding: 0;
+    font-family: 'Assistant', sans-serif;
+}
+.testi-lightbox-close:hover {
+    background: rgba(249,115,22,0.85);
+    border-color: rgba(249,115,22,0.95);
+    transform: rotate(90deg);
+}
+@media (max-width: 640px) {
+    .testi-lightbox { padding: 24px 12px; }
+    .testi-lightbox-close { top: 14px; inset-inline-end: 14px; width: 40px; height: 40px; font-size: 22px; }
 }
 
 </style>
@@ -3445,32 +3493,41 @@ section { position: relative; }
     <div class="testi-header reveal">
         <div class="testi-tag" data-en="Straight from our WhatsApp groups." data-he="ישר מקבוצות הוואטסאפ של האתגר.">ישר מקבוצות הוואטסאפ של האתגר.</div>
         <h2><span data-en="Real people. " data-he="אנשים אמיתיים. ">אנשים אמיתיים. </span><span class="hl" data-en="Real reactions." data-he="תגובות אמיתיות.">תגובות אמיתיות.</span></h2>
-        <p data-en="100% unedited screenshots, posted live in the group." data-he="צילומי מסך 100% ללא עריכה, שפורסמו בקבוצה בזמן אמת.">צילומי מסך 100% ללא עריכה, שפורסמו בקבוצה בזמן אמת.</p>
+        <p data-en="100% unedited screenshots, posted live in the group. Click any to enlarge." data-he="צילומי מסך 100% ללא עריכה, שפורסמו בקבוצה בזמן אמת. לחיצה תפתח להגדלה.">צילומי מסך 100% ללא עריכה, שפורסמו בקבוצה בזמן אמת. לחיצה תפתח להגדלה.</p>
     </div>
     <div class="testi-track-wrap">
         <div class="testi-track">
-            <div class="testi-card"><img src="testimonials/t01.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t02.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t03.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t04.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t05.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t06.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t07.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t08.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t09.png" alt="Testimonial" loading="lazy"></div>
-            <!-- duplicate set for seamless infinite loop -->
-            <div class="testi-card"><img src="testimonials/t01.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t02.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t03.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t04.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t05.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t06.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t07.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t08.png" alt="Testimonial" loading="lazy"></div>
-            <div class="testi-card"><img src="testimonials/t09.png" alt="Testimonial" loading="lazy"></div>
+            <div class="testi-set">
+                <div class="testi-card"><img src="testimonials/t01.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t02.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t03.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t04.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t05.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t06.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t07.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t08.png" alt="Testimonial" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t09.png" alt="Testimonial" loading="lazy"></div>
+            </div>
+            <div class="testi-set" aria-hidden="true">
+                <div class="testi-card"><img src="testimonials/t01.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t02.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t03.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t04.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t05.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t06.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t07.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t08.png" alt="" loading="lazy"></div>
+                <div class="testi-card"><img src="testimonials/t09.png" alt="" loading="lazy"></div>
+            </div>
         </div>
     </div>
 </section>
+
+<!-- ===== TESTIMONIALS LIGHTBOX ===== -->
+<div class="testi-lightbox" id="testi-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Testimonial preview">
+    <button type="button" class="testi-lightbox-close" id="testi-lightbox-close" aria-label="סגור">×</button>
+    <img class="testi-lightbox-img" id="testi-lightbox-img" src="" alt="">
+</div>
 
 
 <!-- ===== FORMULA GRAPHIC ===== -->
@@ -4677,6 +4734,44 @@ document.addEventListener('keydown', e => {
         pmmClose();
     }
 });
+
+/* ── Testimonials Lightbox ──────────────────────────────────── */
+(function() {
+    const lightbox = document.getElementById('testi-lightbox');
+    const lbImg = document.getElementById('testi-lightbox-img');
+    const lbClose = document.getElementById('testi-lightbox-close');
+    if (!lightbox || !lbImg || !lbClose) return;
+
+    function openLightbox(src) {
+        lbImg.src = src;
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        /* small delay to allow fade-out before clearing src */
+        setTimeout(() => { lbImg.src = ''; }, 250);
+    }
+
+    /* Attach click to all testimonial cards (both sets) */
+    document.querySelectorAll('.testi-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const img = card.querySelector('img');
+            if (img && img.src) openLightbox(img.src);
+        });
+    });
+
+    lbClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => {
+        if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    });
+})();
 </script>
 </body>
 </html>
