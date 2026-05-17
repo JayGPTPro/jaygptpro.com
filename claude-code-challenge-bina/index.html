@@ -3221,6 +3221,13 @@ section { position: relative; }
 [dir="rtl"] .testi-header p { font-family: 'Assistant', sans-serif; }
 .testi-track-wrap {
     overflow: hidden;
+    /* Force LTR layout inside the marquee. The page is RTL, but without this
+       the flex track is anchored to the right edge of the wrap and extends
+       LEFT off-screen — translating left would empty the viewport (the bug
+       Jay reported). With LTR, the track anchors to the left edge, extends
+       RIGHT off-screen, and translateX(-50%) brings the second set into view
+       so cards appear to scroll right-to-left continuously. */
+    direction: ltr;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
