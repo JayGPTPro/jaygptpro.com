@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פתק לוובינר . קלוד קוד</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Assistant', sans-serif;
+  background: #f7f5f1;
+  color: #0a0a0c;
+  padding: 24px 32px;
+  direction: rtl;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.wrap { max-width: 980px; margin: 0 auto; }
+
+h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: #d97757;
+  margin: 28px 0 10px;
+  border-bottom: 2px solid #d97757;
+  padding-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 16px 0 6px;
+  color: #2a2520;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fff1e8;
+  color: #c4663e;
+  padding: 2px 8px;
+  border-radius: 100px;
+  margin-right: 6px;
+  letter-spacing: 0.04em;
+}
+
+.box {
+  background: white;
+  border: 1px solid #e8e4dc;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 8px 0 14px;
+  box-shadow: 0 1px 3px rgba(10,10,12,0.04);
+  position: relative;
+}
+
+.box.live { border-right: 3px solid #d97757; }
+.box.todo { border-right: 3px solid #d97757; background: #fff8f3; }
+.box.todo::after {
+  content: '🚧 צריך לעדכן';
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-size: 10px;
+  color: #c4663e;
+  font-weight: 700;
+}
+
+.prompt-wrap, .chat-wrap {
+  position: relative;
+  margin: 6px 0;
+}
+
+.prompt {
+  background: #0a0a0c;
+  color: #e8e4dc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  padding: 12px 16px 12px 60px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  direction: ltr;
+  text-align: left;
+  line-height: 1.55;
+}
+
+.prompt.he { direction: rtl; text-align: right; padding: 12px 60px 12px 16px; }
+
+.chat-msg {
+  background: #d4f4dd;
+  border-radius: 8px;
+  padding: 12px 60px 12px 16px;
+  font-size: 13.5px;
+  border-right: 3px solid #16a34a;
+  white-space: pre-wrap;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.prompt-wrap .copy-btn {
+  left: 8px;
+  background: #d97757;
+  color: white;
+}
+.prompt-wrap .copy-btn:hover { background: #c4663e; transform: scale(1.05); }
+
+.chat-wrap .copy-btn {
+  left: 8px;
+  background: #16a34a;
+  color: white;
+}
+.chat-wrap .copy-btn:hover { background: #128a3e; transform: scale(1.05); }
+
+.copy-btn.copied { background: #555 !important; }
+.copy-btn.copied::before { content: '✓ '; }
+
+a {
+  color: #d97757;
+  text-decoration: none;
+  font-weight: 600;
+}
+a:hover { text-decoration: underline; }
+
+.url-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e8e4dc;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.url-box .label {
+  font-weight: 700;
+  min-width: 110px;
+}
+
+.url-box a { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+
+.note {
+  background: #fff8f3;
+  border-right: 3px solid #f5c9a8;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  margin: 6px 0;
+  color: #5c4030;
+}
+
+ul { margin-right: 18px; margin-top: 4px; margin-bottom: 8px; }
+ul li { font-size: 13px; margin-bottom: 4px; }
+
+.slide-num {
+  display: inline-block;
+  background: #d97757;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  margin-left: 8px;
+}
+
+.col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+@media print {
+  body { font-size: 11px; padding: 12px; }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; }
+  h3 { font-size: 12px; }
+  .prompt, .chat-msg { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<h1>פתק לוובינר . קלוד קוד <span style="font-size: 14px; color: #9c9690; font-weight: 400;">(ג'יי × מנדי, עברית)</span></h1>
+
+<h2>🔗 לינקים מהירים</h2>
+<div class="url-box"><span class="label">📺 מצגת:</span> <a href="http://localhost:3030/" target="_blank">http://localhost:3030/</a></div>
+<div class="url-box"><span class="label">🎤 מצב מצגן:</span> <a href="http://localhost:3030/presenter/" target="_blank">http://localhost:3030/presenter/</a></div>
+<div class="url-box"><span class="label">⏱️ מסך המתנה:</span> <a href="http://localhost:3030/waiting-screen.html" target="_blank">http://localhost:3030/waiting-screen.html</a></div>
+<div class="url-box"><span class="label">📋 סקירת שקפים:</span> <a href="http://localhost:3030/overview/" target="_blank">http://localhost:3030/overview/</a></div>
+
+<h2>📱 הודעות לצ'אט זום (להעתיק ולהדביק)</h2>
+
+<h3>קודם כל, פתיחה (אחרי הברכה)</h3>
+<div class="chat-wrap"><div class="chat-msg">👋 לפני שצוללים, הצטרפו לקבוצת וואטסאפ של "בינה לעסקים": https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t . טיפים יומיים על AI, כלים חדשים, וכל הלינקים מהיום נחתים שם בסוף.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>במהלך הסיור . משאבים על קלוד קוד <span class="slide-num">~50</span></h3>
+<div class="chat-wrap"><div class="chat-msg">📥 משאבים לקלוד קוד:
+
+הורדת קלוד: https://claude.com/download
+Windows (קודם Git): https://git-scm.com/downloads/win
+מדריך הוראות מותאמות: https://jaygptpro.com/custom-ai-instructions.html
+מדריך ייבוא זיכרון מ-ChatGPT: https://jaygptpro.com/claude/claude-memory-import-guide.html
+ספריית הטריקים: https://jaygptpro.com/daily-claude-hacks
+קבוצת הוואטסאפ: https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t
+
+האתגר . עוזר ה-AI הראשון שלך ב-5 ימים: 🚀 https://jaygptpro.com/claude-code-challenge-bina/#he</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>בסוף, לקראת המכירה <span class="slide-num">~88-95</span></h3>
+<div class="chat-wrap"><div class="chat-msg">🎯 מוכנים להצטרף לאתגר 5 הימים? → https://jaygptpro.com/claude-code-challenge-bina/#he
+
+מחיר השקה: ₪699 (במקום ₪999, חיסכון של ₪300).
+בונוס יום 6 לייב: רק למי שמצטרף לפני שאנחנו סוגרים את השיחה הערב.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h2>🎬 הזרימה לפי שקפים</h2>
+
+<h3>שקף 14 . קליפ "מכירים את חליפות?"</h3>
+<div class="note">סרטון של דונה מהסדרה. <strong>טיפ:</strong> תן רגע למי שלא מכיר ושאל "מי כאן צפה ב-Suits?"</div>
+
+<h3>שקפים 17-19 . דונה ראש המטה האישית שלך</h3>
+<div class="note">להראות את הסרטונים. להגיד שזה הוויז'ן . בעצם נראה איך לבנות אחת כזו.</div>
+
+<h2>💬 שיחה ראשונה עם קלוד <span class="slide-num">שקף 49 (פותחים תיקייה כותבים)</span></h2>
+<div class="note">שיחות קצרות בעברית להראות שהוא מבין עברית ומחובר לעולם האמיתי.</div>
+
+<h3>1. שאלה פשוטה (חיבור ליומן)</h3>
+<div class="prompt-wrap"><div class="prompt he">איזה יום היום?</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>2. חיבור לאינטרנט בזמן אמת</h3>
+<div class="prompt-wrap"><div class="prompt he">מה מזג האוויר בתל אביב כרגע?</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>3. בסשן חדש במקביל . משימות מקבילות (טריק 1)</h3>
+<div class="prompt-wrap"><div class="prompt he">תכתוב לי טקסט שיווקי קצר לסדנת AI לבעלי עסקים</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+<div class="note">לפני שהוא מסיים, שלח את ההודעה הבאה כדי להראות את הטריק של "הוסף הקשר באמצע":</div>
+<div class="prompt-wrap"><div class="prompt he">ועכשיו תן לי 5 רעיונות לשם של הסדנה</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h2>🌐 דמו תוסף Chrome <span class="slide-num">~62 (תוסף לכרום)</span></h2>
+<div class="prompt-wrap"><div class="prompt he">תפתח את גוגל מפות ותחפש את "בית קפה תל אביב". תכנס ל-3 הראשונים, תקרא את הביקורות, ותסכם לי: איפה הכי הרבה תלונות, ואיפה הכי הרבה שבחים.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h2>🎬 5 הדגמות חיות <span class="slide-num">62-63</span></h2>
+<div class="note">הסרנו את שקפי תיאור ההדגמות. אתה מציג אותן בלייב בלי שקף-לכל-אחת. זה מאלץ אותך להוביל את הקצב בעצמך.</div>
+
+<h3>דמו 1 . שליטה בתיקיות (לקוח חדש)</h3>
+<div class="prompt-wrap"><div class="prompt he">תיצור לי מבנה תיקיות לפרויקט לקוח חדש: תיקיות לפגישות וסיכומים, חוזים והסכמים, חשבוניות, חומרי עבודה, וקשרים עם הלקוח. בכל תיקייה קובץ README שמסביר מה הולך שם.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>דמו 2 . חיבור לדפדפן (סופר אונליין)</h3>
+<div class="prompt-wrap"><div class="prompt he">דונה, תתחברי לכרום שלי, תיכנסי לאתר רמי לוי, ותכניסי את המוצרים מהרשימה הזו לעגלה. הכתובת למשלוח: רחוב הפרחים, רעננה. אם משהו לא נמצא, תסמני לי.
+
+1. חלב תנובה 3% 1 ליטר . 2 יחידות
+2. לחם אחיד פרוס
+3. ביצים גודל L (חופש)
+4. במבה אסם 80 גרם . 3 שקיות
+5. קוטג' תנובה 5%
+6. עגבניות שרי 250 גרם
+7. מלפפונים 1 ק"ג
+8. בננות 1 ק"ג
+9. שניצל עוף קפוא
+10. אורז בסמטי 1 ק"ג
+11. נס קפה עלית 200 גרם</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>דמו 3 . בניית אתר חי (פיצרייה)</h3>
+<div class="prompt-wrap"><div class="prompt he">תבנה לי אתר יפהפה לפיצרייה איטלקית ברעננה. תמציא שם, לוגו טקסטואלי, ותפריט. עם תמונות מתאימות. העיצוב חייב להיות פרימיום, מודרני, ועם אנימציות גלילה מרשימות. תפריט עם מחירים, קטע "עלינו", גלריית פיצות, סקציית הזמנה, ופוטר. הכל לגמרי בעברית. ברגע שסיימת, תפתח את זה בדפדפן.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+<div class="note"><strong>טיפים בלייב:</strong> אחרי שהוא בונה, תוכל לבקש שינויים בזמן אמת ("תוסיף סקציה של ביקורות", "תחליף את הצבעים לכתום ושחור", "תוסיף אנימציה של פיצה מסתובבת"). זה מראה איטרטיביות.</div>
+
+<h3>דמו 4 . בניית דשבורד חי (שעון נוכחות עובדים)</h3>
+<div class="prompt-wrap"><div class="prompt he">תבנה לי דשבורד שעון נוכחות לעובדים. פרימיום, מודרני, RTL בעברית.
+
+בראש: 4 KPI עם אנימציית ספירה . עובדים נוכחים, שעות השבוע, אחוז דייקנות, שעות נוספות.
+גרף עמודות של שעות עבודה לפי ימי השבוע.
+טבלת 12 עובדים עם שמות ישראלים, מחלקה, שעת כניסה ויציאה, סטטוס.
+פיד חי של התראות בצד (כניסות ויציאות בזמן אמת).
+פילטרים: חודש, מחלקה, חיפוש.
+צבעים: כחול עמוק עם הדגשות בכתום. אנימציות גלילה מעניינות. ושיהיה מוכן לשימוש. תפתח את זה כשאתה מסיים.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>דמו 5 . תמונות פרופיל ללינקדאין</h3>
+<div class="prompt-wrap"><div class="prompt he">תייצר לי 20 תמונות פרופיל מקצועיות ללינקדאין שלי בסגנונות שונים ורקעים שונים. תוודא שכל תמונה נראית אחרת לגמרי מהקודמת. תשמור בתיקייה חדשה. ותעשה את זה ב-API של Open AI. ותפתח את התיקייה.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>דמו בונוס . סרטון HeyGen</h3>
+<div class="prompt-wrap"><div class="prompt he">תשתמש ב-HeyGen API ליצור סרטון של 4 שניות שאני אומר בו: 'קלוד קוד יצר את הסרטון הזה. וואו אני בהלם! מה אתם רוצים שאני אגיד עכשיו?'</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h2>👩‍💼 שיחות עם דונה (לייב) <span class="slide-num">82-86</span></h2>
+<div class="note">כל השיחות עם דונה בעברית. דונה היא העוזרת האישית שלך, היא מכירה את העסק שלך.</div>
+
+<h3>1. קביעת פגישה</h3>
+<div class="prompt-wrap"><div class="prompt he">דונה, תקבעי פגישה עם מנדי ביום שני הבא בנושא תמחור המוצר שלנו. תבדקי ביומן שלי זמינות, תיצרי את האירוע, ותשלחי לו מייל לשאול אם הזמן מתאים. תראי לי את המייל לפני שולחים.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>2. הכנה לפגישה</h3>
+<div class="prompt-wrap"><div class="prompt he">דונה, תכיני אותי לפגישה עם מנדי לגבי תכנון פוסטים לקבוצה לשבוע הקרוב.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>3. ניהול משימות באסנה</h3>
+<div class="prompt-wrap"><div class="prompt he">דונה, אני משיק אתר חדש לעסק שלי. תפרקי לי את כל מה שצריך לעשות מהרעיון ועד עליית האתר לאוויר למשימות מסודרות, ותכניסי הכל ל-Asana שלי דרך הקונקטור. את יכולה לטפל בכל זה?</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+<div class="note">אחרי שהיא עונה כן, להגיד:</div>
+<div class="prompt-wrap"><div class="prompt he">תראי לי מה יצרת.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>4. פלירטוט קליל (לחיוך)</h3>
+<div class="prompt-wrap"><div class="prompt he">איך את יודעת את כל זה?</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+<div class="prompt-wrap"><div class="prompt he">דונה, את העוזרת הכי טובה שהייתה לי אי פעם.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h3>5. סיום</h3>
+<div class="prompt-wrap"><div class="prompt he">תודה דונה, זה הכל לעת עתה.</div><button class="copy-btn" onclick="copyText(this)">📋 העתק</button></div>
+
+<h2>⚙️ הגדרות טכניות לפני שמתחילים</h2>
+<ul>
+<li>פתח את המצגת ב-<strong>fullscreen</strong> (f)</li>
+<li>פתח את ה-presenter mode בחלון נפרד</li>
+<li>פתח את ה-waiting screen בחלון אחר ל-5 דקות הראשונות</li>
+<li>סגור התראות ב-Mac (Do Not Disturb)</li>
+<li>בדוק שמיקרופון + מצלמה עובדים בזום</li>
+<li>פתח את קלוד קוד בטרמינל בתיקייה ריקה למקרה של דמו</li>
+<li>פתח Chrome עם הטאבים שתצטרך מראש (אסנה, גוגל, וכו')</li>
+<li>הכן את הצ'אט של זום פתוח כדי להדביק לינקים</li>
+</ul>
+
+<div class="note" style="margin-top: 24px; text-align: center; font-size: 12px;">
+דף זה הוא פתק עזר אישי לג'יי. נמצא ב-<code>public/notes.html</code> בתיקיית המצגת.
+</div>
+
+</div>
+
+<script>
+function copyText(btn) {
+  const target = btn.previousElementSibling;
+  const text = target.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.classList.add('copied');
+    btn.textContent = 'הועתק';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

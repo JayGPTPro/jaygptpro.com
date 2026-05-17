@@ -1,0 +1,1 @@
+import{f as a,o as t,e as s,t as n,j as l,i as c}from"./modules/vue-CzOxEgaC.js";import{u as r}from"./slidev/context-DYyJHrvx.js";const i={class:"center-stack"},m={key:0,class:"section-label"},p=a({__name:"section",props:{label:{}},setup(e){return r(),(o,d)=>(t(),s("div",i,[e.label?(t(),s("div",m,n(e.label),1)):l("v-if",!0),c(o.$slots,"default")]))}});export{p as _};

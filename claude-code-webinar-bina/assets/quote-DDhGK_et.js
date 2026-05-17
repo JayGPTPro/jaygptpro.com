@@ -1,0 +1,1 @@
+import{o as s,e as t,g as o,i as a}from"./modules/vue-CzOxEgaC.js";import{u as r}from"./slidev/context-DYyJHrvx.js";const c={class:"center-stack"},n={class:"quote-slide"},u={__name:"quote",setup(_){return r(),(e,i)=>(s(),t("div",c,[o("div",n,[a(e.$slots,"default")])]))}};export{u as _};

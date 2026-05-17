@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Market Intelligence: Silicone Baking Mat</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a25;
+    --bg-card-hover: #22222f;
+    --border: #2a2a3a;
+    --text-primary: #f0f0f5;
+    --text-secondary: #8888a0;
+    --text-muted: #555570;
+    --accent-blue: #4f8cff;
+    --accent-purple: #8b5cf6;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-red: #ef4444;
+    --accent-cyan: #22d3ee;
+    --gradient-1: linear-gradient(135deg, #4f8cff, #8b5cf6);
+    --gradient-2: linear-gradient(135deg, #34d399, #22d3ee);
+    --gradient-3: linear-gradient(135deg, #fb923c, #ef4444);
+  }
+  
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  
+  .hero {
+    padding: 60px 40px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(79,140,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(139,92,246,0.06) 0%, transparent 50%);
+    animation: pulse 8s ease-in-out infinite alternate;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.5; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.05); }
+  }
+  
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    position: relative;
+  }
+  
+  .hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,140,255,0.1);
+    border: 1px solid rgba(79,140,255,0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    margin-top: 16px;
+    position: relative;
+  }
+  
+  .badge .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  
+  .dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .kpi-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(79,140,255,0.3);
+    transform: translateY(-2px);
+  }
+  
+  .kpi-card .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .kpi-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .kpi-card:nth-child(2) .value { background: var(--gradient-2); -webkit-background-clip: text; background-clip: text; }
+  .kpi-card:nth-child(3) .value { background: var(--gradient-3); -webkit-background-clip: text; background-clip: text; }
+  .kpi-card:nth-child(4) .value { background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; background-clip: text; }
+  .kpi-card:nth-child(5) .value { background: linear-gradient(135deg, #22d3ee, #4f8cff); -webkit-background-clip: text; background-clip: text; }
+  
+  .kpi-card .detail {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s ease;
+  }
+  
+  .chart-card:hover {
+    border-color: rgba(79,140,255,0.2);
+  }
+  
+  .chart-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .chart-card h3 .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+  
+  .chart-container {
+    position: relative;
+    height: 280px;
+  }
+  
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  
+  .keywords-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  
+  .keywords-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .keyword-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .keyword-tag {
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: default;
+    border: 1px solid transparent;
+  }
+  
+  .keyword-tag:hover {
+    transform: scale(1.05);
+  }
+  
+  .keyword-tag .count {
+    font-size: 0.7em;
+    opacity: 0.7;
+    margin-left: 4px;
+  }
+  
+  .table-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  
+  .table-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  
+  thead th:hover {
+    color: var(--accent-blue);
+  }
+  
+  tbody tr {
+    border-bottom: 1px solid rgba(42,42,58,0.5);
+    transition: background 0.2s ease;
+  }
+  
+  tbody tr:hover {
+    background: rgba(79,140,255,0.03);
+  }
+  
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+  }
+  
+  tbody td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .rating-bar .bar {
+    width: 60px;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .rating-bar .bar .fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  
+  .price-tag {
+    font-weight: 600;
+    color: var(--accent-green) !important;
+  }
+  
+  .source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.15);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    color: var(--accent-green);
+    margin-top: 20px;
+  }
+  
+  .footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  
+  .footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+  
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .insight-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+  }
+  
+  .insight-card .insight-icon {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+  
+  .insight-card h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+  
+  .insight-card p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  
+  .tab-btn {
+    padding: 8px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  
+  .tab-btn.active {
+    background: var(--accent-blue);
+    color: white;
+  }
+  
+  .tab-btn:hover:not(.active) {
+    color: var(--text-primary);
+  }
+
+  .scatter-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .scatter-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  .scatter-legend-item .circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  @media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .insights-grid { grid-template-columns: 1fr; }
+  }
+  
+  @media (max-width: 768px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Amazon Market Intelligence</h1>
+  <div class="subtitle">Silicone Baking Mat. Competitive Analysis Dashboard</div>
+  <div class="badge">
+    <span class="dot"></span>
+    Live data scraped via Bright Data MCP. 99 products analyzed.
+  </div>
+</div>
+
+<div class="dashboard">
+  
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">Products Analyzed</div>
+      <div class="value" id="kpi-count">0</div>
+      <div class="detail">From Amazon search results</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Average Price</div>
+      <div class="value" id="kpi-avg-price">$0</div>
+      <div class="detail" id="kpi-price-range">Range: $0 - $0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Average Rating</div>
+      <div class="value" id="kpi-avg-rating">0</div>
+      <div class="detail" id="kpi-rating-range">Range: 0 - 0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total Reviews</div>
+      <div class="value" id="kpi-total-reviews">0</div>
+      <div class="detail" id="kpi-avg-reviews">Avg per product: 0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Market Leader</div>
+      <div class="value" id="kpi-leader" style="font-size:1.1rem">-</div>
+      <div class="detail" id="kpi-leader-detail">-</div>
+    </div>
+  </div>
+  
+  <!-- AI Insights -->
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon">&#x1F3AF;</div>
+      <h4>Price Sweet Spot</h4>
+      <p id="insight-price">Loading...</p>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">&#x2B50;</div>
+      <h4>Quality Benchmark</h4>
+      <p id="insight-quality">Loading...</p>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">&#x1F4A1;</div>
+      <h4>Market Opportunity</h4>
+      <p id="insight-opportunity">Loading...</p>
+    </div>
+  </div>
+  
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3><span class="icon" style="background:rgba(79,140,255,0.15);color:var(--accent-blue)">$</span> Price Distribution</h3>
+      <div class="chart-container"><canvas id="priceChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3><span class="icon" style="background:rgba(139,92,246,0.15);color:var(--accent-purple)">&#9733;</span> Rating Distribution</h3>
+      <div class="chart-container"><canvas id="ratingChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3><span class="icon" style="background:rgba(52,211,153,0.15);color:var(--accent-green)">&#9673;</span> Price vs. Rating (Bubble = Review Count)</h3>
+      <div class="chart-container"><canvas id="scatterChart"></canvas></div>
+      <div class="scatter-legend">
+        <div class="scatter-legend-item"><span class="circle" style="background:rgba(79,140,255,0.8)"></span> Under 1K reviews</div>
+        <div class="scatter-legend-item"><span class="circle" style="background:rgba(52,211,153,0.8)"></span> 1K-10K reviews</div>
+        <div class="scatter-legend-item"><span class="circle" style="background:rgba(251,146,60,0.8)"></span> 10K+ reviews</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3><span class="icon" style="background:rgba(251,146,60,0.15);color:var(--accent-orange)">&#x1F4CA;</span> Reviews Distribution (log scale)</h3>
+      <div class="chart-container"><canvas id="reviewsChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Keywords -->
+  <div class="keywords-section">
+    <h3>&#x1F50D; Top Keywords from Product Titles</h3>
+    <div class="keyword-cloud" id="keywordCloud"></div>
+  </div>
+  
+  <!-- Product Table -->
+  <div class="table-section">
+    <h3>&#x1F4CB; All Products</h3>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="sortTable('reviews')">Most Reviewed</button>
+      <button class="tab-btn" onclick="sortTable('price-low')">Cheapest</button>
+      <button class="tab-btn" onclick="sortTable('price-high')">Most Expensive</button>
+      <button class="tab-btn" onclick="sortTable('rating-low')">Lowest Rated</button>
+      <button class="tab-btn" onclick="sortTable('rating-high')">Highest Rated</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product Title</th>
+            <th>Price</th>
+            <th>Rating</th>
+            <th>Reviews</th>
+          </tr>
+        </thead>
+        <tbody id="productTable"></tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="source-badge">
+    &#x2705; Data Source: Amazon.com via Bright Data MCP (scraped in real-time by Claude Code)
+  </div>
+</div>
+
+<div class="footer">
+  Built with Claude Code + Bright Data MCP | Data scraped live from Amazon.com<br>
+  <a href="https://brightdata.com" target="_blank">Bright Data</a> provides web data infrastructure for AI
+</div>
+
+<script>
+const products = [{"asin": "B0725GYNG6", "title": "Amazon Basics Silicone Rectangular Baking Mat, Non-Stick, Reusable, Dishwasher Safe, Food Safe, Heat Resistant, 16.5\" x ", "price": 9.44, "rating": 4.7, "reviews": 97800}, {"asin": "B01ACUA8HC", "title": "Non-slip Silicone Pastry Mat Extra Large with Measurements 28''By 20'' for Silicone Baking Mat, Counter, Dough Rolling, ", "price": 11.68, "rating": 4.8, "reviews": 26400}, {"asin": "B0F1SLYH15", "title": "Silicone Baking Pastry Dough Mat - 28x20Inch Extra Large Cookie Bread Rolling Mats Sheet, Nonstick Kitchen Counter Knead", "price": 9.99, "rating": 4.7, "reviews": 1100}, {"asin": "B0CMT2FG1B", "title": "Koolstuffs Silicone Bread Sling for Dutch Oven, 2 PCS Non-Stick & Easy Clean Reusable Sourdough Mat, Sourdough Bread Bak", "price": 8.99, "rating": 4.7, "reviews": 1700}, {"asin": "B0999594RR", "title": "26x16 Inch Extra Thick Silicone Baking Mat with Measurements, Non-slip and Reusable - For Cookies, Bread, Pastry", "price": 9.99, "rating": 4.7, "reviews": 7400}, {"asin": "B0CFTP6JR4", "title": "Silicone Baking Mat, 3 Pack Reusable Baking Sheet, Non-Stick \uff06 Food Safe Silicone Mats for Baking for Making Cookies Mac", "price": 8.99, "rating": 4.7, "reviews": 2600}, {"asin": "B0CZ6Y5C96", "title": "Silicone Tools Mat for Griddle Kitchen Cooking Baking Countertop-Side Shelf Spatula Mat with Drip Pad for Blackstone Web", "price": 12.98, "rating": 4.7, "reviews": 1100}, {"asin": "B0CQLXVKV2", "title": "Silicone Bread Sling for Dutch Oven, Non-Stick & Easy to Clean Baking Mat Set, 2 Pcs Reusable Bread Sling for Sourdough ", "price": 8.99, "rating": 4.7, "reviews": 2000}, {"asin": "B0CYZNDCN4", "title": "Koolstuffs Silicone Bread Sling Oval and Round, 2 PCS Nonstick\uff06Reusable Bread Baking Mats, Easy-To-Clean Dutch Oven Line", "price": 8.99, "rating": 4.7, "reviews": 791}, {"asin": "B0FJRTJ13Q", "title": "Warming Mat for Food Extra Large 32\"x15\", Electric Silicone Food Warmer Trays for Chafing Dishes & Buffet,Portable Count", "price": 41.99, "rating": 4.7, "reviews": 516}, {"asin": "B0FK417V58", "title": "Sourdough Silicone Bread Sling for Dutch Oven, 2PCS Non-Stick Reusable Baking Mat with Long Handles, Essentials Bread Ma", "price": 9.99, "rating": 4.6, "reviews": 146}, {"asin": "B077XTPWZ5", "title": "Amazon Basics Rectangular Non-Stick Silicone Baking Mat, Food Safe, Heat Resistant, 9\"x13\", 9.9\"x14.8\", and 16.5\"x11.6\",", "price": 11.99, "rating": 4.7, "reviews": 25100}, {"asin": "B0FLY6XP45", "title": "Silicone Bread Sling for Dutch Oven, Silicone Sourdough Baking Sling Non-Stick & Easy Transfer, Sourdough Mat for Bread ", "price": 5.99, "rating": 4.7, "reviews": 90}, {"asin": "B0C58RP6G9", "title": "Air Fryer Silicone Liners Square 2 Pack 7.1 Inch Airfryer Liners 4-7 QT Reusable Air Fryer Liners Silicone Pot Oven Line", "price": 7.48, "rating": 4.3, "reviews": 8100}, {"asin": "B0FD2N1ZZ4", "title": "Extra Thick Silicone Baking Mat with Recipes - 26x16 inch Non Stick Pastry Mat with Measurements for Sourdough, Macarons", "price": 14.99, "rating": 4.7, "reviews": 458}, {"asin": "B08MTRY55K", "title": "Gartful Silicone Mats for Kitchen Counter, Large Silicone Countertop Protector 25\" by 17\", Nonskid Heat Resistant Desk S", "price": null, "rating": null, "reviews": null}, {"asin": "B08NZ61NLV", "title": "Gartful Silicone Mats for Kitchen Counter, Large Silicone Countertop Protector 25\" by 17\", Nonskid Heat Resistant Desk S", "price": null, "rating": null, "reviews": null}, {"asin": "B08PBJFX6D", "title": "Gartful Silicone Mats for Kitchen Counter, Large Silicone Countertop Protector 25\" by 17\", Nonskid Heat Resistant Desk S", "price": null, "rating": 4.4, "reviews": 5400}, {"asin": "B0CMSR4C37", "title": "Silicone Baking Mat, 24\" x 16\" Baking Mat, Pastry Rolling Sourdough Baking Mat Supplies for Making Pizza, Pie, Cookies, ", "price": 8.99, "rating": 4.8, "reviews": 1300}, {"asin": "B0CS3MV4CY", "title": "PLAPITATE Silicone Bread Sling for Dutch Oven Liners, Non Stick 2 PCS, Easy Clean Reusable Silicone Bread Baking Mat wit", "price": 8.99, "rating": 4.7, "reviews": 1000}, {"asin": "B08598F7JT", "title": "MMmat Silicone Baking Mat - Best German Silicone - Non Slip Silicone Baking Sheet, Non Stick Reusable Silicone Mats for ", "price": 15.99, "rating": 4.7, "reviews": 6100}, {"asin": "B0F1SHWLJ1", "title": "Silicone Sourdough Bread Sling Mat - 2Set Round Dough Baking Slings For Dutch Oven, NonStick High Degree Kitchen Sourbre", "price": 6.99, "rating": 4.7, "reviews": 611}, {"asin": "B0C1D14BQP", "title": "Silicone Baking Mat, Non Stick Pastry Mat Sheet for Dough Rolling, Nonslip Fondant/Pie Crust Mat, Counter Mat Oven Liner", "price": 9.99, "rating": 4.7, "reviews": 2200}, {"asin": "B0CYFS7G6R", "title": "SWSKR Silicone Bread Sling for Dutch Oven, 2 Pcs Non-Stick & no objectional odor Bread Baking Mat Set, antislip Reusable", "price": 5.98, "rating": 4.7, "reviews": 596}, {"asin": "B0F7R7G5PM", "title": "Pack of 3 Basics Silicone, Non-Stick, Food Safe Baking Mat, Rectangular, Cookies, Macaroons, Bread(Grey 0.4mm)", "price": 6.79, "rating": 4.5, "reviews": 447}, {"asin": "B00008T960", "title": "Silpat Premium Non-Stick Silicone Baking Mat, Half Sheet Size, 11-5/8 x 16-1/2, Orange", "price": 29.95, "rating": 4.8, "reviews": 9100}, {"asin": "B0DH2FH1FQ", "title": "Silicone Pastry Mat, 16\" x 24\" Silicone Baking Mat for Counter Rolling Dough, Reusable Non-Stick Extra Large Dough Mat w", "price": 6.99, "rating": 4.8, "reviews": 455}, {"asin": "B0DK94QVHR", "title": "Ninsula Silicon Baking Mats, 16.5\"x11.6\" 2-Pack Reusable Silicon Baking Mat Sheet, Baking Sheets Non-Stick, Food Safe Ba", "price": 4.99, "rating": 4.6, "reviews": 435}, {"asin": "B0FLDF9ZX5", "title": "Macaron Silicone Baking Mats, 3 PCS Non Stick Macaroon Mat Silicone for Macarons, Cookie, Pastry, Red", "price": 7.99, "rating": 4.7, "reviews": 268}, {"asin": "B0CWPNBC4Z", "title": "Luckyiren 2-Pack Silicone Baking Mats \u2013 Non-Stick Reusable BPA-Free Oven Liners, 100% Food-Grade Silicone, Fit Half Shee", "price": 5.99, "rating": 4.6, "reviews": 633}, {"asin": "B0FLDGNZCB", "title": "Silicone Baking Mat, Baking Sheets Non Stick, Silicone Mats for Baking, 3 Pcs Baking Supplies for Cookies, Bread & Pastr", "price": 6.99, "rating": 4.7, "reviews": 184}, {"asin": "B01COP96MG", "title": "Nonstick Silicone Pastry Mat Extra Large with Measurements 28''By 20'' for Silicone Baking Mat, Counter, Dough Rolling,F", "price": 11.69, "rating": 4.8, "reviews": 8300}, {"asin": "B0CSFFD5TB", "title": "3 Pack Silicone Mats for Crafts, Premium Playdough Mat,A3 Size Silicone Sheet, Liquid, Resin Jewelry Casting Molds Mat,1", "price": 6.78, "rating": 4.6, "reviews": 747}, {"asin": "B07Q3D28P2", "title": "Silicone Pastry Baking Mat Dough - 16x24Inch Large Non Stick Slip Cookie Bread Rolling Mats Sheet, Kitchen Counter Knead", "price": 7.99, "rating": 4.7, "reviews": 6500}, {"asin": "B09FZ2RGBP", "title": "Thick Silicone Counter Mat Large 23.4\"by15.6\", Heat Resistant Mat for Kitchen Table/Countertop Protector/Non Stick Pastr", "price": 8.98, "rating": 4.6, "reviews": 3000}, {"asin": "B0CM6P7619", "title": "49.2\" x 15.7\" Large Silicone Mat for Kitchen Counter Protector, Cuttable Silicon Countertop Protector Mat Heat Resistant", "price": 16.12, "rating": 4.7, "reviews": 685}, {"asin": "B08N3T2MMQ", "title": "Silicone Mat for Kitchen Counter, Heat Resistant Nonskid Table Mat for Air Fryer to Site on, Countertop Protector, Thick", "price": 17.99, "rating": 4.8, "reviews": 3100}, {"asin": "B09SBF44TM", "title": "Reusable Square Silicone Air Fryer Liners (8.5 Inch, 3 Pack) by Linda\u2019s Essentials - Non-Stick, Easy-Clean Accessories w", "price": 9.99, "rating": 4.5, "reviews": 2800}, {"asin": "B0CZMFYZJ5", "title": "Silicone Spatula Mat Fit for Blackstone, Large Griddle Tools Mat with Drip Pad, Outdoor Grill BBQ Utensils Holder for Ki", "price": 4.99, "rating": 4.6, "reviews": 253}, {"asin": "B0CQJHFC3C", "title": "Silicone Baking Mat, 16\" x 24\" - Non-Slip Pastry Mat for Rolling Dough, Pie Crust & Fondant, Oven Liner with Measurement", "price": 5.99, "rating": 4.7, "reviews": 1000}, {"asin": "B0F94H2MQQ", "title": "Silicone Baking Mat with Recipes, Extra Thick Silicone Mats for Baking, Non Stick Pastry Mat for Rolling Dough, Silicone", "price": 9.99, "rating": 4.8, "reviews": 633}, {"asin": "B0CT2MYYJH", "title": "Silicone Baking Mat 28\" x 20\", Extra Thick Dough Rolling Mat with Measurements and Edge Heightening, Non-stick Food Grad", "price": 20.89, "rating": 4.7, "reviews": 820}, {"asin": "B07FDLQDG5", "title": "Silicone Baking Mat Macaron - Set of 3 (2 Half Sheet Liners and 1 Quarter Sheet), Non Stick Silicon Cookie Oven Liner Fo", "price": 7.95, "rating": 4.7, "reviews": 3100}, {"asin": "B07PJ26CGX", "title": "Angadona Macaron Silicone Baking Mats Kit (16pcs set) Macaroon Baking Mat Set of 2 Half Sheet Macaron Silicone Mat Nonst", "price": 17.99, "rating": 4.8, "reviews": 5200}, {"asin": "B09YTV28JN", "title": "2 Pack Silicone Mats for Kitchen Counter, Treerit 23.62\" x 15.75\" Thick Large Silicone Mat, Nonskid Heat Resistant Count", "price": 23.99, "rating": 4.6, "reviews": 1500}, {"asin": "B0CTCQP3P3", "title": "Gonsir Silicone Bread Sling, 2 Pcs Silicone Baking Sling with Longer Handles, Non-Stick & Easy Clean Dutch Oven Baking M", "price": 6.29, "rating": 4.7, "reviews": 624}, {"asin": "B0CYKYP2LG", "title": "Koolstuffs Silicone Sourdough Bread Sling Mat for Dutch Oven, 2 Pack Non-Stick & Easy Clean Reusable sourdough mat, Easy", "price": 7.99, "rating": 4.8, "reviews": 463}, {"asin": "B07RC5H25G", "title": "GASAR\u00c9, Set of 2, Extra Large, Thick, Silicone Mats for Kitchen Counter, Heat Resistant Mats, Countertop Protector, Non-", "price": 29.37, "rating": 4.7, "reviews": 5800}, {"asin": "B0CKWY2TY2", "title": "Silicone Baking Mat Roll - Best German Silicone - Heat Resistant Baking Macaron Bread Mat, Non-stick Pastry Mat, Reusabl", "price": 15.99, "rating": 4.6, "reviews": 1300}, {"asin": "B0CTD9XPVN", "title": "Angadona Macaron Silicone Baking Mats Kit (16pcs set) Macaroon Baking Mat Set of 2 Half Sheet Macaron Silicone Mat Nonst", "price": 15.99, "rating": 4.8, "reviews": 961}, {"asin": "B0DYH7LZGQ", "title": "PLAPITATE Silicone Bread Sling Dutch Oven Liner, Non-Stick & Easy Clean Reusable Oval and Round Silicone Bread Baking Ma", "price": 8.99, "rating": 4.8, "reviews": 165}, {"asin": "B09WY8NK2W", "title": "EuChoiz Silicone Pastry Mat 24\"\\*16\" Extra Thick Non Stick Baking Mat Food Grade Silicone Dough Rolling Bake Mat with Ed", "price": 16.99, "rating": 4.8, "reviews": 1300}, {"asin": "B0CWV5D6JS", "title": "Heat Resistant Mat for Air Fryer, 15 x 18in Heat Resistant Mat for Countertop, Fireproof Silicone Countertop Protector A", "price": 11.99, "rating": 4.6, "reviews": 631}, {"asin": "B0FG1HFFQ1", "title": "3 PCS Silicone Bread Sling for Dutch Oven Liners, Non Stick & Easy to Clean Silicone Bread Baking Mat with Extra Long Ha", "price": 6.39, "rating": 4.7, "reviews": 121}, {"asin": "B09R52P1FW", "title": "BLACKSTONE 4222 Silicone Large Griddle Spatula Mat, Serving Spoon Drip Pad & Grill Utensil Holder for Kitchen, Stovetop,", "price": 12.99, "rating": 4.8, "reviews": 3000}, {"asin": "B07WYKVVRG", "title": "FETESUR Silicone Perforated Baking Forms Sandwich Mold French Baguette Bread Pan Food Mat 5 Loaf Non-Stick Baking Liners", "price": null, "rating": null, "reviews": null}, {"asin": "B0CXTMYKVC", "title": "FETESUR Silicone Perforated Baking Forms Sandwich Mold French Baguette Bread Pan Food Mat 5 Loaf Non-Stick Baking Liners", "price": 16.99, "rating": 4.4, "reviews": 1600}, {"asin": "B0CSK5F2JX", "title": "Silicone Baking Mats, 3 Pack Non-Stick Mats for Baking, Silicone Baking Mats Cookie Sheet, Easy Clean & Reusable Oven Ba", "price": 8.99, "rating": 4.7, "reviews": 1000}, {"asin": "B0FXF35Z9J", "title": "Silicone Baking Dough Pastry Mat, JJOO Large Bread Rolling Cookie kneading Baking Mats for Counter, Nonstick, Easy to Cl", "price": 6.99, "rating": 4.7, "reviews": 45}, {"asin": "B0F195G8RJ", "title": "Amazon Basics Nonstick Silicone Pastry Baking Mat with Measurements, BPA-Free, Oven-Safe, Extra Large 20 x 28 in", "price": 12.0, "rating": 4.7, "reviews": 312}, {"asin": "B0DN16NXHM", "title": "Silicone Pastry Mat - 26\"x16\" Non Slip Baking Mat with Measurements, Extra Large Dough Mats for Counter, Ideal for Rolli", "price": 8.99, "rating": 4.7, "reviews": 356}, {"asin": "B0D7BY3ST6", "title": "Silicone Cake Mat, 12 Inch Round Silicone Mat, Cake Mat with Measurements, Cake Turntable Mat, Reusable Cookie Mat for R", "price": 5.58, "rating": 4.7, "reviews": 228}, {"asin": "B0DG8M5KHL", "title": "Silicone Baking Mat, 12 IN x 6 FT Free Cutting Baking Sheet,Non-Stick Reusable Dough & Pastry Mat,Non-Slip Silicone Mat ", "price": 16.99, "rating": 4.6, "reviews": 387}, {"asin": "B0GHFH5C18", "title": "Masgarlan Fiber-Free Silicone Bread Sling 2 Pack for Dutch Oven, Non-Stick Reusable Sourdough Baking Mat, Easy Dough Tra", "price": 5.99, "rating": 4.7, "reviews": 88}, {"asin": "B09BTLS2Y1", "title": "Small Silicone Baking Mats Quarter Sheet Non Stick Reusable Silicone Oven Liners, BPA Free, Food Grade Baking Mats for C", "price": 9.99, "rating": 4.7, "reviews": 1700}, {"asin": "B0DPMVVM51", "title": "Silicone Baking Mat Macaron - Set of 3 (2 Half Sheet Liners and 1 Quarter Sheet), Non Stick Silicon Cookie Oven Liner Fo", "price": 6.23, "rating": 4.3, "reviews": 120}, {"asin": "B0DHBV2X4C", "title": "Silicone Baking Mat, Baking Sheets Non Stick, Silicone Mats for Baking, 3 Pcs for Cookies, Bread and Pastry, Baking Supp", "price": 7.99, "rating": 4.6, "reviews": 469}, {"asin": "B0DYDPZBWB", "title": "PLAPITATE Silicone Bread Sling for Dutch Oven Liner, Non Stick 2 PCS, Easy Clean Reusable Silicone Baking Mat with Long ", "price": 14.98, "rating": 4.8, "reviews": 172}, {"asin": "B0F2FNPK7M", "title": "Silicone Mat for Kitchen Counter - Cuttte 23.62\" x 15.75\" Large Heat Resistant Mats for Countertop, Anti-slip Quartz Cou", "price": 7.39, "rating": 4.6, "reviews": 225}, {"asin": "B08L3PTM4S", "title": "LEOBRO Silicone Mat, 23.4\u201d x 15.6\u201d Black Silicone Mats for Crafts, Resin Molds, Play Dough Mat, for Resin, Clay, Paint, ", "price": 8.99, "rating": 4.7, "reviews": 6600}, {"asin": "B07W7BQMZ7", "title": "Rolling Pin and Pastry Baking Mat Set, Rolling Pins with Adjustable Thickness Rings, Stainless Steel Dough Roller for Ba", "price": 16.14, "rating": 4.7, "reviews": 7000}, {"asin": "B0CRWG1QNB", "title": "Zulay Kitchen Silicone Baking Mat Set \u2013 2-Pack 16.5\u2033 \u00d7 11.6\u2033 Reusable Non-Stick Silicone Baking Sheets, Food-Safe, Heat-", "price": 11.99, "rating": 4.7, "reviews": 7300}, {"asin": "B0CHYT6Z33", "title": "Lazy K Induction Cooktop Mat - Silicone Fiberglass Scratch Protector - for Magnetic Stove - Non Slip Pads to Prevent Pot", "price": 15.99, "rating": 4.2, "reviews": 2300}, {"asin": "B0DK26SPC3", "title": "whisrvival 4 Pcs Silicone Baking Mat, Non-Stick Baking Mat, Food Safe Silicone Mats for Baking Cookies, Macarons, Vegeta", "price": 9.99, "rating": 4.4, "reviews": 122}, {"asin": "B07ZK6GH86", "title": "LEOBRO Silicone Mats, 3 PCS Silicone Mats for Crafts, Resin Molds, Play Dough Mat, Nonstick Silicone Sheet Mat for Epoxy", "price": 8.99, "rating": 4.7, "reviews": 8700}, {"asin": "B07P2KRC4B", "title": "Macaron Silicone Baking Mat - Set of 2 Non Stick Silicon Macaroon Baking Sheet Cookie Liner(BPA Free/Reusable/Half Sheet", "price": 9.99, "rating": 4.7, "reviews": 2000}, {"asin": "B0F3X75TF7", "title": "2Pack Silicone Mats, Premium Silicone Mat for Crafts, 15.7 \"x11.8\" Playdough Mat, Silicone Sheet for Crafts, Liquid, Res", "price": 5.19, "rating": 4.6, "reviews": 212}, {"asin": "B0D6YL28WF", "title": "Amyandone Silicone Baking Mat with Microperforated, 2 PCS Perforated Baking Mats/Oven Liners for 13\" x 18\" Half Sheet Pa", "price": 9.99, "rating": 4.7, "reviews": 148}, {"asin": "B0D2D5Y82D", "title": "Komzon 3 Pack Air Fryer Silicone Liners, 8Inch Airfryer Liners, AirFryer Basket Liner, Reusable Food Grade Air Fryers Ba", "price": 9.99, "rating": 4.5, "reviews": 821}, {"asin": "B088M39CFQ", "title": "Gartful Extra Large Silicone Mat 23.6 x 15.7 inches, Silicone Crafts Sheet, Casting Molds Mat, Countertop Protector, Pla", "price": 9.49, "rating": 4.5, "reviews": 2200}, {"asin": "B0FFMKM43S", "title": "HOTEC Silicone Bread Sling for Dutch Oven - 2 Pack Non-Stick Baking Mat with Long Handle Easy to Transfer Sourdough Brea", "price": 9.99, "rating": 4.7, "reviews": 128}, {"asin": "B0D8THYLRV", "title": "Dough Mat Pastry Silicone Baking Mats 32x24\" Red for Rolling Dough Kneading Sheet Sourdough Bread Baking Supplies 0.45mm", "price": 15.99, "rating": 4.8, "reviews": 371}, {"asin": "B0D5RF6GH8", "title": "48\u201d x 24\u201dSilicone mat, Large Silicone Heat-Resistant mat, Kitchen countertop Non-Slip mat, Craft Table placemat.(Translu", "price": 22.99, "rating": 4.4, "reviews": 416}, {"asin": "B09D2XJ1TT", "title": "KooMall 12 10 8 Inch Multi-use Microwave Mat, Trivet, Pot Holders, Drying, Baking, Place Mat, Utensils Rest, Silicone Co", "price": 16.99, "rating": 4.7, "reviews": 2600}, {"asin": "B0D8BBGV6S", "title": "2pack Heat Resistant Mat for Air Fryer, 15x18in Heat Resistant Mat for Countertop, Silicone Kitchen Countertop Hot Pads ", "price": 14.89, "rating": 4.4, "reviews": 687}, {"asin": "B0B9XMDJGL", "title": "Macaron Silicone Baking Mats, Katbite Silicone Macaroons Baking Mat Set of 2 Half Sheet (11 5/8\" x 16 1/2\") Reusable & N", "price": 14.99, "rating": 4.7, "reviews": 5100}, {"asin": "B0FYFXSK29", "title": "Silicone Baking Mat 28x20 Inches | Extra Thick Dough Rolling Mat with Measurements and Edge Heightening | Non-Stick Food", "price": 14.39, "rating": 4.5, "reviews": 61}, {"asin": "B0FT2W73T9", "title": "Silicone Baking Pastry Dough Mat - Non Slip Rolling Mat with Measurement Guides, Thick Reusable Kneading Board for Bread", "price": 12.95, "rating": 4.9, "reviews": 78}, {"asin": "B0F2JP27PM", "title": "NiHome 4-Pack Silicone Bread Loaf Pan Liners, Reusable and Nonstick Silicone Bread Sling, Fit for 9x5, 9.5x5, and 10x5 I", "price": 11.99, "rating": 4.6, "reviews": 194}, {"asin": "B0BW5KTW7B", "title": "AMYONE Perforated Baking Mats, 2 PCS Pink Eclair Silicone Mat for Half Sheet, Non-Stick Reusable Oven Liners for Making ", "price": 13.95, "rating": 4.6, "reviews": 486}, {"asin": "B0DQXTHN2T", "title": "Silicone Baking Mats Half Sheet Non Stick for Oven Reusable 4 Pack - Thick Heavy Duty Silicone Baking Mat Cookie Sheet 1", "price": 16.99, "rating": 4.7, "reviews": 326}, {"asin": "B0FFLZND41", "title": "HOTEC Silicone Baking Mats 3 Pack \u2013 Non-Stick Reusable Silicone Baking Sheets for Oven \u2013 Cookie & Macaron Mats \u2013 2 Half ", "price": 7.98, "rating": 4.7, "reviews": 247}, {"asin": "B0C21DJ9XB", "title": "Chocolate Chip Mold with 468 Boba Cavities - 15,7\"x11\" Silicone Dog Treat Mold with Temperature Range from -40\u2109 to 446\u2109 ", "price": 8.49, "rating": 4.5, "reviews": 55}, {"asin": "B0BQG2W8BW", "title": "FLASLD Heat Resistant Mat for Air Fryer Site on, Fireproof Silicone Mats for Kitchen Counter, Countertop Protector, No-s", "price": 9.99, "rating": 4.6, "reviews": 2400}, {"asin": "B082D7FDB7", "title": "Sapid Extra Thick Silicone Pastry Mat Non-slip with Measurements for Non-stick Silicone Baking Mat Extra Large, Dough Ro", "price": 11.85, "rating": 4.8, "reviews": 4300}, {"asin": "B0FLDLG1FD", "title": "Silicone Baking Mat Set of 6, Silicone Mats for Baking, Baking Sheets Non Stick for Macaron, Cookie, Pizza, Bread and Pa", "price": 26.99, "rating": 4.6, "reviews": 137}, {"asin": "B0C9CC6Q24", "title": "Silicone Pastry Mat 32\" x 24\" Extra Thick Non Stick Baking Mat with Measurements and Edge Heightening, Food Grade Silico", "price": 24.99, "rating": 4.8, "reviews": 1500}, {"asin": "B0D7CJ77KT", "title": "Small Silicone Baking Mats, Set of 4,11-4/5x8-1/4 Inch Quarter Sheet Size, Non Stick, BPA Free, 1/4 Baking Sheet Pan Lin", "price": 9.49, "rating": 4.7, "reviews": 289}, {"asin": "B0DZHJ4QZ7", "title": "Extra Large Silicone Pastry Mat for Counter Rolling Dough,36x24 Inch,0.75mm Thick,Non Slip Silicone Baking Mat with Meas", "price": 19.79, "rating": 4.8, "reviews": 82}];
+
+// Calculate stats
+const prices = products.filter(p => p.price).map(p => p.price);
+const ratings = products.filter(p => p.rating).map(p => p.rating);
+const reviews = products.filter(p => p.reviews).map(p => p.reviews);
+
+const avgPrice = prices.reduce((a,b) => a+b, 0) / prices.length;
+const minPrice = Math.min(...prices);
+const maxPrice = Math.max(...prices);
+const avgRating = ratings.reduce((a,b) => a+b, 0) / ratings.length;
+const minRating = Math.min(...ratings);
+const maxRating = Math.max(...ratings);
+const totalReviews = reviews.reduce((a,b) => a+b, 0);
+const avgReviews = Math.round(totalReviews / reviews.length);
+
+// Animate KPIs
+function animateValue(el, target, prefix='', suffix='', decimals=0) {
+  let current = 0;
+  const step = target / 40;
+  const interval = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(interval); }
+    el.textContent = prefix + (decimals ? current.toFixed(decimals) : Math.round(current).toLocaleString()) + suffix;
+  }, 30);
+}
+
+animateValue(document.getElementById('kpi-count'), products.length);
+animateValue(document.getElementById('kpi-avg-price'), avgPrice, '$', '', 2);
+animateValue(document.getElementById('kpi-avg-rating'), avgRating, '', '/5', 2);
+animateValue(document.getElementById('kpi-total-reviews'), totalReviews, '', '');
+document.getElementById('kpi-price-range').textContent = 'Range: $' + minPrice.toFixed(2) + ' - $' + maxPrice.toFixed(2);
+document.getElementById('kpi-rating-range').textContent = 'Range: ' + minRating + ' - ' + maxRating;
+document.getElementById('kpi-avg-reviews').textContent = 'Avg per product: ' + avgReviews.toLocaleString();
+
+// Market leader
+const leader = products.reduce((max, p) => (p.reviews || 0) > (max.reviews || 0) ? p : max, products[0]);
+document.getElementById('kpi-leader').textContent = leader.title.split(',')[0].substring(0, 35) + '...';
+document.getElementById('kpi-leader-detail').textContent = (leader.reviews/1000).toFixed(1) + 'K reviews, ' + leader.rating + ' stars';
+
+// Insights
+const priceMode = prices.sort((a,b) => a-b);
+const medianPrice = priceMode[Math.floor(priceMode.length/2)];
+const under12 = prices.filter(p => p >= 8 && p <= 12).length;
+const pctUnder12 = Math.round(under12/prices.length*100);
+document.getElementById('insight-price').textContent = pctUnder12 + '% of products are priced between $8-$12. Median price is $' + medianPrice.toFixed(2) + '. Premium positioning above $20 has very low competition (' + prices.filter(p=>p>20).length + ' products).';
+
+const highRated = ratings.filter(r => r >= 4.7).length;
+document.getElementById('insight-quality').textContent = Math.round(highRated/ratings.length*100) + '% of products have 4.7+ stars. The category benchmark is extremely high. Any new entrant needs 4.5+ to be competitive.';
+
+const lowCompetition = products.filter(p => p.price > 18 && p.rating >= 4.5).length;
+document.getElementById('insight-opportunity').textContent = 'Only ' + lowCompetition + ' products combine premium pricing ($18+) with high ratings (4.5+). This is a potential gap for a premium bundled offering.';
+
+// Chart defaults
+Chart.defaults.color = '#8888a0';
+Chart.defaults.borderColor = 'rgba(42,42,58,0.5)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// Price Distribution Chart
+const priceRanges = ['<$6', '$6-8', '$8-10', '$10-12', '$12-15', '$15-20', '$20-30', '$30+'];
+const priceBins = [0,0,0,0,0,0,0,0];
+prices.forEach(p => {
+  if (p < 6) priceBins[0]++;
+  else if (p < 8) priceBins[1]++;
+  else if (p < 10) priceBins[2]++;
+  else if (p < 12) priceBins[3]++;
+  else if (p < 15) priceBins[4]++;
+  else if (p < 20) priceBins[5]++;
+  else if (p < 30) priceBins[6]++;
+  else priceBins[7]++;
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'bar',
+  data: {
+    labels: priceRanges,
+    datasets: [{
+      data: priceBins,
+      backgroundColor: [
+        'rgba(79,140,255,0.3)', 'rgba(79,140,255,0.4)', 'rgba(79,140,255,0.6)', 'rgba(79,140,255,0.8)',
+        'rgba(139,92,246,0.5)', 'rgba(139,92,246,0.7)', 'rgba(251,146,60,0.6)', 'rgba(239,68,68,0.5)'
+      ],
+      borderColor: [
+        'rgba(79,140,255,0.5)', 'rgba(79,140,255,0.6)', 'rgba(79,140,255,0.8)', 'rgba(79,140,255,1)',
+        'rgba(139,92,246,0.7)', 'rgba(139,92,246,0.9)', 'rgba(251,146,60,0.8)', 'rgba(239,68,68,0.7)'
+      ],
+      borderWidth: 1,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(42,42,58,0.3)' }, title: { display: true, text: 'Number of Products', color: '#555570' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Rating Distribution Chart
+const ratingRanges = ['4.0-4.2', '4.2-4.4', '4.4-4.5', '4.5-4.6', '4.6-4.7', '4.7-4.8', '4.8-4.9', '4.9-5.0'];
+const ratingBins = [0,0,0,0,0,0,0,0];
+ratings.forEach(r => {
+  if (r < 4.2) ratingBins[0]++;
+  else if (r < 4.4) ratingBins[1]++;
+  else if (r < 4.5) ratingBins[2]++;
+  else if (r < 4.6) ratingBins[3]++;
+  else if (r < 4.7) ratingBins[4]++;
+  else if (r < 4.8) ratingBins[5]++;
+  else if (r < 4.9) ratingBins[6]++;
+  else ratingBins[7]++;
+});
+
+new Chart(document.getElementById('ratingChart'), {
+  type: 'bar',
+  data: {
+    labels: ratingRanges,
+    datasets: [{
+      data: ratingBins,
+      backgroundColor: ratingBins.map((_, i) => {
+        const colors = ['rgba(239,68,68,0.5)', 'rgba(251,146,60,0.5)', 'rgba(251,146,60,0.6)', 'rgba(34,211,238,0.4)', 'rgba(34,211,238,0.5)', 'rgba(52,211,153,0.5)', 'rgba(52,211,153,0.7)', 'rgba(52,211,153,0.9)'];
+        return colors[i];
+      }),
+      borderColor: ratingBins.map((_, i) => {
+        const colors = ['rgba(239,68,68,0.7)', 'rgba(251,146,60,0.7)', 'rgba(251,146,60,0.8)', 'rgba(34,211,238,0.6)', 'rgba(34,211,238,0.7)', 'rgba(52,211,153,0.7)', 'rgba(52,211,153,0.9)', 'rgba(52,211,153,1)'];
+        return colors[i];
+      }),
+      borderWidth: 1,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(42,42,58,0.3)' }, title: { display: true, text: 'Number of Products', color: '#555570' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Scatter: Price vs Rating (bubble = reviews)
+const scatterData = products.filter(p => p.price && p.rating && p.reviews).map(p => ({
+  x: p.price,
+  y: p.rating,
+  r: Math.max(4, Math.min(30, Math.sqrt(p.reviews / 100))),
+  title: p.title.substring(0, 40),
+  reviews: p.reviews
+}));
+
+const lowReviews = scatterData.filter(d => d.reviews < 1000);
+const midReviews = scatterData.filter(d => d.reviews >= 1000 && d.reviews < 10000);
+const highReviews = scatterData.filter(d => d.reviews >= 10000);
+
+new Chart(document.getElementById('scatterChart'), {
+  type: 'bubble',
+  data: {
+    datasets: [
+      { label: '<1K reviews', data: lowReviews, backgroundColor: 'rgba(79,140,255,0.35)', borderColor: 'rgba(79,140,255,0.6)', borderWidth: 1 },
+      { label: '1K-10K', data: midReviews, backgroundColor: 'rgba(52,211,153,0.35)', borderColor: 'rgba(52,211,153,0.6)', borderWidth: 1 },
+      { label: '10K+', data: highReviews, backgroundColor: 'rgba(251,146,60,0.4)', borderColor: 'rgba(251,146,60,0.7)', borderWidth: 1 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            const d = ctx.raw;
+            return d.title + ': $' + d.x.toFixed(2) + ', ' + d.y + ' stars, ' + d.reviews.toLocaleString() + ' reviews';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Price ($)', color: '#555570' }, grid: { color: 'rgba(42,42,58,0.3)' } },
+      y: { title: { display: true, text: 'Rating', color: '#555570' }, min: 4.0, max: 5.0, grid: { color: 'rgba(42,42,58,0.3)' } }
+    }
+  }
+});
+
+// Reviews Distribution (horizontal bar, log scale)
+const reviewRanges = ['<100', '100-500', '500-1K', '1K-5K', '5K-10K', '10K-50K', '50K+'];
+const reviewBins = [0,0,0,0,0,0,0];
+reviews.forEach(r => {
+  if (r < 100) reviewBins[0]++;
+  else if (r < 500) reviewBins[1]++;
+  else if (r < 1000) reviewBins[2]++;
+  else if (r < 5000) reviewBins[3]++;
+  else if (r < 10000) reviewBins[4]++;
+  else if (r < 50000) reviewBins[5]++;
+  else reviewBins[6]++;
+});
+
+new Chart(document.getElementById('reviewsChart'), {
+  type: 'bar',
+  data: {
+    labels: reviewRanges,
+    datasets: [{
+      data: reviewBins,
+      backgroundColor: 'rgba(251,146,60,0.4)',
+      borderColor: 'rgba(251,146,60,0.7)',
+      borderWidth: 1,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: 'rgba(42,42,58,0.3)' }, title: { display: true, text: 'Number of Products', color: '#555570' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Keywords
+const stopWords = new Set(['for','and','with','the','non','a','of','in','to','on','&','-','x','2','3','1','4','5','set']);
+const wordCount = {};
+products.forEach(p => {
+  const words = p.title.match(/[A-Za-z]+/g) || [];
+  words.forEach(w => {
+    const wl = w.toLowerCase();
+    if (wl.length > 2 && !stopWords.has(wl)) {
+      wordCount[wl] = (wordCount[wl] || 0) + 1;
+    }
+  });
+});
+
+const sortedWords = Object.entries(wordCount).sort((a,b) => b[1]-a[1]).slice(0, 18);
+const maxCount = sortedWords[0][1];
+const cloud = document.getElementById('keywordCloud');
+const tagColors = [
+  { bg: 'rgba(79,140,255,0.12)', border: 'rgba(79,140,255,0.25)', color: '#6ba3ff' },
+  { bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', color: '#a78bfa' },
+  { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.25)', color: '#34d399' },
+  { bg: 'rgba(251,146,60,0.12)', border: 'rgba(251,146,60,0.25)', color: '#fb923c' },
+  { bg: 'rgba(34,211,238,0.12)', border: 'rgba(34,211,238,0.25)', color: '#22d3ee' },
+];
+
+sortedWords.forEach(([word, count], i) => {
+  const scale = 0.75 + (count / maxCount) * 0.55;
+  const colorSet = tagColors[i % tagColors.length];
+  const tag = document.createElement('span');
+  tag.className = 'keyword-tag';
+  tag.style.cssText = 'font-size:' + scale + 'rem;background:' + colorSet.bg + ';border-color:' + colorSet.border + ';color:' + colorSet.color;
+  tag.innerHTML = word + ' <span class="count">' + count + '</span>';
+  cloud.appendChild(tag);
+});
+
+// Product Table
+let currentSort = 'reviews';
+
+function sortTable(sortBy) {
+  currentSort = sortBy;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const sorted = [...products].filter(p => p.price && p.rating);
+  switch(currentSort) {
+    case 'reviews': sorted.sort((a,b) => (b.reviews||0) - (a.reviews||0)); break;
+    case 'price-low': sorted.sort((a,b) => (a.price||0) - (b.price||0)); break;
+    case 'price-high': sorted.sort((a,b) => (b.price||0) - (a.price||0)); break;
+    case 'rating-low': sorted.sort((a,b) => (a.rating||0) - (b.rating||0)); break;
+    case 'rating-high': sorted.sort((a,b) => (b.rating||0) - (a.rating||0)); break;
+  }
+  
+  const tbody = document.getElementById('productTable');
+  tbody.innerHTML = sorted.map((p, i) => {
+    const ratingPct = ((p.rating - 4.0) / 1.0 * 100);
+    const ratingColor = p.rating >= 4.7 ? '#34d399' : p.rating >= 4.5 ? '#22d3ee' : p.rating >= 4.3 ? '#fb923c' : '#ef4444';
+    return '<tr>' +
+      '<td style="color:var(--text-muted);font-size:0.75rem;">' + (i+1) + '</td>' +
+      '<td title="' + p.title.replace(/"/g, '&quot;') + '">' + p.title.substring(0, 80) + (p.title.length > 80 ? '...' : '') + '</td>' +
+      '<td class="price-tag">$' + (p.price ? p.price.toFixed(2) : 'N/A') + '</td>' +
+      '<td><div class="rating-bar"><span>' + (p.rating || 'N/A') + '</span><div class="bar"><div class="fill" style="width:' + ratingPct + '%;background:' + ratingColor + '"></div></div></div></td>' +
+      '<td>' + (p.reviews ? p.reviews.toLocaleString() : 'N/A') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+renderTable();
+</script>
+</body>
+</html>

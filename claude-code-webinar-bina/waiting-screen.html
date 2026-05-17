@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מתחילים בקרוב . וובינר קלוד קוד</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #f7f5f1;
+  font-family: 'Assistant', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #0a0a0c;
+  overflow: hidden;
+  position: relative;
+  direction: rtl;
+}
+
+/* Subtle grain texture */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.012) 1px, transparent 0);
+  background-size: 12px 12px;
+  pointer-events: none;
+}
+
+.brand {
+  position: absolute;
+  top: 32px;
+  right: 48px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9c9690;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d97757;
+}
+
+.brand .bar {
+  color: #d97757;
+  opacity: 0.7;
+  margin: 0 4px;
+}
+
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.label {
+  font-family: 'Assistant', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #d97757;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.label::before, .label::after {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: #d97757;
+  opacity: 0.5;
+}
+
+.title {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 24px;
+  font-weight: 400;
+  color: #5c5660;
+  margin-bottom: 56px;
+}
+
+.timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 120px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #0a0a0c;
+  margin-bottom: 16px;
+  line-height: 1;
+  min-width: 360px;
+  direction: ltr;
+}
+
+.timer-label {
+  font-family: 'Assistant', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #9c9690;
+  margin-bottom: 64px;
+}
+
+.bottom-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+}
+
+.qr-box {
+  background: white;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e8e4dc;
+  box-shadow: 0 4px 20px rgba(10,10,12,0.06);
+}
+
+.qr-box img {
+  display: block;
+  width: 140px;
+  height: 140px;
+}
+
+.qr-text {
+  text-align: right;
+  max-width: 320px;
+}
+
+.qr-text .heading {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0a0a0c;
+  margin-bottom: 6px;
+}
+
+.qr-text .desc {
+  font-size: 14px;
+  color: #5c5660;
+  line-height: 1.6;
+}
+
+.qr-text .url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #d97757;
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+  direction: ltr;
+  text-align: right;
+}
+
+/* Pulsing dot animation */
+.pulse-dot {
+  position: absolute;
+  top: 32px;
+  left: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9c9690;
+  letter-spacing: 0.04em;
+}
+
+.pulse-dot::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #28c840;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(40, 200, 64, 0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(40, 200, 64, 0); }
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  bottom: 32px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.controls button {
+  font-family: 'Assistant', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 10px 24px;
+  border: 1px solid #e8e4dc;
+  border-radius: 8px;
+  background: white;
+  color: #5c5660;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.controls button:hover {
+  border-color: #d97757;
+  color: #d97757;
+}
+
+.controls button.active {
+  background: #d97757;
+  color: white;
+  border-color: #d97757;
+}
+
+/* Audio fallback message */
+.audio-hint {
+  position: absolute;
+  bottom: 80px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 11px;
+  color: #9c9690;
+  letter-spacing: 0.04em;
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  בינה לעסקים <span class="bar">×</span> ג'יי &amp; מנדי
+</div>
+
+<div class="pulse-dot">בקרוב בלייב</div>
+
+<div class="content">
+  <div class="label">מתחילים בקרוב</div>
+  <div class="title">קלוד קוד</div>
+  <div class="subtitle">השלב הבא של AI</div>
+
+  <div class="timer" id="timer">09:00</div>
+  <div class="timer-label">דקות עד שמתחילים</div>
+  <div style="font-size: 17px; color: #9c9690; margin-top: 16px; margin-bottom: 40px; line-height: 1.7;">
+    קחו קפה ☕ ותתיישבו בנוח. אנחנו ממתינים שכולם יצטרפו.
+  </div>
+
+  <div class="bottom-section">
+    <div class="qr-box">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A?mode=gi_t&margin=0" alt="WhatsApp QR" />
+    </div>
+    <div class="qr-text">
+      <div class="heading">הצטרפו לקבוצת "בינה לעסקים"</div>
+      <div class="desc">טיפים פרקטיים על AI, כלים חדשים,<br>וכל הלינקים מהיום נחתים שם בסוף.</div>
+      <div class="url">chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button onclick="toggleTimer()" id="btnStart">התחל</button>
+  <span style="display: inline-flex; align-items: center; gap: 8px; margin-right: 12px; color: #9c9690; font-size: 14px;">🔊 <input type="range" min="0" max="100" value="40" id="volSlider" oninput="audio.volume = this.value / 100" style="width: 100px; accent-color: #d97757; cursor: pointer;"></span>
+</div>
+
+
+<script>
+let countdown;
+let totalSeconds = 540;
+let running = false;
+
+const audio = new Audio('/media/waiting-music.mp3');
+audio.loop = true;
+audio.volume = 0.4;
+
+function toggleTimer() {
+  if (!running) {
+    running = true;
+    audio.play().catch(() => {});
+    document.getElementById('btnStart').textContent = 'רץ...';
+    document.getElementById('btnStart').classList.add('active');
+    countdown = setInterval(() => {
+      totalSeconds--;
+      if (totalSeconds <= 0) {
+        clearInterval(countdown);
+        totalSeconds = 0;
+        audio.pause();
+        document.getElementById('timer').textContent = "מתחילים!";
+        document.getElementById('timer').style.color = '#d97757';
+        document.getElementById('timer').style.fontSize = '80px';
+        document.querySelector('.timer-label').textContent = '';
+        document.getElementById('btnStart').style.display = 'none';
+      }
+      updateDisplay();
+    }, 1000);
+  }
+}
+
+function updateDisplay() {
+  if (totalSeconds <= 0) return;
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  document.getElementById('timer').textContent =
+    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+updateDisplay();
+</script>
+
+</body>
+</html>
