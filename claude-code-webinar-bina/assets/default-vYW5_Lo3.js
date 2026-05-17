@@ -1,1 +1,0 @@
-import{o as t,e as s,i as o}from"./modules/vue-CzOxEgaC.js";import{u as r}from"./slidev/context-DYyJHrvx.js";const a={class:"center-stack"},i={__name:"default",setup(c){return r(),(e,n)=>(t(),s("div",a,[o(e.$slots,"default")]))}};export{i as _};
