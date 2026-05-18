@@ -5258,18 +5258,42 @@ window.showPortal = function(round) {
 // ============================================
 // VAULT VSL BANNER CONTROL
 // ============================================
-// Flip this to false when ready to show to all users (not just admins)
-const VAULT_BANNER_ADMIN_ONLY = false;
+// VAULT_BANNER_DAY_4_GATE: when true, banner shows ONLY from Day 4 of the user's round onwards.
+// Admins always see it for previewing. Past archived rounds (round1, round2) also see it
+// since their Day 4 already passed.
+const VAULT_BANNER_DAY_4_GATE = true;
 // How long after dismiss before it reappears (hours). 24 = once per day
 const VAULT_BANNER_DISMISS_HOURS = 24;
 const VAULT_BANNER_ADMIN_EMAILS = ['info@jaygptpro.com','smargaliot1@gmail.com'];
+
+// Returns true if the current user has reached Day 4 of their round (or is admin / past round).
+// Used to gate the Vault VSL banner so R4/R5 customers don't see it before Day 4.
+function isPastVaultGate() {
+  const email = (localStorage.getItem('donna-challenge-email') || '').toLowerCase();
+  if (VAULT_BANNER_ADMIN_EMAILS.indexOf(email) >= 0) return true; // admin always
+  const round = localStorage.getItem('donna-challenge-round') || '';
+  if (round === 'both') return true;
+  if (round === 'round1' || round === 'round2') return true; // archived rounds, past Day 4
+  if (round === 'round4' || round === 'round5') {
+    // Use the same date math as isDayUnlocked, with the same 20-min buffer.
+    if (typeof buildUnlockDate === 'function' && typeof getCachedRoundDates === 'function') {
+      const dates = getCachedRoundDates();
+      const startDateStr = dates[round];
+      if (!startDateStr) return false;
+      const day4Unlock = buildUnlockDate(startDateStr, 4);
+      return Date.now() >= (day4Unlock.getTime() - (20 * 60 * 1000));
+    }
+    return false;
+  }
+  return false; // unknown round: don't show
+}
 
 function showVaultBannerIfEligible() {
   try {
     const email = (localStorage.getItem('donna-challenge-email') || '').toLowerCase();
     if (!email) return;
 
-    if (VAULT_BANNER_ADMIN_ONLY && VAULT_BANNER_ADMIN_EMAILS.indexOf(email) < 0) return;
+    if (VAULT_BANNER_DAY_4_GATE && !isPastVaultGate()) return;
 
     const lastDismiss = parseInt(localStorage.getItem('vault-banner-dismissed') || '0', 10);
     const hoursSinceDismiss = (Date.now() - lastDismiss) / (1000 * 60 * 60);
