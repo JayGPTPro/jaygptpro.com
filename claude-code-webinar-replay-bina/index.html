@@ -453,6 +453,126 @@ img { display: block; max-width: 100%; }
     .value-title { font-size: 15px; }
 }
 
+.big-timer-box {
+    max-width: 620px;
+    margin: 0 auto 36px;
+    padding: 28px 30px 24px;
+    background: linear-gradient(135deg, #fff5eb 0%, #ffeed5 100%);
+    border: 2px solid var(--orange);
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(249,115,22,0.22), 0 0 0 6px rgba(249,115,22,0.06);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.big-timer-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(249,115,22,0.18), transparent 60%);
+    pointer-events: none;
+}
+.big-timer-badges {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+.badge-last {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--red);
+    color: white;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+.badge-proof {
+    display: inline-block;
+    padding: 6px 14px;
+    background: white;
+    color: var(--text-2);
+    border: 1px solid rgba(249,115,22,0.4);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.big-timer-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--orange-dark);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+.big-timer-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    direction: ltr;
+    position: relative;
+    z-index: 1;
+}
+.big-timer-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+    padding: 12px 4px 10px;
+    background: white;
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(20,20,40,0.06);
+}
+.big-timer-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.big-timer-cap {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+}
+.big-timer-sep {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--orange);
+    line-height: 1;
+    padding-bottom: 16px;
+}
+.big-timer-foot {
+    font-size: 13.5px;
+    color: var(--text-3);
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+@media (max-width: 640px) {
+    .big-timer-box { padding: 22px 18px 18px; }
+    .big-timer-unit { min-width: 56px; padding: 10px 2px 8px; }
+    .big-timer-num { font-size: 28px; }
+    .big-timer-sep { font-size: 22px; padding-bottom: 12px; }
+    .big-timer-cap { font-size: 10px; }
+    .big-timer-foot { font-size: 12px; }
+}
+
 .challenge-note {
     margin-top: 16px;
     font-size: 14px;
@@ -593,6 +713,25 @@ img { display: block; max-width: 100%; }
             <h2>בנו את <span class="hl">עובד ה-AI הראשון שלכם</span> ב-5 ימים</h2>
             <p>אחרי שראיתם את הוובינר, בואו לעשות את זה בעצמכם. 5 ימים מודרכים, 30 עד 60 דקות ביום, ללא צורך בידע בקוד. מחיר ההשקה בתוקף לזמן מוגבל.</p>
 
+            <!-- Big countdown + social proof -->
+            <div class="big-timer-box">
+                <div class="big-timer-badges">
+                    <span class="badge-last">⚠ סבב אחרון</span>
+                    <span class="badge-proof">מעל 250 השלימו את האתגר בסבבים הקודמים</span>
+                </div>
+                <div class="big-timer-label">האתגר מתחיל בעוד</div>
+                <div class="big-timer-display" id="bigTimer">
+                    <div class="big-timer-unit"><span class="big-timer-num" id="bt-d">00</span><span class="big-timer-cap">ימים</span></div>
+                    <div class="big-timer-sep">:</div>
+                    <div class="big-timer-unit"><span class="big-timer-num" id="bt-h">00</span><span class="big-timer-cap">שעות</span></div>
+                    <div class="big-timer-sep">:</div>
+                    <div class="big-timer-unit"><span class="big-timer-num" id="bt-m">00</span><span class="big-timer-cap">דקות</span></div>
+                    <div class="big-timer-sep">:</div>
+                    <div class="big-timer-unit"><span class="big-timer-num" id="bt-s">00</span><span class="big-timer-cap">שניות</span></div>
+                </div>
+                <div class="big-timer-foot">יום ראשון, 24 במאי . 11:00 בבוקר . אחרי זה ההרשמה נסגרת לתמיד</div>
+            </div>
+
             <!-- What's Inside -->
             <div class="value-card">
                 <div class="value-header">
@@ -643,17 +782,27 @@ function updateReplayTimer() {
     const now = Date.now();
     const diff = target - now;
     const el = document.getElementById('replayTimer');
-    if (!el) return;
+    const pad = n => String(n).padStart(2, '0');
+
     if (diff <= 0) {
-        el.textContent = 'ההקלטה הוסרה';
+        if (el) el.textContent = 'ההקלטה הוסרה';
+        ['bt-d','bt-h','bt-m','bt-s'].forEach(id => {
+            const e = document.getElementById(id);
+            if (e) e.textContent = '00';
+        });
         return;
     }
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
-    const pad = n => String(n).padStart(2, '0');
-    el.textContent = `${pad(d)} : ${pad(h)} : ${pad(m)} : ${pad(s)}`;
+
+    if (el) el.textContent = `${pad(d)} : ${pad(h)} : ${pad(m)} : ${pad(s)}`;
+
+    const bd = document.getElementById('bt-d'); if (bd) bd.textContent = pad(d);
+    const bh = document.getElementById('bt-h'); if (bh) bh.textContent = pad(h);
+    const bm = document.getElementById('bt-m'); if (bm) bm.textContent = pad(m);
+    const bs = document.getElementById('bt-s'); if (bs) bs.textContent = pad(s);
 }
 updateReplayTimer();
 setInterval(updateReplayTimer, 1000);
