@@ -789,10 +789,6 @@ footer a:hover { color: var(--glow); }
   <div class="container nav-inner">
     <div class="nav-logo"></div>
     <div class="nav-right">
-      <div class="countdown-chip">
-        <span class="countdown-label">Offer ends in</span>
-        <span id="nav-countdown">Loading...</span>
-      </div>
       <a href="https://www.topdog.community/checkout/ai-vault" class="btn btn-primary" target="_blank" rel="noopener">Claim Your Spot &rarr;</a>
     </div>
   </div>
@@ -850,8 +846,7 @@ footer a:hover { color: var(--glow); }
 <div class="urgency-bar">
   <div class="container urgency-inner">
     <span class="urgency-icon">&#9888;&#65039;</span>
-    <span>This offer is exclusive to challenge members. Regular price: <strong>$100/mo</strong>. Your price right now: <strong>$50/mo</strong>. Expires when the challenge ends.</span>
-    <div id="urgency-countdown" class="urgency-timer">Loading...</div>
+    <span>This offer is exclusive to challenge members. Regular price: <strong>$100/mo</strong>. Your price right now: <strong>$50/mo</strong>.</span>
   </div>
 </div>
 
@@ -1232,7 +1227,6 @@ footer a:hover { color: var(--glow); }
   <div class="sm-inner">
     <div class="sm-price">
       <span class="sm-price-main">$50/mo <span style="color:var(--t3);text-decoration:line-through;font-weight:500;font-size:14px;margin-left:4px;">$100</span></span>
-      <span class="sm-price-sub" id="sm-countdown">Loading...</span>
     </div>
     <a href="https://www.topdog.community/checkout/ai-vault" class="sm-cta" target="_blank" rel="noopener">Claim Now &rarr;</a>
   </div>
@@ -1242,35 +1236,6 @@ footer a:hover { color: var(--glow); }
 <div class="toast" id="toast">Coupon code copied!</div>
 
 <script>
-// ─── CONFIGURE: set the challenge end date/time here ───────────────────────
-// Midnight between Sunday and Monday, Los Angeles (PDT = UTC-7)
-const CHALLENGE_END = new Date('2026-04-27T07:00:00Z');
-// ────────────────────────────────────────────────────────────────────────────
-
-function getTimeLeft() {
-  const now = new Date();
-  const diff = CHALLENGE_END - now;
-  if (diff <= 0) return null;
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-function tick() {
-  const t = getTimeLeft();
-  const display = t || 'EXPIRED';
-  const nav = document.getElementById('nav-countdown');
-  const urgency = document.getElementById('urgency-countdown');
-  const sm = document.getElementById('sm-countdown');
-  if (nav) nav.textContent = display;
-  if (urgency) urgency.textContent = display;
-  if (sm) sm.textContent = t ? ('Ends in ' + t) : 'EXPIRED';
-}
-
-tick();
-setInterval(tick, 1000);
-
 // ─── ANALYTICS EVENT TRACKING ────────────────────────────────────────────────
 function track(eventName, params) {
   if (typeof gtag === 'function') gtag('event', eventName, params || {});
