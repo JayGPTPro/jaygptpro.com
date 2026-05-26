@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon A+ Content × Claude Code · Free Setup Guide</title>
+<meta name="description" content="Paste an Amazon URL. Get full A+ Content out. The exact stack, install steps, and prompt I use, in one page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vault-blue: #1B9AEC;
+    --vault-blue-dark: #0E7CC9;
+    --navy: #0A1929;
+    --navy-soft: #142A42;
+    --claude-orange: #FF8A4C;
+    --claude-orange-deep: #E66B2B;
+    --bg: #FAFBFC;
+    --card: #FFFFFF;
+    --border: #E5E9F0;
+    --border-strong: #CFD6E0;
+    --text: #0A1929;
+    --text-soft: #475569;
+    --text-muted: #94A3B8;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --shadow-sm: 0 1px 3px rgba(10, 25, 41, 0.06);
+    --shadow-md: 0 4px 16px rgba(10, 25, 41, 0.08);
+    --shadow-lg: 0 12px 40px rgba(10, 25, 41, 0.12);
+    --shadow-xl: 0 24px 80px rgba(10, 25, 41, 0.16);
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    background: #060D1A;
+    color: white;
+    padding: 130px 24px 110px;
+    position: relative;
+    overflow: hidden;
+    min-height: 88vh;
+    display: flex;
+    align-items: center;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: -2px;
+    background-image:
+      linear-gradient(rgba(27, 154, 236, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(27, 154, 236, 0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 75%);
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 75%);
+  }
+  .hero-glow {
+    position: absolute;
+    width: 680px;
+    height: 680px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+    will-change: transform;
+  }
+  .hero-glow-blue {
+    background: var(--vault-blue);
+    top: -260px;
+    left: -160px;
+    animation: glow-float-1 14s ease-in-out infinite;
+  }
+  .hero-glow-orange {
+    background: var(--claude-orange);
+    bottom: -260px;
+    right: -160px;
+    animation: glow-float-2 18s ease-in-out infinite;
+  }
+  @keyframes glow-float-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(120px, 100px) scale(1.1); }
+  }
+  @keyframes glow-float-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-100px, -80px) scale(0.95); }
+  }
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255, 138, 76, 0.35);
+    color: var(--claude-orange);
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    margin-bottom: 36px;
+    backdrop-filter: blur(8px);
+    text-transform: uppercase;
+  }
+  .hero-tag-dot {
+    width: 7px; height: 7px;
+    background: var(--claude-orange);
+    border-radius: 50%;
+    box-shadow: 0 0 14px var(--claude-orange);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.75); }
+  }
+  .hero-title {
+    font-size: clamp(48px, 9vw, 116px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    margin-bottom: 32px;
+  }
+  .hero-title .accent {
+    color: var(--claude-orange);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 200;
+  }
+  .hero-title .muted {
+    color: rgba(255,255,255,0.6);
+  }
+  .hero-sub {
+    font-size: clamp(18px, 2vw, 22px);
+    color: rgba(255,255,255,0.7);
+    max-width: 760px;
+    line-height: 1.55;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+  .hero-sub strong {
+    color: white;
+    font-weight: 600;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--claude-orange);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 8px 24px rgba(255, 138, 76, 0.35);
+  }
+  .btn-primary:hover {
+    background: var(--claude-orange-deep);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(255, 138, 76, 0.45);
+  }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+  }
+  .btn-secondary:hover {
+    border-color: var(--vault-blue);
+    background: rgba(27, 154, 236, 0.12);
+  }
+  .hero-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .hero-meta .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
+  }
+
+  .hero-tools {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 36px;
+  }
+  .tool-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.85);
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .tool-chip:hover {
+    border-color: var(--vault-blue);
+    background: rgba(27, 154, 236, 0.1);
+  }
+
+  /* ============ STICKY NAV ============ */
+  .topnav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 12px 0;
+  }
+  .topnav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .topnav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+  .brand-mark {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--vault-blue-dark) 100%);
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(10, 25, 41, 0.2);
+  }
+  .brand-mark .x-mark {
+    color: var(--claude-orange);
+    margin: 0 1px;
+  }
+  .brand-text {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .topnav-sections {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-section-link {
+    color: var(--text-soft);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .nav-section-link:hover {
+    background: rgba(27, 154, 236, 0.08);
+    color: var(--vault-blue);
+  }
+  .nav-cta {
+    background: var(--claude-orange);
+    color: white !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700 !important;
+    transition: all 0.15s;
+  }
+  .nav-cta:hover {
+    background: var(--claude-orange-deep) !important;
+    color: white !important;
+    transform: translateY(-1px);
+  }
+  @media (max-width: 1100px) {
+    .brand-text { display: none; }
+  }
+  @media (max-width: 768px) {
+    .topnav-sections { gap: 4px; }
+    .nav-section-link { padding: 6px 10px; font-size: 12px; }
+    .nav-section-link.hide-mobile { display: none; }
+  }
+
+  /* ============ SECTIONS ============ */
+  section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+  .section-label {
+    display: inline-block;
+    background: rgba(27, 154, 236, 0.1);
+    color: var(--vault-blue);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .section-lead {
+    font-size: 19px;
+    color: var(--text-soft);
+    max-width: 760px;
+    margin-bottom: 48px;
+    line-height: 1.6;
+  }
+
+  /* ============ HOW IT WORKS ============ */
+  .flow-section {
+    background: white;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .flow-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    position: relative;
+  }
+  .flow-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--vault-blue);
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .flow-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+  .flow-card p {
+    color: var(--text-soft);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .flow-card code {
+    background: var(--navy);
+    color: #E8EEF7;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  @media (max-width: 900px) {
+    .flow-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ============ WHAT YOU GET ============ */
+  .modules-section {
+    background: linear-gradient(180deg, var(--bg) 0%, white 100%);
+  }
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+  }
+  .module-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 22px;
+    transition: all 0.2s;
+  }
+  .module-card:hover {
+    border-color: var(--vault-blue);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .module-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(27, 154, 236, 0.1);
+    color: var(--vault-blue);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .module-card h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .module-card p {
+    font-size: 14px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  /* ============ SETUP ACCORDION ============ */
+  .setup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 32px;
+  }
+  .setup-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .setup-item[open], .setup-item:hover {
+    border-color: var(--vault-blue);
+    box-shadow: var(--shadow-md);
+  }
+  .setup-summary {
+    padding: 22px 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    list-style: none;
+  }
+  .setup-summary::-webkit-details-marker { display: none; }
+  .setup-num {
+    width: 44px;
+    height: 44px;
+    background: var(--navy);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .setup-info { flex: 1; min-width: 0; }
+  .setup-info h4 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .setup-info p {
+    font-size: 14px;
+    color: var(--text-soft);
+  }
+  .setup-toggle {
+    width: 32px;
+    height: 32px;
+    background: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vault-blue);
+    font-size: 18px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .setup-item[open] .setup-toggle {
+    transform: rotate(45deg);
+  }
+  .setup-body {
+    padding: 0 26px 26px 88px;
+    color: var(--text-soft);
+    font-size: 15px;
+  }
+  .setup-body p { margin-bottom: 12px; }
+  .setup-body strong { color: var(--text); }
+  .setup-body ol { padding-left: 22px; margin: 8px 0; }
+  .setup-body ol li { margin-bottom: 8px; }
+  .setup-body a { color: var(--vault-blue); }
+  .setup-body code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  @media (max-width: 768px) {
+    .setup-body { padding: 0 22px 22px 22px; }
+  }
+
+  /* ============ CODE BLOCKS + COPY ============ */
+  .code-block {
+    position: relative;
+    background: var(--navy);
+    color: #E8EEF7;
+    padding: 20px 24px;
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: auto;
+    border-left: 3px solid var(--vault-blue);
+    margin: 12px 0;
+  }
+  .code-block .copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .code-block .copy-btn:hover {
+    background: rgba(27, 154, 236, 0.3);
+    border-color: var(--vault-blue);
+  }
+  .code-block .copy-btn.copied {
+    background: var(--success);
+    border-color: var(--success);
+  }
+  .code-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding-right: 80px;
+  }
+  .prompt-block {
+    background: #0F1F33;
+    color: #E8EEF7;
+    padding: 24px 28px;
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    border-left: 3px solid var(--claude-orange);
+    position: relative;
+    margin: 16px 0;
+  }
+  .prompt-block .copy-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--claude-orange);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .prompt-block .copy-btn:hover {
+    background: var(--claude-orange-deep);
+  }
+  .prompt-block .copy-btn.copied {
+    background: var(--success);
+  }
+  .prompt-block .prompt-text {
+    padding-right: 100px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* ============ RUN IT (prompt block section) ============ */
+  .run-section {
+    background: var(--card);
+  }
+  .run-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 48px;
+    margin-top: 32px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .run-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--vault-blue) 0%, var(--claude-orange) 100%);
+  }
+  .run-head {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .run-head h3 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .run-head p {
+    color: var(--text-soft);
+    font-size: 16px;
+  }
+  .run-block-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .run-block-title:first-child { margin-top: 0; }
+  .run-block-title::before {
+    content: '';
+    width: 20px;
+    height: 2px;
+    background: var(--vault-blue);
+  }
+  .run-card ol {
+    padding-left: 24px;
+    color: var(--text-soft);
+    font-size: 16px;
+  }
+  .run-card ol li {
+    margin-bottom: 10px;
+  }
+  .run-card ol li strong { color: var(--text); }
+
+  /* ============ WEBINAR CTA ============ */
+  .webinar-section {
+    background: var(--navy);
+    color: white;
+    padding: 100px 24px;
+    margin-top: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .webinar-section::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 138, 76, 0.25) 0%, transparent 60%);
+    top: -200px;
+    right: -100px;
+    pointer-events: none;
+  }
+  .webinar-section::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(27, 154, 236, 0.18) 0%, transparent 60%);
+    bottom: -150px;
+    left: -100px;
+    pointer-events: none;
+  }
+  .webinar-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+  .webinar-banner {
+    margin: 0 auto 44px;
+    max-width: 900px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+    line-height: 0;
+  }
+  .webinar-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .webinar-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #FCA5A5;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+  .webinar-tag-dot {
+    width: 8px; height: 8px;
+    background: #EF4444;
+    border-radius: 50%;
+    animation: pulse-red 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  }
+  .webinar-section h2 {
+    font-size: clamp(36px, 5vw, 56px);
+    margin-bottom: 20px;
+    color: white;
+    letter-spacing: -1.5px;
+  }
+  .webinar-section h2 .accent {
+    color: var(--claude-orange);
+  }
+  .webinar-lead {
+    font-size: 20px;
+    color: rgba(255,255,255,0.75);
+    max-width: 700px;
+    margin: 0 auto 36px;
+    line-height: 1.5;
+  }
+  .webinar-meta {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    padding: 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    backdrop-filter: blur(8px);
+  }
+  .webinar-meta-item {
+    text-align: left;
+  }
+  .webinar-meta-item .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .webinar-meta-item .value {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .webinar-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #FCD34D;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+  .btn-webinar {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--claude-orange);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 17px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 12px 36px rgba(255, 138, 76, 0.45);
+    letter-spacing: 0.2px;
+  }
+  .btn-webinar:hover {
+    background: var(--claude-orange-deep);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 48px rgba(255, 138, 76, 0.55);
+  }
+  .btn-webinar .arrow {
+    font-size: 20px;
+    transition: transform 0.2s;
+  }
+  .btn-webinar:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  /* ============ MID CTA ============ */
+  .mid-cta {
+    background: linear-gradient(135deg, var(--vault-blue) 0%, var(--vault-blue-dark) 100%);
+    color: white;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-top: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-lg);
+  }
+  .mid-cta-text h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .mid-cta-text p {
+    color: rgba(255,255,255,0.85);
+    font-size: 15px;
+  }
+  .mid-cta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    color: var(--vault-blue-dark);
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .mid-cta a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
+
+  /* ============ COUNTDOWN ============ */
+  .countdown {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+  .countdown-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 18px 8px;
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+  }
+  .countdown-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,138,76,0.08) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .countdown-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .countdown-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 8px;
+  }
+  .countdown.live .countdown-num { color: #FCA5A5; }
+  .countdown-live-msg {
+    text-align: center;
+    color: var(--claude-orange);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    margin: 0 auto 32px;
+    padding: 16px;
+    background: rgba(255, 138, 76, 0.1);
+    border: 1px solid rgba(255, 138, 76, 0.3);
+    border-radius: 14px;
+    max-width: 560px;
+    display: none;
+  }
+  .countdown-live-msg.show { display: block; }
+
+  /* ============ FLOATING WEBINAR BUTTON ============ */
+  .float-cta {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--claude-orange);
+    color: white;
+    padding: 14px 22px 14px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 12px 32px rgba(255, 138, 76, 0.45), 0 0 0 1px rgba(255,255,255,0.1);
+    transition: all 0.25s;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+  .float-cta.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .float-cta:hover {
+    background: var(--claude-orange-deep);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(255, 138, 76, 0.55);
+  }
+  .float-cta-dot {
+    width: 10px;
+    height: 10px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.7);
+    animation: pulse-white 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-white {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+  }
+  .float-cta-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+  }
+  .float-cta-text .top {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+  }
+  .float-cta-text .bot {
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .float-cta-close {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: var(--navy);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    border: 2px solid white;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .float-cta:hover .float-cta-close {
+    opacity: 1;
+  }
+  @media (max-width: 768px) {
+    .float-cta {
+      bottom: 16px;
+      right: 16px;
+      left: 16px;
+      justify-content: center;
+      padding: 14px 18px;
+    }
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: #060D1A;
+    color: rgba(255,255,255,0.6);
+    padding: 50px 24px;
+    text-align: center;
+    font-size: 14px;
+  }
+  footer .brand {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 16px;
+  }
+  footer a {
+    color: var(--vault-blue);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .hero { padding: 60px 24px 80px; }
+    section { padding: 60px 20px; }
+    .run-card { padding: 28px 22px; }
+    .webinar-section { padding: 70px 20px; }
+    .webinar-meta { gap: 20px; padding: 20px; }
+    .mid-cta { padding: 28px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow hero-glow-blue"></div>
+    <div class="hero-glow hero-glow-orange"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      Free Setup Guide
+    </div>
+    <h1 class="hero-title">
+      Amazon A+ Content<br>
+      <span class="muted">from a single URL.</span>
+    </h1>
+    <p class="hero-sub">
+      Paste an Amazon link. Claude Code runs the workflow. <strong>Full A+ Content out</strong>. Ready to upload or edit. Each run costs a few cents.
+    </p>
+    <div class="hero-ctas">
+      <a href="#setup" class="btn-primary">Get the setup guide <span style="font-size: 18px;">↓</span></a>
+      <a href="#webinar" class="btn-secondary">Join the live webinar</a>
+    </div>
+    <div class="hero-meta">
+      <span class="dot"></span>
+      Wednesday, May 27 · 11:00 AM PT / 2:00 PM ET · No recording
+    </div>
+    <div class="hero-tools">
+      <span class="tool-chip">Claude Code</span>
+      <span class="tool-chip">Genrupt MCP</span>
+      <span class="tool-chip">Genrupt Extension</span>
+      <span class="tool-chip">Amazon URL in. A+ out.</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ STICKY NAV ============ -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="#top" class="topnav-brand">
+      <div class="brand-mark">CC<span class="x-mark">×</span>A+</div>
+      <span class="brand-text">Claude Code × A+ Content</span>
+    </a>
+    <div class="topnav-sections">
+      <a href="#how" class="nav-section-link hide-mobile">How it works</a>
+      <a href="#modules" class="nav-section-link hide-mobile">What you get</a>
+      <a href="#setup" class="nav-section-link">Setup</a>
+      <a href="#run" class="nav-section-link hide-mobile">Run it</a>
+      <a href="#webinar" class="nav-section-link nav-cta">Join webinar</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="flow-section">
+  <span class="section-label">The Workflow</span>
+  <h2>URL in. A+ out.</h2>
+  <p class="section-lead">
+    Behind the scenes, the MCP does the heavy lifting. It researches the product, understands positioning, plans creative direction, structures the modules, writes the copy, and prepares the visual assets. After the one-time setup, your part is one line.
+  </p>
+
+  <div class="flow-grid">
+    <div class="flow-card">
+      <div class="flow-num">STEP 01</div>
+      <h3>Drop the URL</h3>
+      <p>Open Claude Code in any folder. Paste an Amazon product URL with the prompt. That's your entire input.</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">STEP 02</div>
+      <h3>The MCP works</h3>
+      <p>Claude Code calls the <code>Genrupt MCP</code>. It scrapes the listing, plans the modules, drafts the copy, and generates the imagery.</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">STEP 03</div>
+      <h3>A+ Content out</h3>
+      <p>Full A+ package ready to review. Upload to Amazon A+ Content Manager, or hand it to your designer for edits.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT YOU GET ============ -->
+<section id="modules" class="modules-section">
+  <span class="section-label">What gets generated</span>
+  <h2>A complete A+ package, not just ideas</h2>
+  <p class="section-lead">
+    Not AI that gives you suggestions. AI workflows that actually execute. Every run produces the full set of modules a high-converting Amazon listing needs.
+  </p>
+
+  <div class="modules-grid">
+    <div class="module-card">
+      <div class="module-icon">01</div>
+      <h4>Hero banner</h4>
+      <p>Above-the-fold module with brand positioning and the headline promise.</p>
+    </div>
+    <div class="module-card">
+      <div class="module-icon">02</div>
+      <h4>Feature modules</h4>
+      <p>Image + text blocks that turn product specs into buyer benefits.</p>
+    </div>
+    <div class="module-card">
+      <div class="module-icon">03</div>
+      <h4>Comparison chart</h4>
+      <p>Why this product over the alternatives, structured the way Amazon prefers.</p>
+    </div>
+    <div class="module-card">
+      <div class="module-icon">04</div>
+      <h4>Brand story</h4>
+      <p>The story behind the product, written for shoppers, not designers.</p>
+    </div>
+    <div class="module-card">
+      <div class="module-icon">05</div>
+      <h4>Lifestyle imagery</h4>
+      <p>Concept-level visual direction so the deliverable looks like a real brand, not a stock template.</p>
+    </div>
+    <div class="module-card">
+      <div class="module-icon">06</div>
+      <h4>Copy you can ship</h4>
+      <p>Headlines, sub-copy, and bullet language drafted in the product's tone.</p>
+    </div>
+  </div>
+
+  <div class="mid-cta">
+    <div class="mid-cta-text">
+      <h3>Want to see this run live on a real listing?</h3>
+      <p>Free webinar this Wednesday. I will walk through the full workflow and answer questions in real time.</p>
+    </div>
+    <a href="#webinar">Reserve my seat <span style="font-size: 16px;">→</span></a>
+  </div>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section id="setup">
+  <span class="section-label">The Setup Guide</span>
+  <h2>5 steps. Set it up once.</h2>
+  <p class="section-lead">
+    Click any step to expand the exact install instructions. The hardest part is creating the Genrupt account. Everything else is paste-and-run.
+  </p>
+
+  <div class="setup-list">
+
+    <details class="setup-item" id="step-1">
+      <summary class="setup-summary">
+        <div class="setup-num">1</div>
+        <div class="setup-info">
+          <h4>Node.js 18+</h4>
+          <p>Required for every install command on this page.</p>
+        </div>
+        <div class="setup-toggle">+</div>
+      </summary>
+      <div class="setup-body">
+        <p>If you already use Claude Code, you almost certainly have Node.js installed. To check, paste this in Claude Code:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyText(this)">Copy</button>
+          <pre>Check my Node.js version and tell me if I need to upgrade for MCPs.</pre>
+        </div>
+        <p>If Claude tells you you need to install or upgrade, download the LTS installer from <a href="https://nodejs.org" target="_blank">nodejs.org</a> and run it. Works on macOS and Windows.</p>
+      </div>
+    </details>
+
+    <details class="setup-item" id="step-2">
+      <summary class="setup-summary">
+        <div class="setup-num">2</div>
+        <div class="setup-info">
+          <h4>Claude Code Desktop</h4>
+          <p>The app you will run the workflow from. macOS and Windows.</p>
+        </div>
+        <div class="setup-toggle">+</div>
+      </summary>
+      <div class="setup-body">
+        <p><strong>Step 1.</strong> Download Claude Code from <a href="https://claude.com/download" target="_blank">claude.com/download</a> and install it.</p>
+        <p><strong>Step 2.</strong> Sign in with your Anthropic account. If you do not have one yet, create it at <a href="https://claude.ai" target="_blank">claude.ai</a> first.</p>
+        <p><strong>Step 3.</strong> Open Claude Code and create or open a project folder. This is where the workflow will run.</p>
+      </div>
+    </details>
+
+    <details class="setup-item" id="step-3">
+      <summary class="setup-summary">
+        <div class="setup-num">3</div>
+        <div class="setup-info">
+          <h4>Create your Genrupt account</h4>
+          <p>This is the engine behind the A+ generation. Account first, then the MCP and extension below.</p>
+        </div>
+        <div class="setup-toggle">+</div>
+      </summary>
+      <div class="setup-body">
+        <p>Use the link below to sign up. The AI Vault community gets credited and you get the right onboarding.</p>
+        <p style="margin: 14px 0 8px 0;">
+          <a href="https://genrupt.com/?utm_source=affiliate&amp;utm_medium=partner&amp;utm_campaign=AIVAULT&amp;ref=AIVAULT" target="_blank" style="display: inline-block; background: var(--vault-blue); color: white; padding: 12px 22px; border-radius: 10px; font-weight: 700; text-decoration: none;">→ Create your Genrupt account</a>
+        </p>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: 14px;">Confirm your email before moving to the next step. The MCP needs a live account to authenticate.</p>
+      </div>
+    </details>
+
+    <details class="setup-item" id="step-4">
+      <summary class="setup-summary">
+        <div class="setup-num">4</div>
+        <div class="setup-info">
+          <h4>Install the Genrupt MCP</h4>
+          <p>Connects Claude Code to Genrupt so the workflow runs end-to-end.</p>
+        </div>
+        <div class="setup-toggle">+</div>
+      </summary>
+      <div class="setup-body">
+        <p><strong>Step 1.</strong> Go to <a href="https://genrupt.com/mcp" target="_blank">genrupt.com/mcp</a> and follow the install instructions there. Genrupt keeps that page up to date with the exact command for the current version.</p>
+        <p><strong>Step 2.</strong> After install, restart Claude Code so it picks up the new MCP.</p>
+        <p><strong>Step 3.</strong> Verify. Ask Claude:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyText(this)">Copy</button>
+          <pre>List my MCP servers.</pre>
+        </div>
+        <p>You should see <code>genrupt</code> in the list with a connected status.</p>
+      </div>
+    </details>
+
+    <details class="setup-item" id="step-5">
+      <summary class="setup-summary">
+        <div class="setup-num">5</div>
+        <div class="setup-info">
+          <h4>Install the Genrupt Chrome extension</h4>
+          <p>Lets Claude read the live Amazon page to ground the A+ in real product data.</p>
+        </div>
+        <div class="setup-toggle">+</div>
+      </summary>
+      <div class="setup-body">
+        <p><strong>Step 1.</strong> Open <a href="https://genrupt.com/extension" target="_blank">genrupt.com/extension</a> and follow the install link to the Chrome Web Store.</p>
+        <p><strong>Step 2.</strong> Sign into the extension with the same Genrupt account from Step 3.</p>
+        <p><strong>Step 3.</strong> Pin the extension to your Chrome toolbar so it is one click away on any Amazon product page.</p>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: 12px;">All three pieces (account, MCP, extension) are required for the workflow. If one is missing, the run will stop and tell you what to fix.</p>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ============ RUN IT ============ -->
+<section id="run" class="run-section">
+  <span class="section-label">Run It</span>
+  <h2>One prompt. One URL.</h2>
+  <p class="section-lead">
+    Once the setup is done, the workflow is the same every time. Open Claude Code, paste the prompt with any Amazon product URL, and let it run.
+  </p>
+
+  <div class="run-card">
+    <div class="run-head">
+      <h3>A+ Content from an Amazon URL</h3>
+      <p>Drop the prompt in Claude Code with the Genrupt MCP enabled. Replace the example ASIN with your own.</p>
+    </div>
+
+    <div class="run-block-title">How to run it</div>
+    <ol>
+      <li>Open <strong>Claude Code Desktop</strong> in any project folder</li>
+      <li>Make sure the <strong>Genrupt MCP</strong> is connected (Step 4 above)</li>
+      <li>Paste the prompt below. Replace the URL with the product you want A+ content for.</li>
+      <li>Let it run. Claude will scrape the listing, plan the modules, generate the assets, and return the full A+ package.</li>
+    </ol>
+
+    <div class="run-block-title">The prompt</div>
+    <div class="prompt-block">
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+      <div class="prompt-text">Use the Genrupt MCP to generate a complete A+ Content package for this Amazon product. URL: https://www.amazon.com/dp/[ASIN]
+
+Research the listing, identify the target customer and positioning, plan the A+ module layout, write the copy in the product's tone, and prepare the visual concepts. Deliver a full desktop A+ Content package I can upload to A+ Content Manager.</div>
+    </div>
+
+    <div class="run-block-title">Cost</div>
+    <p style="color: var(--text-soft); font-size: 16px;">In my current setup, each run usually costs only a <strong style="color: var(--text);">few cents</strong> in tool credits. That is the entire economics of the workflow.</p>
+  </div>
+</section>
+
+<!-- ============ WEBINAR CTA ============ -->
+<section id="webinar" class="webinar-section">
+  <div class="webinar-inner">
+    <div class="webinar-banner">
+      <img src="webinar-banner.jpg" alt="Everyone is talking about Claude Code. I'm here to make it simple." loading="lazy">
+    </div>
+    <div class="webinar-tag">
+      <span class="webinar-tag-dot"></span>
+      Live Wednesday
+    </div>
+    <h2>See it run live. <span class="accent">Then you build it.</span></h2>
+    <p class="webinar-lead">
+      Free Claude Code ecommerce webinar. I will run the A+ workflow live on real Amazon products, plus more practical workflows for Amazon sellers. Bring questions.
+    </p>
+
+    <div class="countdown" id="countdown">
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-days">--</div>
+        <div class="countdown-label">Days</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-hours">--</div>
+        <div class="countdown-label">Hours</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-mins">--</div>
+        <div class="countdown-label">Minutes</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-secs">--</div>
+        <div class="countdown-label">Seconds</div>
+      </div>
+    </div>
+
+    <div class="countdown-live-msg" id="countdown-live">
+      🔴 We are live now. Jump in.
+    </div>
+
+    <div class="webinar-meta">
+      <div class="webinar-meta-item">
+        <div class="label">Date</div>
+        <div class="value">Wed, May 27 2026</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Time (PT)</div>
+        <div class="value">11:00 AM</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Time (ET)</div>
+        <div class="value">2:00 PM</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Cost</div>
+        <div class="value">Free</div>
+      </div>
+    </div>
+
+    <div class="webinar-warning">
+      <span style="font-size: 18px;">⚠</span>
+      No recording. Live session only. If you want this, show up.
+    </div>
+
+    <div>
+      <a href="https://us06web.zoom.us/meeting/register/BmfAlm2KQiWPregueYmWLA" target="_blank" class="btn-webinar">
+        Grab your spot
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <p style="margin-top: 24px; color: rgba(255,255,255,0.5); font-size: 13px;">
+      Make sure you do not get left behind in an AI world that is moving faster than ever.
+    </p>
+  </div>
+</section>
+
+<!-- ============ FLOATING WEBINAR CTA ============ -->
+<a href="https://us06web.zoom.us/meeting/register/BmfAlm2KQiWPregueYmWLA" target="_blank" class="float-cta" id="floatCta">
+  <span class="float-cta-dot"></span>
+  <span class="float-cta-text">
+    <span class="top">Live Wednesday</span>
+    <span class="bot" id="floatCdText">Reserve my seat</span>
+  </span>
+</a>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <span class="brand">Claude Code × Amazon A+ Content</span>
+  <p>Free setup guide by Jay. <a href="https://jaygptpro.com" target="_blank">jaygptpro.com</a></p>
+</footer>
+
+<script>
+  function copyText(btn) {
+    const container = btn.parentElement;
+    const text = container.querySelector('pre, .prompt-text').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+
+  function openHashDetails() {
+    if (!window.location.hash) return;
+    const id = window.location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el && el.tagName.toLowerCase() === 'details') {
+      el.setAttribute('open', '');
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }
+  window.addEventListener('hashchange', openHashDetails);
+  window.addEventListener('load', openHashDetails);
+
+  // Webinar: Wed, May 27 2026, 11:00 AM PT (PDT = UTC-7) => 18:00 UTC
+  const WEBINAR_START = new Date('2026-05-27T18:00:00Z').getTime();
+  const WEBINAR_END   = WEBINAR_START + (90 * 60 * 1000); // assume ~90 min session
+
+  const cdDays  = document.getElementById('cd-days');
+  const cdHours = document.getElementById('cd-hours');
+  const cdMins  = document.getElementById('cd-mins');
+  const cdSecs  = document.getElementById('cd-secs');
+  const cdEl    = document.getElementById('countdown');
+  const cdLive  = document.getElementById('countdown-live');
+  const floatCdText = document.getElementById('floatCdText');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const now = Date.now();
+    const diff = WEBINAR_START - now;
+
+    if (diff <= 0) {
+      if (now < WEBINAR_END) {
+        cdEl.classList.add('live');
+        cdLive.classList.add('show');
+        cdDays.textContent = '00';
+        cdHours.textContent = '00';
+        cdMins.textContent = '00';
+        cdSecs.textContent = '00';
+        if (floatCdText) floatCdText.textContent = 'We are live now';
+      } else {
+        cdEl.style.display = 'none';
+        if (floatCdText) floatCdText.textContent = 'Watch replay';
+      }
+      return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+
+    cdDays.textContent  = pad(days);
+    cdHours.textContent = pad(hours);
+    cdMins.textContent  = pad(mins);
+    cdSecs.textContent  = pad(secs);
+
+    if (floatCdText) {
+      if (days > 0) {
+        floatCdText.textContent = `Starts in ${days}d ${pad(hours)}h`;
+      } else if (hours > 0) {
+        floatCdText.textContent = `Starts in ${pad(hours)}h ${pad(mins)}m`;
+      } else {
+        floatCdText.textContent = `Starts in ${pad(mins)}m ${pad(secs)}s`;
+      }
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Floating CTA: show after hero, hide when webinar section is in view
+  const floatCta = document.getElementById('floatCta');
+  const webinarSection = document.getElementById('webinar');
+  function updateFloatCta() {
+    const scrolled = window.scrollY > window.innerHeight * 0.6;
+    let inWebinar = false;
+    if (webinarSection) {
+      const rect = webinarSection.getBoundingClientRect();
+      inWebinar = rect.top < window.innerHeight && rect.bottom > 0;
+    }
+    if (scrolled && !inWebinar) {
+      floatCta.classList.add('visible');
+    } else {
+      floatCta.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', updateFloatCta, { passive: true });
+  window.addEventListener('resize', updateFloatCta);
+  updateFloatCta();
+</script>
+
+</body>
+</html>
