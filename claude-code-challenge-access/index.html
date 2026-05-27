@@ -3963,15 +3963,23 @@ document.querySelectorAll('.faq-question').forEach(btn => {
 });
 
 // ===== STICKY CTA =====
-const stickyCta = document.getElementById('stickyCta');
-if (stickyCta) {
-    window.addEventListener('scroll', () => {
+function initStickyCta() {
+    const stickyCta = document.getElementById('stickyCta');
+    if (!stickyCta) return;
+    const onScroll = () => {
         if (window.scrollY > 300) {
             stickyCta.classList.add('show');
         } else {
             stickyCta.classList.remove('show');
         }
-    }, { passive: true });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStickyCta);
+} else {
+    initStickyCta();
 }
 
 // Smooth anchor scroll
