@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Claude Code Revolution . Get the Genrupt Guide . Jay Margaliot</title>
+<meta name="description" content="The exact prompt and workflow you saw in Jay's talk. One prompt. Full product makeover. Under a minute.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@10..48,400;10..48,500;10..48,700;10..48,800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-page: #f7f5f1;
+  --bg-card: #ffffff;
+  --text-primary: #0a0a0c;
+  --text-secondary: #5c5660;
+  --text-tertiary: #9c9690;
+  --accent-orange: #d97757;
+  --accent-orange-vivid: #c4663e;
+  --border-card: #e8e4dc;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* aplus challenge section vars */
+  --navy: #0A1929;
+  --claude-orange: #FF8A4C;
+  --claude-orange-deep: #E66B2B;
+  --vault-blue: #1B9AEC;
+  --vault-blue-dark: #0E7CC9;
+  --card: #FFFFFF;
+  --border: #E5E9F0;
+  --text: #0A1929;
+  --text-soft: #475569;
+  --text-muted: #94A3B8;
+  --bg: #FAFBFC;
+  --success: #10B981;
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow-md: 0 4px 16px rgba(10, 25, 41, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.55;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-orange);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.highlight {
+  background: linear-gradient(180deg, transparent 60%, rgba(217,119,87,0.25) 60%);
+  padding: 0 2px;
+}
+
+/* ====== HERO ====== */
+.hero { padding: 84px 0 56px; text-align: center; }
+.brand-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 18px;
+}
+.brand-mono .dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  background: var(--accent-orange);
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+h1.title {
+  font-family: var(--font-display);
+  font-size: clamp(46px, 7vw, 78px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+  margin-bottom: 22px;
+}
+h1.title .orange { color: var(--accent-orange); }
+.hero p.subtitle {
+  font-size: clamp(17px, 2vw, 21px);
+  color: var(--text-secondary);
+  max-width: 620px;
+  margin: 0 auto 28px;
+  line-height: 1.45;
+}
+.hero .from-talk {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ====== STEPS ====== */
+.steps-wrap { max-width: 720px; margin: 0 auto; padding: 0 24px 80px; }
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 18px;
+  padding: 28px 32px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 20px rgba(10,10,12,0.04);
+  transition: all 0.4s ease;
+}
+.step-card.hidden { display: none; }
+.step-card.complete {
+  border-color: var(--accent-orange);
+  background: linear-gradient(180deg, rgba(217,119,87,0.04) 0%, var(--bg-card) 100%);
+}
+.step-card.reveal { animation: fadeSlideIn 0.55s ease; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.step-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.step-num {
+  width: 36px; height: 36px;
+  background: var(--accent-orange);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.step-card.complete .step-num::before { content: '✓'; font-size: 18px; }
+.step-card.complete .step-num span { display: none; }
+.step-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.step-body { font-size: 15px; color: var(--text-secondary); margin-left: 50px; line-height: 1.55; margin-bottom: 18px; }
+.step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-orange);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 24px;
+  border: none;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  margin-left: 50px;
+  letter-spacing: -0.01em;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(217,119,87,0.28);
+}
+.step-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(217,119,87,0.4); }
+.step-btn .arrow { display: inline-block; transition: transform 0.2s; }
+.step-btn:hover .arrow { transform: translateX(3px); }
+.step-help {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-left: 50px;
+  margin-top: 12px;
+  letter-spacing: 0.04em;
+}
+
+/* ====== GUIDE SECTION ====== */
+.guide-section {
+  display: none;
+  padding: 56px 0 56px;
+  border-top: 1px solid var(--border-card);
+  background: linear-gradient(180deg, rgba(217,119,87,0.04) 0%, var(--bg-page) 100%);
+}
+.guide-section.show { display: block; animation: fadeSlideIn 0.6s ease; }
+.guide-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.guide-section h2 .orange { color: var(--accent-orange); }
+.guide-section .lead { text-align: center; font-size: 17px; color: var(--text-secondary); max-width: 580px; margin: 0 auto 40px; }
+.terminal {
+  position: relative;
+  background: #0a0a0c;
+  color: #f7f5f1;
+  border-radius: 16px;
+  padding: 30px 36px;
+  margin: 0 auto 24px;
+  max-width: 740px;
+  box-shadow: 0 12px 40px rgba(10,10,12,0.2);
+}
+.terminal .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-orange);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.terminal pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.65;
+  color: #f7f5f1;
+  white-space: pre-wrap;
+  margin: 0;
+}
+.terminal .asin { color: var(--accent-orange); }
+.copy-btn-real {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: var(--accent-orange);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(217,119,87,0.4);
+  transition: all 0.2s;
+}
+.copy-btn-real:hover { transform: scale(1.03); box-shadow: 0 4px 14px rgba(217,119,87,0.5); }
+.copy-btn-real.copied { background: #16a34a; box-shadow: 0 3px 10px rgba(22,163,74,0.4); }
+.guide-outputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 740px; margin: 36px auto 0; }
+.guide-output { background: var(--bg-card); border: 1.5px solid var(--accent-orange); border-radius: 14px; padding: 20px 22px; text-align: left; }
+.guide-output .label { font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--accent-orange); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 8px; }
+.guide-output .body { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
+/* ====== SETUP ACCORDION (from aplus) ====== */
+.setup-section-inner { max-width: 760px; margin: 48px auto 0; padding: 0 24px; }
+.setup-section-inner .setup-heading {
+  text-align: center;
+  margin-bottom: 14px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.setup-section-inner .setup-subhead {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-soft);
+  max-width: 600px;
+  margin: 0 auto 28px;
+  line-height: 1.55;
+}
+.setup-list { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; }
+.setup-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.setup-item[open], .setup-item:hover {
+  border-color: var(--vault-blue);
+  box-shadow: var(--shadow-md);
+}
+.setup-item[open] .setup-toggle { transform: rotate(45deg); }
+.setup-summary {
+  padding: 22px 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  list-style: none;
+}
+.setup-summary::-webkit-details-marker { display: none; }
+.setup-num {
+  width: 44px; height: 44px;
+  background: var(--navy);
+  color: white;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.setup-info { flex: 1; min-width: 0; text-align: left; }
+.setup-info h4 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+.setup-info p { font-size: 14px; color: var(--text-soft); margin: 0; }
+.setup-toggle {
+  width: 32px; height: 32px;
+  background: var(--bg);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--vault-blue);
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.setup-body { padding: 0 26px 26px 88px; color: var(--text-soft); font-size: 15px; text-align: left; }
+.setup-body p { margin-bottom: 12px; }
+.setup-body strong { color: var(--text); }
+.setup-body a { color: var(--vault-blue); text-decoration: none; font-weight: 600; }
+.setup-body a:hover { text-decoration: underline; }
+.setup-body code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+}
+.code-block {
+  position: relative;
+  background: var(--navy);
+  color: #E8EEF7;
+  padding: 20px 24px;
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border-left: 3px solid var(--vault-blue);
+  margin: 12px 0;
+}
+.code-block .copy-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+}
+.code-block .copy-btn:hover { background: rgba(27, 154, 236, 0.3); border-color: var(--vault-blue); }
+.code-block .copy-btn.copied { background: var(--success); border-color: var(--success); }
+.code-block pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; padding-right: 80px; color: #E8EEF7; }
+@media (max-width: 600px) {
+  .setup-body { padding: 0 22px 22px 22px; }
+}
+
+/* ====== CHALLENGE SECTION (aplus replica, dark) ====== */
+.webinar-section {
+  display: none;
+  background: var(--navy);
+  color: white;
+  padding: 100px 24px;
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+}
+.webinar-section.show { display: block; animation: fadeSlideIn 0.6s ease; }
+.webinar-section::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255, 138, 76, 0.25) 0%, transparent 60%);
+  top: -200px; right: -100px;
+  pointer-events: none;
+}
+.webinar-section::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(27, 154, 236, 0.18) 0%, transparent 60%);
+  bottom: -150px; left: -100px;
+  pointer-events: none;
+}
+.webinar-section h2 {
+  font-size: clamp(36px, 5vw, 56px);
+  margin-bottom: 20px;
+  color: white;
+  letter-spacing: -1.5px;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.webinar-section h2 .accent { color: var(--claude-orange); }
+.webinar-inner { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; text-align: center; }
+.webinar-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.webinar-tag-dot {
+  width: 8px; height: 8px;
+  background: #EF4444;
+  border-radius: 50%;
+  animation: pulse-red 1.6s ease-in-out infinite;
+}
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+.webinar-lead {
+  font-size: 20px;
+  color: rgba(255,255,255,0.75);
+  max-width: 700px;
+  margin: 0 auto 36px;
+  line-height: 1.5;
+}
+.challenge-video {
+  max-width: 720px;
+  margin: 0 auto 36px;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #0a0a14;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 138, 76, 0.25);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.challenge-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 560px; margin: 0 auto 32px; }
+.countdown-box {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 18px 8px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+.countdown-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,138,76,0.08) 0%, transparent 100%);
+  pointer-events: none;
+}
+.countdown-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+}
+.countdown.live .countdown-num { color: #FCA5A5; }
+.countdown-live-msg {
+  text-align: center;
+  color: var(--claude-orange);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  margin: 0 auto 32px;
+  padding: 16px;
+  background: rgba(255, 138, 76, 0.1);
+  border: 1px solid rgba(255, 138, 76, 0.3);
+  border-radius: 14px;
+  max-width: 560px;
+  display: none;
+}
+.countdown-live-msg.show { display: block; }
+.webinar-meta {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+  padding: 24px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+}
+.webinar-meta-item { text-align: left; }
+.webinar-meta-item .label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-family: var(--font-mono); }
+.webinar-meta-item .value { font-size: 16px; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; }
+.webinar-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #FCD34D;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 32px;
+}
+.btn-webinar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--claude-orange);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 17px;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 12px 36px rgba(255, 138, 76, 0.45);
+  letter-spacing: 0.2px;
+  font-family: var(--font-display);
+}
+.btn-webinar:hover { background: var(--claude-orange-deep); transform: translateY(-3px); box-shadow: 0 18px 48px rgba(255, 138, 76, 0.55); }
+.btn-webinar .arrow { font-size: 20px; transition: transform 0.2s; }
+.btn-webinar:hover .arrow { transform: translateX(4px); }
+@media (max-width: 600px) {
+  .webinar-section { padding: 70px 20px; }
+  .webinar-meta { gap: 20px; padding: 20px; }
+  .guide-outputs { grid-template-columns: 1fr; }
+}
+
+/* ====== FOOTER ====== */
+.footer { padding: 36px 24px; text-align: center; font-size: 13px; color: var(--text-tertiary); border-top: 1px solid var(--border-card); }
+.footer a { color: var(--accent-orange); text-decoration: none; font-weight: 600; }
+.footer a:hover { text-decoration: underline; }
+.footer-name { font-family: var(--font-display); font-weight: 800; color: var(--text-primary); font-size: 15px; }
+</style>
+</head>
+<body>
+
+<!-- ====== HERO ====== -->
+<section class="hero">
+  <div class="container">
+    <div class="brand-mono"><span class="dot"></span>AI Vault · Jay Margaliot</div>
+    <h1 class="title">The Claude Code<br/><span class="orange">Revolution.</span></h1>
+    <p class="subtitle">You saw what one prompt can do in under a minute. Now grab the guide and the prompt itself.</p>
+    <div class="from-talk">From today's talk</div>
+  </div>
+</section>
+
+<!-- ====== STEPS ====== -->
+<div class="steps-wrap">
+
+  <div class="step-card" id="step1">
+    <div class="step-header">
+      <div class="step-num"><span>1</span></div>
+      <div class="step-title">Join my WhatsApp group</div>
+    </div>
+    <p class="step-body">Tips, AI updates, and where I drop every new prompt and skill I build for Amazon sellers. Free, no spam.</p>
+    <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" class="step-btn" id="step1-btn" onclick="markStep1()">
+      Open WhatsApp Group <span class="arrow">→</span>
+    </a>
+    <div class="step-help">Opens in a new tab. Tap "Join group" inside WhatsApp.</div>
+  </div>
+
+  <div class="step-card hidden" id="step2">
+    <div class="step-header">
+      <div class="step-num"><span>2</span></div>
+      <div class="step-title">I'm in . show me the guide</div>
+    </div>
+    <p class="step-body">Once you've joined the group, tap below to unlock the full Genrupt makeover guide.</p>
+    <button class="step-btn" id="step2-btn" onclick="revealGuide()">
+      Show Me the Guide <span class="arrow">→</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- ====== GUIDE ====== -->
+<section class="guide-section" id="guide">
+  <div class="container">
+
+    <div style="text-align: center; margin-bottom: 28px;">
+      <div class="section-label">The Genrupt Makeover Guide</div>
+    </div>
+
+    <h2>One prompt. <span class="orange">Four deliverables.</span><br/>Under a minute.</h2>
+    <p class="lead">This is the exact prompt I ran on stage. Drop your ASIN in, paste into Claude Code, and walk away.</p>
+
+    <div class="terminal">
+      <button class="copy-btn-real" id="copyBtn" onclick="copyPrompt()"><span>📋</span> Copy</button>
+      <div class="label">Claude Code · The Prompt</div>
+      <pre id="promptText">Use the Genrupt MCP on <span class="asin">[ASIN]</span> and run the full pipeline:
+Market Analysis, then full listing images with
+compelling main images, then 4 A+ concepts for
+desktop, then a 15-second Product listing video
+with Seedance 2.0, 720p fast.</pre>
+    </div>
+
+    <p style="text-align: center; font-size: 14px; color: var(--text-tertiary); max-width: 560px; margin: 0 auto;">
+      Replace <code style="font-family: var(--font-mono); color: var(--accent-orange); background: rgba(217,119,87,0.1); padding: 2px 6px; border-radius: 4px;">[ASIN]</code> with the Amazon product ID. That's it.
+    </p>
+
+    <div class="guide-outputs">
+      <div class="guide-output">
+        <div class="label">01 · Market Analysis</div>
+        <div class="body">Competitors, pricing, gaps . a full report.</div>
+      </div>
+      <div class="guide-output">
+        <div class="label">02 · Listing Images</div>
+        <div class="body">Hero, lifestyle, infographics. Conversion-ready.</div>
+      </div>
+      <div class="guide-output">
+        <div class="label">03 · A+ Content</div>
+        <div class="body">4 desktop concepts. Pick your favorite.</div>
+      </div>
+      <div class="guide-output">
+        <div class="label">04 · Product Video</div>
+        <div class="body">15 seconds. Cinematic. Seedance 2.0.</div>
+      </div>
+    </div>
+
+    <div class="setup-section-inner">
+      <h3 class="setup-heading">The Setup . 5 steps, once.</h3>
+      <p class="setup-subhead">Click any step to expand the exact install instructions. The hardest part is creating the Genrupt account. Everything else is paste-and-run.</p>
+
+      <div class="setup-list">
+
+        <details class="setup-item" id="step-1">
+          <summary class="setup-summary">
+            <div class="setup-num">1</div>
+            <div class="setup-info">
+              <h4>Node.js 18+</h4>
+              <p>Required for every install command on this page.</p>
+            </div>
+            <div class="setup-toggle">+</div>
+          </summary>
+          <div class="setup-body">
+            <p>If you already use Claude Code, you almost certainly have Node.js installed. To check, paste this in Claude Code:</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyText(this)">Copy</button>
+              <pre>Check my Node.js version and tell me if I need to upgrade for MCPs.</pre>
+            </div>
+            <p>If Claude tells you you need to install or upgrade, download the LTS installer from <a href="https://nodejs.org" target="_blank">nodejs.org</a> and run it. Works on macOS and Windows.</p>
+          </div>
+        </details>
+
+        <details class="setup-item" id="step-2">
+          <summary class="setup-summary">
+            <div class="setup-num">2</div>
+            <div class="setup-info">
+              <h4>Claude Code Desktop</h4>
+              <p>The app you will run the workflow from. macOS and Windows.</p>
+            </div>
+            <div class="setup-toggle">+</div>
+          </summary>
+          <div class="setup-body">
+            <p><strong>Step 1.</strong> Download Claude Code from <a href="https://claude.com/download" target="_blank">claude.com/download</a> and install it.</p>
+            <p><strong>Step 2.</strong> Sign in with your Anthropic account. If you do not have one yet, create it at <a href="https://claude.ai" target="_blank">claude.ai</a> first.</p>
+            <p><strong>Step 3.</strong> Open Claude Code and create or open a project folder. This is where the workflow will run.</p>
+          </div>
+        </details>
+
+        <details class="setup-item" id="step-3">
+          <summary class="setup-summary">
+            <div class="setup-num">3</div>
+            <div class="setup-info">
+              <h4>Create your Genrupt account</h4>
+              <p>This is the engine behind the A+ generation. Account first, then the MCP and extension below.</p>
+            </div>
+            <div class="setup-toggle">+</div>
+          </summary>
+          <div class="setup-body">
+            <p>Use the link below to sign up. The AI Vault community gets credited and you get the right onboarding.</p>
+            <p style="margin: 14px 0 8px 0;">
+              <a href="https://genrupt.com/?utm_source=affiliate&amp;utm_medium=partner&amp;utm_campaign=AIVAULT&amp;ref=AIVAULT" target="_blank" style="display: inline-block; background: var(--vault-blue); color: white; padding: 12px 22px; border-radius: 10px; font-weight: 700; text-decoration: none;">→ Create your Genrupt account</a>
+            </p>
+            <p style="font-size: 14px; color: var(--text-muted); margin-top: 14px;">Confirm your email before moving to the next step. The MCP needs a live account to authenticate.</p>
+          </div>
+        </details>
+
+        <details class="setup-item" id="step-4">
+          <summary class="setup-summary">
+            <div class="setup-num">4</div>
+            <div class="setup-info">
+              <h4>Install the Genrupt MCP</h4>
+              <p>Connects Claude Code to Genrupt so the workflow runs end-to-end.</p>
+            </div>
+            <div class="setup-toggle">+</div>
+          </summary>
+          <div class="setup-body">
+            <p><strong>Step 1.</strong> Go to <a href="https://genrupt.com/mcp" target="_blank">genrupt.com/mcp</a> and follow the install instructions there. Genrupt keeps that page up to date with the exact command for the current version.</p>
+            <p><strong>Step 2.</strong> After install, restart Claude Code so it picks up the new MCP.</p>
+            <p><strong>Step 3.</strong> Verify. Ask Claude:</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyText(this)">Copy</button>
+              <pre>List my MCP servers.</pre>
+            </div>
+            <p>You should see <code>genrupt</code> in the list with a connected status.</p>
+          </div>
+        </details>
+
+        <details class="setup-item" id="step-5">
+          <summary class="setup-summary">
+            <div class="setup-num">5</div>
+            <div class="setup-info">
+              <h4>Install the Genrupt Chrome extension</h4>
+              <p>Lets Claude read the live Amazon page to ground the output in real product data.</p>
+            </div>
+            <div class="setup-toggle">+</div>
+          </summary>
+          <div class="setup-body">
+            <p><strong>Step 1.</strong> Open <a href="https://genrupt.com/extension" target="_blank">genrupt.com/extension</a> and follow the install link to the Chrome Web Store.</p>
+            <p><strong>Step 2.</strong> Sign into the extension with the same Genrupt account from Step 3.</p>
+            <p><strong>Step 3.</strong> Pin the extension to your Chrome toolbar so it is one click away on any Amazon product page.</p>
+            <p style="font-size: 14px; color: var(--text-muted); margin-top: 12px;">All three pieces (account, MCP, extension) are required for the workflow. If one is missing, the run will stop and tell you what to fix.</p>
+          </div>
+        </details>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====== CHALLENGE SECTION (exact aplus replica) ====== -->
+<section id="challenge" class="webinar-section">
+  <div class="webinar-inner">
+    <div class="webinar-tag">
+      <span class="webinar-tag-dot"></span>
+      5-Day Challenge
+    </div>
+    <h2>Ready to build your <span class="accent">first AI Employee?</span></h2>
+    <p class="webinar-lead">
+      The setup guide above gets you running. The Challenge is where you actually build something. 5 days. 30 to 60 minutes a day. No code. Walk away with an AI Employee that does real work for you.
+    </p>
+
+    <div class="challenge-video">
+      <iframe
+        src="https://www.youtube.com/embed/hoFYCLalKx8?rel=0&modestbranding=1"
+        title="Join the 5-Day Challenge"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+    </div>
+
+    <div class="countdown" id="countdown">
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-days">--</div>
+        <div class="countdown-label">Days</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-hours">--</div>
+        <div class="countdown-label">Hours</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-mins">--</div>
+        <div class="countdown-label">Minutes</div>
+      </div>
+      <div class="countdown-box">
+        <div class="countdown-num" id="cd-secs">--</div>
+        <div class="countdown-label">Seconds</div>
+      </div>
+    </div>
+
+    <div class="countdown-live-msg" id="countdown-live">
+      🔴 The Challenge is live now. Jump in.
+    </div>
+
+    <div class="webinar-meta">
+      <div class="webinar-meta-item">
+        <div class="label">Starts</div>
+        <div class="value">Mon, Jun 1</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Ends</div>
+        <div class="value">Fri, Jun 5</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Daily</div>
+        <div class="value">30-60 min</div>
+      </div>
+      <div class="webinar-meta-item">
+        <div class="label">Format</div>
+        <div class="value">No code</div>
+      </div>
+    </div>
+
+    <div class="webinar-warning">
+      <span style="font-size: 18px;">★</span>
+      Limited spots per round.
+    </div>
+
+    <div>
+      <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" class="btn-webinar">
+        Join the Challenge
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <p style="margin-top: 24px; color: rgba(255,255,255,0.5); font-size: 13px;">
+      The setup guide is the warmup. The Challenge is where you build.
+    </p>
+  </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-name">Jay Margaliot</div>
+    <div style="margin-top: 6px;">
+      <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">LinkedIn</a>
+      &nbsp;·&nbsp;
+      <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank">WhatsApp Group</a>
+      &nbsp;·&nbsp;
+      <a href="https://jaygptpro.com/topdog-claude-code/" target="_blank">All Use Cases</a>
+    </div>
+    <div style="margin-top: 16px; font-size: 11px; opacity: 0.7;">© AI Vault · Made for Amazon sellers who want their time back.</div>
+  </div>
+</footer>
+
+<script>
+const PROMPT_TEXT = `Use the Genrupt MCP on [ASIN] and run the full pipeline: Market Analysis, then full listing images with compelling main images, then 4 A+ concepts for desktop, then a 15-second Product listing video with Seedance 2.0, 720p fast.`;
+
+function markStep1() {
+  setTimeout(() => {
+    document.getElementById('step1').classList.add('complete');
+    const step2 = document.getElementById('step2');
+    step2.classList.remove('hidden');
+    step2.classList.add('reveal');
+    setTimeout(() => {
+      step2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }, 700);
+}
+
+function revealGuide() {
+  document.getElementById('step2').classList.add('complete');
+  const guide = document.getElementById('guide');
+  const challenge = document.getElementById('challenge');
+  guide.classList.add('show');
+  challenge.classList.add('show');
+  setTimeout(() => {
+    guide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    startCountdown();
+  }, 250);
+}
+
+function copyText(btn) {
+  const container = btn.parentElement;
+  const pre = container.querySelector('pre');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(PROMPT_TEXT).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span>✓</span> Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+let countdownStarted = false;
+function startCountdown() {
+  if (countdownStarted) return;
+  countdownStarted = true;
+
+  const CHALLENGE_START = new Date('2026-06-01T06:00:00Z').getTime();
+  const CHALLENGE_END   = new Date('2026-06-05T23:59:00Z').getTime();
+
+  const cdDays  = document.getElementById('cd-days');
+  const cdHours = document.getElementById('cd-hours');
+  const cdMins  = document.getElementById('cd-mins');
+  const cdSecs  = document.getElementById('cd-secs');
+  const cdEl    = document.getElementById('countdown');
+  const cdLive  = document.getElementById('countdown-live');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const now = Date.now();
+    const diff = CHALLENGE_START - now;
+
+    if (diff <= 0) {
+      if (now < CHALLENGE_END) {
+        cdEl.classList.add('live');
+        cdLive.classList.add('show');
+        cdDays.textContent = '00';
+        cdHours.textContent = '00';
+        cdMins.textContent = '00';
+        cdSecs.textContent = '00';
+      } else {
+        cdEl.style.display = 'none';
+      }
+      return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+
+    cdDays.textContent  = pad(days);
+    cdHours.textContent = pad(hours);
+    cdMins.textContent  = pad(mins);
+    cdSecs.textContent  = pad(secs);
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+</script>
+
+</body>
+</html>
