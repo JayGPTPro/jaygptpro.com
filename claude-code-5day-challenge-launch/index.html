@@ -2768,10 +2768,72 @@ section { position: relative; }
     .testi-header { margin-bottom: 36px; }
 }
 
+/* ===== LAUNCH BAR ===== */
+.launch-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1100;
+    background: #0d0d1a;
+    border-bottom: 1px solid rgba(249,115,22,0.18);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.launch-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #c1c1cc;
+    letter-spacing: 0.1px;
+}
+.launch-bar-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #dc2626;
+    flex-shrink: 0;
+    animation: r5pulse 1.6s infinite;
+}
+#lbTimer {
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.launch-bar-close {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #555566;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 6px;
+    transition: color 0.2s;
+}
+.launch-bar-close:hover { color: #aaaabc; }
+@media (max-width: 480px) {
+    .launch-bar-inner { font-size: 12px; gap: 7px; }
+}
+
 </style>
 </head>
 <body>
 
+<!-- ===== LAUNCH BAR ===== -->
+<div id="launchBar" class="launch-bar">
+    <div class="launch-bar-inner">
+        <span class="launch-bar-dot"></span>
+        <span>Final round &middot; <span id="lbTimer">—</span> left to join</span>
+    </div>
+    <button class="launch-bar-close" id="launchBarClose" aria-label="Dismiss">&#x2715;</button>
+</div>
 
 <!-- Claude Star SVG symbol (reused throughout) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -4000,6 +4062,41 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+</script>
+
+<!-- ===== LAUNCH BAR JS ===== -->
+<script>
+(function() {
+    var bar = document.getElementById('launchBar');
+    var timerEl = document.getElementById('lbTimer');
+    var closeBtn = document.getElementById('launchBarClose');
+    if (!bar) return;
+    if (localStorage.getItem('lb-dismissed') === '1') {
+        bar.style.display = 'none';
+        return;
+    }
+    document.body.style.paddingTop = '40px';
+    var target = new Date('2026-06-01T18:00:00Z').getTime();
+    function tick() {
+        var diff = target - Date.now();
+        if (diff <= 0) {
+            bar.style.display = 'none';
+            document.body.style.paddingTop = '';
+            return;
+        }
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        timerEl.textContent = d + 'd ' + h + 'h ' + m + 'm';
+    }
+    tick();
+    setInterval(tick, 30000);
+    closeBtn.addEventListener('click', function() {
+        bar.style.display = 'none';
+        document.body.style.paddingTop = '';
+        localStorage.setItem('lb-dismissed', '1');
+    });
+})();
 </script>
 
 <!-- Sticky floating CTA -->
