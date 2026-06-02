@@ -5274,6 +5274,9 @@ window.showPortal = function(round) {
 // ============================================
 // VAULT VSL BANNER CONTROL
 // ============================================
+// MASTER KILL SWITCH. Flip to true on Day 4 (June 4) to re-enable the VSL banner.
+// When false, the banner is hidden for EVERYONE including admins. Overrides VAULT_BANNER_DAY_4_GATE.
+const VAULT_BANNER_ENABLED = false;
 // VAULT_BANNER_DAY_4_GATE: when true, banner shows ONLY from Day 4 of the user's round onwards.
 // Admins always see it for previewing. Past archived rounds (round1, round2) also see it
 // since their Day 4 already passed.
@@ -5306,6 +5309,9 @@ function isPastVaultGate() {
 
 function showVaultBannerIfEligible() {
   try {
+    // MASTER KILL SWITCH - hides banner from everyone (incl. admins). Re-enable on Day 4.
+    if (!VAULT_BANNER_ENABLED) return;
+
     const email = (localStorage.getItem('donna-challenge-email') || '').toLowerCase();
     if (!email) return;
 
