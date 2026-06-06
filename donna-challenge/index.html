@@ -4271,13 +4271,15 @@ async function checkAuth(){
     localStorage.removeItem('donna-challenge-early-day');
   }
 
-  // Refresh round start_dates from rounds table (non-blocking)
-  refreshRoundDates();
+  // Refresh round start_dates from rounds table. Awaited so the cache is populated
+  // (including evergreen wk_ rounds) before showPortal() computes day locks.
+  await refreshRoundDates();
 
-  // Update WhatsApp link based on round
+  // Update WhatsApp link based on round. round1 link === the evergreen group, so wk_ rounds
+  // (and any unknown round) correctly fall back to it.
   const waLink = document.getElementById('whatsapp-link');
-  if(waLink && WHATSAPP_LINKS[allowed.round]){
-    waLink.href = WHATSAPP_LINKS[allowed.round];
+  if(waLink){
+    waLink.href = WHATSAPP_LINKS[allowed.round] || WHATSAPP_LINKS.round1;
   }
 
   // Show user email in header
@@ -4329,15 +4331,23 @@ function getCachedRoundDates(){
   return FALLBACK_ROUND_DATES;
 }
 
-// Refresh round start_date from Supabase (called on login). Non-blocking.
+// Refresh round start_date from Supabase (called on login).
+// Always fetches the legacy rounds PLUS the logged-in user's own round, so evergreen
+// wk_YYYY_MM_DD cohorts get their real start_date cached (not a hardcoded list).
 async function refreshRoundDates(){
   try{
-    const { data, error } = await sb.from('rounds').select('id,start_date').in('id',['round1','round2','round4','round5']);
+    const myRound = localStorage.getItem('donna-challenge-round') || '';
+    const ids = ['round1','round2','round4','round5'];
+    if(myRound && ids.indexOf(myRound) === -1 && myRound !== 'both') ids.push(myRound);
+    const { data, error } = await sb.from('rounds').select('id,start_date').in('id', ids);
     if(error || !data) return;
     const out = {};
     data.forEach(r => { if(r.id && r.start_date) out[r.id] = r.start_date; });
     if(out.round1 && out.round2){
-      localStorage.setItem('donna-challenge-round-dates', JSON.stringify(out));
+      // Merge over previously cached dates so other wk_ rounds aren't dropped.
+      let prev = {};
+      try{ prev = JSON.parse(localStorage.getItem('donna-challenge-round-dates')) || {}; }catch(e){}
+      localStorage.setItem('donna-challenge-round-dates', JSON.stringify(Object.assign(prev, out)));
     }
   }catch(e){ /* keep cached */ }
 }
@@ -4374,7 +4384,13 @@ function getDayUnlockDate(dayNum){
   if(dayNum === 0) return new Date(0); // Day 0 (prep): always open
 
   const dates = getCachedRoundDates();
-  const startDateStr = dates[round] || FALLBACK_ROUND_DATES[round] || FALLBACK_ROUND_DATES.round1;
+  // Evergreen wk_ rounds have no hardcoded fallback; if their date isn't cached yet,
+  // return a far-future date so the countdown never shows a stale legacy (April) date.
+  let startDateStr = dates[round];
+  if(!startDateStr){
+    if(round.indexOf('wk_') === 0) return new Date(Date.now() + 365*24*60*60*1000);
+    startDateStr = FALLBACK_ROUND_DATES[round] || FALLBACK_ROUND_DATES.round1;
+  }
   return buildUnlockDate(startDateStr, dayNum);
 }
 
@@ -4399,13 +4415,13 @@ function isDayUnlocked(dayNum){
   if(round === 'both') return true;
   // Round 1 finished, all days remain open for them as a permanent archive.
   if(round === 'round1') return true;
-  // Round 4 and Round 5 use dynamic day-by-day unlocking based on rounds.start_date.
-  // Days unlock at 14:00 New York time on the appropriate day, with a 20-minute buffer
-  // (so customers don't get locked out by a few seconds of timezone drift at the moment).
-  if(round === 'round4' || round === 'round5'){
+  // Round 4, Round 5, and all evergreen wk_ cohorts use dynamic day-by-day unlocking
+  // based on rounds.start_date. Days unlock at 14:00 New York time on the appropriate day,
+  // with a 20-minute buffer (so customers don't get locked out by timezone drift at the moment).
+  if(round === 'round4' || round === 'round5' || round.indexOf('wk_') === 0){
     const dates = getCachedRoundDates();
     const startDateStr = dates[round];
-    if(!startDateStr) return false; // shouldn't happen given FALLBACK_ROUND_DATES, but safe default
+    if(!startDateStr) return false; // no start_date cached yet -> stay locked (safe default)
     const unlock = buildUnlockDate(startDateStr, dayNum);
     return Date.now() >= (unlock.getTime() - UNLOCK_BUFFER_MS);
   }
@@ -5293,7 +5309,7 @@ function isPastVaultGate() {
   const round = localStorage.getItem('donna-challenge-round') || '';
   if (round === 'both') return true;
   if (round === 'round1' || round === 'round2') return true; // archived rounds, past Day 4
-  if (round === 'round4' || round === 'round5') {
+  if (round === 'round4' || round === 'round5' || round.indexOf('wk_') === 0) {
     // Use the same date math as isDayUnlocked, with the same 20-min buffer.
     if (typeof buildUnlockDate === 'function' && typeof getCachedRoundDates === 'function') {
       const dates = getCachedRoundDates();
