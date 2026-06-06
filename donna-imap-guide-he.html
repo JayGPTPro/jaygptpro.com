@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הוספת מייל שני לדונה</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Assistant:wght@300;400;500;600;700;800&family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --white: #ffffff;
+    --border: #e2e0da;
+    --accent: #1a6b4a;
+    --accent-light: #eef6f1;
+    --text: #1a1a1a;
+    --muted: #888580;
+    --code-bg: #1e1e24;
+    --code-text: #d4d4d8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Assistant', 'Heebo', sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    min-height: 100vh;
+    padding: 0 24px;
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 72px 0 100px;
+  }
+
+  /* Header */
+  header { margin-bottom: 48px; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid #c2ddd0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Heebo', sans-serif;
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .tab {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--muted);
+    background: var(--white);
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeUp 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Step cards */
+  .step {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px 24px 16px;
+  }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid #c2ddd0;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .step-desc a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid #c2ddd0;
+    direction: ltr;
+    display: inline-block;
+  }
+  .step-desc a:hover { border-color: var(--accent); }
+
+  .substeps {
+    padding: 0 70px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .substep {
+    font-size: 15px;
+    color: #666360;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .substep::before {
+    content: '←';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #bbb8b2;
+    flex-shrink: 0;
+  }
+
+  /* Code block */
+  .code-wrap {
+    margin: 0 24px 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #d0cec8;
+  }
+
+  .code-bar {
+    background: #2a2a32;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .code-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  .copy-btn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9dd4b8;
+    background: none;
+    border: 1px solid rgba(157,212,184,0.3);
+    padding: 4px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .copy-btn:hover { background: rgba(157,212,184,0.1); }
+  .copy-btn.copied { color: #fff; border-color: transparent; background: rgba(157,212,184,0.2); }
+
+  pre {
+    background: var(--code-bg);
+    padding: 20px;
+    overflow-x: auto;
+    margin: 0;
+    direction: rtl;
+    text-align: right;
+  }
+
+  code {
+    font-family: 'Assistant', sans-serif;
+    font-size: 14px;
+    line-height: 1.95;
+    color: var(--code-text);
+  }
+  code .path { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; direction: ltr; display: inline-block; }
+
+  .hl  { color: #9dd4b8; font-weight: 600; direction: ltr; display: inline-block; }
+  .dim { color: #9a9aa8; }
+
+  /* Warning */
+  .warn {
+    margin: 0 24px 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #fffbeb;
+    border: 1px solid #f0d070;
+    font-size: 14px;
+    color: #856a20;
+    line-height: 1.6;
+  }
+  .warn strong { color: #a07820; }
+
+  /* Done box */
+  .done {
+    background: var(--accent-light);
+    border: 1.5px solid #c2ddd0;
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .done-check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    font-size: 13px;
+    margin-top: 1px;
+  }
+
+  .done-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .done-text {
+    font-size: 14px;
+    color: #5a7a6a;
+    line-height: 1.6;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #bbb8b2;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">Donna · הגדרת מייל</div>
+    <h1>הוספת מייל שני לדונה</h1>
+    <p class="subtitle">שני שלבים. אתה משיג סיסמה, דונה עושה את כל השאר.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event,'gmail')">Gmail</button>
+    <button class="tab" onclick="switchTab(event,'outlook')">Outlook</button>
+  </div>
+
+  <!-- GMAIL -->
+  <div class="section active" id="section-gmail">
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">השג App Password מגוגל</div>
+          <div class="step-desc">הדבר היחיד שרק אתה יכול לעשות. גוגל צריכה לאשר שזה אתה.<br>
+            היכנס ל-<a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a> (דורש שאימות דו-שלבי יהיה פעיל).
+          </div>
+        </div>
+      </div>
+      <div class="substeps">
+        <div class="substep">הקלד שם כלשהו (למשל <strong>Donna</strong>) ולחץ <strong>Create</strong></div>
+        <div class="substep">העתק את <strong>הקוד בן 16 התווים</strong> שמופיע</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">הדבק את זה לדונה. היא תטפל בכל השאר</div>
+          <div class="step-desc">פתח את Claude Code ושלח לה את ההודעה הבאה. החלף את שני החלקים הירוקים.</div>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <span class="code-label">הפרומפט להדבקה</span>
+          <button class="copy-btn" onclick="copyCode(this,'gmail-prompt')">העתק</button>
+        </div>
+        <pre><code id="gmail-prompt"><span class="dim">אני רוצה לתת לך גישה לחשבון המייל השני שלי:</span>
+<span class="hl">[your@gmail.com]</span>
+
+<span class="dim">סיסמת האפליקציה (App Password) של גוגל לחשבון הזה היא:</span>
+<span class="hl">[הדבק כאן 16 תווים]</span>
+
+<span class="dim">בבקשה:
+1. בנה לקוח IMAP בפייתון שמאפשר לך לקרוא,
+   לחפש ולשלוח מיילים מהחשבון הזה.
+   שמור אותו ב- <span class="path">~/Downloads/Claude/donna-imap/imap.py</span>
+2. בדוק אותו. הראה לי את 5 המיילים האחרונים.
+3. הוסף סעיף ל-CLAUDE.md הגלובלי שלי כדי שתזכור
+   את החשבון הזה בכל שיחה עתידית.</span></code></pre>
+      </div>
+    </div>
+
+    <div class="done">
+      <div class="done-check">✓</div>
+      <div>
+        <div class="done-title">זהו.</div>
+        <div class="done-text">דונה בונה את הסקריפט, בודקת אותו, ומעדכנת את הזיכרון שלה. מעכשיו, בכל שיחה, בכל תיקייה, היא מכירה את המייל השני.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OUTLOOK -->
+  <div class="section" id="section-outlook">
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">השג App Password ממיקרוסופט</div>
+          <div class="step-desc">
+            היכנס ל-<a href="https://account.microsoft.com/security" target="_blank">account.microsoft.com/security</a>
+            ← Advanced security options ← App passwords (דורש שאימות דו-שלבי יהיה פעיל).
+          </div>
+        </div>
+      </div>
+      <div class="substeps">
+        <div class="substep">לחץ <strong>Create a new app password</strong></div>
+        <div class="substep">העתק את הסיסמה שמופיעה</div>
+      </div>
+      <div class="warn">
+        <strong>מייל של עבודה / חברה?</strong> חלק מחשבונות Microsoft 365 Business חוסמים את זה ברמת ה-IT. אם זה לא עובד, בדוק מול צוות ה-IT שלך.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">הדבק את זה לדונה. היא תטפל בכל השאר</div>
+          <div class="step-desc">פתח את Claude Code ושלח לה את ההודעה הבאה. החלף את שני החלקים הירוקים.</div>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <span class="code-label">הפרומפט להדבקה</span>
+          <button class="copy-btn" onclick="copyCode(this,'outlook-prompt')">העתק</button>
+        </div>
+        <pre><code id="outlook-prompt"><span class="dim">אני רוצה לתת לך גישה לחשבון המייל השני שלי:</span>
+<span class="hl">[your@outlook.com]</span>
+
+<span class="dim">סיסמת האפליקציה (App Password) של מיקרוסופט לחשבון הזה היא:</span>
+<span class="hl">[הדבק כאן את הסיסמה]</span>
+
+<span class="dim">בבקשה:
+1. בנה לקוח IMAP בפייתון שמאפשר לך לקרוא,
+   לחפש ולשלוח מיילים מהחשבון הזה.
+   השתמש ב- <span class="path">imap-mail.outlook.com</span> פורט 993 SSL
+   וב- <span class="path">smtp-mail.outlook.com</span> פורט 587 TLS.
+   שמור אותו ב- <span class="path">~/Downloads/Claude/donna-imap/imap.py</span>
+2. בדוק אותו. הראה לי את 5 המיילים האחרונים.
+3. הוסף סעיף ל-CLAUDE.md הגלובלי שלי כדי שתזכור
+   את החשבון הזה בכל שיחה עתידית.</span></code></pre>
+      </div>
+    </div>
+
+    <div class="done">
+      <div class="done-check">✓</div>
+      <div>
+        <div class="done-title">זהו.</div>
+        <div class="done-text">דונה בונה את הסקריפט, בודקת אותו, ומעדכנת את הזיכרון שלה. מעכשיו, בכל שיחה, בכל תיקייה, היא מכירה את המייל השני.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Donna · אתגר ה-AI</span>
+    <span>עובד עם Gmail · Outlook · Yahoo · כל ספק</span>
+  </footer>
+
+</div>
+
+<script>
+  function switchTab(e, provider) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.getElementById('section-' + provider).classList.add('active');
+  }
+
+  function copyCode(btn, id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'הועתק';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'העתק'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
