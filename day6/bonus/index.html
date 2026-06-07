@@ -234,6 +234,23 @@ h1{
 }
 .foot a{color:var(--orange-dark);text-decoration:none;font-weight:600}
 .foot a:hover{text-decoration:underline}
+
+/* Install section */
+.install-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(28px,4vw,40px);margin-bottom:32px;box-shadow:var(--shadow)}
+.install-section h2{font-family:'Outfit',sans-serif;font-size:clamp(1.5rem,2.6vw,2rem);font-weight:700;margin-bottom:6px}
+.install-section .sub{color:var(--text-3);margin-bottom:22px;font-size:1.02rem}
+.install-steps{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:13px}
+.install-steps li{color:var(--text-2);font-size:1.04rem;line-height:1.6;padding-inline-start:4px}
+.install-steps li strong{color:var(--text)}
+.prompt-box{background:var(--bg-cream);border:1px solid var(--orange-faint);border-radius:12px;padding:12px 18px 18px;margin:16px 0}
+.prompt-bar{display:flex;justify-content:flex-end;margin-bottom:6px}
+.copy-prompt{background:var(--orange);color:#1a1a1a;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:0.85rem;padding:7px 18px;cursor:pointer;transition:all .2s ease}
+.copy-prompt:hover{background:var(--orange-light)}
+.copy-prompt.copied{background:#16a34a;color:#fff}
+.prompt-text{color:var(--text-2);font-size:1.02rem;line-height:1.7}
+.install-done{margin-top:2px;color:var(--text);font-size:1.04rem;font-weight:600}
+.manual-note{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:0.9rem;color:var(--text-3);line-height:1.7}
+.manual-note code{background:var(--orange-soft);color:var(--orange-dark);padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:0.85em}
 </style>
 </head>
 <body>
@@ -264,18 +281,24 @@ h1{
       Download bonus-pack.zip
     </a>
 
-    <div class="install-note">
-      <strong>Install (2 minutes):</strong>
-      <ol style="margin:10px 0 0;padding-inline-start:22px;line-height:1.95">
-        <li>Unzip it. You get a folder called "Donna - 10 Day 6 Skills".</li>
-        <li>Drag that folder into <strong>your Donna folder on your computer</strong> . the same folder you open Donna in (usually on your Desktop). Not into Claude Code, into the folder on your computer.</li>
-        <li>Open Claude Code on your Donna folder and paste:<br>
-          <em>"I added a folder with 10 new skills here. Please install them into .claude/skills and tell me when it's done."</em></li>
-        <li>Donna copies everything to the right place. The skills are available right away.</li>
-      </ol>
-      <div style="margin-top:14px;font-size:0.88rem;opacity:0.85">
-        Prefer manual? Inside is a <code>skills</code> folder with 10 folders. Copy them into <code>.claude/skills</code> in your Donna folder. (To show the hidden <code>.claude</code> . Mac: <code>Cmd + Shift + .</code> , Windows: File Explorer → View tab → Hidden items.)
-      </div>
+  </section>
+
+  <!-- Install -->
+  <section class="install-section">
+    <h2>How to install</h2>
+    <p class="sub">2 minutes, and Donna does most of the work.</p>
+    <ol class="install-steps">
+      <li>Unzip it. You get a folder called "Donna - 10 Day 6 Skills".</li>
+      <li>Drag that folder into <strong>your Donna folder on your computer</strong> . the same folder you open Donna in, usually on your Desktop. Note: into the folder on your computer, not "into Claude Code".</li>
+      <li>Open Claude Code on your Donna folder and paste this prompt to Donna:</li>
+    </ol>
+    <div class="prompt-box">
+      <div class="prompt-bar"><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
+      <div class="prompt-text" id="install-prompt">I added a folder called "Donna - 10 Day 6 Skills" to my project. Inside it is a skills folder with 10 skill folders. Please copy the 10 folders from skills into .claude/skills (create .claude/skills if it doesn't exist), then tell me the skills are installed.</div>
+    </div>
+    <p class="install-done">That's it. Donna copies everything to the right place, and the skills are available right away.</p>
+    <div class="manual-note">
+      Prefer to install manually? Inside is a <code>skills</code> folder with 10 folders. Copy them into <code>.claude/skills</code> in your Donna folder. (To show the hidden <code>.claude</code> folder . Mac: <code>Cmd + Shift + .</code> , Windows: File Explorer → View tab → Hidden items.)
     </div>
   </section>
 
@@ -386,6 +409,19 @@ h1{
   </div>
 
 </div>
+
+<script>
+function copyPrompt(btn){
+  var el=document.getElementById('install-prompt');
+  if(!el) return;
+  navigator.clipboard.writeText(el.innerText.trim()).then(function(){
+    var o=btn.textContent;
+    btn.classList.add('copied'); btn.textContent='Copied';
+    if(typeof track==='function') track('copy_prompt');
+    setTimeout(function(){btn.classList.remove('copied'); btn.textContent=o;},1800);
+  });
+}
+</script>
 
 </body>
 </html>
