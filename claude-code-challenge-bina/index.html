@@ -3721,7 +3721,6 @@ section { position: relative; }
                 <div class="round-lang-badge" data-he="🇮🇱 עברית">🇮🇱 עברית</div>
                 <div class="round-label" data-he="הסבב הבא">הסבב הבא</div>
                 <div class="round-dates" id="nextCohortDate">יום ראשון הקרוב</div>
-                <div class="round-last-spots" data-he="מקומות אחרונים">מקומות אחרונים</div>
                 <div class="round-card-inner-cta">
                     <span data-he="שריין מקום">שריין מקום</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -4063,7 +4062,6 @@ section { position: relative; }
                     <a href="https://secure.cardcom.solutions/EA/EA5/kIYvTOU5U6gXki70yzQ/PaymentSP" data-payment-trigger="next" class="bina-round-btn">
                         <span class="bina-btn-round">הסבב הבא</span>
                         <span class="bina-btn-dates" id="nextCohortDatePricing">יום ראשון הקרוב</span>
-                        <span class="round-last-spots" style="margin-top:6px; font-size:10px; padding:4px 9px;">מקומות אחרונים</span>
                         <span class="bina-btn-cta">שריין מקום ←</span>
                     </a>
                 </div>
@@ -4327,22 +4325,34 @@ function formatSundayHebrew(date) {
 })();
 
 // ===== COUNTDOWN TIMER (evergreen: counts to next cohort Sunday 9am Israel) =====
+// Tracks which Sunday is currently the target, so we can detect when it advances
+let _lastCohortTarget = getNextCohortSunday().getTime();
+
+function refreshDateLabels() {
+    const nextSunday = getNextCohortSunday();
+    const label = formatSundayHebrew(nextSunday);
+    ['nextCohortDate', 'nextCohortDatePricing', 'nextCohortDateFinal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = label;
+    });
+    _lastCohortTarget = nextSunday.getTime();
+}
+
 function updateCountdown() {
-    const target = getNextCohortSunday().getTime();
+    const nextSunday = getNextCohortSunday();
+    const target = nextSunday.getTime();
     const now = Date.now();
     const diff = target - now;
-    if (diff <= 0) {
-        // Countdown reached - just show zeroes (next Sunday calculation will auto-advance)
-        ['cdDays','cdHours','cdMins','cdSecs'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = '00';
-        });
-        return;
+
+    // If the target Sunday has advanced (new week), refresh date labels everywhere
+    if (target !== _lastCohortTarget) {
+        refreshDateLabels();
     }
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
+
+    const d = Math.floor(Math.max(0, diff) / 86400000);
+    const h = Math.floor((Math.max(0, diff) % 86400000) / 3600000);
+    const m = Math.floor((Math.max(0, diff) % 3600000) / 60000);
+    const s = Math.floor((Math.max(0, diff) % 60000) / 1000);
     const pad = n => String(n).padStart(2, '0');
     const cdD = document.getElementById('cdDays');
     const cdH = document.getElementById('cdHours');
