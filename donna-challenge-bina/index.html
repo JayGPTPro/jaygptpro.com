@@ -4541,10 +4541,23 @@ function buildUnlockDate(startDateStr, dayNum){
   return unlock;
 }
 
+// Evergreen cohorts use round ids like 'bina_wk_2026_06_14'. The start date is
+// encoded directly in the id (the cohort's Sunday), so we parse it instead of
+// looking up the rounds table. Day N unlocks at 11:00 IL on start_date + (N-1).
+function parseEvergreenStartDate(round){
+  const m = /^bina_wk_(\d{4})_(\d{2})_(\d{2})$/.exec(round || '');
+  if(!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
 function getDayUnlockDate(dayNum){
   const round = localStorage.getItem('donna-bina-round') || 'round1';
   if(round === 'both') return new Date(0); // Admin: all open
   if(dayNum === 0) return new Date(0); // Day 0 (prep): always open
+
+  // Evergreen weekly cohort: start date is in the round id.
+  const evergreenStart = parseEvergreenStartDate(round);
+  if(evergreenStart) return buildUnlockDate(evergreenStart, dayNum);
 
   const dates = getCachedRoundDates();
   const startDateStr = dates[round] || FALLBACK_ROUND_DATES[round] || FALLBACK_ROUND_DATES.round1;
@@ -4749,14 +4762,22 @@ function showCelebration(dayNum){
   if(isGraduation){
     title = lang === 'he' ? '🎓 סיימת את האתגר!' : '🎓 You graduated!';
     subtitle = lang === 'he' ? 'בנית עובדת AI שעובדת בשבילכם. דונה כאן להישאר.' : 'You built a working AI employee. Donna is here to stay.';
-    primaryLabel = lang === 'he' ? 'שתף בוואטסאפ' : 'Share in WhatsApp';
     const round = localStorage.getItem('donna-bina-round') || 'round1';
-    const waLink = (window.WHATSAPP_LINKS || {})[round] || 'https://chat.whatsapp.com/EitaKhbxnMRGOM2G3dq3Ji?mode=gi_t';
-    primaryAction = `window.open('${waLink}','_blank');closeCelebration()`;
+    const isEvergreen = /^bina_wk_/.test(round);
+    if(isEvergreen){
+      // Evergreen cohorts are email-only (no WhatsApp group). Share the win generically.
+      primaryLabel = lang === 'he' ? 'שתף את ההישג' : 'Share your win';
+      const shareText = encodeURIComponent(lang === 'he' ? 'סיימתי את אתגר קלוד קוד עם דונה! 🎓' : 'I finished the Claude Code Challenge with Donna! 🎓');
+      primaryAction = `window.open('https://wa.me/?text=${shareText}','_blank');closeCelebration()`;
+    } else {
+      primaryLabel = lang === 'he' ? 'שתף בוואטסאפ' : 'Share in WhatsApp';
+      const waLink = (window.WHATSAPP_LINKS || {})[round] || 'https://chat.whatsapp.com/EitaKhbxnMRGOM2G3dq3Ji?mode=gi_t';
+      primaryAction = `window.open('${waLink}','_blank');closeCelebration()`;
+    }
     secondaryLabel = lang === 'he' ? 'סגור' : 'Close';
   } else if(isPrep){
     title = lang === 'he' ? '🚀 מוכן לאתגר!' : '🚀 You\u2019re ready for the challenge!';
-    subtitle = lang === 'he' ? `יום 1 ייפתח ב-2pm NY ביום הראשון של הסבב שלכם.` : `Day 1 opens at 2pm NY on the first day of your round.`;
+    subtitle = lang === 'he' ? `יום 1 ייפתח ביום ראשון ב-11:00 בבוקר, שעון ישראל.` : `Day 1 opens Sunday at 11:00 Israel time.`;
     primaryLabel = nextUnlocked ? (lang === 'he' ? 'בוא נתחיל יום 1' : `Let's start Day 1`) : (lang === 'he' ? 'מצוין' : 'Got it');
     primaryAction = nextUnlocked ? `closeCelebration();switchDay(1)` : 'closeCelebration()';
     secondaryLabel = lang === 'he' ? 'סגור' : 'Close';
@@ -4973,7 +4994,13 @@ function toggleSupportMenu(ev){
   const waLink = document.getElementById('supportWA');
   if(waLink){
     const round = localStorage.getItem('donna-bina-round') || 'round1';
-    waLink.href = WHATSAPP_LINKS[round] || WHATSAPP_LINKS.round1;
+    if(/^bina_wk_/.test(round)){
+      // Evergreen cohorts are email-only: no WhatsApp group to link to.
+      waLink.style.display = 'none';
+    } else {
+      waLink.style.display = '';
+      waLink.href = WHATSAPP_LINKS[round] || WHATSAPP_LINKS.round1;
+    }
   }
   if(isOpen){
     menu.classList.remove('open');
