@@ -4303,7 +4303,12 @@ function getNextCohortSunday() {
     const sm = String(sunDate.getMonth() + 1).padStart(2, '0');
     const sd = String(sunDate.getDate()).padStart(2, '0');
     // Sunday at 9am Israel time (IDT = UTC+3)
-    return new Date(`${sy}-${sm}-${sd}T09:00:00+03:00`);
+    const result = new Date(`${sy}-${sm}-${sd}T09:00:00+03:00`);
+    // Safety: if calculated target is already in the past, jump one week forward
+    if (result.getTime() <= now.getTime()) {
+        result.setDate(result.getDate() + 7);
+    }
+    return result;
 }
 
 function formatSundayHebrew(date) {
