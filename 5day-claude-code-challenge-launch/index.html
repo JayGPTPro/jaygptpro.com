@@ -3801,7 +3801,11 @@ function getNextCohortCutoff() {
         timeZone: 'America/New_York', hour: 'numeric', hour12: false
     }).format(probe));
     var utcHour = 18 + (14 - probeHour);
-    return new Date(targetDateStr + 'T' + String(utcHour).padStart(2,'0') + ':00:00Z');
+    var cutoff = new Date(targetDateStr + 'T' + String(utcHour).padStart(2,'0') + ':00:00Z');
+    if (new URLSearchParams(window.location.search).get('week') === 'next') {
+        cutoff = new Date(cutoff.getTime() + 7 * 86400000);
+    }
+    return cutoff;
 }
 function formatCohortDate(cutoff, lang) {
     var locale = lang === 'he' ? 'he-IL' : 'en-US';
