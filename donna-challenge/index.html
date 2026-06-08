@@ -5300,6 +5300,9 @@ const VAULT_BANNER_DAY_4_GATE = true;
 // How long after dismiss before it reappears (hours). 24 = once per day
 const VAULT_BANNER_DISMISS_HOURS = 24;
 const VAULT_BANNER_ADMIN_EMAILS = ['info@jaygptpro.com','smargaliot1@gmail.com'];
+// Per-customer opt-out: these emails never see the Vault banner, regardless of round.
+// Added for customers who asked to stop seeing Vault promotion.
+const VAULT_BANNER_EXCLUDE_EMAILS = ['andy@pictureswords.com'];
 
 // Returns true if the current user has reached Day 4 of their round (or is admin / past round).
 // Used to gate the Vault VSL banner so R4/R5 customers don't see it before Day 4.
@@ -5330,6 +5333,9 @@ function showVaultBannerIfEligible() {
 
     const email = (localStorage.getItem('donna-challenge-email') || '').toLowerCase();
     if (!email) return;
+
+    // Per-customer opt-out: never show the Vault banner to excluded emails.
+    if (VAULT_BANNER_EXCLUDE_EMAILS.indexOf(email) >= 0) return;
 
     if (VAULT_BANNER_DAY_4_GATE && !isPastVaultGate()) return;
 
