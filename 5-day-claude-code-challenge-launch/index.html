@@ -3780,6 +3780,7 @@ if (pricingCard && priceTheater) {
 
 // ===== EVERGREEN COHORT LOGIC =====
 function getNextCohortCutoff() {
+    var SKIP_THIS_WEEK = true; // remove after Jun 9 2pm ET
     var now = new Date();
     var etParts = {};
     new Intl.DateTimeFormat('en-US', {
@@ -3802,7 +3803,7 @@ function getNextCohortCutoff() {
     }).format(probe));
     var utcHour = 18 + (14 - probeHour);
     var cutoff = new Date(targetDateStr + 'T' + String(utcHour).padStart(2,'0') + ':00:00Z');
-    if (new URLSearchParams(window.location.search).get('week') === 'next') {
+    if (SKIP_THIS_WEEK || new URLSearchParams(window.location.search).get('week') === 'next') {
         cutoff = new Date(cutoff.getTime() + 7 * 86400000);
     }
     return cutoff;
