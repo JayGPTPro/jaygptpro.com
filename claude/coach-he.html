@@ -1,339 +1,388 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>המאמן האישי שלך ל-Claude Code | טיפים מאת ג'יי מרגליות</title>
+    <title>המאמן האישי שלך ל-Claude Code | ג'יי מרגליות</title>
+    <meta name="description" content="פרומפט אחד שמתקינים פעם אחת בהגדרות הגלובליות, וקלוד מלווה ומלמד אותך בכל פרויקט, אוטומטית.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --orange: #f97316; --orange-dark: #ea580c; --orange-glow: rgba(249,115,22,0.25);
-            --dark: #1a1a2e; --dark-mid: #16213e;
-            --text: #1e293b; --text-dim: #64748b; --text-muted: #94a3b8;
-            --border: #e2e8f0; --surface: #fff; --bg: #faf8f5;
-            --warm-100: #fff3e0; --warm-200: #ffe0b2;
-            --box-bg: #0d1117; --box-header: #161b22; --box-border: #30363d;
-            --code-text: #e6edf3; --code-comment: #8b949e; --code-heading: #ffa657;
-            --code-bullet: #7ee787; --code-string: #a5d6ff;
+            --bg: #07070b;
+            --bg-soft: #0c0c14;
+            --panel: rgba(255,255,255,0.035);
+            --panel-2: rgba(255,255,255,0.055);
+            --brd: rgba(255,255,255,0.09);
+            --brd-soft: rgba(255,255,255,0.06);
+            --txt: #f3f3f6;
+            --txt-dim: #a0a0ad;
+            --txt-mut: #6a6a78;
+            --amber: #fbbf24;
+            --amber-2: #fb923c;
+            --amber-3: #f97316;
+            --glow: rgba(251,146,60,0.45);
+            --glow-soft: rgba(251,191,36,0.18);
+            --grad: linear-gradient(135deg, #fde68a 0%, #fbbf24 35%, #fb923c 70%, #f97316 100%);
+            --code-text: #e7e7ee;
+            --code-comment: #7b7b88;
+            --code-amber: #ffc06b;
+            --code-green: #7ee0a6;
+            --code-blue: #9cc7ff;
         }
-        body { font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-        a { color: inherit; }
-        code { direction: ltr; unicode-bidi: embed; display: inline-block; font-family: 'SF Mono','Fira Code',monospace; font-size: 0.88em; background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 5px; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Heebo', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--txt); background: var(--bg); line-height: 1.7;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        ::selection { background: rgba(251,146,60,0.3); color: #fff; }
+        code { direction: ltr; unicode-bidi: embed; display: inline-block; font-family: 'SF Mono','Fira Code',monospace; font-size: 0.86em; background: rgba(251,146,60,0.12); color: var(--amber); padding: 1px 7px; border-radius: 6px; }
+
+        /* SCROLL PROGRESS */
+        .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; background: transparent; }
+        .progress span { display: block; height: 100%; width: 0%; background: var(--grad); box-shadow: 0 0 12px var(--glow); transition: width 0.1s linear; }
+
+        /* BACKGROUND AURORA */
+        .bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: radial-gradient(120% 80% at 50% -10%, #14101f 0%, var(--bg) 55%); }
+        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; will-change: transform; }
+        .blob.a { width: 540px; height: 540px; top: -160px; right: -80px; background: radial-gradient(circle, rgba(251,146,60,0.5), transparent 70%); }
+        .blob.b { width: 460px; height: 460px; top: 280px; left: -140px; background: radial-gradient(circle, rgba(168,85,247,0.28), transparent 70%); }
+        .blob.c { width: 600px; height: 600px; top: 1100px; right: -180px; background: radial-gradient(circle, rgba(251,191,36,0.16), transparent 70%); }
+        .grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(110% 60% at 50% 0%, #000 30%, transparent 75%); -webkit-mask-image: radial-gradient(110% 60% at 50% 0%, #000 30%, transparent 75%); }
 
         /* HERO */
-        .hero {
-            position: relative;
-            background: linear-gradient(200deg, #1a1a2e 0%, #0f172a 40%, #1e1b4b 70%, #312e81 100%);
-            padding: 80px 24px 100px; text-align: center; overflow: hidden;
-        }
-        .hero-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3);
-            color: var(--orange); padding: 8px 20px; border-radius: 100px;
-            font-size: 14px; font-weight: 700; margin-bottom: 28px;
-        }
-        .hero h1 { font-size: clamp(38px,6vw,60px); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 18px; letter-spacing: -1px; }
-        .hero h1 .accent { background: linear-gradient(135deg, var(--orange), #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero-sub { font-size: clamp(17px,2.2vw,20px); color: rgba(255,255,255,0.6); max-width: 500px; margin: 0 auto 32px; line-height: 1.7; }
-        .hero-cta {
-            display: inline-flex; align-items: center; gap: 10px; padding: 16px 40px;
-            background: var(--orange); color: #fff; border: none; border-radius: 100px;
-            font-size: 17px; font-weight: 700; text-decoration: none; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 4px 20px var(--orange-glow);
-        }
-        .hero-cta:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 30px var(--orange-glow); }
-        .hero-wave { position: absolute; bottom: -1px; left: 0; right: 0; height: 60px; overflow: hidden; }
-        .hero-wave svg { display: block; width: 100%; height: 100%; }
+        .hero { position: relative; text-align: center; padding: 116px 24px 90px; }
+        .hero-content { max-width: 760px; margin: 0 auto; position: relative; z-index: 2; }
+        .bulb-wrap { position: relative; display: inline-grid; place-items: center; margin-bottom: 26px; }
+        .bulb { font-size: 60px; line-height: 1; filter: drop-shadow(0 0 26px rgba(255,184,90,0.75)); animation: bulbFloat 4s ease-in-out infinite; position: relative; z-index: 2; }
+        .bulb-halo { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,0.4), transparent 65%); filter: blur(8px); animation: haloPulse 4s ease-in-out infinite; }
+        .bulb-ring { position: absolute; width: 108px; height: 108px; border-radius: 50%; border: 1px solid rgba(251,191,36,0.25); animation: ringExpand 4s ease-out infinite; }
+        @keyframes bulbFloat { 0%,100% { transform: translateY(0); filter: drop-shadow(0 0 22px rgba(255,184,90,0.6)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 40px rgba(255,206,120,0.95)); } }
+        @keyframes haloPulse { 0%,100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.12); } }
+        @keyframes ringExpand { 0% { opacity: 0.6; transform: scale(0.7); } 100% { opacity: 0; transform: scale(1.6); } }
 
-        /* CONTAINER */
-        .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
-        .section { padding: 60px 0; }
-        .section-tag {
-            display: inline-flex; align-items: center; gap: 8px;
-            font-size: 13px; letter-spacing: 1px;
-            color: var(--orange); font-weight: 800; margin-bottom: 12px;
-        }
-        .section-tag::before { content: ''; display: block; width: 22px; height: 2px; background: var(--orange); border-radius: 1px; }
-        .section h2 { font-size: clamp(27px,4vw,40px); font-weight: 800; margin-bottom: 12px; color: var(--dark); letter-spacing: -0.5px; line-height: 1.2; }
-        .section-desc { font-size: 18px; color: var(--text-dim); max-width: 600px; line-height: 1.75; }
-        .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+        .badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 18px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid var(--brd); color: var(--txt-dim); font-size: 13.5px; font-weight: 600; margin-bottom: 30px; backdrop-filter: blur(8px); }
+        .badge a { color: var(--amber); }
+        .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-2); box-shadow: 0 0 8px var(--amber-2); }
+        .hero h1 { font-size: clamp(42px, 7vw, 78px); font-weight: 900; line-height: 1.08; letter-spacing: -2px; margin-bottom: 22px; }
+        .hero h1 .accent { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-sub { font-size: clamp(17px, 2.3vw, 21px); color: var(--txt-dim); max-width: 540px; margin: 0 auto 38px; font-weight: 400; }
+        .cta-primary { display: inline-flex; align-items: center; gap: 11px; padding: 17px 42px; border-radius: 100px; background: var(--grad); color: #1a0e02; font-size: 17px; font-weight: 800; cursor: pointer; border: none; position: relative; box-shadow: 0 10px 40px -8px var(--glow); transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s; }
+        .cta-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 18px 55px -8px var(--glow); }
+        .cta-primary svg { width: 18px; height: 18px; }
+        .scroll-hint { margin-top: 56px; display: inline-flex; flex-direction: column; align-items: center; gap: 8px; color: var(--txt-mut); font-size: 12px; letter-spacing: 1px; }
+        .scroll-hint .mouse { width: 22px; height: 34px; border: 1.5px solid var(--brd); border-radius: 12px; position: relative; }
+        .scroll-hint .mouse::after { content: ''; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 3px; height: 6px; border-radius: 2px; background: var(--amber); animation: wheel 1.6s ease-in-out infinite; }
+        @keyframes wheel { 0% { opacity: 0; transform: translate(-50%, 0); } 40% { opacity: 1; } 80% { opacity: 0; transform: translate(-50%, 10px); } 100% { opacity: 0; } }
 
-        /* WHAT IT DOES */
-        .feature-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
-        .feat { background: var(--surface); border-radius: 14px; padding: 26px 20px; border: 1px solid var(--border); text-align: center; transition: all 0.3s; }
-        .feat:hover { border-color: rgba(249,115,22,0.3); box-shadow: 0 6px 24px rgba(249,115,22,0.06); transform: translateY(-2px); }
-        .feat lord-icon { margin-bottom: 12px; }
-        .feat h3 { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
-        .feat p { font-size: 14px; color: var(--text-dim); line-height: 1.55; margin: 0; }
+        /* hero entrance */
+        @keyframes up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+        .js .hero-content > * { animation: up 0.85s cubic-bezier(.16,1,.3,1) both; }
+        .js .bulb-wrap { animation-delay: 0.05s; } .js .badge { animation-delay: 0.18s; } .js .hero h1 { animation-delay: 0.3s; }
+        .js .hero-sub { animation-delay: 0.45s; } .js .cta-primary { animation-delay: 0.58s; } .js .scroll-hint { animation-delay: 0.85s; }
+
+        /* LAYOUT */
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+        .section { padding: 70px 0; position: relative; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; letter-spacing: 2px; font-weight: 700; color: var(--amber); margin-bottom: 16px; text-transform: uppercase; }
+        .eyebrow::before { content: ''; width: 26px; height: 1.5px; background: var(--grad); }
+        .section h2 { font-size: clamp(28px, 4.4vw, 44px); font-weight: 800; letter-spacing: -1px; line-height: 1.18; margin-bottom: 14px; }
+        .section h2 .accent { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .lead { font-size: 18px; color: var(--txt-dim); max-width: 580px; }
+
+        /* FEATURE CARDS */
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+        .card { position: relative; padding: 30px 26px; border-radius: 20px; background: var(--panel); border: 1px solid var(--brd); overflow: hidden; transition: transform 0.4s cubic-bezier(.16,1,.3,1), border-color 0.4s, background 0.4s; }
+        .card::before { content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1px; background: linear-gradient(135deg, rgba(251,191,36,0.5), transparent 40%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.4s; }
+        .card:hover { transform: translateY(-6px); background: var(--panel-2); border-color: transparent; }
+        .card:hover::before { opacity: 1; }
+        .card .ic { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; margin-bottom: 18px; background: radial-gradient(circle at 30% 25%, rgba(251,191,36,0.22), rgba(251,146,60,0.06)); border: 1px solid rgba(251,191,36,0.18); transition: box-shadow 0.4s, transform 0.4s; }
+        .card:hover .ic { box-shadow: 0 0 28px -4px var(--glow); transform: scale(1.06) rotate(-3deg); }
+        .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 7px; }
+        .card p { font-size: 14.5px; color: var(--txt-dim); line-height: 1.6; }
 
         /* PROMPT BOX */
-        .box-wrapper { margin-top: 32px; border-radius: 16px; overflow: hidden; border: 1px solid var(--box-border); box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
-        .box-header { background: var(--box-header); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--box-border); }
-        .box-dots { display: flex; gap: 8px; }
-        .box-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .box-dot.red { background: #ff5f57; } .box-dot.yellow { background: #febc2e; } .box-dot.green { background: #28c840; }
-        .box-title { color: var(--code-comment); font-size: 13px; font-weight: 600; flex: 1; text-align: center; }
-        .box-body { background: var(--box-bg); padding: 56px 0 22px; max-height: 460px; overflow-y: auto; position: relative; direction: rtl; }
-        .box-body::-webkit-scrollbar { width: 6px; } .box-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-        .code-line { padding: 1px 26px; line-height: 1.95; font-size: 14.5px; color: var(--code-text); }
-        .code-line:hover { background: rgba(255,255,255,0.03); }
-        .c-heading { color: var(--code-heading); font-weight: 700; }
-        .c-bullet { color: var(--code-bullet); } .c-string { color: var(--code-string); }
-        .c-emoji { font-style: normal; }
-        .box-copy {
-            position: absolute; top: 12px; left: 16px; z-index: 10;
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff;
-            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+        .editor { margin-top: 42px; border-radius: 20px; position: relative; background: linear-gradient(180deg, #0b0b12, #08080d); border: 1px solid var(--brd); box-shadow: 0 40px 90px -40px rgba(0,0,0,0.9), 0 0 60px -30px var(--glow); overflow: hidden; }
+        .editor-top { display: flex; align-items: center; gap: 13px; padding: 14px 20px; border-bottom: 1px solid var(--brd-soft); background: rgba(255,255,255,0.015); }
+        .dots { display: flex; gap: 8px; }
+        .dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+        .dots .r { background: #ff5f57; } .dots .y { background: #febc2e; } .dots .g { background: #28c840; }
+        .editor-title { flex: 1; text-align: center; font-size: 12.5px; color: var(--code-comment); font-family: 'SF Mono', monospace; direction: ltr; letter-spacing: 0.3px; }
+        .editor-body { padding: 56px 0 24px; max-height: 480px; overflow-y: auto; position: relative; direction: rtl; }
+        .editor-body::-webkit-scrollbar { width: 7px; } .editor-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; } .editor-body::-webkit-scrollbar-track { background: transparent; }
+        .ln { padding: 1px 28px; line-height: 1.95; font-size: 14.5px; color: var(--code-text); }
+        .c-h { color: var(--code-amber); font-weight: 700; }
+        .c-b { color: var(--code-green); } .c-s { color: var(--code-blue); } .c-e { font-style: normal; }
+        .install-line { padding: 12px 28px; background: rgba(126,224,166,0.07); border-right: 3px solid var(--code-green); color: #bdf0d2; font-size: 13.5px; line-height: 1.7; }
+        .install-line b { color: var(--code-green); font-weight: 700; }
+        .sep { padding: 5px 28px 3px; color: #2c2c3a; user-select: none; letter-spacing: -1px; }
+        .copy-chip { position: absolute; top: 14px; left: 18px; z-index: 6; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 9px; background: rgba(251,146,60,0.14); border: 1px solid rgba(251,146,60,0.3); color: var(--amber); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .copy-chip:hover { background: rgba(251,146,60,0.22); }
+        .copy-chip.copied { background: rgba(40,200,100,0.18); border-color: rgba(40,200,100,0.4); color: #4ade80; }
+        .copy-chip svg { width: 15px; height: 15px; } .copy-chip .ck { display: none; } .copy-chip.copied .cp { display: none; } .copy-chip.copied .ck { display: block; }
+
+        .cta-copy { display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; margin-top: 22px; padding: 19px 32px; border-radius: 16px; background: var(--grad); color: #1a0e02; font-size: 17.5px; font-weight: 800; cursor: pointer; border: none; font-family: inherit; box-shadow: 0 14px 44px -14px var(--glow); transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s; }
+        .cta-copy:hover { transform: translateY(-2px); box-shadow: 0 20px 56px -14px var(--glow); }
+        .cta-copy.copied { background: linear-gradient(135deg, #34d399, #10b981); }
+        .cta-copy svg { width: 20px; height: 20px; } .cta-copy .ck { display: none; } .cta-copy.copied .cp { display: none; } .cta-copy.copied .ck { display: block; }
+        .cta-hint { text-align: center; font-size: 13.5px; color: var(--txt-mut); margin-top: 14px; line-height: 1.65; }
+        .cta-hint b { color: var(--txt-dim); font-weight: 700; }
+
+        /* TIP CARDS */
+        .tip { margin-top: 18px; padding: 20px 24px; border-radius: 16px; display: flex; align-items: flex-start; gap: 14px; border: 1px solid var(--brd); }
+        .tip.install { background: linear-gradient(120deg, rgba(251,146,60,0.1), rgba(251,191,36,0.04)); border-color: rgba(251,146,60,0.22); }
+        .tip.try { background: var(--panel); }
+        .tip .ti { font-size: 22px; flex-shrink: 0; line-height: 1.3; }
+        .tip p { font-size: 14.5px; color: var(--txt-dim); line-height: 1.7; margin: 0; }
+        .tip.install p strong { color: var(--amber); }
+        .tip.try p strong { color: var(--txt); }
+        .tip em { color: var(--txt); font-style: normal; font-weight: 600; }
+        .copy-plain { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 18px; border-radius: 10px; background: rgba(255,255,255,0.04); color: var(--txt-dim); border: 1px solid var(--brd); font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .copy-plain:hover { border-color: rgba(255,255,255,0.2); color: var(--txt); background: rgba(255,255,255,0.07); }
+        .copy-plain.copied { background: rgba(40,200,100,0.16); border-color: rgba(40,200,100,0.4); color: #4ade80; }
+        .copy-plain svg { width: 15px; height: 15px; } .copy-plain .ck { display: none; } .copy-plain.copied .cp { display: none; } .copy-plain.copied .ck { display: block; }
+
+        /* FINAL CTAs */
+        .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 44px; }
+        .promo { position: relative; padding: 34px 28px; border-radius: 20px; overflow: hidden; border: 1px solid var(--brd); transition: transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s; }
+        .promo:hover { transform: translateY(-5px); }
+        .promo .pe { font-size: 30px; margin-bottom: 12px; display: block; }
+        .promo h3 { font-size: 19px; font-weight: 800; margin-bottom: 7px; }
+        .promo p { font-size: 14px; line-height: 1.55; }
+        .promo .go { margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; }
+        .promo.wa { background: linear-gradient(150deg, rgba(34,197,94,0.16), rgba(34,197,94,0.04)); }
+        .promo.wa:hover { box-shadow: 0 22px 50px -24px rgba(34,197,94,0.5); }
+        .promo.wa h3 { color: #4ade80; } .promo.wa p { color: var(--txt-dim); } .promo.wa .go { color: #4ade80; }
+        .promo.ch { background: linear-gradient(150deg, rgba(251,146,60,0.16), rgba(168,85,247,0.08)); }
+        .promo.ch:hover { box-shadow: 0 22px 50px -24px var(--glow); }
+        .promo.ch h3 { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; } .promo.ch p { color: var(--txt-dim); } .promo.ch .go { color: var(--amber); }
+
+        .end { text-align: center; padding: 30px 0 70px; }
+        .end .bulb-mini { font-size: 26px; filter: drop-shadow(0 0 16px rgba(255,184,90,0.6)); animation: bulbFloat 4s ease-in-out infinite; }
+
+        /* REVEAL ON SCROLL */
+        .reveal { opacity: 0; transform: translateY(38px); transition: opacity 0.9s cubic-bezier(.16,1,.3,1), transform 0.9s cubic-bezier(.16,1,.3,1); transition-delay: var(--d, 0s); will-change: opacity, transform; }
+        .reveal.in { opacity: 1; transform: none; }
+        html.no-js .reveal { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1 !important; transform: none !important; }
+            .bulb, .bulb-halo, .bulb-ring, .blob, .scroll-hint .mouse::after, .bulb-mini { animation: none !important; }
+            .js .hero-content > * { animation: none !important; }
         }
-        .box-copy:hover { background: rgba(255,255,255,0.15); }
-        .box-copy.copied { background: #16a34a; border-color: #16a34a; }
-        .box-copy svg { width: 16px; height: 16px; }
-        .box-copy .check-svg { display: none; }
-        .box-copy.copied .copy-svg { display: none; } .box-copy.copied .check-svg { display: block; }
 
-        /* BIG COPY CTA */
-        .copy-cta {
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            width: 100%; margin-top: 24px; padding: 18px 32px;
-            background: var(--orange); color: #fff; border: none; border-radius: 14px;
-            font-size: 18px; font-weight: 800; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 4px 20px var(--orange-glow); font-family: inherit;
-        }
-        .copy-cta:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 30px var(--orange-glow); }
-        .copy-cta.copied { background: #16a34a; box-shadow: 0 4px 20px rgba(34,197,94,0.3); }
-        .copy-cta svg { width: 20px; height: 20px; }
-        .copy-cta .check-svg { display: none; }
-        .copy-cta.copied .copy-svg { display: none; } .copy-cta.copied .check-svg { display: block; }
-
-        /* INSTALL LINE INSIDE BOX */
-        .install-line { padding: 11px 26px; background: rgba(126,231,135,0.09); border-right: 3px solid var(--code-bullet); color: #c9f7cf; font-size: 13.5px; line-height: 1.7; }
-        .install-line b { color: var(--code-bullet); font-weight: 700; }
-        .box-sep { padding: 4px 26px 2px; color: #3a4250; user-select: none; letter-spacing: -1px; }
-
-        /* SECONDARY PLAIN COPY BUTTON */
-        .copy-plain { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 11px 20px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-        .copy-plain:hover { border-color: var(--text-muted); color: var(--text); }
-        .copy-plain.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
-        .copy-plain svg { width: 16px; height: 16px; }
-        .copy-plain .check-svg { display: none; }
-        .copy-plain.copied .copy-svg { display: none; } .copy-plain.copied .check-svg { display: block; }
-
-        /* TIPS */
-        .pro-tip { margin-top: 20px; padding: 18px 22px; background: var(--warm-100); border: 1px solid var(--warm-200); border-radius: 14px; display: flex; align-items: flex-start; gap: 12px; }
-        .pro-tip p { margin: 0; font-size: 15px; color: var(--text-dim); line-height: 1.7; }
-
-        /* CTA CARDS */
-        .cta-section { padding: 48px 0 20px; }
-        .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .cta-card { padding: 28px 24px; border-radius: 16px; text-align: center; text-decoration: none; display: block; transition: all 0.3s; }
-        .cta-card.whatsapp { background: #dcfce7; border: 1px solid #bbf7d0; }
-        .cta-card.whatsapp:hover { box-shadow: 0 6px 20px rgba(34,197,94,0.12); transform: translateY(-2px); }
-        .cta-card.hacks { background: linear-gradient(135deg, var(--dark), #2a1a3e); border: none; color: #fff; }
-        .cta-card.hacks:hover { box-shadow: 0 6px 20px rgba(26,26,46,0.2); transform: translateY(-2px); }
-        .cta-card .cta-emoji { font-size: 30px; margin-bottom: 10px; }
-        .cta-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-        .cta-card.whatsapp h3 { color: #16a34a; }
-        .cta-card p { font-size: 14px; margin: 0; }
-        .cta-card.whatsapp p { color: var(--text-dim); }
-        .cta-card.hacks p { color: rgba(255,255,255,0.6); }
-
-        /* FOOTER */
-        .footer { padding: 24px; text-align: center; color: var(--text-muted); font-size: 14px; }
-        .footer a { color: var(--orange); text-decoration: none; }
-
-        @media (max-width: 700px) {
-            .hero { padding: 60px 20px 80px; }
-            .feature-row { grid-template-columns: 1fr; }
+        @media (max-width: 760px) {
+            .hero { padding: 92px 20px 70px; }
+            .features { grid-template-columns: 1fr; }
             .cta-grid { grid-template-columns: 1fr; }
-            .box-body { max-height: 360px; }
+            .editor-body { max-height: 380px; }
+            .section { padding: 54px 0; }
         }
     </style>
 </head>
 <body>
 
+<div class="progress"><span id="bar"></span></div>
+<div class="bg">
+    <div class="blob a" data-speed="0.06"></div>
+    <div class="blob b" data-speed="0.04"></div>
+    <div class="blob c" data-speed="0.05"></div>
+</div>
+<div class="grid"></div>
+
+<!-- HERO -->
 <header class="hero">
     <div class="hero-content">
-        <div class="hero-badge">טיפים יומיים על Claude · <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" style="color:inherit;text-decoration:underline;">ג'יי מרגליות</a></div>
+        <div class="bulb-wrap">
+            <div class="bulb-halo"></div>
+            <div class="bulb-ring"></div>
+            <div class="bulb">💡</div>
+        </div>
+        <div class="badge"><span class="dot"></span> טיפים יומיים על Claude מאת <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">ג'יי מרגליות</a></div>
         <h1>המאמן האישי שלך<br><span class="accent">ל-Claude Code</span></h1>
         <p class="hero-sub">פרומפט אחד. מתקינים אותו פעם אחת בהגדרות הגלובליות, וקלוד מלווה אותך בכל פרויקט. אוטומטית. בלי להדביק כלום בכל פעם.</p>
-        <a href="#get-it" class="hero-cta">קבל את הפרומפט &#x2193;</a>
-    </div>
-    <div class="hero-wave">
-        <svg viewBox="0 0 1440 60" preserveAspectRatio="none" fill="var(--bg)">
-            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z"/>
-        </svg>
+        <a href="#get-it" class="cta-primary">
+            קבל את הפרומפט
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </a>
+        <div class="scroll-hint">
+            <div class="mouse"></div>
+            גלול
+        </div>
     </div>
 </header>
 
 <!-- WHAT IT DOES -->
-<div class="container">
-    <section class="section">
-        <div class="section-tag">מה זה עושה</div>
-        <h2>קלוד עובד. אתה לומד.</h2>
-        <p class="section-desc">מתקינים פעם אחת בהגדרות הגלובליות, וממשיכים לעבוד רגיל. קלוד זורק הערות קצרות ברגעים הנכונים, בכל פרויקט.</p>
-
-        <div class="feature-row">
-            <div class="feat">
-                <lord-icon src="https://cdn.lordicon.com/kkvxgpti.json" trigger="loop" delay="2000" colors="primary:#f97316" style="width:38px;height:38px"></lord-icon>
+<section class="section">
+    <div class="wrap">
+        <div class="reveal"><div class="eyebrow">מה זה עושה</div></div>
+        <div class="reveal" style="--d:.05s"><h2>קלוד עובד. <span class="accent">אתה לומד.</span></h2></div>
+        <div class="reveal" style="--d:.1s"><p class="lead">מתקינים פעם אחת בהגדרות הגלובליות, וממשיכים לעבוד רגיל. קלוד זורק הערות קצרות ברגעים הנכונים, בכל פרויקט.</p></div>
+        <div class="features">
+            <div class="card reveal" style="--d:.12s">
+                <div class="ic">⚡</div>
                 <h3>תמיד פעיל</h3>
                 <p>מתקינים פעם אחת. נטען בכל פרויקט, אוטומטית.</p>
             </div>
-            <div class="feat">
-                <lord-icon src="https://cdn.lordicon.com/jkzgajyr.json" trigger="loop" delay="2500" colors="primary:#f97316" style="width:38px;height:38px"></lord-icon>
+            <div class="card reveal" style="--d:.2s">
+                <div class="ic">💡</div>
                 <h3>הערות בזמן אמת</h3>
-                <p>הערות 💡 קצרות, בדיוק ברגעים הנכונים.</p>
+                <p>הערות קצרות, בדיוק ברגעים הנכונים.</p>
             </div>
-            <div class="feat">
-                <lord-icon src="https://cdn.lordicon.com/wloilxuq.json" trigger="loop" delay="3000" colors="primary:#f97316" style="width:38px;height:38px"></lord-icon>
+            <div class="card reveal" style="--d:.28s">
+                <div class="ic">📋</div>
                 <h3>סיכום בסוף</h3>
                 <p>אומרים "סיימנו", ומקבלים סיכום מלא.</p>
             </div>
         </div>
-    </section>
-</div>
-
-<div class="divider"></div>
+    </div>
+</section>
 
 <!-- THE PROMPT -->
-<div class="container">
-    <section class="section" id="get-it">
-        <div class="section-tag">הפרומפט</div>
-        <h2>להעתיק. להתקין. ללמוד.</h2>
-        <p class="section-desc">מוסיפים את זה פעם אחת לקובץ ה-CLAUDE.md הגלובלי. מעכשיו זה נטען בכל שיחה ב-Claude Code, אוטומטית.</p>
+<section class="section" id="get-it">
+    <div class="wrap">
+        <div class="reveal"><div class="eyebrow">הפרומפט</div></div>
+        <div class="reveal" style="--d:.05s"><h2>להעתיק. להתקין. <span class="accent">ללמוד.</span></h2></div>
+        <div class="reveal" style="--d:.1s"><p class="lead">מוסיפים את זה פעם אחת לקובץ ה-CLAUDE.md הגלובלי. מעכשיו זה נטען בכל שיחה ב-Claude Code, אוטומטית.</p></div>
 
-        <div class="box-wrapper">
-            <div class="box-header">
-                <div class="box-dots">
-                    <div class="box-dot red"></div>
-                    <div class="box-dot yellow"></div>
-                    <div class="box-dot green"></div>
-                </div>
-                <div class="box-title">פרומפט המאמן</div>
+        <div class="editor reveal" style="--d:.12s">
+            <div class="editor-top">
+                <div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+                <div class="editor-title">~/.claude/CLAUDE.md</div>
             </div>
-            <div class="box-body">
-                <button class="box-copy" onclick="copyPrompt(this,'install')">
-                    <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="editor-body">
+                <button class="copy-chip" onclick="copyPrompt(this,'install')">
+                    <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>העתק והתקן</span>
                 </button>
 <div class="install-line"><b>הוראה לקלוד &#x2193;</b> הוסף את כל מה שמתחת לקו אל קובץ ה-CLAUDE.md הגלובלי שלי (~/.claude/CLAUDE.md), בלי לשנות, כדי שייטען אוטומטית בכל פרויקט.</div>
-<div class="box-sep">──────────────────────────────</div>
-<div class="code-line"><span class="c-heading">## מצב מאמן: מתחילים</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">אתה עובד איתי בתפקיד כפול: עוזר טכני + מאמן שמלמד</div>
-<div class="code-line">אותי להשתמש ב-Claude Code בצורה חכמה יותר. אני מתחיל.</div>
-<div class="code-line">לא צריך להבין את הטכני לעומק, אני רוצה לדעת מה לבקש ומתי.</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">התפקיד שלך:</div>
-<div class="code-line"><span class="c-bullet">-</span> תעשה מה שצריך בלי לעצור לשאול</div>
-<div class="code-line"><span class="c-bullet">-</span> תלמד אותי תוך כדי. לא הרצאות, הערות קצרות שמשתלבות בעבודה</div>
-<div class="code-line"><span class="c-bullet">-</span> תמליץ מה לבקש. אם יכולתי לקבל תוצאה טובה יותר, תגיד</div>
-<div class="code-line"><span class="c-bullet">-</span> תזהה דפוסים אצלי ותציע דרכים טובות יותר</div>
-<div class="code-line"><span class="c-bullet">-</span> תמיד תזרוק <span class="c-emoji">&#x1f4a1;</span> על דברים שאני יכול לעשות טוב יותר</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-heading">## הכלל הבסיסי</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">עבוד רגיל. אל תעצור לשאול אם לעשות משהו. פשוט תעשה.</div>
-<div class="code-line">אבל תמיד תזרוק הערת <span class="c-emoji">&#x1f4a1;</span>, גם אם לא ביקשתי.</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">הערות יכולות להיות על:</div>
-<div class="code-line"><span class="c-bullet">-</span> יכולות של Claude Code שאני לא מנצל (skills, MCP, משימות מתוזמנות)</div>
-<div class="code-line"><span class="c-bullet">-</span> דרכים חכמות יותר לנסח בקשות</div>
-<div class="code-line"><span class="c-bullet">-</span> תזמון נכון ל-<span class="c-string">/compact</span> ולעדכון קבצים</div>
-<div class="code-line"><span class="c-bullet">-</span> כל דבר שיחסוך לי זמן בפעם הבאה</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">כל הערה = שורה אחת מה לעשות + שורה אחת למה זה שווה.</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-heading">## בדיקה חד-פעמית בתחילת פרויקט</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">תבדוק מה קיים. תיצור בשקט מה שחסר:</div>
-<div class="code-line"><span class="c-bullet">-</span> אין <span class="c-string">CLAUDE.md</span> בפרויקט ← צור גרסה בסיסית לפי מה שאתה רואה</div>
-<div class="code-line"><span class="c-bullet">-</span> אין <span class="c-string">docs/SPEC.md</span> ← מסמך קצר: מה הפרויקט, הדרישות, מה מחוץ לסקופ</div>
-<div class="code-line"><span class="c-bullet">-</span> אין <span class="c-string">docs/TASKS.md</span> ← צור עם [ ] לכל משימה שזיהית</div>
-<div class="code-line"><span class="c-bullet">-</span> אין <span class="c-string">docs/DECISIONS.md</span> ← צור ריק ומוכן</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">אם הכל קיים, תמשיך ישר לעבודה.</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-heading">## מתי לזרוק הערת &#x1f4a1;</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-bullet">-</span> אחרי שסיימנו משהו: <span class="c-emoji">&#x1f4a1;</span> נעדכן את TASKS.md ונסמן [x], שתמיד נדע איפה אנחנו.</div>
-<div class="code-line"><span class="c-bullet">-</span> אחרי שפתרנו בעיה קשה: <span class="c-emoji">&#x1f4a1;</span> נתעד את ההחלטה ב-DECISIONS.md, לא לבזבז זמן שוב.</div>
-<div class="code-line"><span class="c-bullet">-</span> כשהשיחה מתארכת: <span class="c-emoji">&#x1f4a1;</span> השיחה ארוכה. זה הזמן ל-/compact.</div>
-<div class="code-line"><span class="c-bullet">-</span> כשבנינו תהליך שחוזר: <span class="c-emoji">&#x1f4a1;</span> אפשר לשמור את זה כ-skill. רוצה שאכין?</div>
-<div class="code-line"><span class="c-bullet">-</span> כשאני בדרך הקשה: <span class="c-emoji">&#x1f4a1;</span> יש דרך קלה יותר. [הסבר קצר].</div>
-<div class="code-line"><span class="c-bullet">-</span> כש-CLAUDE.md לא עודכן מזמן: <span class="c-emoji">&#x1f4a1;</span> שווה לקבע את מה שלמדנו, שלא יאבד.</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-heading">## כשאני אומר "סיימנו"</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line">צור <span class="c-string">docs/LEARNINGS.md</span> עם:</div>
-<div class="code-line"><span class="c-bullet">-</span> מה בנינו בפרויקט</div>
-<div class="code-line"><span class="c-bullet">-</span> טכניקות Claude Code שהשתמשנו בהן</div>
-<div class="code-line"><span class="c-bullet">-</span> מה עבד טוב, מה פחות</div>
-<div class="code-line"><span class="c-bullet">-</span> מה הייתי עושה אחרת</div>
-<div class="code-line"><span class="c-bullet">-</span> skills ששווה לשמור</div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-heading">## העדפות עבודה</span></div>
-<div class="code-line">&nbsp;</div>
-<div class="code-line"><span class="c-bullet">-</span> תמציתי: בלי מסות. קצר וברור.</div>
-<div class="code-line"><span class="c-bullet">-</span> פרואקטיבי: רואה בעיה, תתקן. אל תשאל "האם תרצה ש...".</div>
-<div class="code-line"><span class="c-bullet">-</span> שמות קבצים ומשתנים: תמיד באנגלית, גם אם הפרויקט בעברית.</div>
+<div class="sep">──────────────────────────────</div>
+<div class="ln"><span class="c-h">## מצב מאמן: מתחילים</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">אתה עובד איתי בתפקיד כפול: עוזר טכני + מאמן שמלמד</div>
+<div class="ln">אותי להשתמש ב-Claude Code בצורה חכמה יותר. אני מתחיל.</div>
+<div class="ln">לא צריך להבין את הטכני לעומק, אני רוצה לדעת מה לבקש ומתי.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">התפקיד שלך:</div>
+<div class="ln"><span class="c-b">-</span> תעשה מה שצריך בלי לעצור לשאול</div>
+<div class="ln"><span class="c-b">-</span> תלמד אותי תוך כדי. לא הרצאות, הערות קצרות שמשתלבות בעבודה</div>
+<div class="ln"><span class="c-b">-</span> תמליץ מה לבקש. אם יכולתי לקבל תוצאה טובה יותר, תגיד</div>
+<div class="ln"><span class="c-b">-</span> תזהה דפוסים אצלי ותציע דרכים טובות יותר</div>
+<div class="ln"><span class="c-b">-</span> תמיד תזרוק <span class="c-e">💡</span> על דברים שאני יכול לעשות טוב יותר</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## הכלל הבסיסי</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">עבוד רגיל. אל תעצור לשאול אם לעשות משהו. פשוט תעשה.</div>
+<div class="ln">אבל תמיד תזרוק הערת <span class="c-e">💡</span>, גם אם לא ביקשתי.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">הערות יכולות להיות על:</div>
+<div class="ln"><span class="c-b">-</span> יכולות של Claude Code שאני לא מנצל (skills, MCP, משימות מתוזמנות)</div>
+<div class="ln"><span class="c-b">-</span> דרכים חכמות יותר לנסח בקשות</div>
+<div class="ln"><span class="c-b">-</span> תזמון נכון ל-<span class="c-s">/compact</span> ולעדכון קבצים</div>
+<div class="ln"><span class="c-b">-</span> כל דבר שיחסוך לי זמן בפעם הבאה</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">כל הערה = שורה אחת מה לעשות + שורה אחת למה זה שווה.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## איך לענות (סגנון ואיכות)</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-b">-</span> ענה ענייני, ישיר ופרקטי. בלי מילוי, בלי נימוסים מיותרים, בלי "כבינה מלאכותית".</div>
+<div class="ln"><span class="c-b">-</span> הובל עם התשובה קודם, אחר כך הפירוט. תתנהג כמומחה מהתחום, לא כעוזר כללי.</div>
+<div class="ln"><span class="c-b">-</span> תמציתי כברירת מחדל, אבל תתאים את האורך להקשר.</div>
+<div class="ln"><span class="c-b">-</span> אם אתה לא בטוח, תגיד. אל תמציא. תקן טעויות מיד בלי להתנצל הרבה.</div>
+<div class="ln"><span class="c-b">-</span> בלי חנופה. תאתגר הנחות חלשות שלי במקום להסכים אוטומטית.</div>
+<div class="ln"><span class="c-b">-</span> אם חסר מידע, תניח הנחה סבירה, תציין אותה בקצרה, ותתקדם.</div>
+<div class="ln"><span class="c-b">-</span> לפני שליחה, בדיקה מהירה: עניתי על מה שנשאל? הפלט שמיש? אין פערים או סתירות?</div>
+<div class="ln"><span class="c-b">-</span> על טענות לא ודאיות או קריטיות, הוסף "רמת ביטחון: X/10". אם מתחת ל-7, תגיד למה.</div>
+<div class="ln"><span class="c-b">-</span> קוד ופרומפטים תמיד בבלוק קוד. משתנים ב-[סוגריים]. עדיף פלט שלם על פני placeholder.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## בדיקה חד-פעמית בתחילת פרויקט</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-s">הפעל רק כשפותחים פרויקט חדש או נכנסים לתיקיית פרויקט.</span></div>
+<div class="ln"><span class="c-s">אם זו שאלה מהירה או עבודה על קובץ בודד, דלג.</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">תבדוק מה קיים. תיצור בשקט מה שחסר:</div>
+<div class="ln"><span class="c-b">-</span> אין <span class="c-s">CLAUDE.md</span> בפרויקט ← צור גרסה בסיסית לפי מה שאתה רואה</div>
+<div class="ln"><span class="c-b">-</span> אין <span class="c-s">docs/SPEC.md</span> ← מסמך קצר: מה הפרויקט, הדרישות, מה מחוץ לסקופ</div>
+<div class="ln"><span class="c-b">-</span> אין <span class="c-s">docs/TASKS.md</span> ← צור עם [ ] לכל משימה שזיהית</div>
+<div class="ln"><span class="c-b">-</span> אין <span class="c-s">docs/DECISIONS.md</span> ← צור ריק ומוכן</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">אם הכל קיים, תמשיך ישר לעבודה.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## מתי לזרוק הערת 💡</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-b">-</span> אחרי שסיימנו משהו: <span class="c-e">💡</span> נעדכן את TASKS.md ונסמן [x], שתמיד נדע איפה אנחנו.</div>
+<div class="ln"><span class="c-b">-</span> אחרי שפתרנו בעיה קשה: <span class="c-e">💡</span> נתעד את ההחלטה ב-DECISIONS.md, לא לבזבז זמן שוב.</div>
+<div class="ln"><span class="c-b">-</span> כשהשיחה מתארכת: <span class="c-e">💡</span> השיחה ארוכה. זה הזמן ל-/compact.</div>
+<div class="ln"><span class="c-b">-</span> כשבנינו תהליך שחוזר: <span class="c-e">💡</span> אפשר לשמור את זה כ-skill. רוצה שאכין?</div>
+<div class="ln"><span class="c-b">-</span> כשאני בדרך הקשה: <span class="c-e">💡</span> יש דרך קלה יותר. [הסבר קצר].</div>
+<div class="ln"><span class="c-b">-</span> כש-CLAUDE.md לא עודכן מזמן: <span class="c-e">💡</span> שווה לקבע את מה שלמדנו, שלא יאבד.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## כשאני אומר "סיימנו"</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">צור <span class="c-s">docs/LEARNINGS.md</span> עם:</div>
+<div class="ln"><span class="c-b">-</span> מה בנינו בפרויקט</div>
+<div class="ln"><span class="c-b">-</span> טכניקות Claude Code שהשתמשנו בהן</div>
+<div class="ln"><span class="c-b">-</span> מה עבד טוב, מה פחות</div>
+<div class="ln"><span class="c-b">-</span> מה הייתי עושה אחרת</div>
+<div class="ln"><span class="c-b">-</span> skills ששווה לשמור</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## העדפות עבודה</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-b">-</span> פרואקטיבי: רואה בעיה, תתקן. אל תשאל "האם תרצה ש...".</div>
+<div class="ln"><span class="c-b">-</span> שמות קבצים ומשתנים: תמיד באנגלית, גם אם הפרויקט בעברית.</div>
             </div>
         </div>
 
-        <button class="copy-cta" onclick="copyPrompt(this,'install')">
-            <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="cta-copy reveal" style="--d:.05s" onclick="copyPrompt(this,'install')">
+            <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>העתק והתקן. העתקה אחת, וזהו</span>
         </button>
+        <p class="cta-hint reveal" style="--d:.08s">אחרי ההעתקה, <b>פשוט פתחו שיחה ב-Claude Code והדביקו את זה לקלוד בצ'אט</b>, כמו כל בקשה רגילה. לא בהגדרות, לא בשום קובץ. קלוד מבין את ההוראה ומתקין לבד.</p>
 
-        <div class="pro-tip">
-            <span style="font-size:20px;flex-shrink:0;">&#x26a1;</span>
-            <p><strong style="color:var(--orange-dark);">להתקין פעם אחת (מומלץ):</strong> לחץ על <em>"העתק והתקן"</em>. ההעתקה כבר כוללת את ההוראה לקלוד לשמור את הפרומפט, אז אין מה לכתוב או להעתיק בנפרד. פתח את Claude Code, הדבק, וזהו. קלוד שומר את זה לבד ב-<code>~/.claude/CLAUDE.md</code>, וזה נטען בכל פרויקט אוטומטית. לא מדביקים שוב אף פעם. ככה אני עובד.</p>
+        <div class="tip install reveal" style="--d:.05s">
+            <span class="ti">⚡</span>
+            <p><strong>להתקין פעם אחת (מומלץ):</strong> לחץ על <em>"העתק והתקן"</em>, פתח שיחה רגילה ב-Claude Code, והדבק את זה ישר בצ'אט לקלוד, כמו כל בקשה. אין צורך להיכנס להגדרות או לפתוח קבצים. קלוד מבין את ההוראה, שומר את הפרומפט לבד ב-<code>~/.claude/CLAUDE.md</code>, וזה נטען בכל פרויקט אוטומטית. לא מדביקים שוב אף פעם. ככה אני עובד.</p>
         </div>
-        <div class="pro-tip" style="background:#f1f5f9;border-color:#e2e8f0;">
-            <span style="font-size:20px;flex-shrink:0;">💡</span>
+        <div class="tip try reveal" style="--d:.1s">
+            <span class="ti">💡</span>
             <div>
-                <p><strong style="color:var(--text);">רק רוצה לנסות קודם?</strong> זו אותה תוכנית בדיוק, בלי שורת ההתקנה. הדבק אותה בתחילת שיחה אחת וקלוד ילווה אותך רק שם. כשתאהב, חזור ולחץ "העתק והתקן" למעלה כדי שזה יהיה תמיד פעיל.</p>
+                <p><strong>רק רוצה לנסות קודם?</strong> זו אותה תוכנית בדיוק, בלי שורת ההתקנה. הדבק אותה בתחילת שיחה אחת וקלוד ילווה אותך רק שם. כשתאהב, חזור ולחץ "העתק והתקן" למעלה כדי שזה יהיה תמיד פעיל.</p>
                 <button class="copy-plain" onclick="copyPrompt(this,'plain')">
-                    <svg class="copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>העתק רק את הפרומפט</span>
                 </button>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
 
-<div class="divider"></div>
-
-<!-- CTAs -->
-<div class="container">
-    <section class="cta-section">
+<!-- FINAL CTAs -->
+<section class="section">
+    <div class="wrap">
         <div class="cta-grid">
-            <a href="https://chat.whatsapp.com/EN6rvJOjV2q3dOWAAb7LTT?s=cl&amp;p=i&amp;ilr=0" target="_blank" class="cta-card whatsapp">
-                <div class="cta-emoji">&#x1f4f2;</div>
-                <h3>הצטרף לקהילת בינה לעסקים</h3>
+            <a href="https://chat.whatsapp.com/EN6rvJOjV2q3dOWAAb7LTT?s=cl&amp;p=i&amp;ilr=0" target="_blank" class="promo wa reveal">
+                <span class="pe">📲</span>
+                <h3>קהילת בינה לעסקים</h3>
                 <p>AI וקלוד לעסקים. טיפים, פרומפטים וכלים, בעברית.</p>
+                <span class="go">להצטרפות ←</span>
             </a>
-            <a href="https://jaygptpro.com" target="_blank" class="cta-card hacks">
-                <div class="cta-emoji">&#x26a1;</div>
-                <h3>עוד כלים וטיפים</h3>
-                <p>הכל באתר. חינם.</p>
+            <a href="https://jaygptpro.com/claude-code-challenge-bina/#he" target="_blank" class="promo ch reveal" style="--d:.1s">
+                <span class="pe">🚀</span>
+                <h3>אתגר קלוד קוד</h3>
+                <p>5 ימים, והעובד ה-AI הראשון שלך מוכן. בעברית.</p>
+                <span class="go">לאתגר ←</span>
             </a>
         </div>
-    </section>
-</div>
-
-<!-- FOOTER -->
-<footer class="footer">
-    חלק מ-<strong>Daily Claude Hacks</strong> מאת <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">ג'יי מרגליות</a> &middot; &copy; 2026
-</footer>
+        <div class="end reveal" style="--d:.1s"><span class="bulb-mini">💡</span></div>
+    </div>
+</section>
 
 <script>
 const COACH_PROMPT = `## מצב מאמן: מתחילים
@@ -362,7 +411,22 @@ const COACH_PROMPT = `## מצב מאמן: מתחילים
 
 כל הערה = שורה אחת מה לעשות + שורה אחת למה זה שווה.
 
+## איך לענות (סגנון ואיכות)
+
+- ענה ענייני, ישיר ופרקטי. בלי מילוי, בלי נימוסים מיותרים, בלי "כבינה מלאכותית".
+- הובל עם התשובה קודם, אחר כך הפירוט. תתנהג כמומחה מהתחום הרלוונטי, לא כעוזר כללי.
+- תמציתי כברירת מחדל, אבל תתאים את האורך להקשר.
+- אם אתה לא בטוח, תגיד. אל תמציא. תקן טעויות מיד בלי להתנצל הרבה.
+- בלי חנופה. תאתגר הנחות חלשות שלי במקום להסכים אוטומטית.
+- אם חסר מידע, תניח הנחה סבירה, תציין אותה בקצרה, ותתקדם.
+- לפני שליחה, בדיקה מהירה: עניתי על מה שנשאל? הפלט שמיש? אין פערים או סתירות לוגיות? תוודא טענות חשובות.
+- על טענות לא ודאיות או קריטיות, הוסף "רמת ביטחון: X/10". אם מתחת ל-7, תגיד למה ומה יעלה את זה.
+- קוד ופרומפטים תמיד בבלוק קוד. משתנים ב-[סוגריים]. עדיף פלט שלם ושמיש על פני placeholder.
+
 ## בדיקה חד-פעמית בתחילת פרויקט
+
+הפעל רק כשפותחים פרויקט חדש או נכנסים לתיקיית פרויקט.
+אם זו שאלה מהירה או עבודה על קובץ בודד, דלג.
 
 תבדוק מה קיים. תיצור בשקט מה שחסר:
 - אין CLAUDE.md בפרויקט ← צור גרסה בסיסית לפי מה שאתה רואה
@@ -392,7 +456,6 @@ const COACH_PROMPT = `## מצב מאמן: מתחילים
 
 ## העדפות עבודה
 
-- תמציתי: בלי מסות. קצר וברור.
 - פרואקטיבי: רואה בעיה, תתקן. אל תשאל "האם תרצה ש...".
 - שמות קבצים ומשתנים: תמיד באנגלית, גם אם הפרויקט בעברית.`;
 
@@ -406,22 +469,67 @@ function copyPrompt(btn, mode) {
     const text = mode === 'plain' ? COACH_PROMPT : INSTALL_TEXT;
     const label = btn.querySelector('span');
     const orig = label ? label.textContent : '';
-    navigator.clipboard.writeText(text).then(() => showCopied(btn, label, orig)).catch(() => {
+    navigator.clipboard.writeText(text).then(function(){ showCopied(btn, label, orig); }).catch(function(){
         const t = document.createElement('textarea'); t.value = text; t.style.cssText = 'position:fixed;opacity:0';
         document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
         showCopied(btn, label, orig);
     });
     if (mode !== 'plain') {
-        document.querySelectorAll('.box-copy, .copy-cta').forEach(b => { if(b !== btn){ const l = b.querySelector('span'); showCopied(b, l, l?l.textContent:''); }});
+        document.querySelectorAll('.copy-chip, .cta-copy').forEach(function(b){ if(b !== btn){ const l = b.querySelector('span'); showCopied(b, l, l ? l.textContent : ''); } });
     }
 }
 function showCopied(btn, label, orig) {
     btn.classList.add('copied'); if(label) label.textContent = 'הועתק!';
-    setTimeout(() => { btn.classList.remove('copied'); if(label) label.textContent = orig; }, 2500);
+    setTimeout(function(){ btn.classList.remove('copied'); if(label) label.textContent = orig; }, 2400);
 }
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); });
-});
+
+function init() {
+    // smooth-scroll for in-page anchor
+    document.querySelectorAll('a[href^="#"]').forEach(function(a){
+        a.addEventListener('click', function(e){ e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
+    });
+
+    // reveal on scroll (robust: no stuck-hidden sections)
+    const els = document.querySelectorAll('.reveal');
+    try {
+        if (!('IntersectionObserver' in window)) {
+            els.forEach(function(e){ e.classList.add('in'); });
+        } else {
+            const io = new IntersectionObserver(function(entries){
+                entries.forEach(function(en){ if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+            }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+            els.forEach(function(e){ io.observe(e); });
+            // safety net: nothing stays hidden no matter what
+            setTimeout(function(){ els.forEach(function(e){ e.classList.add('in'); }); }, 3500);
+        }
+    } catch (err) {
+        els.forEach(function(e){ e.classList.add('in'); });
+    }
+
+    // scroll progress + parallax
+    const bar = document.getElementById('bar');
+    const blobs = document.querySelectorAll('.blob');
+    let ticking = false;
+    function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function(){
+            const y = window.scrollY || 0;
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            if (bar) bar.style.width = (h > 0 ? (y / h) * 100 : 0) + '%';
+            blobs.forEach(function(b){ const s = parseFloat(b.getAttribute('data-speed')) || 0.05; b.style.transform = 'translateY(' + (y * s) + 'px)'; });
+            ticking = false;
+        });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
 </script>
 
 </body>
