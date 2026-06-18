@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your free gift . the /character skill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-page: #f7f5f1;
+    --bg-card: #ffffff;
+    --text-primary: #0a0a0c;
+    --text-secondary: #5c5660;
+    --text-tertiary: #9c9690;
+    --accent-orange: #d97757;
+    --accent-vivid: #c4663e;
+    --border-soft: #e8e4dc;
+    --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  .topbar { display: flex; align-items: center; justify-content: flex-start; padding: 22px 24px; max-width: 760px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; color: var(--text-secondary); text-transform: uppercase; }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-orange); }
+
+  .hero { text-align: center; padding: 40px 0 24px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-orange); margin-bottom: 20px; }
+  .hero-figure { width: 70px; margin: 0 auto 26px; display: block; }
+  h1 { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 18px; }
+  h1 .accent { color: var(--accent-orange); }
+  .sub { font-size: 18px; color: var(--text-secondary); max-width: 560px; margin: 0 auto; line-height: 1.55; }
+
+  .points { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 30px auto 0; max-width: 600px; }
+  .point { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 10px 18px; font-size: 14px; color: var(--text-secondary); }
+  .point b { color: var(--text-primary); font-weight: 700; }
+
+  .step { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 18px; padding: 34px; margin-top: 28px; box-shadow: 0 4px 24px rgba(10,10,12,0.05); }
+  .step-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-orange); margin-bottom: 10px; }
+  .step h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .step p { font-size: 16px; color: var(--text-secondary); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 22px;
+    background: var(--accent-orange); color: #fff; text-decoration: none;
+    font-family: var(--font-display); font-weight: 700; font-size: 17px;
+    padding: 15px 30px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn:hover { background: var(--accent-vivid); transform: translateY(-1px); }
+  .btn svg { width: 20px; height: 20px; }
+
+  #gift { display: none; }
+  #gift.unlocked { display: block; animation: rise 0.6s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+  .codebox { display: flex; align-items: center; justify-content: space-between; gap: 14px; background: #0a0a0c; border-radius: 12px; padding: 16px 18px; margin-top: 20px; }
+  .codebox code { font-family: var(--font-mono); font-size: 15px; color: #f7f5f1; overflow-x: auto; white-space: nowrap; }
+  .copy-btn { flex-shrink: 0; background: rgba(255,255,255,0.1); color: #fff; border: none; font-family: var(--font-mono); font-size: 12px; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+  .usage { list-style: none; counter-reset: step; margin-top: 24px; }
+  .usage li { counter-increment: step; position: relative; padding-left: 44px; margin-bottom: 18px; font-size: 16px; color: var(--text-secondary); }
+  .usage li b { color: var(--text-primary); }
+  .usage li::before { content: counter(step); position: absolute; left: 0; top: -2px; width: 30px; height: 30px; border-radius: 50%; background: rgba(217,119,87,0.12); color: var(--accent-orange); font-family: var(--font-mono); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .usage li code { font-family: var(--font-mono); font-size: 14px; background: rgba(10,10,12,0.06); padding: 2px 7px; border-radius: 5px; color: var(--text-primary); }
+
+  .gotfile { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--border-soft); }
+  .gotfile .tree { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); line-height: 1.7; background: var(--bg-page); border: 1px solid var(--border-soft); border-radius: 10px; padding: 16px 18px; margin-top: 12px; white-space: pre; overflow-x: auto; }
+
+  /* evergreen / challenge section */
+  .cta { display: none; margin-top: 40px; background: var(--bg-card); border: 1px solid var(--border-soft); border-top: 3px solid var(--accent-orange); border-radius: 16px; padding: 38px 36px; text-align: center; }
+  .cta.revealed { display: block; animation: rise 0.6s ease; }
+  .cta .eyebrow { margin-bottom: 14px; }
+  .cta h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 14px; }
+  .cta p { font-size: 16px; color: var(--text-secondary); max-width: 520px; margin: 0 auto 24px; line-height: 1.55; }
+  .cta .btn { margin-top: 0; }
+
+  footer { text-align: center; padding: 40px 24px 60px; color: var(--text-tertiary); font-size: 14px; }
+  footer a { color: var(--accent-orange); text-decoration: none; }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 34px; }
+    .step, .cta { padding: 24px; }
+    .codebox code { font-size: 13px; }
+    .cta h2 { font-size: 23px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span><span>Jay GPT</span></div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">A free gift from the talk</div>
+
+    <svg class="hero-figure" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="g" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#d97757"/><stop offset="100%" stop-color="#c4663e"/></linearGradient></defs>
+      <circle cx="100" cy="50" r="32" fill="url(#g)"/>
+      <rect x="92" y="78" width="16" height="14" fill="url(#g)"/>
+      <path d="M 50 110 Q 100 92 150 110 L 145 200 Q 100 215 55 200 Z" fill="url(#g)"/>
+      <path d="M 60 200 L 140 200 L 135 240 L 65 240 Z" fill="url(#g)"/>
+      <path d="M 50 110 Q 35 160 40 220" stroke="url(#g)" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <path d="M 150 110 Q 165 160 160 220" stroke="url(#g)" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <path d="M 80 240 L 75 380" stroke="url(#g)" stroke-width="20" fill="none" stroke-linecap="round"/>
+      <path d="M 120 240 L 125 380" stroke="url(#g)" stroke-width="20" fill="none" stroke-linecap="round"/>
+    </svg>
+
+    <h1>Give your AI employee a <span class="accent">personality.</span></h1>
+    <p class="sub">This won't make your AI smarter. it just makes working with it feel better. Instead of a generic assistant, you get something with a name, a voice, and an attitude. a small, fun layer that feels like a real teammate.</p>
+
+    <div class="points">
+      <div class="point"><b>Zero setup.</b> No API keys.</div>
+      <div class="point"><b>Works in any folder.</b></div>
+      <div class="point"><b>One command.</b></div>
+    </div>
+  </section>
+
+  <!-- STEP 1 . the gate -->
+  <section class="step" id="gate">
+    <div class="step-label">Step 1</div>
+    <h2>Join the free WhatsApp group</h2>
+    <p>That's where I share tips, insights, and updates on AI for eCommerce. Join, and your gift unlocks right below.</p>
+    <button class="btn" id="join-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
+      <span>Join on WhatsApp</span>
+    </button>
+  </section>
+
+  <!-- STEP 2 . the gift (locked) -->
+  <section class="step" id="gift">
+    <div class="step-label">Step 2 . your gift</div>
+    <h2>Install the /character skill</h2>
+    <p>Paste this into your terminal, or straight into Claude Code on desktop. It installs globally, so it's available in every folder.</p>
+
+    <div class="codebox">
+      <code id="cmd">npx skills add JayGPTPro/character -g</code>
+      <button class="copy-btn" id="copy-btn">Copy</button>
+    </div>
+
+    <ol class="usage">
+      <li>Open Claude Code in the folder that <b>is</b> your employee. for example, a folder named "Michael", your creative director.</li>
+      <li>Type <code>/character</code> and answer 5 quick questions (name, role, how it treats you, humor, energy).</li>
+      <li>Say hi to your new employee. From now on, every chat in that folder is in character.</li>
+    </ol>
+
+    <div class="gotfile">
+      <p>What it writes for you:</p>
+      <div class="tree">your-folder/
+├── CLAUDE.md            # points to the character file, loads every session
+└── .claude/
+    └── character.md     # the personality itself</div>
+    </div>
+  </section>
+
+  <!-- evergreen . the challenge -->
+  <section class="cta">
+    <div class="eyebrow">Going further</div>
+    <h2>Want the full employee,<br/>not just the personality?</h2>
+    <p>The /character skill is one small, fun layer. If you want to build an AI Chief of Staff that actually runs your day, I teach the whole thing, step by step, in a 5-day challenge.</p>
+    <a class="btn" href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" rel="noopener">See the 5-day challenge →</a>
+  </section>
+
+</div>
+
+<footer>
+  <p>Built by Jay Margaliot. <a href="https://jaygptpro.com/whatsapp">jaygptpro.com/whatsapp</a></p>
+</footer>
+
+<script>
+  var WHATSAPP_URL = 'https://jaygptpro.com/whatsapp';
+
+  function initGate() {
+    var joinBtn = document.getElementById('join-btn');
+    var gift = document.getElementById('gift');
+    joinBtn.addEventListener('click', function () {
+      window.open(WHATSAPP_URL, '_blank', 'noopener');
+      gift.classList.add('unlocked');
+      var cta = document.querySelector('.cta');
+      if (cta) cta.classList.add('revealed');
+      setTimeout(function () { gift.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+    });
+
+    var copyBtn = document.getElementById('copy-btn');
+    copyBtn.addEventListener('click', function () {
+      var text = document.getElementById('cmd').textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1600);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGate);
+  } else {
+    initGate();
+  }
+</script>
+
+</body>
+</html>
