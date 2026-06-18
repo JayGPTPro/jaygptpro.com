@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personal Claude Code Coach | Jay Margaliot</title>
+    <meta name="description" content="One prompt you install once in your global settings, and Claude coaches and teaches you in every project, automatically.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #07070b;
+            --bg-soft: #0c0c14;
+            --panel: rgba(255,255,255,0.035);
+            --panel-2: rgba(255,255,255,0.055);
+            --brd: rgba(255,255,255,0.09);
+            --brd-soft: rgba(255,255,255,0.06);
+            --txt: #f3f3f6;
+            --txt-dim: #a0a0ad;
+            --txt-mut: #6a6a78;
+            --amber: #fbbf24;
+            --amber-2: #fb923c;
+            --amber-3: #f97316;
+            --glow: rgba(251,146,60,0.45);
+            --glow-soft: rgba(251,191,36,0.18);
+            --grad: linear-gradient(135deg, #fde68a 0%, #fbbf24 35%, #fb923c 70%, #f97316 100%);
+            --code-text: #e7e7ee;
+            --code-comment: #7b7b88;
+            --code-amber: #ffc06b;
+            --code-green: #7ee0a6;
+            --code-blue: #9cc7ff;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--txt); background: var(--bg); line-height: 1.7;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        ::selection { background: rgba(251,146,60,0.3); color: #fff; }
+        code { font-family: 'SF Mono','Fira Code',monospace; font-size: 0.86em; background: rgba(251,146,60,0.12); color: var(--amber); padding: 1px 7px; border-radius: 6px; }
+
+        /* SCROLL PROGRESS */
+        .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; background: transparent; }
+        .progress span { display: block; height: 100%; width: 0%; background: var(--grad); box-shadow: 0 0 12px var(--glow); transition: width 0.1s linear; }
+
+        /* BACKGROUND AURORA */
+        .bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: radial-gradient(120% 80% at 50% -10%, #14101f 0%, var(--bg) 55%); }
+        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; will-change: transform; }
+        .blob.a { width: 540px; height: 540px; top: -160px; left: -80px; background: radial-gradient(circle, rgba(251,146,60,0.5), transparent 70%); }
+        .blob.b { width: 460px; height: 460px; top: 280px; right: -140px; background: radial-gradient(circle, rgba(168,85,247,0.28), transparent 70%); }
+        .blob.c { width: 600px; height: 600px; top: 1100px; left: -180px; background: radial-gradient(circle, rgba(251,191,36,0.16), transparent 70%); }
+        .grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(110% 60% at 50% 0%, #000 30%, transparent 75%); -webkit-mask-image: radial-gradient(110% 60% at 50% 0%, #000 30%, transparent 75%); }
+
+        /* HERO */
+        .hero { position: relative; text-align: center; padding: 120px 24px 92px; }
+        .hero-content { max-width: 800px; margin: 0 auto; position: relative; z-index: 2; }
+        .bulb-wrap { position: relative; display: inline-grid; place-items: center; margin-bottom: 30px; }
+        .bulb { font-size: 60px; line-height: 1; filter: drop-shadow(0 0 26px rgba(255,184,90,0.75)); animation: bulbFloat 4s ease-in-out infinite; position: relative; z-index: 2; }
+        .bulb-halo { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,0.4), transparent 65%); filter: blur(8px); animation: haloPulse 4s ease-in-out infinite; }
+        .bulb-ring { position: absolute; width: 108px; height: 108px; border-radius: 50%; border: 1px solid rgba(251,191,36,0.25); animation: ringExpand 4s ease-out infinite; }
+        @keyframes bulbFloat { 0%,100% { transform: translateY(0); filter: drop-shadow(0 0 22px rgba(255,184,90,0.6)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 40px rgba(255,206,120,0.95)); } }
+        @keyframes haloPulse { 0%,100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.12); } }
+        @keyframes ringExpand { 0% { opacity: 0.6; transform: scale(0.7); } 100% { opacity: 0; transform: scale(1.6); } }
+
+        .hero h1 { font-size: clamp(44px, 7vw, 82px); font-weight: 900; line-height: 1.05; letter-spacing: -2.5px; margin-bottom: 24px; }
+        .hero h1 .accent { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-sub { font-size: clamp(17px, 2.3vw, 21px); color: var(--txt-dim); max-width: 560px; margin: 0 auto 40px; font-weight: 400; }
+        .cta-primary { display: inline-flex; align-items: center; gap: 11px; padding: 17px 42px; border-radius: 100px; background: var(--grad); color: #1a0e02; font-size: 17px; font-weight: 800; cursor: pointer; border: none; position: relative; box-shadow: 0 10px 40px -8px var(--glow); transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s; }
+        .cta-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 18px 55px -8px var(--glow); }
+        .cta-primary svg { width: 18px; height: 18px; }
+
+        /* hero entrance */
+        @keyframes up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+        .js .hero-content > * { animation: up 0.85s cubic-bezier(.16,1,.3,1) both; }
+        .js .bulb-wrap { animation-delay: 0.05s; } .js .hero h1 { animation-delay: 0.2s; }
+        .js .hero-sub { animation-delay: 0.38s; } .js .cta-primary { animation-delay: 0.54s; }
+
+        /* LAYOUT */
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+        .section { padding: 70px 0; position: relative; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; letter-spacing: 2px; font-weight: 700; color: var(--amber); margin-bottom: 16px; text-transform: uppercase; }
+        .eyebrow::before { content: ''; width: 26px; height: 1.5px; background: var(--grad); }
+        .section h2 { font-size: clamp(28px, 4.4vw, 44px); font-weight: 800; letter-spacing: -1px; line-height: 1.18; margin-bottom: 14px; }
+        .section h2 .accent { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .lead { font-size: 18px; color: var(--txt-dim); max-width: 600px; }
+
+        /* FEATURE CARDS */
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+        .card { position: relative; padding: 30px 26px; border-radius: 20px; background: var(--panel); border: 1px solid var(--brd); overflow: hidden; transition: transform 0.4s cubic-bezier(.16,1,.3,1), border-color 0.4s, background 0.4s; }
+        .card::before { content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1px; background: linear-gradient(135deg, rgba(251,191,36,0.5), transparent 40%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.4s; }
+        .card:hover { transform: translateY(-6px); background: var(--panel-2); border-color: transparent; }
+        .card:hover::before { opacity: 1; }
+        .card .ic { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; margin-bottom: 18px; background: radial-gradient(circle at 30% 25%, rgba(251,191,36,0.22), rgba(251,146,60,0.06)); border: 1px solid rgba(251,191,36,0.18); transition: box-shadow 0.4s, transform 0.4s; }
+        .card:hover .ic { box-shadow: 0 0 28px -4px var(--glow); transform: scale(1.06) rotate(-3deg); }
+        .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 7px; }
+        .card p { font-size: 14.5px; color: var(--txt-dim); line-height: 1.6; }
+
+        /* PROMPT BOX */
+        .editor { margin-top: 42px; border-radius: 20px; position: relative; background: linear-gradient(180deg, #0b0b12, #08080d); border: 1px solid var(--brd); box-shadow: 0 40px 90px -40px rgba(0,0,0,0.9), 0 0 60px -30px var(--glow); overflow: hidden; }
+        .editor-top { display: flex; align-items: center; gap: 13px; padding: 14px 20px; border-bottom: 1px solid var(--brd-soft); background: rgba(255,255,255,0.015); }
+        .dots { display: flex; gap: 8px; }
+        .dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+        .dots .r { background: #ff5f57; } .dots .y { background: #febc2e; } .dots .g { background: #28c840; }
+        .editor-title { flex: 1; text-align: center; font-size: 12.5px; color: var(--code-comment); font-family: 'SF Mono', monospace; letter-spacing: 0.3px; }
+        .editor-body { padding: 56px 0 24px; max-height: 480px; overflow-y: auto; position: relative; }
+        .editor-body::-webkit-scrollbar { width: 7px; } .editor-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; } .editor-body::-webkit-scrollbar-track { background: transparent; }
+        .ln { padding: 1px 28px; line-height: 1.95; font-size: 14.5px; color: var(--code-text); }
+        .c-h { color: var(--code-amber); font-weight: 700; }
+        .c-b { color: var(--code-green); } .c-s { color: var(--code-blue); } .c-e { font-style: normal; }
+        .install-line { padding: 12px 28px; background: rgba(126,224,166,0.07); border-left: 3px solid var(--code-green); color: #bdf0d2; font-size: 13.5px; line-height: 1.7; }
+        .install-line b { color: var(--code-green); font-weight: 700; }
+        .sep { padding: 5px 28px 3px; color: #2c2c3a; user-select: none; letter-spacing: -1px; }
+        .copy-chip { position: absolute; top: 14px; right: 18px; z-index: 6; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 9px; background: rgba(251,146,60,0.14); border: 1px solid rgba(251,146,60,0.3); color: var(--amber); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .copy-chip:hover { background: rgba(251,146,60,0.22); }
+        .copy-chip.copied { background: rgba(40,200,100,0.18); border-color: rgba(40,200,100,0.4); color: #4ade80; }
+        .copy-chip svg { width: 15px; height: 15px; } .copy-chip .ck { display: none; } .copy-chip.copied .cp { display: none; } .copy-chip.copied .ck { display: block; }
+
+        .cta-copy { display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; margin-top: 22px; padding: 19px 32px; border-radius: 16px; background: var(--grad); color: #1a0e02; font-size: 17.5px; font-weight: 800; cursor: pointer; border: none; font-family: inherit; box-shadow: 0 14px 44px -14px var(--glow); transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s; }
+        .cta-copy:hover { transform: translateY(-2px); box-shadow: 0 20px 56px -14px var(--glow); }
+        .cta-copy.copied { background: linear-gradient(135deg, #34d399, #10b981); }
+        .cta-copy svg { width: 20px; height: 20px; } .cta-copy .ck { display: none; } .cta-copy.copied .cp { display: none; } .cta-copy.copied .ck { display: block; }
+        .cta-hint { text-align: center; font-size: 13.5px; color: var(--txt-mut); margin-top: 14px; line-height: 1.65; }
+        .cta-hint b { color: var(--txt-dim); font-weight: 700; }
+
+        /* TIP CARDS */
+        .tip { margin-top: 18px; padding: 20px 24px; border-radius: 16px; display: flex; align-items: flex-start; gap: 14px; border: 1px solid var(--brd); }
+        .tip.install { background: linear-gradient(120deg, rgba(251,146,60,0.1), rgba(251,191,36,0.04)); border-color: rgba(251,146,60,0.22); }
+        .tip.try { background: var(--panel); }
+        .tip .ti { font-size: 22px; flex-shrink: 0; line-height: 1.3; }
+        .tip p { font-size: 14.5px; color: var(--txt-dim); line-height: 1.7; margin: 0; }
+        .tip.install p strong { color: var(--amber); }
+        .tip.try p strong { color: var(--txt); }
+        .tip em { color: var(--txt); font-style: normal; font-weight: 600; }
+        .copy-plain { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 18px; border-radius: 10px; background: rgba(255,255,255,0.04); color: var(--txt-dim); border: 1px solid var(--brd); font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .copy-plain:hover { border-color: rgba(255,255,255,0.2); color: var(--txt); background: rgba(255,255,255,0.07); }
+        .copy-plain.copied { background: rgba(40,200,100,0.16); border-color: rgba(40,200,100,0.4); color: #4ade80; }
+        .copy-plain svg { width: 15px; height: 15px; } .copy-plain .ck { display: none; } .copy-plain.copied .cp { display: none; } .copy-plain.copied .ck { display: block; }
+
+        /* FINAL CTAs */
+        .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 44px; }
+        .promo { position: relative; padding: 34px 28px; border-radius: 20px; overflow: hidden; border: 1px solid var(--brd); transition: transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s; }
+        .promo:hover { transform: translateY(-5px); }
+        .promo .pe { font-size: 30px; margin-bottom: 12px; display: block; }
+        .promo h3 { font-size: 19px; font-weight: 800; margin-bottom: 7px; }
+        .promo p { font-size: 14px; line-height: 1.55; }
+        .promo .go { margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; }
+        .promo.wa { background: linear-gradient(150deg, rgba(34,197,94,0.16), rgba(34,197,94,0.04)); }
+        .promo.wa:hover { box-shadow: 0 22px 50px -24px rgba(34,197,94,0.5); }
+        .promo.wa h3 { color: #4ade80; } .promo.wa p { color: var(--txt-dim); } .promo.wa .go { color: #4ade80; }
+        .promo.ch { background: linear-gradient(150deg, rgba(251,146,60,0.16), rgba(168,85,247,0.08)); }
+        .promo.ch:hover { box-shadow: 0 22px 50px -24px var(--glow); }
+        .promo.ch h3 { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; } .promo.ch p { color: var(--txt-dim); } .promo.ch .go { color: var(--amber); }
+
+        .end { text-align: center; padding: 30px 0 70px; }
+        .end .bulb-mini { font-size: 26px; filter: drop-shadow(0 0 16px rgba(255,184,90,0.6)); animation: bulbFloat 4s ease-in-out infinite; display: inline-block; }
+
+        /* REVEAL ON SCROLL */
+        .reveal { opacity: 0; transform: translateY(38px); transition: opacity 0.9s cubic-bezier(.16,1,.3,1), transform 0.9s cubic-bezier(.16,1,.3,1); transition-delay: var(--d, 0s); will-change: opacity, transform; }
+        .reveal.in { opacity: 1; transform: none; }
+        html.no-js .reveal { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1 !important; transform: none !important; }
+            .bulb, .bulb-halo, .bulb-ring, .blob, .bulb-mini { animation: none !important; }
+            .js .hero-content > * { animation: none !important; }
+        }
+
+        @media (max-width: 760px) {
+            .hero { padding: 96px 20px 72px; }
+            .features { grid-template-columns: 1fr; }
+            .cta-grid { grid-template-columns: 1fr; }
+            .editor-body { max-height: 380px; }
+            .section { padding: 54px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress"><span id="bar"></span></div>
+<div class="bg">
+    <div class="blob a" data-speed="0.06"></div>
+    <div class="blob b" data-speed="0.04"></div>
+    <div class="blob c" data-speed="0.05"></div>
+</div>
+<div class="grid"></div>
+
+<!-- HERO -->
+<header class="hero">
+    <div class="hero-content">
+        <div class="bulb-wrap">
+            <div class="bulb-halo"></div>
+            <div class="bulb-ring"></div>
+            <div class="bulb">💡</div>
+        </div>
+        <h1>Your Personal<br><span class="accent">Claude Code Coach</span></h1>
+        <p class="hero-sub">One prompt. Install it once in your global settings, and Claude coaches you in every project. Automatically. Nothing to paste each time.</p>
+        <a href="#get-it" class="cta-primary">
+            Get the Prompt
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </a>
+    </div>
+</header>
+
+<!-- WHAT IT DOES -->
+<section class="section">
+    <div class="wrap">
+        <div class="reveal"><div class="eyebrow">What it does</div></div>
+        <div class="reveal" style="--d:.05s"><h2>Claude works. <span class="accent">You learn.</span></h2></div>
+        <div class="reveal" style="--d:.1s"><p class="lead">Install it once in your global settings, then work normally. Claude drops short tips at the right moments, in every project.</p></div>
+        <div class="features">
+            <div class="card reveal" style="--d:.12s">
+                <div class="ic">⚡</div>
+                <h3>Always On</h3>
+                <p>Set once. Loads in every project, automatically.</p>
+            </div>
+            <div class="card reveal" style="--d:.2s">
+                <div class="ic">💡</div>
+                <h3>Tips in Real Time</h3>
+                <p>Short tips, exactly at the right moments.</p>
+            </div>
+            <div class="card reveal" style="--d:.28s">
+                <div class="ic">📋</div>
+                <h3>End-of-Session Recap</h3>
+                <p>Say "we're done", and get a full recap.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- THE PROMPT -->
+<section class="section" id="get-it">
+    <div class="wrap">
+        <div class="reveal"><div class="eyebrow">The Prompt</div></div>
+        <div class="reveal" style="--d:.05s"><h2>Copy. Install. <span class="accent">Learn.</span></h2></div>
+        <div class="reveal" style="--d:.1s"><p class="lead">Add this to your global CLAUDE.md once. From then on it loads in every Claude Code session, automatically.</p></div>
+
+        <div class="editor reveal" style="--d:.12s">
+            <div class="editor-top">
+                <div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+                <div class="editor-title">~/.claude/CLAUDE.md</div>
+            </div>
+            <div class="editor-body">
+                <button class="copy-chip" onclick="copyPrompt(this,'install')">
+                    <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Copy &amp; Install</span>
+                </button>
+<div class="install-line"><b>Instruction for Claude &#x2193;</b> Add everything below the line to my global CLAUDE.md (~/.claude/CLAUDE.md), without changing it, so it loads automatically in every project.</div>
+<div class="sep">──────────────────────────────</div>
+<div class="ln"><span class="c-h">## Coach Mode: Beginner</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">You work with me in a dual role: hands-on assistant + coach who</div>
+<div class="ln">teaches me to use Claude Code better. I'm a beginner.</div>
+<div class="ln">I don't need the deep technical details, I want to know what to ask and when.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Your job:</div>
+<div class="ln"><span class="c-b">-</span> Do what needs doing without stopping to ask</div>
+<div class="ln"><span class="c-b">-</span> Teach me as you go. Not lectures, short notes woven into the work</div>
+<div class="ln"><span class="c-b">-</span> Recommend what to ask. If I could get a better result, say so</div>
+<div class="ln"><span class="c-b">-</span> Notice my patterns and suggest better approaches</div>
+<div class="ln"><span class="c-b">-</span> Always drop a <span class="c-e">💡</span> on things I could do better</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## The Basic Rule</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Work normally. Don't stop to ask whether to do something. Just do it.</div>
+<div class="ln">But always drop a <span class="c-e">💡</span> tip, even if I didn't ask.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Tips can be about:</div>
+<div class="ln"><span class="c-b">-</span> Claude Code features I'm not using (skills, MCP, scheduled tasks)</div>
+<div class="ln"><span class="c-b">-</span> Smarter ways to phrase requests</div>
+<div class="ln"><span class="c-b">-</span> The right time for <span class="c-s">/compact</span> and for updating files</div>
+<div class="ln"><span class="c-b">-</span> Anything that saves me time next time</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Every tip = one line on what to do + one line on why it's worth it.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## How to Answer (Style and Quality)</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-b">-</span> Be direct, practical and to the point. No filler, no empty politeness, no "as an AI".</div>
+<div class="ln"><span class="c-b">-</span> Lead with the answer, then the detail. Act like an expert in the field, not a generic assistant.</div>
+<div class="ln"><span class="c-b">-</span> Concise by default, but match the length to the context.</div>
+<div class="ln"><span class="c-b">-</span> If you're not sure, say so. Don't make things up. Fix mistakes right away without over-apologizing.</div>
+<div class="ln"><span class="c-b">-</span> No flattery. Challenge my weak assumptions instead of agreeing automatically.</div>
+<div class="ln"><span class="c-b">-</span> If something's missing, state a reasonable assumption briefly and move on.</div>
+<div class="ln"><span class="c-b">-</span> Before sending, a quick check: did I answer the ask? Is the output usable? Any gaps or contradictions?</div>
+<div class="ln"><span class="c-b">-</span> For uncertain or high-stakes claims, add "Confidence: X/10". If it's under 7, say why.</div>
+<div class="ln"><span class="c-b">-</span> Code and prompts always in code blocks. Variables in [brackets]. Prefer a complete, usable output over placeholders.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## One-Time Setup Check (start of a project)</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-s">Run this only when opening a new project or entering a project folder.</span></div>
+<div class="ln"><span class="c-s">If it's a quick question or a single-file task, skip it.</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Check what exists. Quietly create what's missing:</div>
+<div class="ln"><span class="c-b">-</span> No <span class="c-s">CLAUDE.md</span> in the project &#x2192; create a basic one from what you see</div>
+<div class="ln"><span class="c-b">-</span> No <span class="c-s">docs/SPEC.md</span> &#x2192; a short doc: what the project is, the requirements, what's out of scope</div>
+<div class="ln"><span class="c-b">-</span> No <span class="c-s">docs/TASKS.md</span> &#x2192; create it with [ ] for each task you spot</div>
+<div class="ln"><span class="c-b">-</span> No <span class="c-s">docs/DECISIONS.md</span> &#x2192; create it empty and ready</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">If everything exists, go straight to work.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## When to Drop a 💡</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-b">-</span> After we finish something: <span class="c-e">💡</span> let's update TASKS.md and mark [x], so we always know where we are.</div>
+<div class="ln"><span class="c-b">-</span> After solving a hard problem: <span class="c-e">💡</span> worth logging this in DECISIONS.md, so we don't redo the thinking.</div>
+<div class="ln"><span class="c-b">-</span> When the chat gets long: <span class="c-e">💡</span> this is getting long. Good time for /compact.</div>
+<div class="ln"><span class="c-b">-</span> When we built a repeatable process: <span class="c-e">💡</span> we could save this as a skill. Want me to?</div>
+<div class="ln"><span class="c-b">-</span> When I'm doing it the hard way: <span class="c-e">💡</span> there's an easier way. [short explanation].</div>
+<div class="ln"><span class="c-b">-</span> When CLAUDE.md is stale: <span class="c-e">💡</span> worth locking in what we learned, so it isn't lost.</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="c-h">## When I Say "We're Done"</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Create <span class="c-s">docs/LEARNINGS.md</span> with:</div>
+<div class="ln"><span class="c-b">-</span> What we built in this project</div>
+<div class="ln"><span class="c-b">-</span> Claude Code techniques we used</div>
+<div class="ln"><span class="c-b">-</span> What worked well, what didn't</div>
+<div class="ln"><span class="c-b">-</span> What I'd do differently</div>
+<div class="ln"><span class="c-b">-</span> Skills worth keeping</div>
+            </div>
+        </div>
+
+        <button class="cta-copy reveal" style="--d:.05s" onclick="copyPrompt(this,'install')">
+            <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Copy &amp; Install. One copy, that's it</span>
+        </button>
+        <p class="cta-hint reveal" style="--d:.08s">After copying, <b>just open a Claude Code session and paste it to Claude in the chat</b>, like any normal request. Not in settings, not in any file. Claude reads the instruction and installs it itself.</p>
+
+        <div class="tip install reveal" style="--d:.05s">
+            <span class="ti">⚡</span>
+            <p><strong>Install once (recommended):</strong> Click <em>"Copy &amp; Install"</em>, open a normal Claude Code session, and paste it straight into the chat, like any request. No need to open settings or any file. Claude reads the instruction, saves the prompt itself to <code>~/.claude/CLAUDE.md</code>, and it loads in every project automatically. You never paste it again. This is how I run it.</p>
+        </div>
+        <div class="tip try reveal" style="--d:.1s">
+            <span class="ti">💡</span>
+            <div>
+                <p><strong>Just want to try it first?</strong> This is the exact same program, without the install line. Paste it at the start of a single session and Claude will coach you just there. Once you like it, come back and hit "Copy &amp; Install" above so it's always on.</p>
+                <button class="copy-plain" onclick="copyPrompt(this,'plain')">
+                    <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Copy the prompt only</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTAs -->
+<section class="section">
+    <div class="wrap">
+        <div class="cta-grid">
+            <a href="https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs" target="_blank" class="promo wa reveal">
+                <span class="pe">📲</span>
+                <h3>Daily Claude Hacks</h3>
+                <p>Tips, prompts and workflows on WhatsApp.</p>
+                <span class="go">Join &#x2192;</span>
+            </a>
+            <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" class="promo ch reveal" style="--d:.1s">
+                <span class="pe">🚀</span>
+                <h3>Claude Code Challenge</h3>
+                <p>5 days, and your first AI hire is ready.</p>
+                <span class="go">Start &#x2192;</span>
+            </a>
+        </div>
+        <div class="end reveal" style="--d:.1s"><span class="bulb-mini">💡</span></div>
+    </div>
+</section>
+
+<script>
+const COACH_PROMPT = `## Coach Mode: Beginner
+
+You work with me in a dual role: hands-on assistant + coach who teaches me
+to use Claude Code better. I'm a beginner. I don't need the deep technical
+details, I want to know what to ask and when.
+
+Your job:
+- Do what needs doing without stopping to ask
+- Teach me as you go. Not lectures, short notes woven into the work
+- Recommend what to ask. If I could get a better result, say so
+- Notice my patterns and suggest better approaches
+- Always drop a 💡 on things I could do better
+
+## The Basic Rule
+
+Work normally. Don't stop to ask whether to do something. Just do it.
+But always drop a 💡 tip, even if I didn't ask.
+
+Tips can be about:
+- Claude Code features I'm not using (skills, MCP, scheduled tasks)
+- Smarter ways to phrase requests
+- The right time for /compact and for updating files
+- Anything that saves me time next time
+
+Every tip = one line on what to do + one line on why it's worth it.
+
+## How to Answer (Style and Quality)
+
+- Be direct, practical and to the point. No filler, no empty politeness, no "as an AI".
+- Lead with the answer, then the detail. Act like an expert in the relevant field, not a generic assistant.
+- Concise by default, but match the length to the context.
+- If you're not sure, say so. Don't make things up. Fix mistakes right away without over-apologizing.
+- No flattery. Challenge my weak assumptions instead of agreeing automatically.
+- If something's missing, state a reasonable assumption briefly and move on.
+- Before sending, a quick check: did I answer the ask? Is the output usable? Any gaps or logical conflicts? Double check important claims.
+- For uncertain or high-stakes claims, add "Confidence: X/10". If it's under 7, say why and what would raise it.
+- Code and prompts always in code blocks. Variables in [brackets]. Prefer a complete, usable output over placeholders.
+
+## One-Time Setup Check (start of a project)
+
+Run this only when opening a new project or entering a project folder.
+If it's a quick question or a single-file task, skip it.
+
+Check what exists. Quietly create what's missing:
+- No CLAUDE.md in the project → create a basic one from what you see
+- No docs/SPEC.md → a short doc: what the project is, the requirements, what's out of scope
+- No docs/TASKS.md → create it with [ ] for each task you spot
+- No docs/DECISIONS.md → create it empty and ready
+
+If everything exists, go straight to work.
+
+## When to Drop a 💡
+
+- After we finish something: 💡 let's update TASKS.md and mark [x], so we always know where we are.
+- After solving a hard problem: 💡 worth logging this decision in DECISIONS.md, so we don't redo the thinking.
+- When the chat gets long: 💡 this is getting long. Good time for /compact.
+- When we built a repeatable process: 💡 we could save this as a skill. Set up once, reuse everywhere. Want me to?
+- When I'm doing it the hard way: 💡 there's an easier way. [short explanation].
+- When CLAUDE.md is stale: 💡 worth locking in what we learned, so it isn't lost.
+
+## When I Say "We're Done"
+
+Create docs/LEARNINGS.md with:
+- What we built in this project
+- Claude Code techniques we used
+- What worked well, what didn't
+- What I'd do differently
+- Skills worth keeping`;
+
+const INSTALL_TEXT = `Instruction: add everything below the divider line to my global CLAUDE.md file (~/.claude/CLAUDE.md), exactly as is and without changing it, so it loads automatically in every project. Do not include this instruction line itself.
+
+──────────────────────────────
+
+${COACH_PROMPT}`;
+
+function copyPrompt(btn, mode) {
+    const text = mode === 'plain' ? COACH_PROMPT : INSTALL_TEXT;
+    const label = btn.querySelector('span');
+    const orig = label ? label.textContent : '';
+    navigator.clipboard.writeText(text).then(function(){ showCopied(btn, label, orig); }).catch(function(){
+        const t = document.createElement('textarea'); t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
+        showCopied(btn, label, orig);
+    });
+    if (mode !== 'plain') {
+        document.querySelectorAll('.copy-chip, .cta-copy').forEach(function(b){ if(b !== btn){ const l = b.querySelector('span'); showCopied(b, l, l ? l.textContent : ''); } });
+    }
+}
+function showCopied(btn, label, orig) {
+    btn.classList.add('copied'); if(label) label.textContent = 'Copied!';
+    setTimeout(function(){ btn.classList.remove('copied'); if(label) label.textContent = orig; }, 2400);
+}
+
+function init() {
+    document.querySelectorAll('a[href^="#"]').forEach(function(a){
+        a.addEventListener('click', function(e){ e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
+    });
+
+    const els = document.querySelectorAll('.reveal');
+    try {
+        if (!('IntersectionObserver' in window)) {
+            els.forEach(function(e){ e.classList.add('in'); });
+        } else {
+            const io = new IntersectionObserver(function(entries){
+                entries.forEach(function(en){ if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+            }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+            els.forEach(function(e){ io.observe(e); });
+            setTimeout(function(){ els.forEach(function(e){ e.classList.add('in'); }); }, 3500);
+        }
+    } catch (err) {
+        els.forEach(function(e){ e.classList.add('in'); });
+    }
+
+    const bar = document.getElementById('bar');
+    const blobs = document.querySelectorAll('.blob');
+    let ticking = false;
+    function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function(){
+            const y = window.scrollY || 0;
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            if (bar) bar.style.width = (h > 0 ? (y / h) * 100 : 0) + '%';
+            blobs.forEach(function(b){ const s = parseFloat(b.getAttribute('data-speed')) || 0.05; b.style.transform = 'translateY(' + (y * s) + 'px)'; });
+            ticking = false;
+        });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+
+</body>
+</html>
