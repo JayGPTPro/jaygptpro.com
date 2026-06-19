@@ -66,7 +66,7 @@ html[dir="rtl"] body{font-family:'Heebo',-apple-system,sans-serif}
 .shell{max-width:var(--maxw);margin:0 auto;padding:18px clamp(18px,5vw,28px) 40px;position:relative;z-index:1}
 
 /* top bar */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.topbar{display:flex;align-items:center;justify-content:flex-end;margin-bottom:18px}
 .brandmark{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.92rem;letter-spacing:-.01em;color:var(--text);text-decoration:none}
 .brandmark img{width:30px;height:30px;border-radius:8px;display:block}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(16,185,129,.5);animation:ping 2.6s ease-in-out infinite}
@@ -155,7 +155,13 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
 .foot .built{font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.08em;opacity:.6}
 
 /* entrance: hidden state set by JS only, never resting CSS */
-.rise{will-change:transform,opacity}
+.rise,.sr{will-change:transform,opacity}
+
+/* cursor-follow spotlight (desktop only, set up by JS) */
+.cursorglow{position:fixed;left:0;top:0;width:560px;height:560px;margin-left:-280px;margin-top:-280px;border-radius:50%;
+  z-index:-1;pointer-events:none;opacity:0;mix-blend-mode:screen;transition:opacity .55s ease;will-change:transform;
+  background:radial-gradient(circle,rgba(96,165,250,.13),rgba(6,182,212,.05) 42%,transparent 62%)}
+@media(hover:none){.cursorglow{display:none}}
 
 @media(min-width:560px){
   .lnk.money .t{font-size:1.22rem}
@@ -169,11 +175,11 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
 <body>
 <div class="aurora" aria-hidden="true"><i class="b1"></i><i class="b2"></i></div>
 <div class="grain" aria-hidden="true"></div>
+<div class="cursorglow" aria-hidden="true"></div>
 
 <main class="shell">
 
   <div class="topbar rise">
-    <a class="brandmark" href="https://jaygptpro.com"><img src="assets/logo.png" alt="">Jay GPT <span class="status-dot" title="Available"></span></a>
     <div class="lang" role="group" aria-label="Language">
       <button type="button" data-lang="en" class="on">EN</button>
       <button type="button" data-lang="he">עב</button>
@@ -195,10 +201,10 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
     </div>
   </section>
 
-  <div class="lbl rise" data-i18n="lbl_start">Start here</div>
+  <div class="lbl sr" data-i18n="lbl_start">Start here</div>
   <div class="stack">
 
-    <a class="lnk money challenge rise" href="https://jaygptpro.com/donna-challenge/" data-track="challenge">
+    <a class="lnk money challenge sr" href="https://jaygptpro.com/donna-challenge/" data-track="challenge">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8z"/></svg></span>
       <span class="body">
         <span class="badge go" data-i18n="ch_badge">Flagship</span>
@@ -208,7 +214,7 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
 
-    <a class="lnk money vault rise" href="https://www.topdog.community/checkout/ai-vault" target="_blank" rel="noopener" data-track="vault">
+    <a class="lnk money vault sr" href="https://www.topdog.community/checkout/ai-vault" target="_blank" rel="noopener" data-track="vault">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="3.4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></span>
       <span class="body">
         <span class="badge live"><span class="dot-live"></span><span data-i18n="va_badge">Live community</span></span>
@@ -220,34 +226,34 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
 
   </div>
 
-  <div class="lbl rise" data-i18n="lbl_more">Everything else</div>
+  <div class="lbl sr" data-i18n="lbl_more">Everything else</div>
   <div class="stack">
 
-    <a class="lnk rise" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" data-track="whatsapp">
+    <a class="lnk sr" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" data-track="whatsapp">
       <span class="ico" aria-hidden="true" style="background:rgba(16,185,129,.12);color:var(--green)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.16c-.24.68-1.42 1.32-1.96 1.36-.5.05-.5.41-3.16-.66-2.66-1.07-4.31-3.79-4.44-3.97-.13-.18-1.06-1.4-1.06-2.67 0-1.27.67-1.9.9-2.16.24-.26.52-.32.69-.32.17 0 .35 0 .5.01.16.01.38-.06.59.45.24.59.81 2.02.88 2.17.07.15.12.32.02.51-.09.18-.14.3-.27.46-.13.15-.28.34-.4.46-.13.13-.27.27-.12.53.15.26.68 1.12 1.46 1.81 1 .89 1.85 1.17 2.11 1.3.26.13.41.11.56-.07.15-.17.65-.76.82-1.02.17-.26.35-.21.59-.13.24.09 1.51.71 1.77.84.26.13.43.19.5.3.07.11.07.64-.17 1.32Z"/></svg></span>
       <span class="body"><span class="t"><span data-i18n="wa_t">Free WhatsApp Group</span></span><span class="s" data-i18n="wa_s">Weekly tips, prompts, tools. Zero spam.</span></span>
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
 
-    <a class="lnk rise" href="https://jaygptpro.com/ai-toolbox/" data-track="toolbox">
+    <a class="lnk sr" href="https://jaygptpro.com/ai-toolbox/" data-track="toolbox">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.4 1.4 0 0 0 2 2l6-6a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2z"/></svg></span>
       <span class="body"><span class="t"><span data-i18n="tb_t">AI Toolbox</span></span><span class="s" data-i18n="tb_s">115+ tools I've tested, sorted by job.</span></span>
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
 
-    <a class="lnk rise" href="https://jaygptpro.com/daily-claude-hacks/" data-track="hacks">
+    <a class="lnk sr" href="https://jaygptpro.com/daily-claude-hacks/" data-track="hacks">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></span>
       <span class="body"><span class="t"><span data-i18n="dh_t">Daily Claude Hacks</span></span><span class="s" data-i18n="dh_s">Practical Claude Code hacks, every day.</span></span>
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
 
-    <a class="lnk rise" href="https://www.youtube.com/@Jay_Margaliot" target="_blank" rel="noopener" data-track="youtube">
+    <a class="lnk sr" href="https://www.youtube.com/@Jay_Margaliot" target="_blank" rel="noopener" data-track="youtube">
       <span class="ico" aria-hidden="true" style="background:rgba(239,68,68,.12);color:#f87171"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg></span>
       <span class="body"><span class="t"><span data-i18n="yt_t">YouTube</span></span><span class="s" data-i18n="yt_s">Tutorials, demos, and deep dives.</span></span>
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
 
-    <a class="lnk rise" href="mailto:info@jaygptpro.com?subject=Strategy Call Inquiry" data-track="strategy">
+    <a class="lnk sr" href="mailto:info@jaygptpro.com?subject=Strategy Call Inquiry" data-track="strategy">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
       <span class="body"><span class="t"><span data-i18n="sc_t">1-on-1 Strategy Call</span></span><span class="s" data-i18n="sc_s">A personal AI roadmap for your business. $500/hr.</span></span>
       <span class="chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
@@ -255,7 +261,7 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
 
   </div>
 
-  <nav class="social rise" aria-label="Social links">
+  <nav class="social sr" aria-label="Social links">
     <a href="https://www.youtube.com/@Jay_Margaliot" target="_blank" rel="noopener" aria-label="YouTube" data-track="s_youtube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg></a>
     <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" aria-label="LinkedIn" data-track="s_linkedin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
     <a href="https://www.instagram.com/jay_margaliot" target="_blank" rel="noopener" aria-label="Instagram" data-track="s_instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="4"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a>
@@ -264,7 +270,7 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
     <!-- TODO TikTok: no verifiable live handle (@jatgptpro / @jaygptpro / @jay_margaliot all dead). Add when confirmed. -->
   </nav>
 
-  <footer class="foot rise">
+  <footer class="foot sr">
     <div class="line" data-i18n="foot_line">One link. Everything I do. Pick where you want to start.</div>
     <div class="meta">
       <span>&copy; 2026 Jay GPT PRO LLC</span>
@@ -341,22 +347,71 @@ html[dir="rtl"] .lnk:hover .chev{transform:scaleX(-1) translateX(3px)}
       });
     });
 
-    // entrance: hidden state set by JS only (never resting CSS), with fallback
-    var items=[].slice.call(document.querySelectorAll('.rise'));
+    // ---- motion ----
+    // hidden states are set by JS only (never resting CSS), with a fallback that forces everything visible
+    var rise=[].slice.call(document.querySelectorAll('.rise'));
+    var sr=[].slice.call(document.querySelectorAll('.sr'));
     var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function show(){items.forEach(function(el){el.style.opacity='1';el.style.transform='none';});}
-    if(reduce||!window.gsap){ show(); return; }
+    var touch=window.matchMedia('(hover:none)').matches;
+    function showAll(){rise.concat(sr).forEach(function(el){el.style.opacity='1';el.style.transform='none';});}
+    if(reduce||!window.gsap){ showAll(); return; }
 
-    gsap.set(items,{opacity:0,y:16});
-    gsap.to(items,{opacity:1,y:0,duration:.6,ease:'power3.out',stagger:.05,
-      onComplete:function(){gsap.set(items,{clearProps:'transform,opacity'});}});
+    // hero: entrance on load
+    gsap.set(rise,{opacity:0,y:16});
+    gsap.to(rise,{opacity:1,y:0,duration:.6,ease:'power3.out',stagger:.05,
+      onComplete:function(){gsap.set(rise,{clearProps:'transform,opacity'});}});
+
+    // links + labels + social + footer: reveal on scroll
+    if(window.ScrollTrigger){
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.set(sr,{opacity:0,y:30,scale:.965});
+      ScrollTrigger.batch(sr,{
+        start:'top 90%',
+        onEnter:function(batch){
+          gsap.to(batch,{opacity:1,y:0,scale:1,duration:.7,ease:'power3.out',stagger:.09,overwrite:true,
+            onComplete:function(){gsap.set(batch,{clearProps:'transform,opacity'});}});
+        }
+      });
+      // depth: aurora drifts at two speeds as you scroll
+      if(!touch){
+        gsap.to('.aurora .b1',{yPercent:22,ease:'none',scrollTrigger:{trigger:document.body,start:'top top',end:'bottom top',scrub:.5}});
+        gsap.to('.aurora .b2',{yPercent:-20,ease:'none',scrollTrigger:{trigger:document.body,start:'top top',end:'bottom top',scrub:.8}});
+      }
+      ScrollTrigger.refresh();
+    } else {
+      sr.forEach(function(el){el.style.opacity='1';});
+    }
+
+    if(!touch){
+      // cursor-follow spotlight (animates its own element, no conflict)
+      var cg=document.querySelector('.cursorglow');
+      if(cg){
+        var gx=gsap.quickTo(cg,'x',{duration:.6,ease:'power2'});
+        var gy=gsap.quickTo(cg,'y',{duration:.6,ease:'power2'});
+        window.addEventListener('mousemove',function(e){cg.style.opacity='1';gx(e.clientX);gy(e.clientY);},{passive:true});
+        document.addEventListener('mouseleave',function(){cg.style.opacity='0';});
+      }
+      // subtle 3D tilt on the two money buttons (own transform, runs after reveals settle)
+      setTimeout(function(){
+        document.querySelectorAll('.lnk.money').forEach(function(b){
+          gsap.set(b,{clearProps:'transform',transformPerspective:700});
+          var qrx=gsap.quickTo(b,'rotationX',{duration:.5,ease:'power3'});
+          var qry=gsap.quickTo(b,'rotationY',{duration:.5,ease:'power3'});
+          b.addEventListener('mousemove',function(e){var r=b.getBoundingClientRect();
+            qrx(((r.top+r.height/2)-e.clientY)/r.height*8); qry((e.clientX-(r.left+r.width/2))/r.width*8);});
+          b.addEventListener('mouseleave',function(){qrx(0);qry(0);});
+        });
+      },1500);
+    }
+
     // safety net: never leave anything hidden
-    setTimeout(show,1500);
+    setTimeout(showAll,2200);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 </body>
 </html>
