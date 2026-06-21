@@ -5290,16 +5290,20 @@ window.showPortal = function(round) {
 // ============================================
 // VAULT VSL BANNER CONTROL
 // ============================================
-// MASTER KILL SWITCH. Flip to true on Day 4 (June 4) to re-enable the VSL banner.
-// When false, the banner is hidden for EVERYONE including admins. Overrides VAULT_BANNER_DAY_4_GATE.
-// 2026-06-08: turned OFF for everyone per Jay (banner felt too pushy to students). Re-enable when ready.
-const VAULT_BANNER_ENABLED = false;
+// MASTER KILL SWITCH.
+// 2026-06-08: turned OFF for everyone per Jay (felt too pushy).
+// 2026-06-22: re-enabled in "tasteful" mode per Jay. Day 4+ gate, once per day max,
+// lifetime cap of 3 impressions, sticky dismiss, gone-for-good once they click into the Vault.
+const VAULT_BANNER_ENABLED = true;
 // VAULT_BANNER_DAY_4_GATE: when true, banner shows ONLY from Day 4 of the user's round onwards.
 // Admins always see it for previewing. Past archived rounds (round1, round2) also see it
-// since their Day 4 already passed.
+// since their Day 4 already passed (this is what surfaces it to people who finished weeks ago).
 const VAULT_BANNER_DAY_4_GATE = true;
 // How long after dismiss before it reappears (hours). 24 = once per day
 const VAULT_BANNER_DISMISS_HOURS = 24;
+// Tasteful frequency controls (admins bypass these so they can always preview):
+const VAULT_BANNER_MAX_SHOWS = 3;                 // lifetime impressions per browser, then never again
+const VAULT_BANNER_MIN_HOURS_BETWEEN_SHOWS = 24;  // once per day max, even without a dismiss
 const VAULT_BANNER_ADMIN_EMAILS = ['info@jaygptpro.com','smargaliot1@gmail.com'];
 // Per-customer opt-out: these emails never see the Vault banner, regardless of round.
 // Added for customers who asked to stop seeing Vault promotion.
@@ -5329,20 +5333,37 @@ function isPastVaultGate() {
 
 function showVaultBannerIfEligible() {
   try {
-    // MASTER KILL SWITCH - hides banner from everyone (incl. admins). Re-enable on Day 4.
+    // MASTER KILL SWITCH - hides banner from everyone (incl. admins).
     if (!VAULT_BANNER_ENABLED) return;
 
     const email = (localStorage.getItem('donna-challenge-email') || '').toLowerCase();
     if (!email) return;
 
+    const isAdmin = VAULT_BANNER_ADMIN_EMAILS.indexOf(email) >= 0;
+
     // Per-customer opt-out: never show the Vault banner to excluded emails.
     if (VAULT_BANNER_EXCLUDE_EMAILS.indexOf(email) >= 0) return;
 
+    // Private B2B cohorts (e.g. Direct Promotions) never see the Vault upsell.
+    const round = localStorage.getItem('donna-challenge-round') || '';
+    if (round.indexOf('wk_dp_') === 0) return;
+
     if (VAULT_BANNER_DAY_4_GATE && !isPastVaultGate()) return;
 
-    const lastDismiss = parseInt(localStorage.getItem('vault-banner-dismissed') || '0', 10);
-    const hoursSinceDismiss = (Date.now() - lastDismiss) / (1000 * 60 * 60);
-    if (hoursSinceDismiss < VAULT_BANNER_DISMISS_HOURS) return;
+    // Frequency / lifetime caps. Admins bypass them so they can always preview.
+    if (!isAdmin) {
+      // Engaged already (clicked into the Vault): never show again.
+      if (localStorage.getItem('vault-banner-done') === '1') return;
+      // Lifetime cap: at most VAULT_BANNER_MAX_SHOWS impressions, then never again.
+      const shownCountCap = parseInt(localStorage.getItem('vault-banner-count') || '0', 10);
+      if (shownCountCap >= VAULT_BANNER_MAX_SHOWS) return;
+      // Once per day after a dismiss.
+      const lastDismiss = parseInt(localStorage.getItem('vault-banner-dismissed') || '0', 10);
+      if ((Date.now() - lastDismiss) / 3600000 < VAULT_BANNER_DISMISS_HOURS) return;
+      // Once per day regardless of dismiss (don't re-pop on every login the same day).
+      const lastShown = parseInt(localStorage.getItem('vault-banner-last-shown') || '0', 10);
+      if ((Date.now() - lastShown) / 3600000 < VAULT_BANNER_MIN_HOURS_BETWEEN_SHOWS) return;
+    }
 
     // Only show once user is past login/coming-soon screens
     const login = document.getElementById('loginScreen');
@@ -5355,17 +5376,24 @@ function showVaultBannerIfEligible() {
 
     const banner = document.getElementById('vaultBanner');
     if (banner) {
+      const shownCount = parseInt(localStorage.getItem('vault-banner-count') || '0', 10);
+      const firstTime = shownCount === 0;
       banner.style.display = 'block';
       // Trigger entrance animation on the next frame so display:block applies first
       requestAnimationFrame(() => {
         banner.classList.add('entering');
-        // Confetti syncs with vault doors opening (delay ~1.5s after class added)
-        setTimeout(spawnVaultConfetti, 1400);
+        // Celebratory confetti only on the very first impression. quieter on repeats.
+        if (firstTime) setTimeout(spawnVaultConfetti, 1400);
         // Dust starts ambient after doors finish opening
         setTimeout(startVaultDust, 2400);
         // Parallax becomes interactive after entrance
         setTimeout(setupVaultParallax, 2800);
       });
+      // Record the impression (real customers only. admin previews don't count toward caps).
+      if (!isAdmin) {
+        localStorage.setItem('vault-banner-last-shown', Date.now().toString());
+        localStorage.setItem('vault-banner-count', String(shownCount + 1));
+      }
       try { if (typeof trackEvent === 'function') trackEvent('vault_banner_shown', {}, null); } catch(e){}
     }
   } catch(e) {}
@@ -5522,6 +5550,8 @@ function dismissVaultBanner() {
 }
 
 function trackVaultBannerClick() {
+  // They engaged with the offer. don't surface the banner again on this browser.
+  try { localStorage.setItem('vault-banner-done', '1'); } catch(e){}
   try { if (typeof trackEvent === 'function') trackEvent('vault_banner_cta_clicked', {}, null); } catch(e){}
 }
 
