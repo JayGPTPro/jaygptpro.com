@@ -124,6 +124,15 @@ code{background:#221913;border:1px solid var(--line);border-radius:6px;padding:1
 .prompt-text{padding:13px 15px;color:#d6c8b6;font-size:14px;line-height:1.65}
 .idone{color:var(--text);font-weight:600;margin-bottom:10px;font-size:15px}
 .imanual{color:var(--muted);font-size:13.5px;line-height:1.6}
+.tshoot{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+.tshoot>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600}
+.tshoot>summary::-webkit-details-marker{display:none}
+.tshoot>summary .chev{transition:transform .2s;color:var(--ember2)}
+.tshoot[open]>summary .chev{transform:rotate(90deg)}
+.tshoot .tbody{margin-top:14px;display:none}
+.tshoot[open] .tbody{display:block}
+.tshoot .tq{color:var(--text);font-weight:600;font-size:14px;margin:16px 0 6px}
+.tshoot .tq:first-child{margin-top:0}
 
 /* challenge promo */
 .chal{border:1px solid #3a2a1c;border-radius:22px;padding:44px;background:linear-gradient(135deg,#1e130b,#140e09);position:relative;overflow:hidden;text-align:center}
@@ -245,21 +254,26 @@ footer .brand{justify-content:center;margin-bottom:10px}
         <div class="prompt-bar"><span class="plabel">פקודת התקנה</span><button class="copy-prompt" onclick="copyPrompt(this)">העתק</button></div>
         <div class="prompt-text" id="install-prompt" style="font-family:'JetBrains Mono',monospace;font-size:13.5px;direction:ltr;text-align:left">npx skills add JayGPTPro/skill-skiller -g</div>
       </div>
-      <p class="idone">זהו, הסקיל מותקן. כדי להשתמש בו, כתבו <code>/skill-skiller</code> ואחריו את הרעיון שלכם. למשל:</p>
-      <p style="margin:10px 0 14px"><code>/skill-skiller סקיל שמסכם תמלולי פגישות לרשימת משימות</code></p>
-      <p class="imanual" style="font-size:13.5px;margin-bottom:4px"><strong>לא בטוחים שיש לכם Node.js?</strong> הפקודה משתמשת ב-<code>npx</code> שמגיע עם Claude Code ברוב המקרים. כדי לבדוק, הדביקו לקלוד קוד:</p>
-      <div class="prompt-box" style="margin:6px 0 6px">
-        <div class="prompt-bar"><span class="plabel">בדיקת Node.js</span><button class="copy-prompt" onclick="copyPrompt(this)">העתק</button></div>
-        <div class="prompt-text" style="font-size:13.5px;direction:ltr;text-align:left">Check my Node.js version and tell me if I need to upgrade for skills.</div>
-      </div>
-      <p class="imanual" style="font-size:13.5px">צריך להתקין? הורידו את מתקין ה-LTS מ-<a href="https://nodejs.org" target="_blank" style="color:var(--ember2)">nodejs.org</a> (עובד במק ובווינדוס).</p>
+      <p class="idone">זהו. כדי להשתמש בו, כתבו <code>/skill-skiller</code> ואחריו את הרעיון שלכם. למשל:</p>
+      <p style="margin:10px 0 0"><code>/skill-skiller סקיל שמסכם תמלולי פגישות לרשימת משימות</code></p>
 
-      <p class="imanual" style="font-size:13.5px;margin-top:12px;margin-bottom:4px"><strong>לא רוצים Node בכלל?</strong> דלגו על <code>npx</code> והדביקו לקלוד קוד במקום:</p>
-      <div class="prompt-box" style="margin:6px 0 6px">
-        <div class="prompt-bar"><span class="plabel">התקנה בלי Node</span><button class="copy-prompt" onclick="copyPrompt(this)">העתק</button></div>
-        <div class="prompt-text" style="font-size:13.5px;direction:ltr;text-align:left">Install the skill from github.com/JayGPTPro/skill-skiller into my global skills folder (~/.claude/skills). Fetch the files yourself, then tell me when it's done.</div>
-      </div>
-      <p class="imanual" style="font-size:13.5px">אם <code>/skill-skiller</code> לא מופיע מיד, הפעילו מחדש את Claude Code פעם אחת. (שגיאת <code>PromptScript</code> בסוף לא מזיקה, הסקיל הותקן בהצלחה.)</p>
+      <details class="tshoot">
+        <summary><span class="chev">›</span> משהו לא עובד? פתחו את זה</summary>
+        <div class="tbody">
+          <p class="tq">הפקודה לא רצה</p>
+          <p class="imanual">צריך Node.js (שמגיע עם Claude Code ברוב המקרים). אין לכם Node, או שאתם מעדיפים לא להתקין? דלגו על הפקודה והדביקו לקלוד קוד במקום:</p>
+          <div class="prompt-box" style="margin:8px 0 0">
+            <div class="prompt-bar"><span class="plabel">התקנה בלי Node</span><button class="copy-prompt" onclick="copyPrompt(this)">העתק</button></div>
+            <div class="prompt-text" style="font-size:13.5px;direction:ltr;text-align:left">Install the skill from github.com/JayGPTPro/skill-skiller into my global skills folder (~/.claude/skills). Fetch the files yourself, then tell me when it's done.</div>
+          </div>
+
+          <p class="tq"><code>/skill-skiller</code> לא מופיע</p>
+          <p class="imanual">הפעילו מחדש את Claude Code פעם אחת, ואז כתבו אותו שוב.</p>
+
+          <p class="tq">שגיאת <code>PromptScript</code> בסוף</p>
+          <p class="imanual">לא מזיקה. הסקיל הותקן בהצלחה, התעלמו ממנה.</p>
+        </div>
+      </details>
     </div>
 
     <a class="wa" href="https://chat.whatsapp.com/HprRjUEkpsGHnybDUC5L2A" target="_blank" rel="noopener" data-rev>

@@ -124,6 +124,15 @@ code{background:#221913;border:1px solid var(--line);border-radius:6px;padding:1
 .prompt-text{padding:13px 15px;color:#d6c8b6;font-size:14px;line-height:1.65}
 .idone{color:var(--text);font-weight:600;margin-bottom:10px;font-size:15px}
 .imanual{color:var(--muted);font-size:13.5px;line-height:1.6}
+.tshoot{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+.tshoot>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600}
+.tshoot>summary::-webkit-details-marker{display:none}
+.tshoot>summary .chev{transition:transform .2s;color:var(--ember2)}
+.tshoot[open]>summary .chev{transform:rotate(90deg)}
+.tshoot .tbody{margin-top:14px;display:none}
+.tshoot[open] .tbody{display:block}
+.tshoot .tq{color:var(--text);font-weight:600;font-size:14px;margin:16px 0 6px}
+.tshoot .tq:first-child{margin-top:0}
 
 /* whatsapp */
 .wa{margin:34px auto 0;display:flex;align-items:center;gap:18px;max-width:680px;border:1px solid #1f5d3a;border-radius:16px;padding:20px 24px;text-decoration:none;background:linear-gradient(120deg,#10231a,#0d1812);transition:transform .2s,border-color .3s}
@@ -243,22 +252,26 @@ footer .brand{justify-content:center;margin-bottom:10px}
         <div class="prompt-bar"><span class="plabel">Install command</span><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
         <div class="prompt-text" id="install-prompt" style="font-family:'JetBrains Mono',monospace;font-size:13.5px">npx skills add JayGPTPro/the-skill-skiller -g</div>
       </div>
-      <p class="idone">That's it, the skill is installed. To use it, write <code>/the-skill-skiller</code> followed by your idea. For example:</p>
-      <p style="margin:10px 0 16px"><code>/the-skill-skiller a skill that turns meeting transcripts into a task list</code></p>
+      <p class="idone">That's it. To use it, type <code>/the-skill-skiller</code> followed by your idea. For example:</p>
+      <p style="margin:10px 0 0"><code>/the-skill-skiller a skill that turns meeting transcripts into a task list</code></p>
 
-      <p class="imanual" style="font-size:13.5px;margin-bottom:4px"><strong>Not sure you have Node.js?</strong> The command uses <code>npx</code>, which ships with Claude Code on most setups. To check, paste this into Claude Code:</p>
-      <div class="prompt-box" style="margin:6px 0 6px">
-        <div class="prompt-bar"><span class="plabel">Check Node.js</span><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
-        <div class="prompt-text" style="font-size:13.5px">Check my Node.js version and tell me if I need to upgrade for skills.</div>
-      </div>
-      <p class="imanual" style="font-size:13.5px">Need to install it? Grab the LTS installer from <a href="https://nodejs.org" target="_blank" style="color:var(--ember2)">nodejs.org</a> (works on macOS and Windows).</p>
+      <details class="tshoot">
+        <summary><span class="chev">›</span> Something not working? Open this</summary>
+        <div class="tbody">
+          <p class="tq">The command won't run</p>
+          <p class="imanual">It needs Node.js (which ships with Claude Code on most setups). No Node, or you'd rather not install it? Skip the command and paste this into Claude Code instead:</p>
+          <div class="prompt-box" style="margin:8px 0 0">
+            <div class="prompt-bar"><span class="plabel">Install without Node</span><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
+            <div class="prompt-text" style="font-size:13.5px">Install the skill from github.com/JayGPTPro/the-skill-skiller into my global skills folder (~/.claude/skills). Fetch the files yourself, then tell me when it's done.</div>
+          </div>
 
-      <p class="imanual" style="font-size:13.5px;margin-top:12px;margin-bottom:4px"><strong>Don't want Node at all?</strong> Skip <code>npx</code> and paste this into Claude Code instead:</p>
-      <div class="prompt-box" style="margin:6px 0 6px">
-        <div class="prompt-bar"><span class="plabel">No-Node install</span><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
-        <div class="prompt-text" style="font-size:13.5px">Install the skill from github.com/JayGPTPro/the-skill-skiller into my global skills folder (~/.claude/skills). Fetch the files yourself, then tell me when it's done.</div>
-      </div>
-      <p class="imanual" style="font-size:13.5px">If <code>/the-skill-skiller</code> doesn't show up right away, restart Claude Code once. (A <code>PromptScript</code> error at the end is harmless, the skill installed fine.)</p>
+          <p class="tq"><code>/the-skill-skiller</code> doesn't show up</p>
+          <p class="imanual">Restart Claude Code once, then type it again.</p>
+
+          <p class="tq">A <code>PromptScript</code> error at the end</p>
+          <p class="imanual">Harmless. The skill installed fine, ignore it.</p>
+        </div>
+      </details>
     </div>
 
     <a class="wa" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" data-rev>
