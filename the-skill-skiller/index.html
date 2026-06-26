@@ -245,7 +245,12 @@ footer .brand{justify-content:center;margin-bottom:10px}
       </div>
       <p class="idone">That's it, the skill is installed. To use it, write <code>/the-skill-skiller</code> followed by your idea. For example:</p>
       <p style="margin:10px 0 14px"><code>/the-skill-skiller a skill that turns meeting transcripts into a task list</code></p>
-      <p class="imanual" style="font-size:13.5px">Notes: this needs <strong>Node.js</strong> installed (it comes with Claude Code on most setups). See a <code>PromptScript</code> error at the end? Ignore it, the skill installed fine. And if <code>/the-skill-skiller</code> doesn't show up right away, restart Claude Code once, then type it.</p>
+      <p class="imanual" style="font-size:13.5px"><strong>No Node.js? No problem.</strong> The command above uses <code>npx</code>, which needs Node.js (it ships with Claude Code on most setups). If <code>npx</code> doesn't run, skip it entirely and paste this into Claude Code instead:</p>
+      <div class="prompt-box" style="margin:10px 0 14px">
+        <div class="prompt-bar"><span class="plabel">No-Node install</span><button class="copy-prompt" onclick="copyPrompt(this)">Copy</button></div>
+        <div class="prompt-text" style="font-size:13.5px">Install the skill from github.com/JayGPTPro/the-skill-skiller into my global skills folder (~/.claude/skills). Fetch the files yourself, then tell me when it's done.</div>
+      </div>
+      <p class="imanual" style="font-size:13.5px">Claude pulls the files in directly, no installer needed. Either way: if <code>/the-skill-skiller</code> doesn't show up right away, restart Claude Code once. (A <code>PromptScript</code> error at the end is harmless, the skill installed fine.)</p>
     </div>
 
     <a class="wa" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" target="_blank" rel="noopener" data-rev>
@@ -280,7 +285,8 @@ footer .brand{justify-content:center;margin-bottom:10px}
 
 <script>
 function copyPrompt(btn){
-  var el=document.getElementById('install-prompt'); if(!el) return;
+  var box=btn.closest('.prompt-box');
+  var el=(box && box.querySelector('.prompt-text')) || document.getElementById('install-prompt'); if(!el) return;
   navigator.clipboard.writeText(el.innerText.trim()).then(function(){
     var o=btn.textContent; btn.classList.add('copied'); btn.textContent='Copied';
     setTimeout(function(){btn.classList.remove('copied'); btn.textContent=o;},1800);
