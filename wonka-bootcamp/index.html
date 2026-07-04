@@ -1,0 +1,3274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>The Wonka Creative Bootcamp . Member Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+/* js-guard: mark that JS is running so CSS may pre-hide reveal targets.
+   Without JS everything stays visible by default. */
+document.documentElement.classList.add('js');
+</script>
+<style>
+/* ============================================================
+   SECTION: TOKENS + RESET
+   ============================================================ */
+:root{
+  --plum:#3B1E4E;
+  --plum-deep:#2B1439;
+  --plum-darker:#1F0E2B;
+  --choc:#2A1A12;
+  --choc-dark:#1C110B;
+  --brass:#B87333;
+  --brass-light:#D99A5B;
+  --brass-dark:#8A5424;
+  --cream:#F3E9D2;
+  --cream-dim:rgba(243,233,210,.62);
+  --raspberry:#E0356B;
+  --mint:#3ECFA3;
+  --gold:#F5B841;
+  --sky:#6EC6E6;
+  --gold-grad:linear-gradient(120deg,#8A6D1F 0%,#F7D774 45%,#FFF3C4 55%,#F7D774 65%,#8A6D1F 100%);
+  --font-display:'Fraunces',serif;
+  --font-body:'Outfit',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --shadow-deep:0 18px 50px rgba(0,0,0,.55);
+  --room-radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:104px;font-size:17.5px}
+body{
+  background:
+    radial-gradient(1200px 700px at 70% -10%, rgba(94,46,126,.35), transparent 60%),
+    radial-gradient(900px 600px at 10% 40%, rgba(184,115,51,.10), transparent 60%),
+    linear-gradient(180deg,var(--plum-darker) 0%, var(--plum-deep) 35%, var(--choc-dark) 100%);
+  color:var(--cream);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+a{color:var(--gold)}
+button{font-family:inherit;cursor:pointer}
+::selection{background:var(--raspberry);color:#fff}
+
+/* floating candy-dot particles (CSS only, subtle) */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    radial-gradient(3px 3px at 12% 20%, rgba(224,53,107,.16), transparent 60%),
+    radial-gradient(2px 2px at 78% 12%, rgba(62,207,163,.14), transparent 60%),
+    radial-gradient(3px 3px at 44% 66%, rgba(245,184,65,.13), transparent 60%),
+    radial-gradient(2px 2px at 88% 55%, rgba(110,198,230,.14), transparent 60%),
+    radial-gradient(2px 2px at 26% 88%, rgba(245,184,65,.10), transparent 60%);
+  background-size:160% 160%;
+  animation:candyDrift 42s linear infinite alternate;
+  opacity:.8;
+}
+@keyframes candyDrift{from{background-position:0% 0%}to{background-position:100% 100%}}
+
+/* ============================================================
+   SECTION: LOADING SCREEN (swirl lollipop)
+   ============================================================ */
+#loading-screen{
+  position:fixed;inset:0;z-index:900;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;
+  background:linear-gradient(180deg,var(--plum-darker),var(--choc-dark));
+  transition:opacity .5s ease;
+}
+#loading-screen.hidden{opacity:0;pointer-events:none}
+.lolli{
+  width:84px;height:84px;border-radius:50%;
+  background:conic-gradient(var(--raspberry) 0 25%, var(--cream) 25% 50%, var(--raspberry) 50% 75%, var(--cream) 75% 100%);
+  box-shadow:0 0 0 6px rgba(243,233,210,.12), var(--shadow-deep);
+  animation:lolliSpin 1.4s linear infinite;
+  position:relative;
+}
+.lolli::after{
+  content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+  width:8px;height:56px;border-radius:4px;
+  background:linear-gradient(180deg,var(--cream),rgba(243,233,210,.35));
+}
+@keyframes lolliSpin{to{transform:rotate(360deg)}}
+#loading-screen p{font-family:var(--font-display);font-size:1.05rem;letter-spacing:.06em;color:var(--cream-dim);margin-top:38px}
+
+/* ============================================================
+   SECTION: SCREENS (login / errors)
+   ============================================================ */
+.screen{position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
+.screen.active{display:flex}
+
+/* --- THE FACTORY GATES (login) --- */
+#gate-screen{
+  overflow:hidden;
+  background:
+    radial-gradient(900px 500px at 50% 110%, rgba(184,115,51,.16), transparent 65%),
+    linear-gradient(180deg,#150A1F 0%, var(--plum-darker) 45%, #17100C 100%);
+  perspective:1400px;
+}
+.gate-stage{position:absolute;inset:0;perspective:1400px}
+.gate-half{
+  position:absolute;top:0;bottom:0;width:50.5%;
+  background:linear-gradient(180deg,rgba(20,10,28,.35),rgba(10,5,14,.15));
+  transition:transform 1.6s cubic-bezier(.7,.02,.3,1);
+  z-index:3;
+}
+.gate-half svg{width:100%;height:100%;display:block}
+.gate-left{left:0;transform-origin:left center}
+.gate-right{right:0;transform-origin:right center}
+#gate-screen.open .gate-left{transform:rotateY(-78deg)}
+#gate-screen.open .gate-right{transform:rotateY(78deg)}
+#gate-screen.rattle .gate-half{animation:rattle .5s ease}
+@keyframes rattle{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+/* factory silhouette revealed behind the gates */
+.behind-gates{
+  position:absolute;inset:0;z-index:1;display:flex;align-items:flex-end;justify-content:center;
+  background:
+    radial-gradient(600px 320px at 50% 62%, rgba(245,184,65,.14), transparent 70%),
+    linear-gradient(180deg,transparent 40%, rgba(184,115,51,.06) 100%);
+}
+.behind-gates svg{width:min(880px,96vw);opacity:.85}
+/* fog + steam at the base */
+.fog{position:absolute;bottom:-40px;left:-10%;right:-10%;height:220px;z-index:4;pointer-events:none;filter:blur(28px)}
+.fog i{position:absolute;bottom:0;width:340px;height:130px;border-radius:50%;background:rgba(210,190,225,.10);animation:fogDrift 16s ease-in-out infinite alternate}
+.fog i:nth-child(2){left:30%;width:420px;animation-duration:21s;background:rgba(243,233,210,.07)}
+.fog i:nth-child(3){left:60%;width:380px;animation-duration:18s;animation-delay:-6s}
+@keyframes fogDrift{from{transform:translateX(-60px)}to{transform:translateX(90px)}}
+.steam-wisp{position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(243,233,210,.14);filter:blur(6px);animation:wispRise 7s ease-in infinite;pointer-events:none}
+@keyframes wispRise{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:.7}100%{transform:translateY(-260px) scale(3.4);opacity:0}}
+
+/* --- the golden ticket login card --- */
+.ticket-card{
+  position:relative;z-index:6;width:min(430px,94vw);
+  background:var(--gold-grad);
+  background-size:220% 220%;
+  animation:foilSheen 7s ease-in-out infinite;
+  border-radius:14px;
+  padding:3px;
+  box-shadow:0 0 70px rgba(245,184,65,.28), var(--shadow-deep);
+  transition:opacity .8s ease, transform .8s ease;
+}
+#gate-screen.open .ticket-card{opacity:0;transform:scale(.9) translateY(30px);pointer-events:none}
+@keyframes foilSheen{0%,100%{background-position:0% 30%}50%{background-position:100% 70%}}
+.ticket-inner{
+  background:linear-gradient(160deg,#6B4E12 0%, #A67C1E 35%, #8A6D1F 100%);
+  border-radius:11px;padding:38px 34px 30px;text-align:center;position:relative;overflow:hidden;
+}
+.ticket-inner::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg, transparent 0 26px, rgba(255,243,196,.06) 26px 28px);
+  pointer-events:none;
+}
+/* punched ticket notches */
+.ticket-card::before,.ticket-card::after{
+  content:"";position:absolute;top:50%;width:26px;height:26px;border-radius:50%;
+  background:var(--plum-darker);transform:translateY(-50%);z-index:7;
+}
+.ticket-card::before{left:-13px}
+.ticket-card::after{right:-13px}
+.ticket-eyebrow{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.34em;color:#FFF3C4;opacity:.85;text-transform:uppercase}
+.ticket-title{font-family:var(--font-display);font-weight:900;font-size:1.9rem;color:#FFF8E1;margin:10px 0 4px;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.ticket-sub{color:#FFF3C4;opacity:.9;font-size:.95rem;margin-bottom:24px}
+.ticket-serial{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.2em;color:rgba(255,243,196,.55);margin-top:20px}
+.btn-google{
+  display:inline-flex;align-items:center;gap:12px;
+  background:#FFF8E1;color:#3B2A08;border:none;border-radius:10px;
+  padding:14px 26px;font-size:1rem;font-weight:600;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+  transition:transform .18s ease, box-shadow .18s ease;position:relative;z-index:2;
+}
+.btn-google:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.btn-google svg{width:20px;height:20px}
+.gate-msg{position:relative;z-index:2;min-height:20px;margin-top:14px;font-size:.85rem;color:#FFE1B0}
+
+/* --- generic status screens (not allowed / revoked / error) --- */
+.status-card{
+  width:min(480px,94vw);background:linear-gradient(170deg,rgba(59,30,78,.92),rgba(42,26,18,.94));
+  border:1px solid rgba(184,115,51,.4);border-radius:var(--room-radius);
+  padding:42px 36px;text-align:center;box-shadow:var(--shadow-deep);
+}
+.status-card h2{font-family:var(--font-display);font-size:1.6rem;margin-bottom:12px;color:var(--gold)}
+.status-card p{color:var(--cream-dim);line-height:1.6;margin-bottom:10px}
+.status-card .email-chip{font-family:var(--font-mono);font-size:.8rem;background:rgba(0,0,0,.3);border-radius:8px;padding:6px 12px;display:inline-block;margin:8px 0 16px;color:var(--cream)}
+.btn-brass{
+  display:inline-block;background:linear-gradient(180deg,var(--brass-light),var(--brass));
+  color:#241206;border:none;border-radius:10px;padding:12px 24px;font-weight:600;font-size:.95rem;
+  box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  text-decoration:none;margin:6px 4px;transition:transform .15s ease;
+}
+.btn-brass:hover{transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--cream-dim);border:1px solid rgba(243,233,210,.25);border-radius:10px;padding:11px 22px;font-size:.9rem;margin:6px 4px}
+.btn-ghost:hover{color:var(--cream);border-color:rgba(243,233,210,.5)}
+
+/* ============================================================
+   SECTION: HEADER
+   ============================================================ */
+#app{display:none;position:relative;z-index:2}
+#app.active{display:block}
+header.portal-header{
+  position:sticky;top:0;z-index:120;
+  display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;
+  padding:8px 22px 6px;
+  background:rgba(31,14,43,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(184,115,51,.35);
+}
+.header-brand{font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--cream);white-space:nowrap}
+.header-brand span{color:var(--gold)}
+.ticket-chip{
+  display:flex;align-items:center;gap:8px;margin-left:auto;
+  background:var(--gold-grad);background-size:200% 200%;animation:foilSheen 8s ease-in-out infinite;
+  border-radius:8px;padding:2px;
+}
+.ticket-chip-inner{
+  background:#4a3608;border-radius:6px;padding:5px 12px;
+  font-family:var(--font-mono);font-size:.66rem;color:#FFF3C4;letter-spacing:.05em;
+  max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.header-progress{display:flex;align-items:center;gap:10px}
+.header-progress .bar{width:120px;height:8px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;border:1px solid rgba(184,115,51,.4)}
+.header-progress .bar i{display:block;height:100%;background:var(--gold-grad);background-size:200% 100%;width:0%;transition:width .8s ease}
+.header-progress em{font-style:normal;font-family:var(--font-mono);font-size:.7rem;color:var(--cream-dim)}
+.btn-signout{background:transparent;border:1px solid rgba(243,233,210,.22);color:var(--cream-dim);border-radius:8px;padding:7px 14px;font-size:.78rem}
+.btn-signout:hover{color:var(--cream);border-color:rgba(243,233,210,.5)}
+
+/* --- sticky day navigation strip (row 2 of the header, centered) --- */
+#day-strip{
+  flex:1 1 100%;display:flex;align-items:center;justify-content:center;gap:7px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding:4px 2px 5px;
+}
+#day-strip::-webkit-scrollbar{display:none}
+.dbtn{
+  flex:0 0 auto;height:32px;border-radius:16px;position:relative;
+  display:flex;align-items:center;justify-content:center;gap:5px;padding:0 13px;
+  font-family:var(--font-mono);font-size:.74rem;line-height:1;white-space:nowrap;
+  background:transparent;border:1.5px solid var(--brass);color:var(--brass-light);
+  transition:border-color .2s ease, color .2s ease, background .2s ease;
+}
+.dbtn:hover{border-color:var(--gold);color:var(--gold)}
+.dbtn.active{border-color:var(--gold);color:#3d2a05;background:var(--gold);box-shadow:0 0 0 3px rgba(245,184,65,.22)}
+.dbtn.current:not(.active){box-shadow:0 0 0 3px rgba(245,184,65,.16)}
+.dbtn.done{
+  background:linear-gradient(160deg,#F7D774,#B8901F);
+  border-color:#F7D774;color:#3d2a05;font-weight:600;
+}
+.dbtn.done.active{box-shadow:0 0 0 3px rgba(245,184,65,.3)}
+.dbtn .chk{font-style:normal;font-size:.72rem;color:#3d2a05}
+/* the Factory Map button that returns to the world view */
+.dbtn.map-btn{border-color:var(--gold);color:var(--gold);font-weight:600}
+.dbtn.map-btn.active{background:var(--gold);color:#3d2a05}
+.dbtn.map-btn svg{width:14px;height:14px;fill:currentColor}
+.dbtn.locked{
+  background:rgba(0,0,0,.35);border-color:rgba(243,233,210,.14);
+  color:rgba(243,233,210,.35);cursor:not-allowed;
+}
+.dbtn.locked:hover{border-color:rgba(243,233,210,.25);color:rgba(243,233,210,.45)}
+.dbtn .pl{
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.dbtn .pl svg{width:10px;height:10px;fill:rgba(243,233,210,.55)}
+.dbtn.current:not(.active){animation:dbtnPulse 2.2s ease-in-out infinite}
+.dbtn.done.active{color:#3d2a05}
+@keyframes dbtnPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(245,184,65,.55)}
+  50%{box-shadow:0 0 0 5px rgba(245,184,65,0)}
+}
+
+/* ============================================================
+   SECTION: HERO + FACTORY MAP
+   ============================================================ */
+.tour-hero{max-width:860px;margin:0 auto;padding:70px 24px 30px;text-align:center;position:relative}
+.tour-hero h1{font-family:var(--font-display);font-weight:900;font-size:clamp(2rem,5vw,3.2rem);line-height:1.1}
+.tour-hero h1 em{font-style:italic;background:var(--gold-grad);background-size:200% 200%;animation:foilSheen 8s ease-in-out infinite;-webkit-background-clip:text;background-clip:text;color:transparent}
+.tour-hero .wonka-line{margin-top:16px;color:var(--cream-dim);font-size:1.05rem;font-style:italic}
+.tour-hero .dreamers{margin-top:10px;font-family:var(--font-display);font-size:.85rem;letter-spacing:.05em;color:rgba(243,233,210,.4)}
+
+/* checkerboard divider strip */
+.checker{
+  height:22px;margin:34px 0;
+  background:
+    repeating-conic-gradient(rgba(243,233,210,.13) 0% 25%, transparent 0% 50%) 0 0/44px 22px;
+  border-top:1px solid rgba(184,115,51,.3);border-bottom:1px solid rgba(184,115,51,.3);
+}
+
+.factory-map{position:relative;max-width:none;width:100%;margin:0;padding:10px 0 80px;overflow:hidden}
+#rooms-holder{position:relative;z-index:2}
+/* distant factory skyline along the top edges */
+.world-sky{position:absolute;top:0;left:0;right:0;height:200px;z-index:0;pointer-events:none;opacity:.5}
+.world-sky svg{position:absolute;top:0;height:100%;width:auto}
+.world-sky .sk-l{left:-24px}
+.world-sky .sk-r{right:-24px}
+/* soft vignette on the world edges + sparse floating motes */
+.world-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(15,7,22,.55) 0%,transparent 9%,transparent 91%,rgba(15,7,22,.55) 100%)}
+.mote{position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(245,184,65,.5);filter:blur(1.5px);animation:moteFloat 16s ease-in-out infinite alternate}
+.mote:nth-child(2n){width:4px;height:4px;background:rgba(243,233,210,.4);animation-duration:21s}
+.mote:nth-child(3n){animation-duration:26s;background:rgba(224,53,107,.26)}
+@keyframes moteFloat{from{transform:translate(0,0);opacity:.2}35%{opacity:.8}to{transform:translate(26px,-90px);opacity:.15}}
+/* golden walkway (SVG path draws itself on scroll; d computed from DOM in buildPipe) */
+#pipe-svg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#path-under{stroke:rgba(245,184,65,.13);stroke-width:34;fill:none;stroke-linecap:round}
+#path-cobble{stroke:#A9803E;stroke-width:16;fill:none;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(184,115,51,.35))}
+#path-bricks{stroke:rgba(40,24,10,.5);stroke-width:12;fill:none;stroke-dasharray:13 9}
+#path-spurs{stroke:rgba(184,115,51,.45);stroke-width:7;fill:none;stroke-linecap:round}
+#walk-marker{
+  position:absolute;left:0;top:0;width:40px;height:60px;z-index:5;pointer-events:none;
+  opacity:0;transition:opacity .4s ease;will-change:transform;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.55));
+}
+#walk-marker .wc-flip{width:100%;height:100%;transition:transform .25s ease}
+#walk-marker .wc-bob{width:100%;height:100%}
+#walk-marker svg{width:100%;height:100%;display:block;overflow:visible}
+/* walk cycle: bob + leg/cane swing; idle: gentle bounce + occasional hat tip */
+#walk-marker .wc-leg-l,#walk-marker .wc-leg-r,#walk-marker .wc-cane,#walk-marker .wc-hat{transform-box:fill-box}
+#walk-marker .wc-leg-l,#walk-marker .wc-leg-r{transform-origin:50% 6%}
+#walk-marker .wc-cane{transform-origin:18% 8%}
+#walk-marker .wc-hat{transform-origin:22% 88%}
+#walk-marker.walking .wc-bob{animation:wcWalkBob .42s ease-in-out infinite}
+#walk-marker.walking .wc-leg-l{animation:wcStep .42s ease-in-out infinite}
+#walk-marker.walking .wc-leg-r{animation:wcStep .42s ease-in-out infinite;animation-delay:-.21s}
+#walk-marker.walking .wc-cane{animation:wcCane .42s ease-in-out infinite}
+@keyframes wcWalkBob{0%,100%{transform:translateY(0)}25%{transform:translateY(-2.6px)}50%{transform:translateY(-.6px)}75%{transform:translateY(-2.6px)}}
+@keyframes wcStep{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
+@keyframes wcCane{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(10deg)}}
+#walk-marker.idle .wc-bob{animation:wcIdle 2.6s ease-in-out infinite}
+@keyframes wcIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
+#walk-marker.idle .wc-hat{animation:wcHatTip 7s ease-in-out infinite}
+@keyframes wcHatTip{0%,84%,100%{transform:rotate(0)}88%{transform:rotate(-15deg) translateY(-1.2px)}93%{transform:rotate(-3deg)}}
+/* one-time "walk with the arrow keys" hint chip near the character */
+#walk-hint{
+  position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(5px);
+  white-space:nowrap;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.06em;
+  background:rgba(31,14,43,.94);border:1px solid var(--brass);border-radius:14px;padding:5px 11px;
+  color:var(--gold);opacity:0;transition:opacity .4s ease, transform .4s ease;
+}
+#walk-hint.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* --- the entrance archway (widened, gates + glow + checkerboard forecourt) --- */
+#factory-entrance{position:relative;z-index:2;width:min(640px,92%);margin:0 auto 70px;text-align:center;pointer-events:none}
+.ent-glow{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  width:150%;height:240px;z-index:0;
+  background:radial-gradient(closest-side,rgba(245,184,65,.26),transparent 72%);
+}
+.ent-gate{position:relative;display:flex;align-items:flex-end;justify-content:space-between;height:156px}
+.ent-post{
+  width:32px;height:134px;border-radius:7px 7px 3px 3px;position:relative;z-index:2;
+  background:linear-gradient(90deg,var(--brass-dark),var(--brass-light) 40%,var(--brass-dark));
+  box-shadow:0 8px 20px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.25);
+}
+.ent-post::before{
+  content:"";position:absolute;top:-12px;left:-6px;right:-6px;height:14px;border-radius:4px;
+  background:linear-gradient(180deg,var(--brass-light),var(--brass-dark));
+}
+.ent-post::after{
+  content:"";position:absolute;top:-27px;left:50%;transform:translateX(-50%);
+  width:15px;height:15px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#FFF3C4,var(--gold) 70%);
+  box-shadow:0 0 18px rgba(245,184,65,.65);
+}
+.ent-arch{
+  position:absolute;left:16px;right:16px;top:0;height:100px;
+  border:4px solid var(--brass);border-bottom:none;border-radius:220px 220px 0 0;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:24px;
+  background:linear-gradient(180deg,rgba(36,19,50,.7),transparent 80%);
+  box-shadow:inset 0 10px 24px rgba(245,184,65,.08);
+}
+.ent-arch span{
+  font-family:var(--font-display);font-weight:900;letter-spacing:.3em;font-size:1rem;
+  color:var(--gold);text-shadow:0 0 16px rgba(245,184,65,.55);
+}
+/* iron gate leaves standing open inside the arch */
+.ent-leaf{
+  position:absolute;bottom:0;width:26%;height:88px;z-index:1;opacity:.85;
+  background:
+    repeating-linear-gradient(90deg,rgba(184,115,51,.55) 0 3px,transparent 3px 14px),
+    linear-gradient(180deg,rgba(26,13,36,.6),rgba(26,13,36,.25));
+  border:2px solid rgba(184,115,51,.6);border-bottom:none;
+}
+.ent-leaf.l{left:34px;transform:perspective(500px) rotateY(52deg);transform-origin:left center;border-radius:70px 8px 0 0}
+.ent-leaf.r{right:34px;transform:perspective(500px) rotateY(-52deg);transform-origin:right center;border-radius:8px 70px 0 0}
+/* checkerboard forecourt where the walkway begins */
+.ent-mat{
+  height:30px;margin-top:12px;
+  background:repeating-conic-gradient(rgba(243,233,210,.18) 0% 25%, rgba(20,10,28,.35) 0% 50%) 0 0/36px 18px;
+  border:1px solid rgba(184,115,51,.4);border-radius:4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.ent-pipes{position:absolute;bottom:0;width:56px;height:130px}
+.ent-pipes.l{left:-70px}
+.ent-pipes.r{right:-70px}
+
+/* --- the glass elevator finale (after day 10) --- */
+#factory-exit{position:relative;z-index:2;width:220px;margin:26px auto 0;text-align:center;pointer-events:none}
+.exit-track{
+  position:absolute;left:50%;bottom:96px;transform:translateX(-50%);
+  width:10px;height:170px;
+  background:
+    repeating-linear-gradient(180deg,transparent 0 16px,rgba(184,115,51,.7) 16px 19px),
+    linear-gradient(90deg,var(--brass-dark),var(--brass-light) 45%,var(--brass-dark));
+  border-radius:5px;box-shadow:0 0 14px rgba(184,115,51,.3);
+}
+.exit-cab{
+  position:relative;width:76px;height:104px;margin:150px auto 12px;border-radius:12px;
+  border:3px solid var(--brass);
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.18) 0%,rgba(110,198,230,.22) 30%,rgba(110,198,230,.05) 60%,rgba(255,255,255,.1) 100%);
+  box-shadow:0 0 34px rgba(110,198,230,.4), inset 0 0 16px rgba(255,255,255,.18);
+  animation:cabGlow 4s ease-in-out infinite;
+}
+@keyframes cabGlow{0%,100%{box-shadow:0 0 24px rgba(110,198,230,.3), inset 0 0 14px rgba(255,255,255,.14)}50%{box-shadow:0 0 44px rgba(110,198,230,.55), inset 0 0 20px rgba(255,255,255,.24)}}
+.exit-cab::before{
+  content:"";position:absolute;inset:7px;border:1.5px solid rgba(255,255,255,.3);border-radius:7px;
+  background:linear-gradient(180deg,transparent 46%,rgba(184,115,51,.45) 46%,rgba(184,115,51,.45) 52%,transparent 52%);
+}
+.exit-cab::after{
+  content:"";position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  width:34px;height:12px;border-radius:6px 6px 0 0;
+  background:linear-gradient(180deg,var(--brass-light),var(--brass-dark));
+}
+.exit-label{
+  display:inline-block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.26em;color:#2a1706;
+  background:linear-gradient(160deg,var(--brass-light),var(--brass));border-radius:6px;padding:5px 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 4px 10px rgba(0,0,0,.4);
+}
+
+/* --- entrance side pipes (kept from v1) --- */
+.ent-pipes i{
+  position:absolute;bottom:0;width:14px;border-radius:7px 7px 0 0;
+  background:linear-gradient(90deg,#5d3714,#D99A5B 45%,#5d3714);
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+.ent-pipes i:nth-of-type(1){left:6px;height:100px}
+.ent-pipes i:nth-of-type(2){left:32px;height:72px}
+@keyframes gearSpin{to{transform:rotate(360deg)}}
+@keyframes treeSway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+
+/* --- set pieces: all pointer-events:none, layered below the rooms --- */
+.scn{position:absolute;pointer-events:none;z-index:1}
+
+/* THE EDIBLE GARDEN (near days 2-3): parasol mushrooms + one refined swirl-tree pair */
+.scn-garden{width:min(380px,34vw)}
+.scn-garden svg{width:100%;height:auto;display:block}
+.scn-garden .swirl-tree{transform-box:fill-box;transform-origin:50% 100%;animation:treeSway 8s ease-in-out infinite alternate}
+.scn-garden .swirl-tree.st2{animation-delay:-3.4s}
+
+/* THE INVENTING MACHINERY (near days 7-8): brass boiler, gauges, gears, steam */
+.scn-machine{width:min(360px,32vw)}
+.scn-machine svg{width:100%;height:auto;display:block}
+.scn-machine .gearA,.scn-machine .gearB{transform-box:fill-box;transform-origin:center}
+.scn-machine .gearA{animation:gearSpin 24s linear infinite}
+.scn-machine .gearB{animation:gearSpin 15s linear infinite reverse}
+.scn-machine .g-needle{transform-box:fill-box;transform-origin:50% 88%;animation:needleTwitch 3.6s ease-in-out infinite}
+.scn-machine .g-needle.n2{animation-duration:2.7s;animation-delay:-1.1s}
+@keyframes needleTwitch{0%,100%{transform:rotate(-30deg)}38%{transform:rotate(16deg)}52%{transform:rotate(5deg)}68%{transform:rotate(20deg)}82%{transform:rotate(-8deg)}}
+
+/* THE CHOCOLATE RIVER v2 (full-width band between days 5 and 6) */
+.grounds-river{position:absolute;left:0;right:0;z-index:1;pointer-events:none}
+.river-banks{position:absolute;inset:0}
+.river-banks svg{width:100%;height:100%;display:block}
+.river-flow{position:absolute;left:0;right:0;overflow:hidden}
+.river-flow.f1{top:34%;bottom:22%}
+.river-flow.f2{top:46%;bottom:12%}
+.river-flow.f3{top:58%;bottom:6%}
+.river-flow svg{position:absolute;top:0;left:0;width:200%;height:100%;animation:riverFlow 18s linear infinite}
+.river-flow.f2 svg{animation-duration:13s}
+.river-flow.f3 svg{animation-duration:9s}
+
+/* the chocolate waterfall: brass mixing pipe pouring into the river */
+.choc-fall{position:absolute;left:11%;top:-96px;bottom:34%;width:150px}
+.fall-pipe{position:absolute;top:0;left:0;width:150px;height:66px}
+.fall-pipe svg{width:100%;height:100%;display:block}
+.fall-stream{
+  position:absolute;top:52px;bottom:-6px;left:74px;width:44px;border-radius:0 0 10px 10px;
+  background:linear-gradient(90deg,rgba(42,26,18,0) 0%,#241209 12%,#4a2d13 32%,#6b4423 48%,#3a2416 64%,#241209 88%,rgba(42,26,18,0) 100%);
+}
+.fall-stream::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;opacity:.7;
+  background:repeating-linear-gradient(180deg,transparent 0 16px,rgba(217,154,91,.20) 16px 23px,transparent 23px 34px);
+  animation:fallSheen 1.1s linear infinite;
+}
+@keyframes fallSheen{from{background-position:0 0}to{background-position:0 68px}}
+.fall-foam{position:absolute;bottom:-14px;left:52px;width:90px;height:30px}
+.fall-foam::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(217,154,91,.35),rgba(107,68,35,.2) 60%,transparent 75%);
+}
+.fall-foam i{
+  position:absolute;bottom:6px;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#D99A5B,#6b4423 75%);
+  animation:churn 2.6s ease-in-out infinite;
+}
+.fall-foam i:nth-child(2){left:22px;width:7px;height:7px;animation-delay:-.8s;animation-duration:2.1s}
+.fall-foam i:nth-child(3){left:42px;animation-delay:-1.6s}
+.fall-foam i:nth-child(4){left:62px;width:6px;height:6px;animation-delay:-.4s;animation-duration:3s}
+.fall-foam i:nth-child(5){left:78px;width:8px;height:8px;animation-delay:-2s}
+@keyframes churn{0%,100%{transform:translateY(0) scale(.7);opacity:.5}45%{transform:translateY(-13px) scale(1.15);opacity:.95}70%{transform:translateY(-7px) scale(.9);opacity:.7}}
+
+/* the Factory Crew paddle boat */
+.crew-boat{position:absolute;bottom:26%;left:6%;width:180px;animation:boatDrift 52s ease-in-out infinite alternate}
+.boat-bob{animation:boatBob 4.4s ease-in-out infinite}
+.crew-boat svg{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.crew-boat .paddle{transform-box:fill-box;transform-origin:center;animation:gearSpin 8s linear infinite}
+@keyframes boatDrift{from{transform:translateX(0)}to{transform:translateX(min(62vw,900px))}}
+@keyframes boatBob{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-4px) rotate(.8deg)}}
+
+/* the brass-and-rope bridge where the walkway crosses */
+.river-bridge{position:absolute;left:50%;bottom:18%;transform:translateX(-50%);width:150px;height:84px;z-index:2}
+.river-bridge svg{width:100%;height:100%;display:block;filter:drop-shadow(0 5px 9px rgba(0,0,0,.45))}
+
+/* ============================================================
+   ROOMS AS REAL DOORS: absolute-positioned facades across the full width.
+   left = clamp() off the per-room --rx percentage; top set inline by renderMap.
+   ============================================================ */
+.room{
+  position:absolute;width:212px;z-index:4;cursor:pointer;outline:none;
+  left:clamp(10px, calc(var(--rx, 50) * 1% - 106px), calc(100% - 222px));
+}
+.room.locked{cursor:not-allowed}
+.door-visual{
+  position:relative;transition:transform .25s ease, filter .3s ease;
+  filter:drop-shadow(0 16px 22px rgba(0,0,0,.45));
+}
+.door-visual svg{width:100%;height:auto;display:block}
+.room:hover .door-visual{transform:translateY(-4px)}
+.room.locked:hover .door-visual{transform:none}
+.room:focus-visible .door-visual{filter:drop-shadow(0 0 14px rgba(245,184,65,.55)) drop-shadow(0 16px 22px rgba(0,0,0,.4))}
+.room.near .door-visual{filter:drop-shadow(0 0 14px rgba(245,184,65,.45)) drop-shadow(0 16px 22px rgba(0,0,0,.4))}
+.room.rattle .door-visual{animation:rattle .5s ease}
+/* warm breathing glow behind the current door */
+.door-glow{
+  position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);
+  width:130%;height:86%;border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(closest-side,rgba(245,184,65,.20),transparent 70%);
+  transition:opacity .5s ease;z-index:-1;
+}
+.room:not(.locked) .door-glow{opacity:.55}
+.room.current .door-glow{animation:doorBreath 3.2s ease-in-out infinite}
+@keyframes doorBreath{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(.95)}50%{opacity:.95;transform:translate(-50%,-50%) scale(1.06)}}
+/* stone/checker threshold connecting the door to the walkway */
+.door-threshold{
+  height:16px;margin:2px 16px 0;
+  background:repeating-conic-gradient(rgba(243,233,210,.18) 0% 25%, rgba(20,10,28,.5) 0% 50%) 0 0/26px 13px;
+  border:1px solid rgba(184,115,51,.4);border-radius:2px;
+  box-shadow:0 5px 12px rgba(0,0,0,.35);
+}
+/* hanging wooden sign with the room name */
+.door-sign{
+  position:absolute;top:19%;left:50%;transform:translateX(-50%) rotate(-1.4deg);
+  width:66%;padding:6px 8px 7px;text-align:center;z-index:2;pointer-events:none;
+  background:linear-gradient(175deg,#5C3A22,#3E2413);
+  border:1.5px solid rgba(184,115,51,.75);border-radius:5px;
+  box-shadow:0 5px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.door-sign::before,.door-sign::after{
+  content:"";position:absolute;top:-13px;width:2px;height:13px;
+  background:repeating-linear-gradient(180deg,var(--brass-light) 0 3px,rgba(0,0,0,.5) 3px 5px);
+}
+.door-sign::before{left:18%}
+.door-sign::after{right:18%}
+.door-sign small{display:none;font-family:var(--font-mono);font-size:.56rem;letter-spacing:.2em;color:var(--brass-light)}
+.door-sign span{
+  display:block;font-family:var(--font-display);font-weight:700;font-size:.9rem;line-height:1.22;color:var(--cream);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);
+}
+/* svg state hooks inside the facade */
+.room .doors-gold,.room .transom-lit{opacity:0;transition:opacity .8s ease}
+.room.completed .doors-gold,.room.completed .transom-lit{opacity:1}
+.room .port-glow{opacity:.95;transition:opacity .6s ease}
+.room.locked .port-glow{opacity:0}
+.room .sconce-glow,.room .sconce-flame{transition:opacity .6s ease}
+.room.locked .sconce-glow{opacity:.08}
+.room.locked .sconce-flame{opacity:.22}
+.room .door-chains{opacity:0;transition:opacity .4s ease}
+.room.locked .door-chains{opacity:1}
+.room.locked .door-visual{filter:saturate(.35) brightness(.72) drop-shadow(0 16px 22px rgba(0,0,0,.45))}
+.med-num{font-family:var(--font-display)}
+.ep-chip{
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.04em;
+  border:1px solid rgba(184,115,51,.55);border-radius:20px;padding:3px 10px;color:var(--brass-light);
+}
+.door-plate .ep-chips{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px}
+/* locked fog drifting over the facade */
+.room-fog{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.room-fog::before{
+  content:"";position:absolute;top:30%;left:-40%;width:120%;height:60%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(210,190,225,.18),transparent 70%);
+  animation:fogDrift 14s ease-in-out infinite alternate;
+}
+.locked-door{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:rgba(243,233,210,.5);
+}
+.locked-door svg{width:15px;height:15px;fill:var(--brass)}
+
+/* door proximity: the info plate opens ABOVE the door, off the walkway,
+   and always stacks above the walking character (plate z 9 > marker z 3) */
+.door-plate{
+  position:absolute;bottom:calc(100% + 16px);left:50%;width:270px;z-index:9;pointer-events:none;
+  transform:translateX(-50%) translateY(10px) scale(.96);opacity:0;transform-origin:bottom center;
+  transition:opacity .32s cubic-bezier(.2,.8,.2,1), transform .32s cubic-bezier(.2,.8,.2,1);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(94,46,126,.35), transparent 60%),
+    linear-gradient(168deg,rgba(46,28,20,.98),rgba(31,14,43,.97));
+  border:1.5px solid var(--brass);border-radius:14px;padding:14px 16px 15px;
+  box-shadow:0 16px 38px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);text-align:left;
+}
+/* a little brass pointer that ties the plate to the door below it */
+.door-plate::after{
+  content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:9px solid transparent;border-top-color:var(--brass);margin-top:-1px;
+}
+.door-plate::before{
+  content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:8px solid transparent;border-top-color:rgba(46,28,20,.98);
+}
+.room.near .door-plate,.room:hover .door-plate,.room:focus-visible .door-plate{
+  opacity:1;transform:translateX(-50%) translateY(0) scale(1);
+}
+.room.near{z-index:12}
+.door-plate strong{display:block;font-family:var(--font-display);font-weight:700;font-size:1.06rem;color:var(--gold);margin-bottom:6px;line-height:1.15}
+.door-plate p{font-family:var(--font-body);font-size:.9rem;line-height:1.55;color:var(--cream);margin-bottom:10px}
+.door-plate em{display:block;font-style:normal;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;color:var(--gold);background:rgba(245,184,65,.1);border:1px solid rgba(245,184,65,.28);border-radius:8px;padding:5px 9px}
+
+/* ============================================================
+   SECTION: CHOCOLATE RIVER DIVIDER
+   ============================================================ */
+.river-wrap{position:relative;margin:20px 0 0;overflow:hidden}
+.river-label{
+  text-align:center;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(243,233,210,.42);margin-bottom:10px;
+}
+.river{position:relative;height:74px}
+.river svg{position:absolute;bottom:0;left:0;width:200%;height:100%;animation:riverFlow 11s linear infinite}
+@keyframes riverFlow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.river-fill-note{position:absolute;right:18px;bottom:10px;font-family:var(--font-mono);font-size:.6rem;color:rgba(243,233,210,.55);z-index:3}
+
+/* ============================================================
+   SECTION: DAY VIEW
+   ============================================================ */
+#day-view{max-width:860px;margin:0 auto;padding:36px 24px 120px;display:none}
+#day-view.active{display:block}
+/* view switching: the map is the home page; opening a day hides the world so
+   there is nothing to scroll past, and the Factory Map button brings it back */
+#app.viewing-day .tour-hero,
+#app.viewing-day .checker,
+#app.viewing-day #factory-map,
+#app.viewing-day .river-wrap{display:none}
+.day-plaque{
+  text-align:center;margin-bottom:8px;
+}
+.day-plaque .plaque{
+  display:inline-block;position:relative;
+  background:linear-gradient(160deg,var(--brass-light) 0%, var(--brass) 45%, var(--brass-dark) 100%);
+  color:#231106;border-radius:12px;padding:14px 34px;
+  font-family:var(--font-display);font-weight:900;font-size:clamp(1.3rem,4vw,2rem);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 5px rgba(0,0,0,.35), 0 8px 22px rgba(0,0,0,.5);
+}
+.day-plaque .plaque::before,.day-plaque .plaque::after{
+  content:"";position:absolute;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f0d3ab, #6b3f16);
+}
+.day-plaque .plaque::before{left:11px}
+.day-plaque .plaque::after{right:11px}
+.day-plaque .day-kicker{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.3em;color:var(--brass-light);margin-bottom:12px;text-transform:uppercase}
+.day-wonka-line{text-align:center;color:var(--cream-dim);font-style:italic;margin:16px 0 8px;font-size:1.02rem}
+.day-nav{display:flex;justify-content:space-between;align-items:center;margin:14px 0 30px}
+.day-nav button{background:transparent;border:1px solid rgba(184,115,51,.5);color:var(--brass-light);border-radius:8px;padding:8px 16px;font-size:.8rem;font-family:var(--font-mono)}
+.day-nav button:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.day-nav button:disabled{opacity:.3;cursor:not-allowed}
+
+.episode-block{margin-bottom:56px}
+.episode-header{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid rgba(184,115,51,.35);padding-bottom:10px;margin-bottom:16px}
+.episode-header .ep-num{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.2em;color:var(--raspberry)}
+.episode-header h2{font-family:var(--font-display);font-weight:700;font-size:clamp(1.3rem,3.4vw,1.8rem)}
+.episode-promise{color:var(--cream-dim);line-height:1.7;font-size:.95rem;margin-bottom:26px}
+
+/* lesson machine (copper-framed projection screen) */
+.lesson{
+  margin-bottom:30px;background:linear-gradient(170deg,rgba(42,26,18,.9),rgba(31,14,43,.85));
+  border:1px solid rgba(184,115,51,.5);border-radius:14px;padding:16px;position:relative;
+}
+.lesson::before,.lesson::after{
+  content:"";position:absolute;bottom:10px;width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--brass-light), var(--brass-dark));
+}
+.lesson::before{left:10px}.lesson::after{right:10px}
+.lesson-title-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lesson-title-row h4{font-family:var(--font-display);font-size:1.02rem;font-weight:600;flex:1}
+.lesson-dur{font-family:var(--font-mono);font-size:.62rem;color:var(--cream-dim);border:1px solid rgba(243,233,210,.2);border-radius:14px;padding:2px 9px}
+/* brass gauge fills when the paired mission is checked */
+.gauge{width:26px;height:26px;flex:0 0 auto}
+.gauge circle.dial{fill:none;stroke:rgba(243,233,210,.16);stroke-width:3}
+.gauge circle.fill{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;stroke-dasharray:63;stroke-dashoffset:63;transition:stroke-dashoffset .7s ease;transform:rotate(-90deg);transform-origin:center}
+.gauge.on circle.fill{stroke-dashoffset:0}
+.video-frame{
+  position:relative;border-radius:10px;overflow:hidden;
+  border:3px solid var(--brass);box-shadow:inset 0 0 0 1px rgba(0,0,0,.6), 0 8px 20px rgba(0,0,0,.4);
+  background:#0d0710;
+}
+.video-wrap{position:relative;width:100%;padding-bottom:56.25%;height:0}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+/* machine-screen placeholder poster (shows until a real Vimeo ID exists) */
+.video-poster{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:
+    radial-gradient(500px 260px at 50% 40%, rgba(94,46,126,.5), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(243,233,210,.025) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg,#170b20,#0d0710);
+}
+.video-poster .lever{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(160deg,var(--brass-light),var(--brass-dark));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 26px rgba(245,184,65,.3), inset 0 2px 0 rgba(255,255,255,.4);
+}
+.video-poster .lever svg{width:24px;height:24px;fill:#231106;margin-left:4px}
+.video-poster p{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.18em;color:rgba(243,233,210,.5);text-transform:uppercase}
+.video-poster small{font-family:var(--font-mono);font-size:.56rem;color:rgba(243,233,210,.3)}
+/* anti-screenshot watermark overlay */
+.wm{
+  position:absolute;z-index:5;pointer-events:none;
+  font-family:var(--font-mono);font-size:9px;
+  color:rgba(255,255,255,.35);text-shadow:0 1px 2px rgba(0,0,0,.8);
+  right:10px;top:10px;transition:top .4s ease, bottom .4s ease;
+}
+.wm::after{content:attr(data-email)}
+.wm.low{top:auto;bottom:42px}
+
+/* missions punch-card */
+.punch-card{
+  background:linear-gradient(170deg,rgba(243,233,210,.06),rgba(243,233,210,.02));
+  border:1px dashed rgba(184,115,51,.55);border-radius:14px;padding:22px 24px;margin:26px 0;position:relative;
+}
+.punch-card h5{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--brass-light);margin-bottom:16px}
+.punch-card label{
+  display:flex;align-items:flex-start;gap:12px;padding:8px 0;font-size:.9rem;color:var(--cream-dim);
+  cursor:pointer;line-height:1.5;transition:color .2s ease;
+}
+.punch-card label:hover{color:var(--cream)}
+.punch-card input{display:none}
+.punch-hole{
+  flex:0 0 auto;width:20px;height:20px;margin-top:1px;border-radius:50%;
+  border:2px solid var(--brass);background:transparent;position:relative;
+  transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.punch-card input:checked + .punch-hole{
+  background:radial-gradient(circle at 35% 30%, #FFF3C4, var(--gold) 70%);
+  border-color:var(--gold);box-shadow:0 0 12px rgba(245,184,65,.5);
+}
+.punch-card input:checked + .punch-hole::after{
+  content:"";position:absolute;inset:4px;border-radius:50%;background:#3B1E4E;
+}
+.punch-card input:checked ~ span{color:var(--gold);text-decoration:line-through;text-decoration-color:rgba(245,184,65,.4)}
+
+/* resources: wrapped candy-bar tiles */
+.resources{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}
+.candy-bar{
+  position:relative;flex:1 1 200px;min-width:180px;
+  background:linear-gradient(120deg,var(--plum) 0%, #55307a 50%, var(--plum) 100%);
+  border:1px solid rgba(245,184,65,.4);border-radius:10px;padding:14px 16px 14px 44px;
+  font-size:.8rem;color:var(--cream);text-decoration:none;line-height:1.4;
+  transition:transform .2s ease, box-shadow .2s ease;overflow:hidden;
+}
+.candy-bar:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.candy-bar::before{
+  content:"";position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:18px;height:26px;border-radius:4px;
+  background:linear-gradient(160deg,var(--gold),#a87b1e);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+.candy-bar::after{
+  content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);
+  animation:barSheen 5.5s ease-in-out infinite;
+}
+@keyframes barSheen{0%,60%{left:-60%}90%,100%{left:120%}}
+.res-head{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--brass-light);margin:26px 0 4px}
+
+/* day-complete brass lever + seal */
+.complete-zone{text-align:center;margin-top:46px}
+.btn-lever{
+  position:relative;display:inline-flex;align-items:center;gap:14px;
+  background:linear-gradient(180deg,var(--brass-light),var(--brass) 55%,var(--brass-dark));
+  color:#231106;border:none;border-radius:14px;padding:18px 38px;
+  font-family:var(--font-display);font-weight:700;font-size:1.1rem;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.5), inset 0 -4px 6px rgba(0,0,0,.35), 0 10px 26px rgba(0,0,0,.5);
+  transition:transform .15s ease;
+}
+.btn-lever:hover{transform:translateY(-2px)}
+.btn-lever:active{transform:translateY(2px)}
+.btn-lever .knob{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffedc2,#7a4b18)}
+.day-seal{
+  display:none;margin:26px auto 0;width:190px;height:190px;border-radius:50%;
+  background:var(--gold-grad);background-size:200% 200%;animation:foilSheen 6s ease-in-out infinite;
+  padding:5px;box-shadow:0 0 60px rgba(245,184,65,.4);
+  transform:rotate(-8deg);
+}
+.day-seal.stamped{display:block;animation:sealStamp .55s cubic-bezier(.2,2.4,.4,1) both, foilSheen 6s ease-in-out infinite .6s}
+@keyframes sealStamp{0%{transform:scale(2.2) rotate(-8deg);opacity:0}60%{transform:scale(.94) rotate(-8deg);opacity:1}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+.day-seal-inner{
+  width:100%;height:100%;border-radius:50%;border:2px dashed rgba(75,52,8,.55);
+  background:radial-gradient(circle at 40% 30%,#F7D774,#B8901F);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  color:#3d2a05;font-family:var(--font-display);font-weight:900;text-align:center;
+}
+.day-seal-inner .w{font-size:2.6rem;line-height:1}
+.day-seal-inner .lbl{font-size:.85rem;letter-spacing:.12em}
+.day-seal-inner .sub{font-family:var(--font-mono);font-size:.5rem;letter-spacing:.2em;color:rgba(61,42,5,.7)}
+
+/* graduation banner */
+#grad-banner{
+  display:none;max-width:640px;margin:30px auto;padding:34px;text-align:center;
+  background:var(--gold-grad);background-size:200% 200%;animation:foilSheen 7s ease-in-out infinite;
+  border-radius:var(--room-radius);color:#3d2a05;box-shadow:0 0 80px rgba(245,184,65,.35);
+}
+#grad-banner.show{display:block}
+#grad-banner h2{font-family:var(--font-display);font-weight:900;font-size:1.8rem;margin-bottom:8px}
+#grad-banner p{font-weight:500}
+
+/* ============================================================
+   SECTION: GLASS ELEVATOR (desktop only)
+   ============================================================ */
+#elevator{position:fixed;right:20px;top:120px;bottom:80px;width:34px;z-index:110;display:none}
+@media(min-width:761px){#elevator{display:block}}
+.elev-rail{position:absolute;left:50%;top:0;bottom:0;width:4px;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(184,115,51,.6),rgba(184,115,51,.2));border-radius:2px}
+.elev-car{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:0%;
+  width:30px;height:42px;border-radius:7px;
+  background:linear-gradient(160deg,rgba(110,198,230,.35),rgba(110,198,230,.08));
+  border:1.5px solid rgba(110,198,230,.7);
+  box-shadow:0 0 18px rgba(110,198,230,.35), inset 0 0 10px rgba(255,255,255,.15);
+  transition:bottom 1.1s cubic-bezier(.4,0,.2,1);
+}
+.elev-car::after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.25);border-radius:4px}
+.elev-car.blastoff{animation:blastoff 1.6s cubic-bezier(.6,-.2,.8,.4) forwards}
+@keyframes blastoff{0%{bottom:calc(100% - 42px)}30%{bottom:calc(100% - 52px)}100%{bottom:130%;opacity:0}}
+.elev-label{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.52rem;letter-spacing:.14em;color:rgba(243,233,210,.4);white-space:nowrap}
+
+/* ============================================================
+   SECTION: TOAST + CONFETTI
+   ============================================================ */
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  z-index:300;background:linear-gradient(170deg,var(--plum),var(--choc));
+  border:1px solid var(--brass);border-radius:12px;padding:14px 22px;max-width:min(440px,90vw);
+  font-size:.88rem;color:var(--cream);box-shadow:var(--shadow-deep);
+  opacity:0;pointer-events:none;transition:opacity .3s ease, transform .3s ease;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.confetti-piece{
+  position:fixed;top:-14px;width:9px;height:14px;z-index:400;pointer-events:none;
+  animation:confettiFall linear forwards;
+}
+@keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+
+/* ============================================================
+   SECTION: SCROLL REVEALS (js-guard: hidden ONLY under html.js)
+   ============================================================ */
+html.js .reveal{opacity:0;transform:translateY(34px)}
+html.js.reveal-all .reveal{opacity:1 !important;transform:none !important}
+@media (prefers-reduced-motion: reduce){
+  html.js .reveal{opacity:1;transform:none}
+  *,*::before,*::after{animation-duration:.01s !important;animation-iteration-count:1 !important;transition-duration:.01s !important}
+}
+
+/* ============================================================
+   SECTION: SUPPORT FAB (floating WhatsApp / email button)
+   ============================================================ */
+#support-fab{position:fixed;right:18px;bottom:18px;z-index:60;display:none}
+#app.active #support-fab{display:block}
+#fab-btn{
+  width:54px;height:54px;border-radius:50%;border:1px solid rgba(0,0,0,.35);
+  background:linear-gradient(180deg,var(--brass-light),var(--brass));
+  box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.35);
+  display:flex;align-items:center;justify-content:center;
+}
+#fab-btn svg{width:26px;height:26px;fill:#2A1A12}
+#fab-btn:hover{background:linear-gradient(180deg,#E6AC6E,var(--brass-light))}
+#fab-menu{
+  position:absolute;right:0;bottom:64px;min-width:240px;display:none;
+  background:linear-gradient(180deg,rgba(58,34,20,.98),rgba(42,26,18,.98));
+  border:1px solid rgba(184,115,51,.55);border-radius:12px;padding:8px;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
+}
+#fab-menu.open{display:block}
+#fab-menu a{
+  display:block;padding:10px 12px;border-radius:8px;color:var(--cream);
+  font-size:.85rem;text-decoration:none;
+}
+#fab-menu a:hover{background:rgba(184,115,51,.22);color:var(--gold)}
+
+/* ============================================================
+   SECTION: RESPONSIVE (<=760px)
+   ============================================================ */
+@media(max-width:760px){
+  html{scroll-padding-top:118px}
+  header.portal-header{gap:4px 8px;padding:8px 14px 5px}
+  .ticket-chip{margin-left:0}
+  .ticket-chip-inner{max-width:150px}
+  .header-progress .bar{width:80px}
+  #day-strip{gap:5px}
+  .dbtn{width:28px;height:28px;font-size:.68rem}
+  /* the walkway + character stay on mobile: thinner path, scroll-driven walk only */
+  #path-under{stroke-width:20}
+  #path-cobble{stroke-width:9}
+  #path-bricks{stroke-width:6;stroke-dasharray:9 7}
+  #path-spurs{display:none}
+  #walk-marker{width:28px;height:42px;z-index:5}
+  #walk-hint{display:none}
+  /* rooms become near-full-width cards: shrunken door facade beside the title */
+  .room{
+    left:4%;width:92%;display:flex;align-items:center;gap:12px;
+    background:linear-gradient(165deg,rgba(59,30,78,.88),rgba(42,26,18,.94));
+    border:1px solid rgba(184,115,51,.45);border-radius:14px;padding:10px 12px;
+    box-shadow:var(--shadow-deep);
+  }
+  .door-visual{width:92px;flex:0 0 auto;filter:none}
+  .room.locked .door-visual{filter:saturate(.35) brightness(.72)}
+  .room.near .door-visual,.room:focus-visible .door-visual{filter:none}
+  .room:hover .door-visual{transform:none}
+  .door-glow,.door-threshold{display:none}
+  .door-sign{
+    position:static;transform:none;width:auto;flex:1;padding:0;text-align:left;
+    background:transparent;border:none;box-shadow:none;pointer-events:none;
+  }
+  .door-sign::before,.door-sign::after{display:none}
+  .door-sign small{display:block;margin-bottom:3px}
+  .door-sign span{font-size:1rem}
+  /* proximity plate opens ABOVE the card, never over the character or text */
+  .door-plate{left:0;right:0;width:auto;transform:translateY(6px)}
+  .room.near .door-plate,.room:hover .door-plate,.room:focus-visible .door-plate{transform:translateY(0)}
+  /* calmer scenery on mobile */
+  .scn-garden{width:200px;opacity:.85}
+  .scn-machine{width:190px;opacity:.85}
+  .crew-boat{display:none}
+  .choc-fall{left:6%;top:-56px;transform:scale(.72);transform-origin:top left}
+  .river-bridge{width:100px;height:58px}
+  .world-sky{height:120px;opacity:.4}
+  .ent-pipes{display:none}
+  .ent-leaf{display:none}
+  #factory-entrance{margin-bottom:44px}
+  #day-view{padding:34px 16px 90px}
+  .gate-half{width:52%}
+  .ticket-inner{padding:30px 22px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LOADING SCREEN ================= -->
+<div id="loading-screen">
+  <div class="lolli"></div>
+  <p>Warming up the machines...</p>
+</div>
+
+<!-- ================= LOGIN: THE FACTORY GATES ================= -->
+<div id="gate-screen" class="screen">
+  <div class="behind-gates">
+    <!-- factory silhouette revealed when the gates open -->
+    <svg viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g fill="#241332" stroke="#B87333" stroke-width="1.5" stroke-opacity=".5">
+        <rect x="60" y="200" width="180" height="220" rx="6"/>
+        <rect x="260" y="140" width="140" height="280" rx="6"/>
+        <rect x="420" y="180" width="200" height="240" rx="6"/>
+        <rect x="640" y="120" width="160" height="300" rx="6"/>
+        <rect x="120" y="120" width="26" height="90" rx="4"/>
+        <rect x="700" y="40" width="26" height="90" rx="4"/>
+        <rect x="480" y="100" width="26" height="90" rx="4"/>
+      </g>
+      <g fill="#F5B841" opacity=".8">
+        <rect x="90" y="240" width="20" height="26" rx="2"/><rect x="140" y="240" width="20" height="26" rx="2"/>
+        <rect x="290" y="180" width="20" height="26" rx="2"/><rect x="340" y="180" width="20" height="26" rx="2"/>
+        <rect x="460" y="220" width="20" height="26" rx="2"/><rect x="520" y="220" width="20" height="26" rx="2"/>
+        <rect x="670" y="170" width="20" height="26" rx="2"/><rect x="730" y="170" width="20" height="26" rx="2"/>
+      </g>
+      <g fill="#F3E9D2" opacity=".14">
+        <ellipse cx="133" cy="100" rx="24" ry="12"/><ellipse cx="713" cy="22" rx="26" ry="13"/><ellipse cx="493" cy="80" rx="22" ry="11"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- left gate half -->
+  <div class="gate-half gate-left" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ironL" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#1A0D24"/><stop offset="1" stop-color="#2E1840"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="900" fill="url(#ironL)" opacity=".55"/>
+      <g stroke="#0e0715" stroke-width="14">
+        <line x1="40" y1="0" x2="40" y2="900"/><line x1="110" y1="0" x2="110" y2="900"/>
+        <line x1="180" y1="0" x2="180" y2="900"/><line x1="250" y1="0" x2="250" y2="900"/>
+        <line x1="320" y1="0" x2="320" y2="900"/><line x1="388" y1="0" x2="388" y2="900"/>
+      </g>
+      <g stroke="#B87333" stroke-width="4" fill="none" opacity=".9">
+        <line x1="0" y1="90" x2="400" y2="90"/><line x1="0" y1="810" x2="400" y2="810"/>
+        <path d="M40 90 Q75 40 110 90 Q145 40 180 90 Q215 40 250 90 Q285 40 320 90 Q354 40 388 90"/>
+        <circle cx="110" cy="300" r="34"/><circle cx="290" cy="560" r="34"/>
+        <path d="M60 700 q60 -60 120 0 q60 60 120 0"/>
+      </g>
+      <!-- right half of the split W medallion sits on the LEFT gate's inner edge -->
+      <g transform="translate(400,450)">
+        <circle r="95" fill="#241332" stroke="#B87333" stroke-width="6"/>
+        <circle r="78" fill="none" stroke="#F5B841" stroke-width="2" opacity=".6"/>
+        <path d="M-52 -34 L-30 34 L-8 -18 L14 34 L36 -34" fill="none" stroke="#F5B841" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- right gate half -->
+  <div class="gate-half gate-right" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ironR" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0" stop-color="#1A0D24"/><stop offset="1" stop-color="#2E1840"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="900" fill="url(#ironR)" opacity=".55"/>
+      <g stroke="#0e0715" stroke-width="14">
+        <line x1="12" y1="0" x2="12" y2="900"/><line x1="80" y1="0" x2="80" y2="900"/>
+        <line x1="150" y1="0" x2="150" y2="900"/><line x1="220" y1="0" x2="220" y2="900"/>
+        <line x1="290" y1="0" x2="290" y2="900"/><line x1="360" y1="0" x2="360" y2="900"/>
+      </g>
+      <g stroke="#B87333" stroke-width="4" fill="none" opacity=".9">
+        <line x1="0" y1="90" x2="400" y2="90"/><line x1="0" y1="810" x2="400" y2="810"/>
+        <path d="M12 90 Q46 40 80 90 Q115 40 150 90 Q185 40 220 90 Q255 40 290 90 Q325 40 360 90"/>
+        <circle cx="110" cy="560" r="34"/><circle cx="290" cy="300" r="34"/>
+        <path d="M100 700 q60 -60 120 0 q60 60 120 0"/>
+      </g>
+      <!-- left half of the split W medallion sits on the RIGHT gate's inner edge -->
+      <g transform="translate(0,450)">
+        <circle r="95" fill="#241332" stroke="#B87333" stroke-width="6"/>
+        <circle r="78" fill="none" stroke="#F5B841" stroke-width="2" opacity=".6"/>
+        <path d="M-36 -34 L-14 34 L8 -18 L30 34 L52 -34" fill="none" stroke="#F5B841" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- fog + steam at the base -->
+  <div class="fog" aria-hidden="true"><i></i><i></i><i></i></div>
+  <span class="steam-wisp" style="left:14%;bottom:8%;animation-delay:0s"></span>
+  <span class="steam-wisp" style="left:82%;bottom:6%;animation-delay:2.4s"></span>
+  <span class="steam-wisp" style="left:48%;bottom:4%;animation-delay:4.6s"></span>
+
+  <!-- golden ticket login card -->
+  <div class="ticket-card">
+    <div class="ticket-inner">
+      <div class="ticket-eyebrow">Admit One</div>
+      <div class="ticket-title">Present Your Golden Ticket</div>
+      <p class="ticket-sub">The Wonka Creative Bootcamp<br>Members only. The gates open for ticket holders.</p>
+      <button class="btn-google" id="btn-signin">
+        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.85-6.85C35.9 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.98 6.2C12.4 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.15-3.1-.4-4.5H24v9h12.4c-.55 2.9-2.2 5.35-4.7 7l7.6 5.9c4.45-4.1 6.8-10.15 6.8-17.4z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.45-.75-3-.75-4.6s.25-3.15.75-4.6l-8-6.2C.9 16.5 0 20.15 0 24s.9 7.5 2.6 10.8l8-6.2z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.45-5.65l-7.6-5.9c-2.1 1.4-4.8 2.25-7.85 2.25-6.3 0-11.6-3.8-13.4-9.9l-8 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="gate-msg" id="gate-msg"></div>
+      <div class="ticket-serial">SERIAL WCB-R1 . NON TRANSFERABLE . FACTORY GATES</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= STATUS SCREENS ================= -->
+<div id="notallowed-screen" class="screen">
+  <div class="status-card">
+    <h2>No ticket found at this gate</h2>
+    <p>We looked through the ticket book twice and could not find:</p>
+    <div class="email-chip" id="na-email"></div>
+    <p id="na-reason">If you signed up with a different email, sign out and try that one. If you believe this is a mistake, write to us and we will check the ledger.</p>
+    <a class="btn-brass" id="na-mailto" href="#">Email Support</a>
+    <button class="btn-ghost" id="na-retry">Sign out and try another email</button>
+  </div>
+</div>
+
+<div id="revoked-screen" class="screen">
+  <div class="status-card">
+    <h2>This ticket has been recalled</h2>
+    <p>Access for this account was revoked. If you think this is an error, contact support and we will sort it out.</p>
+    <div class="email-chip" id="rv-email"></div>
+    <a class="btn-brass" id="rv-mailto" href="#">Email Support</a>
+    <button class="btn-ghost" id="rv-signout">Sign out</button>
+  </div>
+</div>
+
+<div id="error-screen" class="screen">
+  <div class="status-card">
+    <h2>The gate mechanism jammed</h2>
+    <p id="err-msg">We could not check your ticket. Probably a network hiccup on the conveyor belt.</p>
+    <button class="btn-brass" id="err-retry">Try Again</button>
+  </div>
+</div>
+
+<!-- ================= MAIN APP: THE FACTORY TOUR ================= -->
+<div id="app">
+  <header class="portal-header">
+    <div class="header-brand">The <span>Wonka</span> Creative Bootcamp</div>
+    <div class="ticket-chip"><div class="ticket-chip-inner" id="chip-email">ticket holder</div></div>
+    <div class="header-progress">
+      <div class="bar"><i id="progress-bar"></i></div>
+      <em id="progress-label">0 / 10</em>
+    </div>
+    <button class="btn-signout" id="btn-signout">Sign out</button>
+    <!-- sticky day navigation: buttons rendered by renderDayStrip() -->
+    <nav id="day-strip" aria-label="Day navigation"></nav>
+  </header>
+
+  <section class="tour-hero">
+    <h1>Welcome to <em>the Factory</em></h1>
+    <p class="wonka-line" id="hero-line">Your golden ticket has been punched. The gates are open.</p>
+    <p class="dreamers">"The gates only open for dreamers. Lucky you qualify."</p>
+  </section>
+
+  <div class="checker" aria-hidden="true"></div>
+
+  <section class="factory-map" id="factory-map">
+    <!-- ambient depth: distant factory skyline along the top edges -->
+    <div class="world-sky" aria-hidden="true">
+      <svg class="sk-l" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#241332">
+          <rect x="0" y="70" width="90" height="130" rx="4"/>
+          <rect x="96" y="110" width="70" height="90" rx="4"/>
+          <rect x="172" y="86" width="96" height="114" rx="4"/>
+          <rect x="274" y="130" width="60" height="70" rx="4"/>
+          <rect x="30" y="20" width="18" height="60" rx="3"/>
+          <rect x="206" y="40" width="16" height="56" rx="3"/>
+          <path d="M340 200 v-52 a30 30 0 0 1 60 0 v52 Z"/>
+        </g>
+        <g fill="#F5B841" opacity=".35">
+          <rect x="14" y="96" width="10" height="13" rx="1"/><rect x="40" y="96" width="10" height="13" rx="1"/>
+          <rect x="190" y="110" width="10" height="13" rx="1"/><rect x="222" y="110" width="10" height="13" rx="1"/>
+        </g>
+        <g fill="#F3E9D2" opacity=".1">
+          <ellipse cx="39" cy="8" rx="18" ry="8"/><ellipse cx="214" cy="28" rx="15" ry="7"/>
+        </g>
+      </svg>
+      <svg class="sk-r" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#241332">
+          <rect x="330" y="60" width="90" height="140" rx="4"/>
+          <rect x="252" y="104" width="72" height="96" rx="4"/>
+          <rect x="150" y="84" width="96" height="116" rx="4"/>
+          <rect x="84" y="134" width="60" height="66" rx="4"/>
+          <rect x="370" y="14" width="18" height="60" rx="3"/>
+          <rect x="188" y="36" width="16" height="56" rx="3"/>
+          <path d="M10 200 v-46 a28 28 0 0 1 56 0 v46 Z"/>
+        </g>
+        <g fill="#F5B841" opacity=".35">
+          <rect x="348" y="86" width="10" height="13" rx="1"/><rect x="374" y="86" width="10" height="13" rx="1"/>
+          <rect x="168" y="108" width="10" height="13" rx="1"/><rect x="200" y="108" width="10" height="13" rx="1"/>
+        </g>
+        <g fill="#F3E9D2" opacity=".1">
+          <ellipse cx="379" cy="4" rx="18" ry="8"/><ellipse cx="196" cy="24" rx="15" ry="7"/>
+        </g>
+      </svg>
+    </div>
+    <!-- soft edge vignette + sparse floating glow motes -->
+    <div class="world-vignette" aria-hidden="true">
+      <span class="mote" style="left:9%;top:14%"></span>
+      <span class="mote" style="left:88%;top:22%;animation-delay:-6s"></span>
+      <span class="mote" style="left:22%;top:46%;animation-delay:-11s"></span>
+      <span class="mote" style="left:76%;top:58%;animation-delay:-3s"></span>
+      <span class="mote" style="left:12%;top:78%;animation-delay:-14s"></span>
+      <span class="mote" style="left:90%;top:88%;animation-delay:-8s"></span>
+    </div>
+    <!-- the golden walkway: path d computed from real DOM positions in buildPipe() -->
+    <svg id="pipe-svg" aria-hidden="true">
+      <defs>
+        <mask id="walk-mask">
+          <path id="walk-mask-path" d="" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"></path>
+        </mask>
+      </defs>
+      <path id="path-under" d=""></path>
+      <path id="path-spurs" d=""></path>
+      <g mask="url(#walk-mask)">
+        <path id="path-cobble" d=""></path>
+        <path id="path-bricks" d=""></path>
+      </g>
+    </svg>
+
+    <!-- the walking factory guide: original cartoon figure (plum tailcoat, top hat, cane)
+         walks the path with scroll, or with the arrow keys in game mode -->
+    <div id="walk-marker" aria-hidden="true">
+      <div class="wc-flip"><div class="wc-bob">
+        <svg viewBox="0 0 40 60" xmlns="http://www.w3.org/2000/svg">
+          <g class="wc-cane">
+            <line x1="29" y1="31" x2="34" y2="56" stroke="#B87333" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="29" cy="30" r="2.6" fill="#F5B841"/>
+          </g>
+          <g class="wc-leg-l">
+            <rect x="15.4" y="42" width="4" height="13" rx="2" fill="#1F0E2B"/>
+            <ellipse cx="16.6" cy="55.6" rx="3.4" ry="1.8" fill="#14091D"/>
+          </g>
+          <g class="wc-leg-r">
+            <rect x="20.6" y="42" width="4" height="13" rx="2" fill="#2B1439"/>
+            <ellipse cx="23.4" cy="55.6" rx="3.4" ry="1.8" fill="#1A0C26"/>
+          </g>
+          <path d="M13 26 Q20 23 27 26 L28.5 40 Q26 43.5 24 40.5 L23.5 44 H16.5 L16 40.5 Q14 43.5 11.5 40 Z" fill="#5E2E7E"/>
+          <path d="M13 26 Q20 23 27 26 L26.6 30 Q20 27.5 13.4 30 Z" fill="#3B1E4E"/>
+          <circle cx="20" cy="31.5" r="1" fill="#F5B841"/>
+          <circle cx="20" cy="35.5" r="1" fill="#F5B841"/>
+          <path d="M17.6 25.2 L20 26.4 L22.4 25.2 L22.4 27.8 L20 26.8 L17.6 27.8 Z" fill="#E0356B"/>
+          <circle cx="20" cy="20.5" r="5" fill="#F3E9D2"/>
+          <g class="wc-hat">
+            <ellipse cx="20" cy="14.6" rx="9.5" ry="2.4" fill="#2B1439"/>
+            <rect x="13.8" y="2" width="12.4" height="13" rx="2.4" fill="#3B1E4E"/>
+            <rect x="13.8" y="10.6" width="12.4" height="3.4" fill="#F5B841"/>
+          </g>
+        </svg>
+      </div></div>
+      <div id="walk-hint">Walk with the arrow keys</div>
+    </div>
+
+    <!-- the entrance archway: the path begins here -->
+    <div id="factory-entrance" aria-hidden="true">
+      <div class="ent-glow"></div>
+      <div class="ent-pipes l"><i></i><i></i>
+        <span class="steam-wisp" style="left:24%;bottom:86%;animation-delay:.6s"></span>
+        <span class="steam-wisp" style="left:64%;bottom:64%;animation-delay:3.1s"></span>
+      </div>
+      <div class="ent-pipes r"><i></i><i></i>
+        <span class="steam-wisp" style="left:28%;bottom:86%;animation-delay:1.8s"></span>
+        <span class="steam-wisp" style="left:66%;bottom:64%;animation-delay:4.4s"></span>
+      </div>
+      <div class="ent-gate">
+        <div class="ent-post"></div>
+        <div class="ent-arch"><span>THE FACTORY</span></div>
+        <div class="ent-leaf l"></div>
+        <div class="ent-leaf r"></div>
+        <div class="ent-post"></div>
+      </div>
+      <div class="ent-mat"></div>
+    </div>
+
+    <!-- rooms rendered by JS into #rooms-holder -->
+    <div id="rooms-holder"></div>
+
+    <!-- the path ends at the glass elevator: crystal cabin on a brass track -->
+    <div id="factory-exit" aria-hidden="true">
+      <div class="exit-track"></div>
+      <div class="exit-cab"></div>
+      <div class="exit-label">UP AND OUT</div>
+    </div>
+  </section>
+
+  <div class="river-wrap" aria-hidden="true">
+    <div class="river-label">The Chocolate River</div>
+    <div class="river">
+      <svg viewBox="0 0 1200 74" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path id="river-path" d="M0 30 Q75 12 150 30 T300 30 T450 30 T600 30 T750 30 T900 30 T1050 30 T1200 30 V74 H0 Z" fill="#2A1A12"/>
+        <path d="M0 34 Q75 18 150 34 T300 34 T450 34 T600 34 T750 34 T900 34 T1050 34 T1200 34" fill="none" stroke="#B87333" stroke-width="2" opacity=".45"/>
+        <path d="M0 44 Q75 30 150 44 T300 44 T450 44 T600 44 T750 44 T900 44 T1050 44 T1200 44" fill="none" stroke="#F5B841" stroke-width="1.2" opacity=".22"/>
+      </svg>
+    </div>
+    <div class="river-fill-note" id="river-note">factory 0% toured</div>
+  </div>
+
+  <section id="day-view"></section>
+
+  <div id="grad-banner">
+    <h2>Up and out. You have run out of factory.</h2>
+    <p>All ten rooms toured, every lever pulled. Your factory now runs without a tour guide. Graduation complete.</p>
+  </div>
+
+  <!-- floating support button -->
+  <div id="support-fab">
+    <div id="fab-menu">
+      <a id="fab-wa" href="#" target="_blank" rel="noopener">The Factory Floor group (WhatsApp)</a>
+      <a id="fab-mail" href="#">Email support</a>
+    </div>
+    <button id="fab-btn" aria-label="Support" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2zm3 5h10v-2H7v2zm0 4h7v-2H7v2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG . everything parameterized. TODO items marked below.
+   ============================================================ */
+const CONFIG = {
+  SUPABASE_URL: 'https://faqjilunlzljbgrnpcgi.supabase.co',
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0',
+  ROUND_ID: 'wonka_r1',             // TODO: create this round row in the rounds table + use in allowed_emails
+  STORAGE_PREFIX: 'wonka-bootcamp', // NEVER 'donna-challenge' (same domain, must not collide)
+  SALT: 'wonka2026',
+  ADMIN_EMAILS: ['info@jaygptpro.com'],
+  WHATSAPP_LINK: '#',               // TODO: paste the WhatsApp group invite link
+  SUPPORT_EMAIL: 'info@jaygptpro.com',
+  UNLOCK_HOUR_NY: 14,
+  UNLOCK_BUFFER_MIN: 20,
+  TOTAL_DAYS: 10,
+  FALLBACK_START_DATE: '2026-09-07', // TODO: set the real round start date (also in the rounds table)
+};
+
+/* ============================================================
+   DATA: 10 bootcamp days, 13 episodes.
+   Content sourced from curriculum/EPISODE-N-COMPLETE-PACKAGE.md (Section C).
+   VIDEO PLACEHOLDERS: every lesson has vimeo:'VIMEO_ID_Dx_Ly'.
+   TODO: replace every VIMEO_ID_* with the real Vimeo video id.
+   ============================================================ */
+const DAYS = [
+  {
+    day: 1,
+    room: 'The Front Gate',
+    desc: 'Set up every tool of the bootcamp, then meet Wonka, your AI Creative Director, and warm up his two machines.',
+    wonkaLine: 'Your golden ticket has been punched. The gates are open.',
+    episodes: [
+      {
+        num: 1, title: 'Factory Keys',
+        promise: 'Before the factory opens, we hand you the keys. One focused session, about 45 minutes, and every tool of the bootcamp is installed and ready. Do this now and Episode 2 is pure fun: you meet Wonka, he tests his own machines on camera, and your product walks through the Front Gate.',
+        lessons: [
+          /* Episode 1 is setup: one orientation film + the big keys checklist */
+          { title: 'Factory Keys: The Setup Walkthrough', dur: '15 min', vimeo: 'VIMEO_ID_D1_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Subscribe to Claude Pro or Max and install Claude Desktop',
+          'Download wonka-starter-kit.zip, unzip to Desktop, open in Claude Desktop (do NOT chat yet)',
+          'Create your Genrupt account with the bootcamp link (first month included)',
+          'Create your ProductPinion account with the bootcamp link (first month included)',
+          'Install the Product Opinion extension and confirm the export button on an Amazon page',
+          'Create an OpenAI API key, complete org verification, add 5 to 10 dollars of credit',
+          'Pick ONE pilot product and photograph it: front, back, sides, top, plus one hand-for-scale shot',
+          'Post KEYS READY in the WhatsApp group',
+        ],
+        resources: [
+          'wonka-starter-kit.zip',
+          'OpenAI key + org verification walkthrough (PDF)',
+          'Genrupt + ProductPinion account setup guide',
+          'Product photo shot list (one page)',
+        ],
+      },
+      {
+        num: 2, title: 'Meet Wonka',
+        promise: 'In this episode you hire your AI Creative Director. You will meet Wonka and learn the five-station Production Line every asset moves through, have your first real conversations with him (he will surprise you), wire up his two machines, Genrupt and ProductPinion, and verify them with /machines-check, watching him test them himself. Then you get the Front Gate shopping list straight from Wonka: exactly what he will demand when you run /meet-my-product in the next episode. By the end, the machines are warm and you know precisely what to bring to the Front Gate.',
+        lessons: [
+          { title: 'Welcome to the Factory', dur: '5 min', vimeo: 'VIMEO_ID_D1_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Meet Wonka: First Conversations', dur: '7 min', vimeo: 'VIMEO_ID_D1_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Wire the Machines', dur: '8 min', vimeo: 'VIMEO_ID_D1_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Prepping the Front Gate', dur: '7 min', vimeo: 'VIMEO_ID_D1_L5' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Open the kit folder in Claude Desktop and say hello to Wonka',
+          'Ask Wonka for the factory tour, then try asking him to skip research (watch what happens)',
+          'Connect the Genrupt and ProductPinion MCPs (guide in the kit)',
+          'Run /machines-check and do not move on until Wonka confirms both machines',
+          'Ask Wonka for the /meet-my-product shopping list and write down your owner intel',
+          'HOMEWORK: export Top Niche Insights for your niche (Product Opinion extension)',
+          'HOMEWORK: copy your top 10 positive and top 10 critical reviews into a file',
+          'Post a screenshot of your favorite Wonka line in the WhatsApp group',
+        ],
+        resources: [
+          'Genrupt + ProductPinion MCP setup guide',
+          'Top Niche Insights export walkthrough (PDF)',
+          'Product photo shot list (one page)',
+        ],
+      },
+    ],
+  },
+  {
+    day: 2,
+    room: 'The Research Room + The Reference Room',
+    desc: 'Wonka digests your niche report, reviews, and competitors into personas and a diagnosis, then locks a true reference of your product plus your brand kit.',
+    wonkaLine: 'Please do touch everything. That is the whole point here.',
+    episodes: [
+      {
+        num: 3, title: 'Wonka, Meet My Product',
+        promise: 'Your product walks through the Front Gate and Wonka reads your market\'s mind, all with ONE command: /meet-my-product. Feed him your Top Niche Insights export, your reviews, your demographics, and your competitors, and he digests all of it: pain points and buying triggers in buyers\' own words, real buyer personas from your real demographics, a competitor teardown that finds the whitespace nobody is covering, and a diagnosis of where your listing is actually losing sales: the click or the buy. By the end you have a complete intelligence pack on disk.',
+        lessons: [
+          { title: 'Why Research First', dur: '5 min', vimeo: 'VIMEO_ID_D2_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/meet-my-product: The Front Gate and the Shopping List', dur: '8 min', vimeo: 'VIMEO_ID_D2_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Analysis Lands', dur: '7 min', vimeo: 'VIMEO_ID_D2_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Diagnosis', dur: '6 min', vimeo: 'VIMEO_ID_D2_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /meet-my-product with your ASIN and your owner intel',
+          'Fill the shopping list: niche insights, reviews file, demographics, top 3-5 competitors',
+          'Read the selling-points checklist and the personas; push back on anything that feels wrong',
+          'Find your whitespace: what is nobody in your niche showing?',
+          'Turn your return reasons into creative fixes with Wonka',
+          'Confirm every research artifact exists on disk before calling the station done',
+          'Post your whitespace find or your funnel verdict in the group',
+          'HOMEWORK: confirm your product photos are ready (all angles + hand-for-scale)',
+        ],
+        resources: [
+          '"Reading your funnel" one-pager: CTR vs CVR',
+          'Competitor teardown worksheet',
+          '"No niche report?" fallback guide',
+          'Persona pushback cheat sheet',
+        ],
+      },
+      {
+        num: 4, title: 'The Reference Room',
+        promise: 'The machines learn to SEE your real product. /reference-sheet turns your own photos into a precise product reference, so every generated image is your bottle, not a hallucinated cousin. Then the smoke test: one cheap control image you verify with your own eyes, the go/no-go gate for everything that follows. And /brand-kit builds your brand kit: hex colors, tone, and the approved-claims list that keeps you compliant. The better the mold, the better every image after it.',
+        lessons: [
+          { title: 'Why the Mold Decides Everything', dur: '5 min', vimeo: 'VIMEO_ID_D2_L5' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/reference-sheet: Lock the Product', dur: '7 min', vimeo: 'VIMEO_ID_D2_L6' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Smoke Test', dur: '7 min', vimeo: 'VIMEO_ID_D2_L7' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/brand-kit: The Wrapping Room', dur: '6 min', vimeo: 'VIMEO_ID_D2_L8' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /reference-sheet with your real product photos (all angles + hand-for-scale)',
+          'PASS the smoke test: compare the control image to your real product before approving',
+          'Confirm the mold source is your manual photos, not scraped Amazon images',
+          'Run /brand-kit with your logo, colors, tone, and approved claims',
+          'Post your smoke test in the group (control image next to your real product photo)',
+          'If the smoke test failed: tell Wonka what is off, re-lock, re-test until it passes',
+          'Do NOT generate anything beyond the smoke test yet',
+        ],
+        resources: [
+          'Smoke test checklist',
+          'Brand kit quick-questionnaire',
+          '"No Genrupt?" fallback guide',
+          'Approved-claims worksheet',
+        ],
+      },
+    ],
+  },
+  {
+    day: 3,
+    room: 'The Brief Room',
+    desc: 'Turn your research, locked reference, and brand kit into a full package creative brief covering mains, secondaries, A+, and variations.',
+    wonkaLine: 'So many rooms, so little tour. Onward.',
+    episodes: [
+      {
+        num: 5, title: 'The Creative Brief',
+        promise: 'Wonka plans your entire package in one document. /creative-brief turns your research, your locked mold, and your brand kit into a full-package creative brief: your main image with test hypotheses, your full secondary set, your A+ modules, and your variations. Every asset gets one job and one message, every selling point is mapped or consciously skipped in writing, and the whole thing is weighted toward wherever your listing is actually losing sales. The four-figure agency document, written in minutes from YOUR data.',
+        lessons: [
+          { title: 'What a Recipe Actually Is', dur: '5 min', vimeo: 'VIMEO_ID_D3_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Strategy Inside the Recipe', dur: '7 min', vimeo: 'VIMEO_ID_D3_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Rules Baked In Before Generation', dur: '6 min', vimeo: 'VIMEO_ID_D3_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/creative-brief: The Full Package', dur: '8 min', vimeo: 'VIMEO_ID_D3_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /creative-brief and READ the full brief, all four sections',
+          'Check the coverage map: every selling point mapped or skipped in writing with a reason',
+          'Read the main-image test hypotheses; do the bets make sense for YOUR buyers?',
+          'Revise at least one slot with Wonka if it does not feel right',
+          'Check the weighting against your funnel diagnosis',
+          'Verify there is not a single placeholder or TBD anywhere in the brief',
+          'Post your favorite slot in the group',
+        ],
+        resources: [
+          '"Reading your Recipe" one-pager',
+          'Coverage map explainer',
+          'Full-package planning cheat sheet',
+          'Slot pushback cheat sheet',
+          'Test-hypothesis primer',
+        ],
+      },
+    ],
+  },
+  {
+    day: 4,
+    room: 'The Main Image Room',
+    desc: 'Generate four distinct main image concepts, score them with the squint test, and fix flaws surgically until all four pass the gate.',
+    wonkaLine: 'Every room hides a small surprise. Today\'s is a good one.',
+    episodes: [
+      {
+        num: 6, title: 'The Main Image Room',
+        promise: 'The Inventing Room opens, and the first candy comes off the line. First, the strategy: what actually makes a main image convert at thumbnail size. Then the full quality loop on the most valuable asset you own: /main-image generates FOUR distinct main-image concepts on your locked mold, /inspect scores each one and runs the mechanical squint test, and /fix operates surgically for cents. By the end you have four gate-passed main-image candidates, four different bets about why your buyer clicks.',
+        lessons: [
+          { title: 'What Makes a Main Image Convert', dur: '7 min', vimeo: 'VIMEO_ID_D4_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/main-image: Four Concepts on Camera', dur: '8 min', vimeo: 'VIMEO_ID_D4_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/inspect: The Squint Test', dur: '7 min', vimeo: 'VIMEO_ID_D4_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/fix: Surgical Edits', dur: '7 min', vimeo: 'VIMEO_ID_D4_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Watch Lesson 1 twice. The five principles are the highest-leverage strategy in the bootcamp',
+          'Run /main-image: all four concepts from your recipe',
+          'Run /inspect on your four candidates and READ the scorecards',
+          'Squint-check one candidate yourself at thumbnail size',
+          'Run /fix on anything flagged (confirm the original is kept beside the fix)',
+          'Do not stop until FOUR candidates pass the gate',
+          'Post your best before/after and your best inspection catch in the group',
+          'Do NOT upload anything to Amazon yet. Real shoppers vote first',
+        ],
+        resources: [
+          'The Main Image one-pager: the five principles',
+          'Squint test how-to (160 pixels)',
+          'Edit vs regenerate routing card',
+        ],
+      },
+    ],
+  },
+  {
+    day: 5,
+    room: 'The Secondary Images Room',
+    desc: 'Build the six image secondary set that sells as a team, then inspect it at set level and fix the fails for cents.',
+    wonkaLine: 'A gallery is a team. No two workers do the same job.',
+    episodes: [
+      {
+        num: 7, title: 'The Secondary Images Room',
+        promise: 'Your main image wins the click. Your secondary set wins the sale. The loop you learned on the main image runs again on a harder problem: six images that have to work as a TEAM. /secondary-images generates the full set from your recipe on your locked mold. /inspect grades every image AND the set itself: no two frames sharing a message, at least one emotional frame, different people in every frame. /fix repairs the fails for cents. By the end your secondary set is gate-passed and your gallery sells.',
+        lessons: [
+          { title: 'Set Thinking', dur: '5 min', vimeo: 'VIMEO_ID_D5_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/secondary-images: The Secondary Set', dur: '7 min', vimeo: 'VIMEO_ID_D5_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/inspect the Set', dur: '7 min', vimeo: 'VIMEO_ID_D5_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/fix and the Gate', dur: '6 min', vimeo: 'VIMEO_ID_D5_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /secondary-images (mains untouched)',
+          'View your set as a GRID first, then image by image',
+          'Run /inspect with the set-level checks and read both halves of the scorecard',
+          'Run /fix: approve the routed fix list once, confirm originals kept as _fixN',
+          'Confirm the set-level passes: no message overlap, one emotional frame, different people per frame',
+          'Confirm your selling-points coverage map (skips must be in writing)',
+          'Post your favorite frame AND your set grid in the group',
+        ],
+        resources: [
+          'The Secondary Set Playbook: the six classic slots',
+          'Set-level checklist one-pager',
+          'Edit vs Regenerate cheat sheet',
+        ],
+      },
+    ],
+  },
+  {
+    day: 6,
+    room: 'The A+ Room',
+    desc: 'Build your A+ modules from the recipe, inspect and fix them, and complete your full product page below the fold.',
+    wonkaLine: 'Below the fold there is a second product page. Most tours skip it. We do not.',
+    episodes: [
+      {
+        num: 8, title: 'The A+ Room',
+        promise: 'Below the fold there is a second product page, and half your competitors left it empty. Learn what A+ content strategically does and your full module menu: standard modules, the comparison chart, the carousel option and its hidden cost, the video module, and Premium A+. Then the loop runs a third time: /aplus builds your modules, /inspect grades them, /fix repairs the fails. By the end your A+ is gate-passed and your product page is COMPLETE: main candidates, gallery, A+. Built from one phone photo shoot.',
+        lessons: [
+          { title: 'What A+ Actually Does', dur: '7 min', vimeo: 'VIMEO_ID_D6_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/aplus', dur: '6 min', vimeo: 'VIMEO_ID_D6_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/inspect the A+', dur: '6 min', vimeo: 'VIMEO_ID_D6_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/fix and the Full Page', dur: '6 min', vimeo: 'VIMEO_ID_D6_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Watch Lesson 1 and pick your module plan deliberately',
+          'Run /aplus from your recipe',
+          'Run /inspect: read every module verdict and every comparison-row check',
+          'Run /fix: approve the routed list once, originals kept as _fixN',
+          'Confirm your comparison chart contains only true, provable rows',
+          'Scroll your FULL page top to bottom: main, gallery, A+. Enjoy it, you built it',
+          'Post your full-page screenshot in the group',
+        ],
+        resources: [
+          'The A+ Module Menu one-pager',
+          'Comparison module rules: honest rows only',
+          'Mobile-first A+ checklist',
+        ],
+      },
+    ],
+  },
+  {
+    day: 7,
+    room: 'The Poll Room',
+    desc: 'Launch a real shopper survey: your two best mains against your current live image, screened to your real buyer.',
+    wonkaLine: 'Opinions are not data. We ask the strangers.',
+    episodes: [
+      {
+        num: 9, title: 'The Poll Room',
+        promise: 'The building is done. Now the sentence the whole factory runs on: opinions are not data. Nobody can look at two good images and know which one strangers will click. So we ask. Wonka builds a real shopper survey through ProductPinion, entirely inside Claude: your two main-image challengers against your CURRENT live image (the incumbent, always in the grid), a neutral question, an audience screened to your real buyer, and a why follow-up. You review the cost, you approve, you publish. Then the survey fills between episodes while you do nothing at all.',
+        lessons: [
+          { title: 'Opinions Are Not Data', dur: '5 min', vimeo: 'VIMEO_ID_D7_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Picking the Challengers', dur: '6 min', vimeo: 'VIMEO_ID_D7_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/poll', dur: '7 min', vimeo: 'VIMEO_ID_D7_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Approve and Publish', dur: '5 min', vimeo: 'VIMEO_ID_D7_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Review your gate-passed main candidates and Wonka\'s ranking',
+          'Pick your two challengers and tell Wonka WHY (overrides welcome, reasons required)',
+          'Run /poll',
+          'Confirm the incumbent (your current live image) is in the grid',
+          'Confirm the question wording is neutral and the audience matches your persona',
+          'Approve the quoted cost and PUBLISH before you close the laptop',
+          'Post SURVEY LIVE in the group when it is filling',
+        ],
+        resources: [
+          'The Poll rules one-pager',
+          'ProductPinion MCP walkthrough',
+          '"What a survey does and does not prove" (one page)',
+        ],
+      },
+    ],
+  },
+  {
+    day: 8,
+    room: 'The Second Batch + The Shipping Room',
+    desc: 'Read the verdict, mine the why comments, refine the winner, run round two, then publish and start your Amazon A/B test.',
+    wonkaLine: 'The strangers have spoken. Now we listen, fix, and ship.',
+    episodes: [
+      {
+        num: 10, title: 'The Second Batch',
+        promise: 'The verdict is in, and this is the episode the factory exists for. First the votes: which image won, and whether YOUR pick survived. Then the deeper layer almost nobody uses: Wonka mines the why comments, real shoppers explaining their click in their own words, and turns them into two instructions: a flaw to fix inside the winner, and a strength to double down on. /fix MODE B refines the winner from the voters\' words. A brand-new data-driven challenger gets built. And round 2 goes live: refined winner vs data-born challenger vs your incumbent.',
+        lessons: [
+          { title: 'The Verdict', dur: '6 min', vimeo: 'VIMEO_ID_D8_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Mining the Why', dur: '7 min', vimeo: 'VIMEO_ID_D8_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/fix MODE B', dur: '6 min', vimeo: 'VIMEO_ID_D8_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Round-2 Challenger + Survey 2', dur: '7 min', vimeo: 'VIMEO_ID_D8_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Pull your survey results and give them to Wonka whole (votes AND comments)',
+          'Read the why-comments yourself, out loud if you are brave',
+          'Identify your praise theme and your friction theme (3+ mentions = a theme)',
+          'Run /fix MODE B on your winner from the friction theme',
+          'If your praise theme hands you a thesis: build your data-driven round-2 challenger',
+          'Run /poll round 2: refined winner + challenger + incumbent',
+          'Approve the cost and PUBLISH round 2 before you close the laptop',
+          'Post your results chart + your favorite shopper comment in the group',
+        ],
+        resources: [
+          'Comment-mining guide (3+ mentions = a theme)',
+          'MODE A vs MODE B: the two jobs of the Fixing Room',
+          'Round-2 survey rules',
+        ],
+      },
+      {
+        num: 11, title: 'Publish & Test',
+        promise: 'Round two\'s verdict lands, and it carries the bootcamp\'s biggest number: the refined winner beats your incumbent by MORE than round one did. Same image, one shopper-requested fix, a wider margin. The loop works, measurably. Then /publish packages your full tested set, upload-ready with a manifest. And then the practical part most courses skip: exactly how to upload your images and A+ to Amazon, and how to run an A/B test in Manage Your Experiments. By the end you have a live listing or a running A/B working for you on Amazon.',
+        lessons: [
+          { title: 'The Loop Works', dur: '6 min', vimeo: 'VIMEO_ID_D8_L5' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/publish', dur: '6 min', vimeo: 'VIMEO_ID_D8_L6' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Uploading to Amazon', dur: '6 min', vimeo: 'VIMEO_ID_D8_L7' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Amazon A/B Test', dur: '7 min', vimeo: 'VIMEO_ID_D8_L8' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Review your round-2 results with Wonka (compare BOTH rounds\' margins)',
+          'Confirm your survey-2 winner is a real candidate that ran in the survey',
+          'Run /publish: package + paperwork (hypothesis, not promise)',
+          'Upload your tested main, secondaries, and A+ to your listing (or stage them)',
+          'If you have Brand Registry: set up a main-image experiment in Manage Your Experiments',
+          'No Brand Registry? Upload the winner and watch your click-through',
+          'Post your two survey charts side by side in the group',
+        ],
+        resources: [
+          'Seller Central upload checklist',
+          'Manage Your Experiments walkthrough (PDF)',
+          'Survey vs Amazon A/B: what each one proves',
+        ],
+      },
+    ],
+  },
+  {
+    day: 9,
+    room: 'The Variations Room',
+    desc: 'Propagate your winning creative to every real variation of your product, then speed run a second product through the factory.',
+    wonkaLine: 'One winner. A whole family of winners by dinner.',
+    episodes: [
+      {
+        num: 12, title: 'The Variations Room',
+        promise: 'Your winner is live. This episode makes it multiply. /variations propagates your winning creative\'s DNA to every real variation of your product: true labels, true proportions, one coherent family, for a fraction of the original effort. Then the flagship demo: a SECOND product goes through the Front Gate on a clock, and you watch the factory run at its real speed, because the mold process, brand kit, recipe method, and research method are all reusable. Same gates, same standards.',
+        lessons: [
+          { title: 'The Multiplication Argument', dur: '5 min', vimeo: 'VIMEO_ID_D9_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/variations', dur: '7 min', vimeo: 'VIMEO_ID_D9_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Second Product Speed-Run', dur: '7 min', vimeo: 'VIMEO_ID_D9_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'One Room Left', dur: '5 min', vimeo: 'VIMEO_ID_D9_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /variations on your REAL variations (true labels and proportions only)',
+          'Inspect the family grid: siblings, not strangers (and not stretched bottles)',
+          'Put your second product through /meet-my-product and /creative-brief',
+          'Notice how much of the factory did NOT have to be rebuilt',
+          'Post your variation family grid + your product-two recipe timestamp in the group',
+          'Homework: run product two through the full line, including its own poll',
+        ],
+        resources: [
+          'Variation rules one-pager',
+          'Second-product checklist',
+        ],
+      },
+    ],
+  },
+  {
+    day: 10,
+    room: 'The Improvement Loop',
+    desc: 'Close both learning loops so every future run starts smarter, set your ten minute weekly report rhythm, and graduate.',
+    wonkaLine: 'Up and out. You have run out of factory.',
+    episodes: [
+      {
+        num: 13, title: 'The Improvement Loop',
+        promise: 'The finale, and the part that turns a great run into a compounding machine. One command, /improvement-loop, closes both learning loops: it writes the market\'s lesson into your Recipe Book, so every future brief starts already knowing what this product taught you, and it has Wonka write a lesson into his own Notebook, read at the start of every session, so he wakes up sharper. /factory-report becomes your ten-minute weekly rhythm. Then the honest promise (your next product takes half the WORK, never a sales promise) and graduation.',
+        lessons: [
+          { title: '/improvement-loop', dur: '8 min', vimeo: 'VIMEO_ID_D10_L1' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: '/factory-report', dur: '5 min', vimeo: 'VIMEO_ID_D10_L2' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'The Half-Time Promise', dur: '5 min', vimeo: 'VIMEO_ID_D10_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+          { title: 'Graduation', dur: '7 min', vimeo: 'VIMEO_ID_D10_L4' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
+        ],
+        missions: [
+          'Run /improvement-loop: your first Recipe Book entry AND Wonka\'s first Notebook entry',
+          'Run /factory-report and set your weekly reminder (ten minutes, walk the floor)',
+          'Confirm both notebooks, empty before this episode, now have their first entries',
+          'Graduation: product folder complete (research, brief, reference, images, aplus, scorecards, tests)',
+          'Graduation: full package generated, inspected, fails fixed, originals kept',
+          'Graduation: poll rounds 1 and 2 run with the incumbent included',
+          'Graduation: publish package created in output/ and uploaded (or A/B started)',
+          'Graduation: variations built from the winner\'s DNA (or n/a if single-SKU)',
+          'GRADUATION: post your before/after + both survey charts in the group',
+        ],
+        resources: [
+          'The Factory Owner\'s Weekly Routine (one page)',
+          'Recipe Book vs Wonka\'s Notebook: the two loops explained',
+          'Graduation certificate (personalized)',
+        ],
+      },
+    ],
+  },
+];
+</script>
+<script>
+/* ============================================================
+   MAIN APP SCRIPT
+   All DOM access runs after DOMContentLoaded (readyState guard).
+   ============================================================ */
+(function () {
+'use strict';
+
+/* ---------- small helpers ---------- */
+const $ = (id) => document.getElementById(id);
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+const LS = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+const P = CONFIG.STORAGE_PREFIX;
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let sb = null;
+let userEmail = null;
+let userRound = null;
+let earlyAccessMaxDay = null;
+let roundStartDate = null; // 'YYYY-MM-DD'
+let portalRendered = false;
+let activeDay = null;
+let saveTimer = null;
+let wmTimer = null;
+let checking = false;
+const pendingSaveDays = new Set();
+
+/* walkway (factory grounds path) state */
+let animationsInited = false;
+let walkST = null;          // the ScrollTrigger driving the path draw + marker
+let walkLen = 0;            // total length of the walkway path
+let walkMainPath = null;    // #path-cobble element (used for getPointAtLength)
+let walkAnchors = [];       // per-room path anchor points {x, y, len} (proximity + reduced-motion pin)
+let walkRebuildT = null;    // debounce timer for rebuilds
+
+/* walking character (game layer) state . ONE rAF loop drives everything */
+let charLen = 0;            // current position along the path (px)
+let charTarget = 0;         // eased-toward target (scroll progress OR keyboard)
+let charVel = 0;            // keyboard velocity (px per 60fps frame)
+let keyMode = false;        // true while keyboard-driven (camera follows)
+let keyLastInput = 0;
+const keysDown = { fwd: false, back: false };
+let charRAF = 0, lastFrameT = 0, lastMoveT = 0, lastLoopT = 0;
+let charFacingLeft = false;
+let nearRoomIdx = -1;       // index of the room whose door the character is near
+let walkHintShown = false;
+const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+/* progress state */
+let progress = { completedDays: [], checks: {}, completedAt: {}, currentDay: 1 };
+
+function loadProgress() {
+  const raw = LS.get(P);
+  if (raw) { try { const p = JSON.parse(raw); progress = Object.assign(progress, p); } catch (e) {} }
+  if (!progress.completedAt) progress.completedAt = {};
+}
+function persistProgress(dayNum) { LS.set(P, JSON.stringify(progress)); scheduleServerSave(dayNum); }
+
+function isAdmin() { return userEmail && CONFIG.ADMIN_EMAILS.includes(userEmail.toLowerCase()); }
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 4200);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+  if (id) $(id).classList.add('active');
+}
+function hideLoading() { $('loading-screen').classList.add('hidden'); }
+
+/* ---------- analytics (silent fail, skip admins) ---------- */
+function track(event, dayNum) {
+  if (!sb || !userEmail || isAdmin()) return;
+  try {
+    sb.from('user_events').insert({
+      user_email: userEmail, round: CONFIG.ROUND_ID, event_type: event,
+      day_num: dayNum || null, created_at: new Date().toISOString(),
+    }).then(() => {}, () => {});
+  } catch (e) {}
+}
+
+/* ============================================================
+   DAY UNLOCKING (date-based, DST-safe via Intl timeZoneName)
+   ============================================================ */
+function nyOffsetMinutes(dateUtc) {
+  // returns the America/New_York UTC offset (in minutes) at the given instant
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'shortOffset' });
+    const part = fmt.formatToParts(dateUtc).find((p) => p.type === 'timeZoneName');
+    const m = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(part ? part.value : '');
+    if (!m) return -300;
+    const sign = m[1] === '-' ? -1 : 1;
+    return sign * (parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0));
+  } catch (e) { return -300; }
+}
+function dayUnlockTime(dayNum) {
+  // Day N unlocks at UNLOCK_HOUR_NY New York time on start_date + (N-1) days, + buffer
+  const start = roundStartDate || CONFIG.FALLBACK_START_DATE;
+  const [y, mo, d] = start.split('-').map(Number);
+  // first guess as if NY were UTC, then correct by the real offset at that moment
+  let guess = new Date(Date.UTC(y, mo - 1, d + (dayNum - 1), CONFIG.UNLOCK_HOUR_NY, CONFIG.UNLOCK_BUFFER_MIN, 0));
+  const off = nyOffsetMinutes(guess);
+  return new Date(guess.getTime() - off * 60000);
+}
+function isDayUnlocked(dayNum) {
+  if (isAdmin() || userRound === 'both') return true;
+  if (earlyAccessMaxDay && dayNum <= earlyAccessMaxDay) return true;
+  return new Date() >= dayUnlockTime(dayNum);
+}
+function unlockLabel(dayNum) {
+  const t = dayUnlockTime(dayNum);
+  try {
+    return t.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  } catch (e) { return t.toString(); }
+}
+
+async function fetchRound() {
+  const cached = LS.get(P + '-start-date');
+  if (cached) roundStartDate = cached;
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.from('rounds').select('*').eq('id', CONFIG.ROUND_ID).maybeSingle();
+    if (!error && data && data.start_date) {
+      roundStartDate = String(data.start_date).slice(0, 10);
+      LS.set(P + '-start-date', roundStartDate);
+    }
+  } catch (e) { /* fall back to cache / FALLBACK_START_DATE */ }
+}
+
+/* ============================================================
+   SUPABASE: AUTH + ALLOWED CHECK
+   ============================================================ */
+function initSupabase() {
+  sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+    auth: { detectSessionInUrl: true, flowType: 'implicit' },
+  });
+}
+
+function signIn() {
+  sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.href.split('?')[0].split('#')[0] },
+  });
+}
+
+async function signOut() {
+  try { await sb.auth.signOut(); } catch (e) {}
+  [P, P + '-email', P + '-round', P + '-round-check', P + '-start-date'].forEach(LS.del);
+  location.reload();
+}
+
+async function checkAllowed(email, isRequery) {
+  let data, error;
+  // escape LIKE wildcards so emails with _ or % match literally
+  const safeEmail = email.replace(/([%_\\])/g, '\\$1');
+  try {
+    const res = await sb.from('allowed_emails')
+      .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
+      .ilike('email', safeEmail).maybeSingle();
+    data = res.data; error = res.error;
+  } catch (e) { error = e; }
+
+  if (error) {
+    // NETWORK error (not a definitive no-row): degraded fast-path off the local cache
+    const cachedEmail = LS.get(P + '-email');
+    const cachedRound = LS.get(P + '-round');
+    const cachedCheck = LS.get(P + '-round-check');
+    if (cachedEmail && cachedRound && cachedCheck &&
+        cachedEmail.toLowerCase() === email.toLowerCase() &&
+        cachedCheck === btoa(cachedRound + ':' + CONFIG.SALT)) {
+      console.warn('allowed_emails check failed over the network; entering with the cached round.');
+      userEmail = cachedEmail;
+      userRound = cachedRound;
+      await enterFactory();
+      return;
+    }
+    hideLoading(); showScreen('error-screen'); return;
+  }
+
+  if (!data) {
+    // definitive not-found: clear the degraded-mode cache
+    [P + '-email', P + '-round', P + '-round-check'].forEach(LS.del);
+    hideLoading();
+    $('na-email').textContent = email;
+    $('na-mailto').href = 'mailto:' + CONFIG.SUPPORT_EMAIL + '?subject=Wonka%20Bootcamp%20access&body=My%20email:%20' + encodeURIComponent(email);
+    showScreen('notallowed-screen');
+    rattleGates();
+    return;
+  }
+
+  if (data.primary_email && !isRequery && data.primary_email.toLowerCase() !== email.toLowerCase()) {
+    return checkAllowed(data.primary_email, true);
+  }
+
+  if (data.access_revoked_at) {
+    hideLoading();
+    $('rv-email').textContent = email;
+    $('rv-mailto').href = 'mailto:' + CONFIG.SUPPORT_EMAIL + '?subject=Wonka%20Bootcamp%20access%20revoked&body=My%20email:%20' + encodeURIComponent(email);
+    showScreen('revoked-screen');
+    return;
+  }
+
+  const round = data.round;
+  if (round !== CONFIG.ROUND_ID && round !== 'both' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
+    hideLoading();
+    $('na-email').textContent = email;
+    $('na-reason').textContent = 'Your ticket is real, but it opens a different factory. This portal belongs to another round or program. Write to us and we will point you at the right gate.';
+    $('na-mailto').href = 'mailto:' + CONFIG.SUPPORT_EMAIL + '?subject=Wonka%20Bootcamp%20wrong%20round&body=My%20email:%20' + encodeURIComponent(email);
+    showScreen('notallowed-screen');
+    rattleGates();
+    return;
+  }
+
+  // allowed
+  userEmail = email;
+  userRound = round;
+  earlyAccessMaxDay = data.early_access_max_day || null;
+  LS.set(P + '-email', email);
+  LS.set(P + '-round', round);
+  LS.set(P + '-round-check', btoa(round + ':' + CONFIG.SALT));
+  await enterFactory();
+}
+
+function rattleGates() {
+  const g = $('gate-screen');
+  g.classList.add('rattle');
+  setTimeout(() => g.classList.remove('rattle'), 600);
+}
+
+/* ============================================================
+   PROGRESS: server merge + debounced upsert
+   ============================================================ */
+async function mergeServerProgress() {
+  if (!sb || !userEmail) return;
+  try {
+    const { data, error } = await sb.from('user_progress')
+      .select('day_num, completed_at, checks')
+      .eq('user_email', userEmail).eq('round', CONFIG.ROUND_ID);
+    if (error || !data) return;
+    data.forEach((row) => {
+      if (row.completed_at && !progress.completedDays.includes(row.day_num)) {
+        progress.completedDays.push(row.day_num);
+      }
+      if (row.completed_at && !progress.completedAt[row.day_num]) {
+        progress.completedAt[row.day_num] = row.completed_at;
+      }
+      if (row.checks) {
+        const local = progress.checks['d' + row.day_num] || {};
+        progress.checks['d' + row.day_num] = Object.assign({}, row.checks, local);
+      }
+    });
+    LS.set(P, JSON.stringify(progress));
+  } catch (e) {}
+}
+
+function scheduleServerSave(dayNum) {
+  // capture the day at SCHEDULE time so a quick day switch cannot drop a pending save
+  if (dayNum) pendingSaveDays.add(dayNum);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToServer, 800);
+}
+async function saveToServer() {
+  if (!sb || !userEmail || !pendingSaveDays.size) return;
+  const days = Array.from(pendingSaveDays);
+  pendingSaveDays.clear();
+  for (const dayNum of days) {
+    try {
+      await sb.from('user_progress').upsert({
+        user_email: userEmail,
+        round: CONFIG.ROUND_ID,
+        day_num: dayNum,
+        completed_at: progress.completedDays.includes(dayNum)
+          ? (progress.completedAt[dayNum] || new Date().toISOString())
+          : null,
+        checks: progress.checks['d' + dayNum] || {},
+        last_viewed_at: new Date().toISOString(),
+      }, { onConflict: 'user_email,round,day_num' });
+    } catch (e) {}
+  }
+}
+
+/* ============================================================
+   RENDER: FACTORY MAP (grounds scene) + DAY STRIP
+   ============================================================ */
+/* ONE shared state function: both the map and the day strip read it */
+function computeDayStates() {
+  const firstIncomplete = DAYS.find((d) => isDayUnlocked(d.day) && !progress.completedDays.includes(d.day));
+  return DAYS.map((d) => ({
+    day: d.day,
+    room: d.room,
+    unlocked: isDayUnlocked(d.day),
+    done: progress.completedDays.includes(d.day),
+    isCurrent: !!(firstIncomplete && firstIncomplete.day === d.day),
+  }));
+}
+
+function lockedDayToast(dayNum) {
+  toast('The suspense is doing wonders for you. Day ' + dayNum + ' opens ' + unlockLabel(dayNum) + ' (your local time).');
+}
+
+function padlockSvg() {
+  return '<svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg>';
+}
+
+/* --- sticky day navigation strip --- */
+function renderDayStrip() {
+  const strip = $('day-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+  // the Factory Map button returns to the world view
+  const mapBtn = document.createElement('button');
+  mapBtn.type = 'button';
+  mapBtn.className = 'dbtn map-btn';
+  mapBtn.dataset.view = 'map';
+  mapBtn.title = 'Back to the Factory Map';
+  mapBtn.setAttribute('aria-label', 'Factory Map');
+  mapBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 2.2 6 2v11.6l-6-2V6.2z"/></svg><span>Factory Map</span>';
+  mapBtn.addEventListener('click', showMap);
+  strip.appendChild(mapBtn);
+  computeDayStates().forEach((s) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'dbtn' + (s.done ? ' done' : '') + (!s.unlocked ? ' locked' : '') + (s.isCurrent && s.unlocked ? ' current' : '');
+    b.dataset.day = s.day;
+    b.title = 'Day ' + s.day + ': ' + s.room + (!s.unlocked ? ' (opens ' + unlockLabel(s.day) + ')' : '');
+    b.setAttribute('aria-label', b.title);
+    b.innerHTML = '<span>Day ' + s.day + '</span>' +
+      (s.done ? '<i class="chk">&#10003;</i>' : '') +
+      (!s.unlocked ? '<i class="pl">' + padlockSvg() + '</i>' : '');
+    b.addEventListener('click', () => {
+      if (!isDayUnlocked(s.day)) { lockedDayToast(s.day); return; }
+      openDay(s.day, true);
+    });
+    strip.appendChild(b);
+  });
+  syncDayStrip(activeDay, false);
+}
+
+function syncDayStrip(dayNum, scrollIntoView) {
+  const strip = $('day-strip');
+  if (!strip) return;
+  const inMap = !dayNum; // dayNum 0/null means the Factory Map view is active
+  strip.querySelectorAll('.dbtn').forEach((b) => {
+    if (b.dataset.view === 'map') { b.classList.toggle('active', inMap); return; }
+    b.classList.toggle('active', Number(b.dataset.day) === dayNum);
+  });
+  if (!scrollIntoView) return;
+  const act = strip.querySelector('.dbtn.active');
+  if (act) {
+    const target = Math.max(0, act.offsetLeft - strip.clientWidth / 2 + act.offsetWidth / 2);
+    try { strip.scrollTo({ left: target, behavior: REDUCED ? 'auto' : 'smooth' }); }
+    catch (e) { strip.scrollLeft = target; }
+  }
+}
+
+/* --- FULL-WIDTH WORLD LAYOUT + scenery templates (original vector art) --- */
+const RIVER_AFTER_DAY = 5; // the chocolate river crosses the world after this day
+/* per-day horizontal position of the room center, as a percent of the world width */
+const ROOM_X = [12, 86, 34, 10, 82, 64, 12, 88, 30, 74];
+function layoutMetrics() {
+  const mobile = window.innerWidth <= 760;
+  return {
+    mobile: mobile,
+    top0: mobile ? 24 : 40,
+    slot: mobile ? 300 : 300,
+    riverGap: mobile ? 190 : 230,
+    roomH: mobile ? 150 : 300,
+  };
+}
+function roomTop(idx, m) { return m.top0 + idx * m.slot + (idx >= RIVER_AFTER_DAY ? m.riverGap : 0); }
+
+/* the door facade: arched double doors, brass frame, portholes, medallion, sconces, chains */
+function doorSvg(day) {
+  const u = 'dg' + day;
+  return '<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<defs>' +
+    '<linearGradient id="wl' + u + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A2663"/><stop offset=".5" stop-color="#341A47"/><stop offset="1" stop-color="#241033"/></linearGradient>' +
+    '<linearGradient id="wr' + u + '" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#452259"/><stop offset=".5" stop-color="#2F1740"/><stop offset="1" stop-color="#200E2E"/></linearGradient>' +
+    '<linearGradient id="gd' + u + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D774"/><stop offset=".55" stop-color="#D9A845"/><stop offset="1" stop-color="#8A6D1F"/></linearGradient>' +
+    '<linearGradient id="br' + u + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset=".5" stop-color="#B87333"/><stop offset="1" stop-color="#8A5424"/></linearGradient>' +
+    '<linearGradient id="st' + u + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54446B"/><stop offset="1" stop-color="#382B4C"/></linearGradient>' +
+    '<radialGradient id="pg' + u + '" cx=".4" cy=".38" r=".85"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".55" stop-color="#F5B841"/><stop offset="1" stop-color="#9A6A14"/></radialGradient>' +
+    '<radialGradient id="sg' + u + '" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="rgba(255,214,130,.85)"/><stop offset="1" stop-color="rgba(255,214,130,0)"/></radialGradient>' +
+    '</defs>' +
+    '<circle class="sconce-glow" cx="16" cy="166" r="28" fill="url(#sg' + u + ')"/>' +
+    '<circle class="sconce-glow" cx="204" cy="166" r="28" fill="url(#sg' + u + ')"/>' +
+    '<path d="M14 298 L14 138 Q14 44 110 44 Q206 44 206 138 L206 298 Z" fill="url(#st' + u + ')" stroke="#241834" stroke-width="2"/>' +
+    '<path d="M14 138 Q14 44 110 44 Q206 44 206 138" fill="none" stroke="rgba(20,12,30,.5)" stroke-width="2" stroke-dasharray="24 10"/>' +
+    '<path d="M32 298 L32 148 Q32 68 110 68 Q188 68 188 148 L188 298 Z" fill="#170C22"/>' +
+    '<path d="M44 142 Q44 78 110 78 Q176 78 176 142 Z" fill="#1E1030" stroke="#B87333" stroke-width="2.5"/>' +
+    '<path class="transom-lit" d="M44 142 Q44 78 110 78 Q176 78 176 142 Z" fill="url(#pg' + u + ')"/>' +
+    '<g stroke="#B87333" stroke-width="2"><line x1="110" y1="142" x2="110" y2="80"/><line x1="110" y1="142" x2="66" y2="96"/><line x1="110" y1="142" x2="154" y2="96"/><line x1="44" y1="142" x2="176" y2="142"/></g>' +
+    '<g class="doors-wood">' +
+    '<rect x="34" y="150" width="75" height="146" fill="url(#wl' + u + ')"/>' +
+    '<rect x="111" y="150" width="75" height="146" fill="url(#wr' + u + ')"/>' +
+    '</g>' +
+    '<g class="doors-gold">' +
+    '<rect x="34" y="150" width="75" height="146" fill="url(#gd' + u + ')"/>' +
+    '<rect x="111" y="150" width="75" height="146" fill="url(#gd' + u + ')" opacity=".92"/>' +
+    '</g>' +
+    '<g fill="none" stroke="rgba(0,0,0,.38)" stroke-width="2">' +
+    '<rect x="42" y="158" width="59" height="56" rx="4"/><rect x="42" y="224" width="59" height="62" rx="4"/>' +
+    '<rect x="119" y="158" width="59" height="56" rx="4"/><rect x="119" y="224" width="59" height="62" rx="4"/>' +
+    '</g>' +
+    '<g fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1">' +
+    '<rect x="44" y="160" width="55" height="52" rx="3"/><rect x="121" y="160" width="55" height="52" rx="3"/>' +
+    '</g>' +
+    '<circle cx="71.5" cy="186" r="15" fill="#120A1C"/><circle cx="148.5" cy="186" r="15" fill="#120A1C"/>' +
+    '<circle class="port-glow" cx="71.5" cy="186" r="13" fill="url(#pg' + u + ')"/>' +
+    '<circle class="port-glow" cx="148.5" cy="186" r="13" fill="url(#pg' + u + ')"/>' +
+    '<circle cx="71.5" cy="186" r="15" fill="none" stroke="url(#br' + u + ')" stroke-width="3.5"/>' +
+    '<circle cx="148.5" cy="186" r="15" fill="none" stroke="url(#br' + u + ')" stroke-width="3.5"/>' +
+    '<g stroke="rgba(184,115,51,.7)" stroke-width="1.4"><line x1="71.5" y1="173" x2="71.5" y2="199"/><line x1="58.5" y1="186" x2="84.5" y2="186"/><line x1="148.5" y1="173" x2="148.5" y2="199"/><line x1="135.5" y1="186" x2="161.5" y2="186"/></g>' +
+    '<rect x="108.5" y="150" width="3" height="146" fill="url(#br' + u + ')"/>' +
+    '<rect x="32" y="146" width="156" height="5" rx="2" fill="url(#br' + u + ')"/>' +
+    '<rect x="32" y="150" width="4" height="146" fill="url(#br' + u + ')"/>' +
+    '<rect x="184" y="150" width="4" height="146" fill="url(#br' + u + ')"/>' +
+    '<g fill="url(#br' + u + ')"><rect x="36" y="162" width="12" height="6" rx="2"/><rect x="36" y="216" width="12" height="6" rx="2"/><rect x="36" y="268" width="12" height="6" rx="2"/><rect x="172" y="162" width="12" height="6" rx="2"/><rect x="172" y="216" width="12" height="6" rx="2"/><rect x="172" y="268" width="12" height="6" rx="2"/></g>' +
+    '<circle cx="101" cy="238" r="4.5" fill="url(#br' + u + ')"/><circle cx="119" cy="238" r="4.5" fill="url(#br' + u + ')"/>' +
+    '<g><rect x="10" y="166" width="5" height="18" rx="2" fill="url(#br' + u + ')"/><ellipse class="sconce-flame" cx="12.5" cy="161" rx="4" ry="6.5" fill="#F5B841"/><ellipse class="sconce-flame" cx="12.5" cy="163" rx="2" ry="3.5" fill="#FFF3C4"/></g>' +
+    '<g><rect x="205" y="166" width="5" height="18" rx="2" fill="url(#br' + u + ')"/><ellipse class="sconce-flame" cx="207.5" cy="161" rx="4" ry="6.5" fill="#F5B841"/><ellipse class="sconce-flame" cx="207.5" cy="163" rx="2" ry="3.5" fill="#FFF3C4"/></g>' +
+    '<circle cx="110" cy="34" r="24" fill="url(#br' + u + ')" stroke="#5f3a15" stroke-width="2"/>' +
+    '<circle cx="110" cy="34" r="18" fill="none" stroke="rgba(36,17,6,.55)" stroke-width="1.5"/>' +
+    '<text x="110" y="43" text-anchor="middle" font-size="24" font-weight="900" fill="#241106" class="med-num">' + day + '</text>' +
+    '<g class="door-chains">' +
+    '<line x1="36" y1="160" x2="184" y2="272" stroke="#5A5668" stroke-width="6" stroke-dasharray="3 7" stroke-linecap="round"/>' +
+    '<line x1="184" y1="160" x2="36" y2="272" stroke="#6A6578" stroke-width="6" stroke-dasharray="3 7" stroke-linecap="round"/>' +
+    '<path d="M100 200 v-10 a10 10 0 0 1 20 0 v10" fill="none" stroke="#8f8a9c" stroke-width="5"/>' +
+    '<rect x="94" y="200" width="32" height="26" rx="5" fill="#3A3546" stroke="#8f8a9c" stroke-width="2"/>' +
+    '<circle cx="110" cy="211" r="4" fill="#191423"/>' +
+    '</g>' +
+    '</svg>';
+}
+
+/* the edible garden corner: parasol mushrooms + one refined swirl-tree pair */
+function gardenHtml(top, side) {
+  return '<div class="scn scn-garden" style="top:' + top + 'px;' + side + '" aria-hidden="true">' +
+    '<svg viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+    '<linearGradient id="mcap1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A85E70"/><stop offset="1" stop-color="#6E3A4A"/></linearGradient>' +
+    '<linearGradient id="mcap2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E2E7E"/><stop offset="1" stop-color="#3B1E4E"/></linearGradient>' +
+    '<linearGradient id="mstem" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D8CBAA"/><stop offset=".5" stop-color="#F3E9D2"/><stop offset="1" stop-color="#C4B695"/></linearGradient>' +
+    '</defs>' +
+    '<ellipse cx="100" cy="248" rx="86" ry="9" fill="rgba(0,0,0,.3)"/>' +
+    '<ellipse cx="230" cy="252" rx="60" ry="7" fill="rgba(0,0,0,.28)"/>' +
+    '<ellipse cx="330" cy="252" rx="42" ry="6" fill="rgba(0,0,0,.26)"/>' +
+    /* big parasol mushroom, cream-frosted cap */
+    '<path d="M86 130 Q92 200 90 246 L112 246 Q108 198 114 130 Z" fill="url(#mstem)"/>' +
+    '<path d="M22 132 Q100 30 178 132 Q140 120 100 132 Q60 144 22 132 Z" fill="url(#mcap1)"/>' +
+    '<path d="M22 132 Q52 146 82 133 Q78 148 60 150 Q38 150 22 132 Z M100 132 Q128 122 150 130 Q146 146 124 147 Q106 146 100 132 Z" fill="#F3E9D2" opacity=".85"/>' +
+    '<path d="M22 132 Q100 118 178 132" fill="none" stroke="#F3E9D2" stroke-width="7" stroke-linecap="round" opacity=".9"/>' +
+    '<circle cx="72" cy="86" r="7" fill="#F3E9D2" opacity=".75"/><circle cx="118" cy="72" r="9" fill="#F3E9D2" opacity=".7"/><circle cx="146" cy="104" r="6" fill="#F3E9D2" opacity=".7"/>' +
+    /* medium plum mushroom */
+    '<path d="M222 176 Q226 224 224 250 L240 250 Q238 222 242 176 Z" fill="url(#mstem)"/>' +
+    '<path d="M182 178 Q232 110 282 178 Q256 168 232 176 Q208 184 182 178 Z" fill="url(#mcap2)"/>' +
+    '<path d="M182 178 Q232 166 282 178" fill="none" stroke="#F3E9D2" stroke-width="5" stroke-linecap="round" opacity=".85"/>' +
+    '<circle cx="216" cy="148" r="5" fill="#F3E9D2" opacity=".7"/><circle cx="248" cy="140" r="6" fill="#F3E9D2" opacity=".65"/>' +
+    /* small rose mushroom */
+    '<path d="M292 214 Q294 240 293 252 L304 252 Q303 238 305 214 Z" fill="url(#mstem)"/>' +
+    '<path d="M272 216 Q298 176 326 216 Q312 210 298 214 Q284 220 272 216 Z" fill="url(#mcap1)"/>' +
+    '<path d="M272 216 Q299 208 326 216" fill="none" stroke="#F3E9D2" stroke-width="4" stroke-linecap="round" opacity=".85"/>' +
+    /* frosting-grass tufts */
+    '<g stroke="#8FB9A4" stroke-width="4" stroke-linecap="round" fill="none" opacity=".65">' +
+    '<path d="M34 250 q-4 -16 -12 -22 M42 250 q0 -18 4 -26 M52 250 q6 -14 14 -18"/>' +
+    '<path d="M188 252 q-4 -14 -10 -18 M196 252 q1 -16 5 -22 M206 252 q6 -12 12 -15"/>' +
+    '</g>' +
+    /* one refined swirl-tree pair (muted rose + cream) */
+    '<g class="swirl-tree">' +
+    '<rect x="336" y="176" width="7" height="76" rx="3" fill="rgba(243,233,210,.5)"/>' +
+    '<circle cx="340" cy="152" r="26" fill="#F3E9D2"/>' +
+    '<circle cx="340" cy="152" r="19" fill="none" stroke="#A85E70" stroke-width="6" stroke-dasharray="86 34" stroke-linecap="round"/>' +
+    '<circle cx="340" cy="152" r="10" fill="none" stroke="#A85E70" stroke-width="5" stroke-dasharray="42 21" stroke-linecap="round"/>' +
+    '<circle cx="340" cy="152" r="3" fill="#A85E70"/>' +
+    '</g>' +
+    '<g class="swirl-tree st2">' +
+    '<rect x="368" y="200" width="6" height="52" rx="3" fill="rgba(243,233,210,.45)"/>' +
+    '<circle cx="371" cy="182" r="19" fill="#F3E9D2"/>' +
+    '<circle cx="371" cy="182" r="13" fill="none" stroke="#6E3A4A" stroke-width="5" stroke-dasharray="58 24" stroke-linecap="round"/>' +
+    '<circle cx="371" cy="182" r="6" fill="none" stroke="#6E3A4A" stroke-width="4" stroke-dasharray="24 13" stroke-linecap="round"/>' +
+    '</g>' +
+    '</svg></div>';
+}
+
+/* the Inventing machinery: brass boiler, twitching gauges, interlocking gears, steam */
+function machineHtml(top, side) {
+  return '<div class="scn scn-machine" style="top:' + top + 'px;' + side + '" aria-hidden="true">' +
+    '<span class="steam-wisp" style="left:24%;top:-4%;animation-delay:.4s"></span>' +
+    '<span class="steam-wisp" style="left:38%;top:2%;animation-delay:2.6s"></span>' +
+    '<svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+    '<linearGradient id="boilg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6b4423"/><stop offset=".45" stop-color="#D99A5B"/><stop offset="1" stop-color="#5d3714"/></linearGradient>' +
+    '<linearGradient id="boild" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset="1" stop-color="#8A5424"/></linearGradient>' +
+    '</defs>' +
+    '<ellipse cx="110" cy="270" rx="100" ry="8" fill="rgba(0,0,0,.3)"/>' +
+    '<ellipse cx="268" cy="272" rx="76" ry="7" fill="rgba(0,0,0,.26)"/>' +
+    /* boiler body + dome + valve */
+    '<rect x="42" y="72" width="130" height="196" rx="20" fill="url(#boilg)" stroke="#3d240d" stroke-width="2"/>' +
+    '<path d="M52 74 Q107 34 162 74 Z" fill="url(#boild)" stroke="#3d240d" stroke-width="2"/>' +
+    '<rect x="98" y="30" width="18" height="20" rx="4" fill="url(#boild)"/>' +
+    '<circle cx="107" cy="26" r="8" fill="#8A5424"/>' +
+    /* rivets */
+    '<g fill="#3d240d" opacity=".7">' +
+    '<circle cx="54" cy="92" r="2.6"/><circle cx="54" cy="132" r="2.6"/><circle cx="54" cy="172" r="2.6"/><circle cx="54" cy="212" r="2.6"/><circle cx="54" cy="250" r="2.6"/>' +
+    '<circle cx="160" cy="92" r="2.6"/><circle cx="160" cy="132" r="2.6"/><circle cx="160" cy="172" r="2.6"/><circle cx="160" cy="212" r="2.6"/><circle cx="160" cy="250" r="2.6"/>' +
+    '</g>' +
+    '<line x1="44" y1="112" x2="170" y2="112" stroke="#3d240d" stroke-width="2" opacity=".5"/>' +
+    '<line x1="44" y1="228" x2="170" y2="228" stroke="#3d240d" stroke-width="2" opacity=".5"/>' +
+    /* gauges with twitching needles */
+    '<circle cx="86" cy="160" r="19" fill="#F3E9D2" stroke="#5d3714" stroke-width="4"/>' +
+    '<g stroke="#5d3714" stroke-width="1.6"><line x1="86" y1="146" x2="86" y2="151"/><line x1="74" y1="152" x2="78" y2="155"/><line x1="98" y1="152" x2="94" y2="155"/></g>' +
+    '<line class="g-needle" x1="86" y1="160" x2="86" y2="147" stroke="#B0342F" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<circle cx="86" cy="160" r="2.6" fill="#5d3714"/>' +
+    '<circle cx="132" cy="192" r="14" fill="#F3E9D2" stroke="#5d3714" stroke-width="3.4"/>' +
+    '<line class="g-needle n2" x1="132" y1="192" x2="132" y2="182" stroke="#B0342F" stroke-width="2.2" stroke-linecap="round"/>' +
+    '<circle cx="132" cy="192" r="2.2" fill="#5d3714"/>' +
+    /* connecting pipe to the gear housing */
+    '<rect x="172" y="150" width="60" height="14" rx="7" fill="url(#boild)"/>' +
+    '<rect x="196" y="164" width="14" height="70" rx="7" fill="url(#boild)" opacity=".9"/>' +
+    /* interlocking gears (teeth faked with a thick dashed ring) */
+    '<g class="gearA">' +
+    '<circle cx="258" cy="150" r="44" fill="none" stroke="rgba(184,115,51,.6)" stroke-width="15" stroke-dasharray="11 9"/>' +
+    '<circle cx="258" cy="150" r="30" fill="none" stroke="rgba(184,115,51,.7)" stroke-width="7"/>' +
+    '<path d="M258 122 v56 M230 150 h56 M238 130 l40 40 M298 130 l-40 40" stroke="rgba(184,115,51,.7)" stroke-width="6"/>' +
+    '<circle cx="258" cy="150" r="9" fill="rgba(184,115,51,.8)"/>' +
+    '</g>' +
+    '<g class="gearB">' +
+    '<circle cx="312" cy="212" r="30" fill="none" stroke="rgba(217,154,91,.55)" stroke-width="12" stroke-dasharray="9 8"/>' +
+    '<circle cx="312" cy="212" r="19" fill="none" stroke="rgba(217,154,91,.65)" stroke-width="6"/>' +
+    '<path d="M312 194 v36 M294 212 h36" stroke="rgba(217,154,91,.65)" stroke-width="5"/>' +
+    '<circle cx="312" cy="212" r="7" fill="rgba(217,154,91,.75)"/>' +
+    '</g>' +
+    '</svg></div>';
+}
+
+/* the chocolate river v2: banks, parallax swirl layers, waterfall, crew boat, bridge */
+function riverHtml(top, h) {
+  function wavePath(y, amp) {
+    let d = 'M0 ' + y, s = 1;
+    for (let x = 0; x < 2400; x += 150) {
+      d += ' Q' + (x + 75) + ' ' + (y - amp * s) + ' ' + (x + 150) + ' ' + y;
+      s = -s;
+    }
+    return d;
+  }
+  function curls(y, color) {
+    let out = '';
+    for (let x = 260; x < 2400; x += 560) {
+      out += '<path d="M' + x + ' ' + y + ' a9 8 0 1 1 10 7" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round"/>';
+    }
+    return out;
+  }
+  const flow = (cls, c1, c2, withCurls) =>
+    '<div class="river-flow ' + cls + '"><svg viewBox="0 0 2400 60" preserveAspectRatio="none">' +
+    '<path d="' + wavePath(28, 10) + '" fill="none" stroke="' + c1 + '" stroke-width="3.4" stroke-linecap="round"/>' +
+    '<path d="' + wavePath(44, 7) + '" fill="none" stroke="' + c2 + '" stroke-width="1.8" stroke-linecap="round"/>' +
+    (withCurls ? curls(20, c1) : '') +
+    '</svg></div>';
+  return '<div class="grounds-river" style="top:' + top + 'px;height:' + h + 'px" aria-hidden="true">' +
+    /* layered meandering banks + dark cocoa base */
+    '<div class="river-banks"><svg viewBox="0 0 1200 240" preserveAspectRatio="none">' +
+    '<path d="M0 52 Q150 24 300 48 Q460 76 600 44 Q760 14 900 50 Q1060 78 1200 46 L1200 200 Q1050 228 900 198 Q740 172 600 202 Q450 232 300 200 Q150 174 0 204 Z" fill="#1D0F07"/>' +
+    '<path d="M0 62 Q150 36 300 58 Q460 84 600 54 Q760 26 900 60 Q1060 86 1200 56 L1200 190 Q1050 216 900 188 Q740 164 600 192 Q450 220 300 190 Q150 166 0 194 Z" fill="#241209"/>' +
+    '<path d="M0 74 Q150 50 300 70 Q460 94 600 66 Q760 40 900 72 Q1060 96 1200 68 L1200 178 Q1050 202 900 176 Q740 154 600 180 Q450 206 300 178 Q150 156 0 182 Z" fill="#2A1A12"/>' +
+    '<path d="M0 52 Q150 24 300 48 Q460 76 600 44 Q760 14 900 50 Q1060 78 1200 46" fill="none" stroke="rgba(0,0,0,.55)" stroke-width="7"/>' +
+    '<path d="M0 204 Q150 174 300 200 Q450 232 600 202 Q740 172 900 198 Q1050 228 1200 200" fill="none" stroke="rgba(184,115,51,.28)" stroke-width="3"/>' +
+    '</svg></div>' +
+    /* slow glossy swirl highlights, 3 parallax layers */
+    flow('f1', 'rgba(107,68,35,.5)', 'rgba(184,115,51,.22)', false) +
+    flow('f2', 'rgba(184,115,51,.4)', 'rgba(217,154,91,.2)', true) +
+    flow('f3', 'rgba(245,184,65,.16)', 'rgba(217,154,91,.28)', true) +
+    /* gentle steam off the chocolate */
+    '<span class="steam-wisp" style="left:24%;bottom:42%;animation-delay:.8s"></span>' +
+    '<span class="steam-wisp" style="left:56%;bottom:38%;animation-delay:3.4s"></span>' +
+    '<span class="steam-wisp" style="left:84%;bottom:44%;animation-delay:5.6s"></span>' +
+    /* the chocolate waterfall pouring from the brass mixing pipe */
+    '<div class="choc-fall">' +
+    '<div class="fall-pipe"><svg viewBox="0 0 150 66" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="fpipe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset=".5" stop-color="#B87333"/><stop offset="1" stop-color="#5d3714"/></linearGradient></defs>' +
+    '<rect x="0" y="10" width="96" height="26" rx="13" fill="url(#fpipe)"/>' +
+    '<path d="M74 12 h30 a14 14 0 0 1 14 14 v34 h-32 v-30 a6 6 0 0 0 -6 -6 h-6 Z" fill="url(#fpipe)"/>' +
+    '<rect x="82" y="54" width="40" height="10" rx="4" fill="#8A5424"/>' +
+    '<g fill="#3d240d" opacity=".7"><circle cx="12" cy="23" r="2.4"/><circle cx="34" cy="23" r="2.4"/><circle cx="56" cy="23" r="2.4"/><circle cx="112" cy="40" r="2.4"/></g>' +
+    '<circle cx="30" cy="8" r="7" fill="#8A5424"/><rect x="27" y="0" width="6" height="10" rx="3" fill="#D99A5B"/>' +
+    '</svg></div>' +
+    '<div class="fall-stream"></div>' +
+    '<div class="fall-foam"><i></i><i></i><i></i><i></i><i></i></div>' +
+    '</div>' +
+    /* the Factory Crew paddle boat (original figures: copper goggles, plum overalls, cream gloves) */
+    '<div class="crew-boat"><div class="boat-bob">' +
+    '<svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="bhull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A2663"/><stop offset="1" stop-color="#241033"/></linearGradient>' +
+    '<linearGradient id="bbrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset="1" stop-color="#8A5424"/></linearGradient></defs>' +
+    /* rear paddle wheel (slowly turning) */
+    '<g class="paddle">' +
+    '<circle cx="152" cy="72" r="26" fill="none" stroke="url(#bbrass)" stroke-width="4"/>' +
+    '<path d="M152 46 v52 M126 72 h52 M134 54 l36 36 M170 54 l-36 36" stroke="url(#bbrass)" stroke-width="3.4"/>' +
+    '<g fill="#5E2E7E" stroke="#B87333" stroke-width="1"><rect x="148" y="42" width="8" height="10" rx="2"/><rect x="148" y="92" width="8" height="10" rx="2"/><rect x="122" y="68" width="10" height="8" rx="2"/><rect x="172" y="68" width="10" height="8" rx="2"/></g>' +
+    '<circle cx="152" cy="72" r="5" fill="url(#bbrass)"/>' +
+    '</g>' +
+    /* crew on deck */
+    '<g>' +
+    '<rect x="24" y="48" width="12" height="16" rx="4" fill="#5E2E7E"/><circle cx="30" cy="42" r="5.5" fill="#B98A62"/><path d="M25 40 h10" stroke="#B87333" stroke-width="2.4"/><circle cx="27.5" cy="40" r="2" fill="#D99A5B"/><circle cx="32.5" cy="40" r="2" fill="#D99A5B"/><circle cx="22.5" cy="58" r="2.2" fill="#F3E9D2"/><circle cx="37.5" cy="58" r="2.2" fill="#F3E9D2"/>' +
+    '<rect x="46" y="46" width="12" height="18" rx="4" fill="#4A2663"/><circle cx="52" cy="40" r="5.5" fill="#8A5D42"/><path d="M47 38 h10" stroke="#B87333" stroke-width="2.4"/><circle cx="49.5" cy="38" r="2" fill="#D99A5B"/><circle cx="54.5" cy="38" r="2" fill="#D99A5B"/><circle cx="44.5" cy="57" r="2.2" fill="#F3E9D2"/><circle cx="59.5" cy="57" r="2.2" fill="#F3E9D2"/>' +
+    '<rect x="112" y="48" width="12" height="16" rx="4" fill="#5E2E7E"/><circle cx="118" cy="42" r="5.5" fill="#C79A6E"/><path d="M113 40 h10" stroke="#B87333" stroke-width="2.4"/><circle cx="115.5" cy="40" r="2" fill="#D99A5B"/><circle cx="120.5" cy="40" r="2" fill="#D99A5B"/><circle cx="110.5" cy="58" r="2.2" fill="#F3E9D2"/><circle cx="125.5" cy="58" r="2.2" fill="#F3E9D2"/>' +
+    '</g>' +
+    /* cabin + stack */
+    '<rect x="66" y="34" width="40" height="30" rx="4" fill="url(#bhull)" stroke="#B87333" stroke-width="2"/>' +
+    '<rect x="72" y="40" width="10" height="12" rx="2" fill="#F5B841" opacity=".85"/><rect x="90" y="40" width="10" height="12" rx="2" fill="#F5B841" opacity=".85"/>' +
+    '<rect x="80" y="16" width="9" height="20" rx="4" fill="url(#bbrass)"/>' +
+    /* hull with brass rail */
+    '<path d="M8 66 Q60 56 112 58 L138 60 Q142 60 142 66 L136 88 Q132 98 120 98 L34 98 Q22 98 18 88 Z" fill="url(#bhull)" stroke="#B87333" stroke-width="2"/>' +
+    '<path d="M10 68 Q70 58 140 64" fill="none" stroke="url(#bbrass)" stroke-width="4" stroke-linecap="round"/>' +
+    '</svg></div></div>' +
+    /* the brass-and-rope bridge the walkway crosses on (x set by positionRiverBridge) */
+    '<div class="river-bridge" id="river-bridge"><svg viewBox="0 0 150 84" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="brdg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset="1" stop-color="#8A5424"/></linearGradient></defs>' +
+    '<rect x="9" y="24" width="7" height="56" rx="3" fill="url(#brdg)"/><rect x="134" y="24" width="7" height="56" rx="3" fill="url(#brdg)"/>' +
+    '<circle cx="12.5" cy="22" r="4" fill="#F5B841"/><circle cx="137.5" cy="22" r="4" fill="#F5B841"/>' +
+    '<path d="M13 30 Q75 56 137 30" fill="none" stroke="#C9A36B" stroke-width="2.6"/>' +
+    '<path d="M13 46 Q75 68 137 46" fill="none" stroke="#C9A36B" stroke-width="2.2"/>' +
+    '<g stroke="#C9A36B" stroke-width="1.6"><line x1="40" y1="38" x2="40" y2="72"/><line x1="75" y1="43" x2="75" y2="76"/><line x1="110" y1="38" x2="110" y2="72"/></g>' +
+    '<path d="M4 78 Q75 52 146 78" fill="none" stroke="url(#brdg)" stroke-width="10" stroke-linecap="round"/>' +
+    '<path d="M4 78 Q75 52 146 78" fill="none" stroke="rgba(40,24,10,.55)" stroke-width="6" stroke-dasharray="8 7"/>' +
+    '</svg></div>' +
+    '</div>';
+}
+
+function renderMap() {
+  const holder = $('rooms-holder');
+  holder.innerHTML = '';
+  nearRoomIdx = -1; // rooms are being rebuilt; proximity re-detects next frame
+  const m = layoutMetrics();
+  renderMap._mobile = m.mobile;
+  const states = computeDayStates();
+  DAYS.forEach((d, idx) => {
+    const st = states[idx];
+    const unlocked = st.unlocked;
+    const done = st.done;
+    const isCurrent = st.isCurrent;
+    const el = document.createElement('div');
+    el.className = 'room reveal' + (done ? ' completed' : '') + (!unlocked ? ' locked' : '') + (isCurrent && unlocked ? ' current' : '');
+    el.dataset.day = d.day;
+    el.style.setProperty('--rx', ROOM_X[idx]);
+    el.style.top = roomTop(idx, m) + 'px';
+    const chips = d.episodes.map((e) => '<span class="ep-chip">Ep ' + e.num + ' . ' + e.title + '</span>').join('');
+    let stateLine;
+    if (done) {
+      stateLine = '&#10003; Room toured. The lights are on.';
+    } else if (!unlocked) {
+      stateLine = 'The suspense is doing wonders for you. Opens ' + unlockLabel(d.day);
+    } else {
+      stateLine = 'Door unlocked. Press Enter to step inside.';
+    }
+    el.innerHTML =
+      '<div class="door-glow" aria-hidden="true"></div>' +
+      '<div class="door-visual" aria-hidden="true">' + doorSvg(d.day) +
+        (!unlocked ? '<div class="room-fog" aria-hidden="true"></div>' : '') +
+      '</div>' +
+      '<div class="door-threshold" aria-hidden="true"></div>' +
+      '<div class="door-sign" aria-hidden="true"><small>DAY ' + d.day + '</small><span>' + d.room + '</span></div>' +
+      '<div class="door-plate">' +
+        '<strong>Day ' + d.day + ' . ' + d.room + '</strong>' +
+        '<p>' + (d.desc || '') + '</p>' +
+        '<div class="ep-chips">' + chips + '</div>' +
+        '<em>' + stateLine + '</em>' +
+      '</div>';
+    el.addEventListener('click', () => {
+      if (!isDayUnlocked(d.day)) { lockedDayToast(d.day); return; }
+      openDay(d.day, true);
+    });
+    // keyboard/reduced-motion path into the room: focus shows the plate (CSS), Enter/Space opens
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', 'Day ' + d.day + ': ' + d.room + (unlocked ? '' : ' (locked)'));
+    el.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); el.click(); }
+    });
+    // re-renders after the animations booted must never leave rooms pre-hidden
+    if (animationsInited) { el.style.opacity = 1; el.style.transform = 'none'; }
+    holder.appendChild(el);
+  });
+  // set pieces: garden near days 2-3, machinery near days 7-8, river between 5-6
+  const gardenTop = m.mobile ? roomTop(2, m) - 190 : roomTop(1, m) + 150;
+  const gardenSide = m.mobile ? 'left:2%' : 'left:4%';
+  const machineTop = m.mobile ? roomTop(7, m) - 210 : roomTop(6, m) + 130;
+  const machineSide = 'right:4%';
+  const riverTop = roomTop(RIVER_AFTER_DAY, m) - m.riverGap + (m.mobile ? 40 : 50);
+  const riverH = m.riverGap - (m.mobile ? 70 : 90);
+  holder.insertAdjacentHTML('beforeend',
+    gardenHtml(gardenTop, gardenSide) +
+    machineHtml(machineTop, machineSide) +
+    riverHtml(riverTop, riverH));
+  holder.style.height = (roomTop(DAYS.length - 1, m) + m.roomH + 40) + 'px';
+  updateProgressUI();
+  renderDayStrip();
+  scheduleWalkRebuild();
+}
+
+function updateProgressUI() {
+  const done = progress.completedDays.length;
+  const pct = Math.round((done / CONFIG.TOTAL_DAYS) * 100);
+  $('progress-bar').style.width = pct + '%';
+  $('progress-label').textContent = done + ' / ' + CONFIG.TOTAL_DAYS;
+  $('river-note').textContent = 'factory ' + pct + '% toured';
+  if (done >= CONFIG.TOTAL_DAYS) {
+    if (!$('grad-banner').classList.contains('show')) confetti(140);
+    $('grad-banner').classList.add('show');
+  }
+}
+
+/* ============================================================
+   RENDER: DAY VIEW
+   ============================================================ */
+function playIconSvg() {
+  return '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+}
+
+function renderDay(dayNum) {
+  const d = DAYS.find((x) => x.day === dayNum);
+  if (!d) return;
+  const view = $('day-view');
+  const checks = progress.checks['d' + dayNum] || {};
+  const done = progress.completedDays.includes(dayNum);
+  let html = '';
+
+  html += '<div class="day-plaque">' +
+    '<div class="day-kicker">Now entering</div>' +
+    '<div class="plaque">Day ' + d.day + ' . ' + d.room + '</div>' +
+    '</div>';
+  html += '<p class="day-wonka-line">"' + d.wonkaLine + '"</p>';
+  html += '<div class="day-nav">' +
+    '<button id="nav-prev"' + (dayNum <= 1 ? ' disabled' : '') + '>&larr; Day ' + (dayNum - 1) + '</button>' +
+    '<button id="nav-map">Factory Map</button>' +
+    '<button id="nav-next"' + (dayNum >= CONFIG.TOTAL_DAYS ? ' disabled' : '') + '>Day ' + (dayNum + 1) + ' &rarr;</button>' +
+    '</div>';
+
+  d.episodes.forEach((ep, epIdx) => {
+    html += '<div class="episode-block reveal">';
+    html += '<div class="episode-header"><span class="ep-num">EPISODE ' + ep.num + '</span><h2>' + ep.title + '</h2></div>';
+    html += '<p class="episode-promise">' + ep.promise + '</p>';
+
+    ep.lessons.forEach((ls, li) => {
+      const gaugeKey = 'ep' + ep.num + '-l' + li;
+      const gaugeOn = !!checks[gaugeKey];
+      const isPlaceholder = ls.vimeo.indexOf('VIMEO_ID') === 0;
+      html += '<div class="lesson">';
+      html += '<div class="lesson-title-row">' +
+        '<svg class="gauge' + (gaugeOn ? ' on' : '') + '" data-gauge="' + gaugeKey + '" viewBox="0 0 24 24"><circle class="dial" cx="12" cy="12" r="10"/><circle class="fill" cx="12" cy="12" r="10"/></svg>' +
+        '<h4>Lesson ' + (li + 1) + ': ' + ls.title + '</h4>' +
+        '<span class="lesson-dur">' + ls.dur + '</span></div>';
+      html += '<div class="video-frame"><div class="video-wrap">';
+      if (isPlaceholder) {
+        // <!-- VIDEO PLACEHOLDER --> machine screen shown until the real Vimeo ID exists.
+        // TODO: replace ls.vimeo ('+ls.vimeo+') in DAYS with the real numeric Vimeo id;
+        // the iframe below will then render automatically.
+        html += '<div class="video-poster"><div class="lever">' + playIconSvg() + '</div>' +
+          '<p>Lesson film loads here</p><small>' + ls.vimeo + '</small></div>';
+      } else {
+        html += '<iframe src="https://player.vimeo.com/video/' + ls.vimeo + '?title=0&byline=0&portrait=0&color=f5b841" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>';
+      }
+      html += '<div class="wm" data-email="' + escapeHtml(userEmail || '') + '"></div>';
+      html += '</div></div>';
+      html += '</div>';
+    });
+
+    // missions punch-card
+    html += '<div class="punch-card"><h5>This Episode\'s Missions . punch your card</h5>';
+    ep.missions.forEach((m, mi) => {
+      const key = 'ep' + ep.num + '-m' + mi;
+      const checked = !!checks[key];
+      html += '<label><input type="checkbox" data-check="' + key + '" data-ep="' + ep.num + '"' + (checked ? ' checked' : '') + '><span class="punch-hole"></span><span>' + m + '</span></label>';
+    });
+    html += '</div>';
+
+    // resources
+    if (ep.resources && ep.resources.length) {
+      html += '<div class="res-head">Take a candy bar on your way out . resources</div><div class="resources">';
+      ep.resources.forEach((r) => {
+        // TODO: point each candy-bar href at the real download URL
+        html += '<a class="candy-bar" href="#" onclick="return false;"><span class="res-name">' + r + '</span></a>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  // day complete lever + seal
+  html += '<div class="complete-zone reveal">';
+  if (!done) {
+    html += '<button class="btn-lever" id="btn-complete"><span class="knob"></span> Pull the Lever . Mark Day ' + dayNum + ' Complete</button>';
+  }
+  html += '<div class="day-seal' + (done ? ' stamped' : '') + '" id="day-seal"><div class="day-seal-inner">' +
+    '<span class="w">W</span><span class="lbl">DAY ' + dayNum + ' COMPLETE</span><span class="sub">WONKA CREATIVE BOOTCAMP</span></div></div>';
+  html += '</div>';
+
+  view.innerHTML = html;
+  view.classList.add('active');
+  wireDayView(dayNum);
+  startWatermarkRotation();
+  if (window.gsap && !REDUCED) {
+    view.querySelectorAll('.reveal').forEach((el) => {
+      gsap.set(el, { opacity: 0, y: 30 });
+      gsap.to(el, { opacity: 1, y: 0, duration: .7, ease: 'power2.out', stagger: 0, delay: .05 });
+    });
+  } else {
+    view.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+  }
+}
+
+function wireDayView(dayNum) {
+  const view = $('day-view');
+  const prev = $('nav-prev'), next = $('nav-next'), mapBtn = $('nav-map');
+  if (prev) prev.addEventListener('click', () => { if (isDayUnlocked(dayNum - 1)) openDay(dayNum - 1, true); else toast('That room is behind you but its door already closed? Never. Day ' + (dayNum - 1) + ' is open.'); });
+  if (next) next.addEventListener('click', () => {
+    if (isDayUnlocked(dayNum + 1)) openDay(dayNum + 1, true);
+    else toast('The suspense is doing wonders for you. Day ' + (dayNum + 1) + ' opens ' + unlockLabel(dayNum + 1) + ' (your local time).');
+  });
+  if (mapBtn) mapBtn.addEventListener('click', showMap);
+
+  view.querySelectorAll('input[data-check]').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const key = cb.dataset.check;
+      progress.checks['d' + dayNum] = progress.checks['d' + dayNum] || {};
+      progress.checks['d' + dayNum][key] = cb.checked;
+      // fill the matching lesson gauge: mission index i lights gauge of lesson i (same episode)
+      const m = /^ep(\d+)-m(\d+)$/.exec(key);
+      if (m) {
+        const g = view.querySelector('[data-gauge="ep' + m[1] + '-l' + m[2] + '"]');
+        if (g) {
+          g.classList.toggle('on', cb.checked);
+          progress.checks['d' + dayNum]['ep' + m[1] + '-l' + m[2]] = cb.checked;
+        }
+      }
+      persistProgress(dayNum);
+    });
+  });
+
+  const btn = $('btn-complete');
+  if (btn) btn.addEventListener('click', () => {
+    if (!progress.completedDays.includes(dayNum)) progress.completedDays.push(dayNum);
+    if (!progress.completedAt[dayNum]) progress.completedAt[dayNum] = new Date().toISOString();
+    persistProgress(dayNum);
+    btn.style.display = 'none';
+    const seal = $('day-seal');
+    seal.classList.add('stamped');
+    confetti(60);
+    toast(dayNum >= CONFIG.TOTAL_DAYS ? 'Up and out. You have run out of factory.' : 'Room ' + dayNum + ' lit. So many rooms, so little tour. Onward.');
+    track('day_complete', dayNum);
+    renderMap();
+  });
+}
+
+function openDay(dayNum, scroll) {
+  activeDay = dayNum;
+  progress.currentDay = dayNum;
+  // adds its own pending day; never cancels other pending days
+  persistProgress(dayNum);
+  try { history.replaceState(null, '', '#day' + dayNum); } catch (e) {}
+  keyMode = false; charVel = 0; keysDown.fwd = keysDown.back = false; // release the map camera
+  renderDay(dayNum);
+  $('app').classList.add('viewing-day'); // hide the world, show only this room
+  syncDayStrip(dayNum, true);
+  track('day_view', dayNum);
+  // the world is hidden, so just jump to the top of the room
+  window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+}
+
+/* return to the Factory Map (the home view) and park the character at the current room */
+function showMap() {
+  $('app').classList.remove('viewing-day');
+  $('day-view').classList.remove('active');
+  activeDay = 0;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  syncDayStrip(0, false);
+  requestAnimationFrame(() => {
+    buildPipe();
+    // scroll so the current room sits comfortably in view
+    const day = firstUnlockedIncompleteDay();
+    const room = document.querySelector('#rooms-holder .room[data-day="' + day + '"]');
+    if (room) {
+      const y = room.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.32;
+      window.scrollTo({ top: Math.max(0, y), behavior: REDUCED ? 'auto' : 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+    }
+  });
+}
+
+function firstUnlockedIncompleteDay() {
+  const d = DAYS.find((x) => isDayUnlocked(x.day) && !progress.completedDays.includes(x.day));
+  return d ? d.day : (progress.currentDay || 1);
+}
+
+/* ---------- floating support button ---------- */
+function wireSupportFab() {
+  const fab = $('support-fab'), btn = $('fab-btn'), menu = $('fab-menu');
+  if (!fab || fab.dataset.wired) return;
+  fab.dataset.wired = '1';
+  $('fab-wa').href = CONFIG.WHATSAPP_LINK;
+  $('fab-mail').href = 'mailto:' + CONFIG.SUPPORT_EMAIL + '?subject=Wonka%20Bootcamp%20support';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', (e) => {
+    if (!fab.contains(e.target)) { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+  });
+}
+
+/* ---------- watermark rotation (top-right <-> bottom-right every 18s) ---------- */
+function startWatermarkRotation() {
+  clearInterval(wmTimer);
+  let low = false;
+  wmTimer = setInterval(() => {
+    low = !low;
+    document.querySelectorAll('.wm').forEach((w) => w.classList.toggle('low', low));
+  }, 18000);
+}
+
+/* ---------- confetti ---------- */
+function confetti(n) {
+  if (REDUCED) return;
+  const colors = ['#E0356B', '#3ECFA3', '#F5B841', '#6EC6E6', '#F3E9D2'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = (Math.random() * 100) + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (2.2 + Math.random() * 2.2) + 's';
+    c.style.animationDelay = (Math.random() * .6) + 's';
+    c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5400);
+  }
+}
+
+/* ============================================================
+   GSAP: walkway draw + traveling marker, room reveals
+   RULES: never CSS opacity:0 + gsap.from; everything ends visible;
+   6s failsafe force-reveals; reduced-motion skips it all.
+   ============================================================ */
+/* Build the winding walkway from the REAL DOM positions:
+   entrance mat -> each room's connector point (alternating sides) -> exit.
+   Re-run after renderMap() and on (debounced) resize. */
+function buildPipe() {
+  const map = $('factory-map');
+  const svg = $('pipe-svg');
+  if (!map || !svg) return;
+  const isMobile = window.innerWidth <= 760;
+  const W = Math.max(1, map.clientWidth);
+  const H = Math.max(1, map.scrollHeight);
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const mapRect = map.getBoundingClientRect();
+  const pts = [];
+  const spurs = [];
+  walkAnchors = [];
+
+  const ent = map.querySelector('#factory-entrance .ent-mat') || map.querySelector('#factory-entrance');
+  if (ent) {
+    const r = ent.getBoundingClientRect();
+    pts.push({ x: Math.round(r.left - mapRect.left + r.width / 2), y: Math.round(r.bottom - mapRect.top) });
+  }
+  // the walkway runs THROUGH each door's threshold: wide sweeping S-curves
+  // because consecutive door anchors alternate across the full world width
+  map.querySelectorAll('#rooms-holder .room').forEach((room, i) => {
+    const vis = room.querySelector('.door-visual') || room;
+    const r = vis.getBoundingClientRect();
+    let px, py;
+    if (isMobile) {
+      // calmer winding on mobile: gentle alternating offsets around the center
+      px = Math.round(W / 2 + ((i % 2 === 0) ? -1 : 1) * Math.min(56, W * 0.12));
+      py = Math.round(r.top - mapRect.top + r.height + 30);
+    } else {
+      px = Math.round(r.left - mapRect.left + r.width / 2);
+      py = Math.round(r.bottom - mapRect.top + 28); // just past the checker threshold
+    }
+    pts.push({ x: px, y: py });
+    walkAnchors.push({ x: px, y: py });
+  });
+  const exit = map.querySelector('#factory-exit');
+  if (exit) {
+    const r = exit.getBoundingClientRect();
+    pts.push({ x: Math.round(r.left - mapRect.left + r.width / 2), y: Math.round(r.top - mapRect.top + 6) });
+  }
+  if (pts.length < 2) { walkLen = 0; return; }
+
+  // sweeping S-curves: the path leaves the entrance vertically, then runs
+  // HORIZONTALLY through each door threshold (never through a facade),
+  // diving across the open ground between rooms, and arrives at the exit vertically
+  let d = 'M' + pts[0].x + ' ' + pts[0].y;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    const my = Math.round((a.y + b.y) / 2);
+    const mx = Math.round((a.x + b.x) / 2);
+    const c1 = (i === 1) ? (a.x + ' ' + my) : (mx + ' ' + a.y);
+    const c2 = (i === pts.length - 1) ? (b.x + ' ' + my) : (mx + ' ' + b.y);
+    d += ' C ' + c1 + ', ' + c2 + ', ' + b.x + ' ' + b.y;
+  }
+  ['path-under', 'path-cobble', 'path-bricks', 'walk-mask-path'].forEach((id) => {
+    const el = $(id);
+    if (el) el.setAttribute('d', d);
+  });
+  const sp = $('path-spurs');
+  if (sp) sp.setAttribute('d', spurs.join(' '));
+  walkMainPath = $('path-cobble');
+  try { walkLen = walkMainPath.getTotalLength(); } catch (e) { walkLen = 0; }
+  // map each room anchor to its nearest length along the path (door proximity ranges)
+  if (walkLen) {
+    try {
+      walkAnchors.forEach((a) => { a.len = null; a._bd = Infinity; });
+      const SAMPLES = 240;
+      for (let s = 0; s <= SAMPLES; s++) {
+        const l = walkLen * s / SAMPLES;
+        const pt = walkMainPath.getPointAtLength(l);
+        walkAnchors.forEach((a) => {
+          const d = (pt.x - a.x) * (pt.x - a.x) + (pt.y - a.y) * (pt.y - a.y);
+          if (d < a._bd) { a._bd = d; a.len = l; }
+        });
+      }
+      walkAnchors.forEach((a) => { delete a._bd; });
+    } catch (e) {}
+  }
+  positionRiverBridge(map, mapRect);
+}
+
+/* park the brass bridge exactly where the walkway crosses the river:
+   find the path point whose y sits nearest the river's midline, then center
+   the bridge (both left AND top) on that crossing so it rests on the water. */
+function positionRiverBridge(map, mapRect) {
+  const river = map.querySelector('.grounds-river');
+  const bridge = $('river-bridge');
+  if (!river || !bridge || !walkMainPath || !walkLen) return;
+  const rr = river.getBoundingClientRect();
+  const riverTop = rr.top - mapRect.top;      // river box, in map coords
+  const riverH = rr.height;
+  const riverMid = riverTop + riverH * 0.5;
+  let best = null, bestD = Infinity;
+  const step = walkLen / 600;
+  try {
+    for (let l = 0; l <= walkLen; l += step) {
+      const pt = walkMainPath.getPointAtLength(l);
+      if (pt.y < riverTop - 20 || pt.y > riverTop + riverH + 20) continue;
+      const d = Math.abs(pt.y - riverMid);
+      if (d < bestD) { bestD = d; best = pt; }
+    }
+  } catch (e) {}
+  if (!best) return;
+  const bw = bridge.offsetWidth || 150;
+  const bh = bridge.offsetHeight || 84;
+  // coordinates relative to the river div (the bridge's offset parent)
+  bridge.style.left = Math.round(best.x - (rr.left - mapRect.left) - bw / 2) + 'px';
+  bridge.style.top = Math.round((best.y - riverTop) - bh * 0.5) + 'px';
+  bridge.style.bottom = 'auto';
+  bridge.style.transform = 'none';
+}
+
+/* draw progress 0..1: under-stroke + brick mask reveal.
+   The character targets the same progress (unless the keyboard is driving). */
+function updateWalkProgress(p) {
+  if (!walkLen) return;
+  const off = walkLen * (1 - p);
+  ['path-under', 'walk-mask-path'].forEach((id) => {
+    const el = $(id);
+    if (el) { el.style.strokeDasharray = walkLen; el.style.strokeDashoffset = off; }
+  });
+  if (!keyMode) {
+    charTarget = walkLen * p;
+    // rAF-starved tab (throttled/background): position directly off the scroll
+    if (!lastLoopT || performance.now() - lastLoopT > 400) {
+      charLen = charTarget;
+      setCharPos(charLen, 0);
+    }
+    updateProximity(); // keep the door plates honest even between rAF ticks
+  }
+  if (p > 0.01) showWalkHint();
+}
+
+/* place the character at a length along the walkway; delta sets facing */
+function setCharPos(len, delta) {
+  const mk = $('walk-marker');
+  if (!mk || !walkMainPath || !walkLen) return;
+  let pt, ahead;
+  try {
+    pt = walkMainPath.getPointAtLength(len);
+    ahead = walkMainPath.getPointAtLength(Math.min(walkLen, len + 4));
+  } catch (e) { return; }
+  mk.style.transform = 'translate(' + pt.x + 'px,' + pt.y + 'px) translate(-50%,-96%)';
+  mk.style.opacity = 1;
+  if (delta && Math.abs(delta) > 0.25 && ahead) {
+    const tx = (ahead.x - pt.x) * (delta >= 0 ? 1 : -1); // x of the travel direction
+    if (tx < -0.6) charFacingLeft = true;
+    else if (tx > 0.6) charFacingLeft = false;
+    const flip = mk.querySelector('.wc-flip');
+    if (flip) flip.style.transform = charFacingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+  }
+}
+
+/* THE one rAF loop: keyboard velocity, easing toward the target,
+   walk/idle classes, camera follow (game mode), door proximity. */
+function charLoop(t) {
+  charRAF = requestAnimationFrame(charLoop);
+  lastLoopT = performance.now();
+  if (!walkLen || !walkMainPath) return;
+  const dt = Math.min(60, lastFrameT ? t - lastFrameT : 16.7);
+  lastFrameT = t;
+  const f = dt / 16.7;
+
+  if (keyMode) {
+    if (keysDown.fwd) charVel += 1.15 * f;
+    if (keysDown.back) charVel -= 1.15 * f;
+    charVel = Math.max(-11, Math.min(11, charVel * Math.pow(0.87, f)));
+    charTarget = Math.max(0, Math.min(walkLen, charTarget + charVel * f));
+    // hand control back to the scroll drive after 1.5s without input
+    if (!keysDown.fwd && !keysDown.back && Math.abs(charVel) < 0.08 && t - keyLastInput > 1500) {
+      keyMode = false; charVel = 0;
+    }
+  }
+
+  const prev = charLen;
+  charLen += (charTarget - charLen) * Math.min(1, 0.16 * f);
+  if (Math.abs(charTarget - charLen) < 0.35) charLen = charTarget;
+  const delta = charLen - prev;
+  if (Math.abs(delta) > 0.25) lastMoveT = t;
+  setCharPos(charLen, delta);
+
+  const mk = $('walk-marker');
+  if (mk) {
+    const moving = t - lastMoveT < 180;
+    mk.classList.toggle('walking', moving);
+    mk.classList.toggle('idle', !moving && t - lastMoveT > 1500);
+  }
+  if (keyMode) cameraFollow();
+  updateProximity();
+}
+
+/* game mode camera: runs EVERY frame so the character stays vertically centered
+   (~52% of the viewport) and can never leave the frame; clamped to the page bounds */
+function cameraFollow() {
+  const map = $('factory-map');
+  if (!map || !walkMainPath) return;
+  let pt; try { pt = walkMainPath.getPointAtLength(charLen); } catch (e) { return; }
+  const mapTop = map.getBoundingClientRect().top + window.scrollY;
+  let desired = mapTop + pt.y - window.innerHeight * 0.52;
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  desired = Math.max(0, Math.min(maxScroll, desired));
+  window.scrollTo(0, desired);
+}
+
+/* the keys drive the game ONLY when the map is meaningfully in view
+   and no form field is focused; never while reading the day view below */
+function mapContextActive() {
+  if (!walkLen || TOUCH || REDUCED) return false;
+  const ae = document.activeElement;
+  if (ae && (/^(INPUT|TEXTAREA|SELECT)$/i.test(ae.tagName) || ae.isContentEditable)) return false;
+  const map = $('factory-map');
+  if (!map) return false;
+  const r = map.getBoundingClientRect();
+  return r.top < window.innerHeight - 90 && r.bottom > 150;
+}
+
+function onWalkKeyDown(e) {
+  const k = e.key;
+  const fwd = k === 'ArrowDown' || k === 's' || k === 'S';
+  const back = k === 'ArrowUp' || k === 'w' || k === 'W';
+  if (fwd || back) {
+    if (!mapContextActive()) return;
+    e.preventDefault(); // the page must not also scroll while game mode is engaged
+    keyMode = true;
+    keyLastInput = performance.now();
+    if (fwd) keysDown.fwd = true; else keysDown.back = true;
+    hideWalkHint();
+    return;
+  }
+  if (k === 'Enter') {
+    if (!mapContextActive() || nearRoomIdx < 0) return;
+    const ae = document.activeElement;
+    // never steal Enter from a focused button/link/room (a11y click path)
+    if (ae && (ae.tagName === 'BUTTON' || ae.tagName === 'A' || ae.classList.contains('room'))) return;
+    e.preventDefault();
+    keyMode = false; charVel = 0; // release the camera before any scroll-to
+    keysDown.fwd = keysDown.back = false;
+    const day = nearRoomIdx + 1;
+    if (isDayUnlocked(day)) openDay(day, true);
+    else { lockedDayToast(day); rattleRoom(day); }
+  }
+}
+function onWalkKeyUp(e) {
+  const k = e.key;
+  if (k === 'ArrowDown' || k === 's' || k === 'S') keysDown.fwd = false;
+  if (k === 'ArrowUp' || k === 'w' || k === 'W') keysDown.back = false;
+  keyLastInput = performance.now();
+}
+
+/* door proximity: the nearest room within range wakes up (plate slides out) */
+const DOOR_RANGE = 95;
+function updateProximity() {
+  if (!walkAnchors.length) { if (nearRoomIdx >= 0) setNearRoom(-1); return; }
+  let best = -1, bestD = DOOR_RANGE;
+  for (let i = 0; i < walkAnchors.length; i++) {
+    const a = walkAnchors[i];
+    if (a.len == null) continue;
+    const d = Math.abs(a.len - charLen);
+    if (d < bestD) { bestD = d; best = i; }
+  }
+  if (best !== nearRoomIdx) setNearRoom(best);
+}
+function setNearRoom(idx) {
+  if (nearRoomIdx >= 0) {
+    const old = document.querySelector('#rooms-holder .room[data-day="' + (nearRoomIdx + 1) + '"]');
+    if (old) old.classList.remove('near');
+  }
+  nearRoomIdx = idx;
+  if (idx >= 0) {
+    const room = document.querySelector('#rooms-holder .room[data-day="' + (idx + 1) + '"]');
+    if (room) room.classList.add('near');
+  }
+}
+function rattleRoom(day) {
+  const room = document.querySelector('#rooms-holder .room[data-day="' + day + '"]');
+  if (!room) return;
+  room.classList.add('rattle');
+  setTimeout(() => room.classList.remove('rattle'), 650);
+}
+
+/* one-time hint chip near the character */
+function showWalkHint() {
+  if (walkHintShown) return;
+  if (TOUCH || REDUCED || LS.get(P + '-walkhint')) { walkHintShown = true; return; }
+  walkHintShown = true;
+  const h = $('walk-hint');
+  if (!h) return;
+  h.classList.add('show');
+  LS.set(P + '-walkhint', '1');
+  setTimeout(hideWalkHint, 8000);
+}
+function hideWalkHint() {
+  const h = $('walk-hint');
+  if (h) h.classList.remove('show');
+}
+
+/* reduced-motion / no-gsap: path fully drawn, character pinned at the current room
+   (no walk cycle; proximity plates still work via hover/focus CSS) */
+function setWalkStatic() {
+  ['path-under', 'walk-mask-path'].forEach((id) => {
+    const el = $(id);
+    if (el) { el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = '0'; }
+  });
+  const mk = $('walk-marker');
+  if (mk && walkAnchors.length) {
+    const states = computeDayStates();
+    const cur = states.find((s) => s.isCurrent) || states[0];
+    const a = walkAnchors[cur.day - 1];
+    if (a) {
+      mk.style.transform = 'translate(' + a.x + 'px,' + a.y + 'px) translate(-50%,-96%)';
+      mk.style.opacity = 1;
+      mk.classList.remove('walking');
+      if (a.len != null) { charLen = charTarget = a.len; }
+      setNearRoom(cur.day - 1);
+    }
+  }
+}
+
+/* debounced rebuild: runs after renderMap() and on resize */
+function scheduleWalkRebuild() {
+  clearTimeout(walkRebuildT);
+  walkRebuildT = setTimeout(() => {
+    if (!animationsInited) return;
+    // crossing the mobile/desktop breakpoint needs a full re-layout of the world
+    const nowMobile = window.innerWidth <= 760;
+    if (renderMap._mobile !== undefined && renderMap._mobile !== nowMobile) { renderMap(); return; }
+    nearRoomIdx = -1; // the rooms DOM may have been rebuilt; re-detect proximity
+    buildPipe();
+    if (walkST) {
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+      updateWalkProgress(walkST.progress || 0);
+      charLen = charTarget; // snap to the rebuilt path, no cross-map sprint
+      setCharPos(charLen, 0);
+    } else {
+      setWalkStatic();
+    }
+  }, 180);
+}
+
+function initAnimations() {
+  if (!window.gsap || !window.ScrollTrigger || REDUCED) {
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    animationsInited = true;
+    buildPipe();
+    setWalkStatic();
+    window.addEventListener('resize', scheduleWalkRebuild);
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+  animationsInited = true;
+
+  buildPipe();
+  // the character starts at the BEGINNING of the path (the entrance), progress 0,
+  // BEFORE any scroll drive kicks in; he then walks (eased) to wherever scroll says
+  charLen = charTarget = 0;
+  setCharPos(0, 0);
+  lastLoopT = performance.now(); // the loop is about to run: no snap-to-target shortcut
+
+  // game layer: one rAF loop for the character + keyboard walk (non-touch only)
+  if (!charRAF) charRAF = requestAnimationFrame(charLoop);
+
+  // start 'top 10%': at page load (no scroll) the map top is always lower than
+  // 10% of the viewport, so progress = 0 and the character stands at the entrance
+  walkST = ScrollTrigger.create({
+    trigger: '#factory-map', start: 'top 10%', end: 'bottom 60%',
+    onUpdate: (self) => updateWalkProgress(self.progress),
+  });
+  updateWalkProgress(walkST.progress || 0);
+  if (!TOUCH && !initAnimations._keysWired) {
+    initAnimations._keysWired = true;
+    window.addEventListener('keydown', onWalkKeyDown);
+    window.addEventListener('keyup', onWalkKeyUp);
+    // a manual wheel scroll takes the camera back immediately (no fighting)
+    window.addEventListener('wheel', () => { keyMode = false; charVel = 0; }, { passive: true });
+  }
+
+  // room reveals: gsap.set + gsap.to (ends visible)
+  document.querySelectorAll('#rooms-holder .room.reveal, .tour-hero').forEach((el) => {
+    gsap.set(el, { opacity: 0, y: 34 });
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: .8, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+    });
+  });
+
+  window.addEventListener('resize', scheduleWalkRebuild);
+}
+
+/* 6s failsafe: force-reveal everything no matter what.
+   Armed inside finishEnter (not at parse time) so a slow login cannot kill the animations. */
+function armRevealFailsafe() {
+  setTimeout(() => {
+    document.documentElement.classList.add('reveal-all');
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+  }, 6000);
+}
+
+/* ============================================================
+   ENTER THE FACTORY (post-auth)
+   ============================================================ */
+async function enterFactory() {
+  if (portalRendered) return;
+  portalRendered = true;
+
+  loadProgress();
+  await fetchRound();
+  await mergeServerProgress();
+
+  $('chip-email').textContent = userEmail;
+  hideLoading();
+
+  // gates swing open, then the app fades in
+  const gate = $('gate-screen');
+  const wasGateVisible = gate.classList.contains('active');
+  if (wasGateVisible && !REDUCED) {
+    gate.classList.add('open');
+    setTimeout(finishEnter, 1500);
+  } else {
+    finishEnter();
+  }
+  track('login');
+}
+
+function finishEnter() {
+  showScreen(null);
+  $('app').classList.add('active');
+  renderMap();
+  initAnimations();
+  armRevealFailsafe();
+  startWatermarkRotation();
+  wireSupportFab();
+
+  // the Factory Map is the home view. Only open a day directly if the URL asks for one (#dayN).
+  const hm = /#day(\d+)/.exec(location.hash || '');
+  if (hm) {
+    const n = parseInt(hm[1], 10);
+    if (n >= 1 && n <= CONFIG.TOTAL_DAYS && isDayUnlocked(n)) { openDay(n, true); }
+    else { showMap(); }
+  } else {
+    // land on the map, parked at the room you are up to
+    activeDay = 0;
+    syncDayStrip(0, false);
+    requestAnimationFrame(() => {
+      buildPipe();
+      const day = firstUnlockedIncompleteDay();
+      const room = document.querySelector('#rooms-holder .room[data-day="' + day + '"]');
+      if (room && day > 1) {
+        const y = room.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.32;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'auto' });
+      }
+    });
+  }
+
+  // 60s re-check so days unlock live
+  setInterval(() => { renderMap(); }, 60000);
+
+  window.addEventListener('hashchange', () => {
+    const m2 = /#day(\d+)/.exec(location.hash || '');
+    if (m2) {
+      const n = parseInt(m2[1], 10);
+      if (n >= 1 && n <= CONFIG.TOTAL_DAYS && isDayUnlocked(n) && n !== activeDay) openDay(n, true);
+    }
+  });
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+async function boot() {
+  // wire retry/sign controls BEFORE anything that can fail, so the error screen always works
+  $('btn-signin').addEventListener('click', signIn);
+  $('btn-signout').addEventListener('click', signOut);
+  $('na-retry').addEventListener('click', signOut);
+  $('rv-signout').addEventListener('click', signOut);
+  $('err-retry').addEventListener('click', () => location.reload());
+
+  // LOCAL PREVIEW MODE: on localhost only, adding ?preview to the URL walks straight
+  // into the factory with no login (for design review). Never active on the real domain.
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+  if (IS_LOCAL && /[?&]preview\b/.test(location.search)) {
+    userEmail = 'preview@localhost';
+    userRound = 'both';
+    await enterFactory();
+    return;
+  }
+
+  // Supabase CDN failure must not leave the loader spinning forever
+  try {
+    if (!window.supabase || !window.supabase.createClient) throw new Error('supabase-js failed to load');
+    initSupabase();
+  } catch (e) {
+    hideLoading();
+    $('err-msg').textContent = 'The gates are stuck, refresh to try again.';
+    showScreen('error-screen');
+    return;
+  }
+
+  // auth listener: react ONLY to SIGNED_IN, and only if not already rendered
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event !== 'SIGNED_IN') return; // ignore TOKEN_REFRESHED etc.
+    // strip the OAuth hash now that the client has consumed it
+    if (location.hash && location.hash.indexOf('access_token') !== -1) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    }
+    if (portalRendered || checking) return;
+    if (session && session.user && session.user.email) {
+      checking = true;
+      checkAllowed(session.user.email, false);
+    }
+  });
+
+  // existing session?
+  try {
+    const { data } = await sb.auth.getSession();
+    if (data && data.session && data.session.user) {
+      if (!portalRendered && !checking) {
+        checking = true;
+        await checkAllowed(data.session.user.email, false);
+      }
+      return;
+    }
+  } catch (e) {}
+
+  // no session: show the gates
+  hideLoading();
+  showScreen('gate-screen');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+// Local-only QA hook: lets automated visual tests enter the factory without
+// real auth. Exists ONLY on localhost; never active on the deployed domain.
+if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+  window.__wonkaQA = {
+    enter(email) {
+      userEmail = email || 'preview@localhost';
+      userRound = 'both';
+      return enterFactory();
+    },
+    openDay(n) { return openDay(n, true); }
+  };
+}
+
+})();
+</script>
+
+<!-- ============================================================
+DEPLOYMENT CHECKLIST (Jay: complete these before launch)
+
+1. SUPABASE: rounds table
+   INSERT INTO rounds (id, start_date) VALUES ('wonka_r1', 'YYYY-MM-DD');
+   TODO: real start date (currently FALLBACK_START_DATE = 2026-09-07 placeholder).
+
+2. SUPABASE: allowed_emails
+   Each paying member gets a row with round = 'wonka_r1'
+   (or round = 'both' for all-access; early_access_max_day for previews).
+
+3. SUPABASE: auth redirect URL
+   Add the deployed portal URL (e.g. https://jaygptpro.com/wonka-portal/)
+   to Authentication > URL Configuration > Redirect URLs.
+
+4. SUPABASE: tables reused as-is from the Donna portal:
+   user_progress (user_email, round, day_num, completed_at, checks jsonb,
+   last_viewed_at; unique on user_email,round,day_num) and user_events.
+   No schema changes needed; wonka rows are separated by round = 'wonka_r1'.
+
+5. CONFIG TODOs in this file:
+   - WHATSAPP_LINK: paste the group invite link
+   - FALLBACK_START_DATE: real round start date
+   - Every VIMEO_ID_Dx_Ly in the DAYS data: real Vimeo video ids
+   - Candy-bar resource tiles: point each href at the real download URL
+     (wonka-starter-kit.zip, PDFs, one-pagers)
+
+6. STORAGE: this portal uses localStorage prefix 'wonka-bootcamp'.
+   It never touches 'donna-challenge' keys, so both portals can live
+   on the same domain.
+
+7. SUPABASE: RLS policies
+   allowed_emails must allow anon SELECT for round = 'wonka_r1' rows;
+   user_progress and user_events must allow anon INSERT/UPSERT
+   (scoped to round = 'wonka_r1').
+
+8. VIMEO: set every bootcamp video to domain privacy,
+   allowlisting jaygptpro.com, so films only play inside the portal.
+
+9. TEST BEFORE LAUNCH:
+   - Sign in with an allowed email, a non-allowed email, and a revoked one
+   - Check a locked day shows the themed toast with the local unlock time
+   - Complete a day: lever, seal, confetti, map room lights up
+   - Mobile at 375px: single column, no elevator rail, all readable
+============================================================ -->
+</body>
+</html>
