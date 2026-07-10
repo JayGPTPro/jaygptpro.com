@@ -24,6 +24,18 @@
 <link rel="icon" href="assets/logo.png">
 <link rel="apple-touch-icon" href="assets/logo.png">
 
+<!-- Structured data: Person + Organization -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+  {"@type":"Person","@id":"https://jaygptpro.com/#jay","name":"Jay Margaliot","url":"https://jaygptpro.com/",
+   "image":"https://jaygptpro.com/test/assets/jay-hero.jpg","jobTitle":"AI Integration Specialist",
+   "description":"Helping business owners put AI to work.",
+   "sameAs":["https://www.youtube.com/@Jay_Margaliot","https://www.linkedin.com/in/jay-margaliot/","https://www.instagram.com/jay_margaliot","https://www.facebook.com/profile.php?id=100000346298033"]},
+  {"@type":"Organization","@id":"https://jaygptpro.com/#org","name":"Jay GPT PRO LLC","url":"https://jaygptpro.com/",
+   "logo":"https://jaygptpro.com/test/assets/logo.png","founder":{"@id":"https://jaygptpro.com/#jay"}}
+]}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Heebo:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -47,6 +59,7 @@ gtag('js',new Date());gtag('config','G-M4RK6H5NMH');
 html{scroll-behavior:smooth}
 html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 html[dir="rtl"] body{font-family:Heebo,system-ui,sans-serif}
+html{overflow-x:hidden}
 body{overflow-x:hidden;position:relative}
 a{color:inherit}
 img{max-width:100%}
@@ -167,6 +180,7 @@ h1 .grad{background:linear-gradient(110deg,var(--blue-light),var(--cyan),var(--v
 .hero-photo{position:absolute;inset:0;z-index:2;border-radius:22px;overflow:hidden;will-change:transform;
   -webkit-mask-image:radial-gradient(120% 100% at 72% 42%,#000 55%,transparent 88%);
           mask-image:radial-gradient(120% 100% at 72% 42%,#000 55%,transparent 88%)}
+.hero-photo picture{display:block;width:100%;height:100%}
 .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:right 30%;
   filter:contrast(1.06) saturate(.92) brightness(.98);display:block}
 .hero-photo::before{content:"";position:absolute;inset:0;z-index:2;
@@ -242,6 +256,15 @@ html[dir="rtl"] .tile:hover .go .arrow{transform:scaleX(-1) translateX(4px)}
 .tile.lg.alt .idx{color:rgba(139,92,246,.1)}
 .tile.md{grid-column:span 2;min-height:160px}
 .tile.sm{grid-column:span 1;min-height:150px}
+.tile.wide{grid-column:1/-1;min-height:96px;flex-direction:row;align-items:center;gap:20px}
+.tile.wide .t-top{margin-bottom:0}
+.tile.wide p{margin-top:0;flex:1}
+.tile.wide .go{margin-top:0;flex:0 0 auto;margin-inline-end:64px}
+@media(max-width:640px){
+  .tile.wide{flex-direction:column;align-items:flex-start;gap:0}
+  .tile.wide p{margin-top:14px}
+  .tile.wide .go{margin-top:18px}
+}
 .tile .t-online{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:.66rem;
   letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
 .tile .micon{width:22px;height:22px;flex:0 0 auto;color:var(--blue-light)}
@@ -272,6 +295,22 @@ html[dir="rtl"] .spotlight .eyebrow{letter-spacing:.04em}
 html[dir="rtl"] .spotlight h2{letter-spacing:0;line-height:1.3}
 .spotlight .sl-line{font-size:clamp(1rem,1.8vw,1.2rem);color:var(--dim);line-height:1.65;max-width:48ch;margin:0 auto 30px;position:relative;z-index:1}
 .spotlight .btn{font-size:1.05rem;padding:16px 34px;position:relative;z-index:1}
+.spotlight .sl-meta{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:22px;
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);position:relative;z-index:1}
+html[dir="rtl"] .spotlight .sl-meta{letter-spacing:.02em}
+.spotlight .sl-meta .sep{color:rgba(148,163,184,.4)}
+
+/* ===== TESTIMONIALS ===== */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,20px)}
+.quote{display:flex;flex-direction:column;margin:0;background:var(--card);border:1px solid var(--glass-border);
+  border-radius:var(--radius);padding:clamp(20px,2.4vw,28px)}
+.quote .qmark{font-size:2.2rem;line-height:1;color:var(--blue-light);opacity:.5;font-weight:800;margin-bottom:10px;font-family:Georgia,serif}
+.quote blockquote{margin:0}
+.quote p{font-size:.95rem;line-height:1.65;color:var(--text)}
+.quote .who{margin-top:auto;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+html[dir="rtl"] .quote .who{letter-spacing:.02em}
+@media(max-width:880px){.quotes{grid-template-columns:1fr}}
 
 /* ===== ABOUT + PROOF ===== */
 .about{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,4vw,48px);align-items:center}
@@ -356,7 +395,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       <button id="lang-en" type="button" data-lang="en" aria-pressed="true">EN</button>
       <button id="lang-he" type="button" data-lang="he" aria-pressed="false">עב</button>
     </div>
-    <a class="nav-cta" href="https://www.topdog.community/checkout/ai-vault" aria-label="Join the AI Vault"><span class="lbl" data-i18n="nav_cta">Join the AI Vault</span></a>
+    <a class="nav-cta" href="https://www.topdog.community/checkout/ai-vault" aria-label="Join the AI Vault" data-track="nav_vault"><span class="lbl" data-i18n="nav_cta">Join the AI Vault</span></a>
     <button class="hamburger" id="hamburger" type="button" aria-label="Menu">
       <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M1 1h16M1 7h16M1 13h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
@@ -376,17 +415,20 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
         <h1 id="h1" data-i18n-h1>Hi, I'm Jay. I help business owners <span class="grad">put AI to work</span>.</h1>
         <p class="sub" data-i18n="sub">Ten years in eCommerce, hundreds of tools tested, 10+ built. No code required. Here's everything I share, in one place.</p>
         <div class="ctas">
-          <a class="btn btn-primary mag" href="https://jaygptpro.com/donna-challenge/" data-i18n="cta_challenge">Join the Challenge</a>
-          <a class="btn btn-ghost mag" href="https://www.topdog.community/checkout/ai-vault" data-i18n="cta_vault">Enter the AI Vault</a>
+          <a class="btn btn-primary mag" href="https://jaygptpro.com/donna-challenge/" data-i18n="cta_challenge" data-track="hero_challenge">Join the Challenge</a>
+          <a class="btn btn-ghost mag" href="https://www.topdog.community/checkout/ai-vault" data-i18n="cta_vault" data-track="hero_vault">Enter the AI Vault</a>
         </div>
-        <a class="wa" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1">
+        <a class="wa" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" data-track="hero_whatsapp">
           <span data-i18n="wa">or join the free WhatsApp group</span> <span class="arrow">&rarr;</span>
         </a>
       </div>
       <div class="stage">
         <div class="photo-orbs" aria-hidden="true"><span class="o1"></span><span class="o2"></span></div>
         <div class="hero-photo" id="heroPhoto">
-          <img src="assets/jay-hero.jpg" alt="Jay Margaliot holding an AI key in front of a bank vault" fetchpriority="high" decoding="async" width="1024" height="1024">
+          <picture>
+            <source srcset="assets/jay-hero.webp" type="image/webp">
+            <img src="assets/jay-hero.jpg" alt="Jay Margaliot holding an AI key in front of a bank vault" fetchpriority="high" decoding="async" width="1024" height="1024">
+          </picture>
         </div>
         <div class="key-glow" aria-hidden="true"></div>
         <div class="lines" aria-hidden="true"></div>
@@ -408,7 +450,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
     <div class="bento reveal-batch">
 
       <!-- 1. AI Vault (LARGE money tile, secondary: warmed toward violet) -->
-      <a class="tile lg alt" href="https://www.topdog.community/checkout/ai-vault">
+      <a class="tile lg alt" href="https://www.topdog.community/checkout/ai-vault" data-track="tile_vault">
         <span class="idx" aria-hidden="true">01</span>
         <span class="t-online"><span class="online-dot" aria-hidden="true"></span><span data-i18n="online_live">Live community</span></span>
         <div class="t-top">
@@ -419,7 +461,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       </a>
 
       <!-- 2. Claude Code Challenge (LARGE money tile, flagship primary: brighter border + accent stripe) -->
-      <a class="tile lg primary" href="https://jaygptpro.com/donna-challenge/">
+      <a class="tile lg primary" href="https://jaygptpro.com/donna-challenge/" data-track="tile_challenge">
         <span class="idx" aria-hidden="true">02</span>
         <span class="t-online"><span class="online-dot" aria-hidden="true"></span><span data-i18n="online_open">Enrolling now</span></span>
         <div class="t-top">
@@ -430,7 +472,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       </a>
 
       <!-- 3. WhatsApp (MEDIUM) -->
-      <a class="tile md" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1">
+      <a class="tile md" href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" data-track="tile_whatsapp">
         <span class="idx" aria-hidden="true">03</span>
         <div class="t-top">
           <svg class="micon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm0 18.13h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
@@ -440,47 +482,25 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
         <span class="go"><span data-i18n="go_join">Join</span> <span class="arrow">&rarr;</span></span>
       </a>
 
-      <!-- 4. AI Toolbox (MEDIUM) -->
-      <a class="tile md" href="https://jaygptpro.com/ai-toolbox/">
+      <!-- 4. 1-on-1 Strategy Call (MEDIUM) -->
+      <a class="tile md" href="/call/" data-track="tile_call">
         <span class="idx" aria-hidden="true">04</span>
         <div class="t-top">
-          <svg class="micon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2 2 6-6a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3Z"/></svg>
-          <h3 data-i18n="card_toolbox_t">AI Toolbox</h3>
+          <svg class="micon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5C3 4.67 3.67 4 4.5 4H8l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v3.5c0 .83-.67 1.5-1.5 1.5C9.5 20 4 14.5 4 6.5"/></svg>
+          <h3 data-i18n="card_call_t">1-on-1 Strategy Call</h3>
         </div>
-        <p data-i18n="card_toolbox_d">115+ tools I've tested, sorted by what they do.</p>
-        <span class="go"><span data-i18n="go_browse">Browse</span> <span class="arrow">&rarr;</span></span>
+        <p data-i18n="card_call_d">A personal AI roadmap for your business. $400 / 45 min.</p>
+        <span class="go"><span data-i18n="go_book">Book</span> <span class="arrow">&rarr;</span></span>
       </a>
 
-      <!-- 5. Daily Claude Hacks (SMALL) -->
-      <a class="tile sm" href="https://jaygptpro.com/daily-claude-hacks/">
+      <!-- 5. Daily Claude Hacks (WIDE strip) -->
+      <a class="tile wide" href="https://jaygptpro.com/daily-claude-hacks/" data-track="tile_hacks">
         <span class="idx" aria-hidden="true">05</span>
         <div class="t-top">
           <h3 data-i18n="card_hacks_t">Daily Claude Hacks</h3>
         </div>
         <p data-i18n="card_hacks_d">A growing feed of practical Claude Code hacks.</p>
         <span class="go"><span data-i18n="go_read">Read</span> <span class="arrow">&rarr;</span></span>
-      </a>
-
-      <!-- 6. YouTube (SMALL) -->
-      <a class="tile sm" href="https://www.youtube.com/@Jay_Margaliot">
-        <span class="idx" aria-hidden="true">06</span>
-        <div class="t-top">
-          <svg class="micon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.6-.46-5.33a2.78 2.78 0 0 0-1.94-1.94C18.88 4.27 12 4.27 12 4.27s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 1.94C1 8.4 1 12 1 12s0 3.6.46 5.33c.26.96 1 1.7 1.94 1.94 1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-1.94C23 15.6 23 12 23 12ZM9.75 15.5v-7l6 3.5-6 3.5Z"/></svg>
-          <h3 data-i18n="card_yt_t">YouTube</h3>
-        </div>
-        <p data-i18n="card_yt_d">Tutorials, demos, and deep dives.</p>
-        <span class="go"><span data-i18n="go_watch">Watch</span> <span class="arrow">&rarr;</span></span>
-      </a>
-
-      <!-- 7. 1-on-1 Strategy Call (SMALL) -->
-      <a class="tile sm" href="mailto:info@jaygptpro.com?subject=Strategy Call Inquiry">
-        <span class="idx" aria-hidden="true">07</span>
-        <div class="t-top">
-          <svg class="micon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5C3 4.67 3.67 4 4.5 4H8l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v3.5c0 .83-.67 1.5-1.5 1.5C9.5 20 4 14.5 4 6.5"/></svg>
-          <h3 data-i18n="card_call_t">1-on-1 Strategy Call</h3>
-        </div>
-        <p data-i18n="card_call_d">A personal AI roadmap for your business. $500/hr.</p>
-        <span class="go"><span data-i18n="go_book">Book</span> <span class="arrow">&rarr;</span></span>
       </a>
 
     </div>
@@ -495,7 +515,39 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       <span class="eyebrow"><span class="tick" aria-hidden="true"></span><span data-i18n="feat_eyebrow">The flagship</span></span>
       <h2 data-i18n="feat_title">Your First AI Hire</h2>
       <p class="sl-line" data-i18n="feat_line">Five days. No code. You walk out with an AI assistant that actually works for your business.</p>
-      <a class="btn btn-primary mag" href="https://jaygptpro.com/donna-challenge/" data-i18n="feat_cta">Join the Challenge</a>
+      <a class="btn btn-primary mag" href="https://jaygptpro.com/donna-challenge/" data-i18n="feat_cta" data-track="spotlight_challenge">Join the Challenge</a>
+      <div class="sl-meta">
+        <span data-i18n="feat_meta1">400+ graduates</span>
+        <span class="sep" aria-hidden="true">&middot;</span>
+        <span data-i18n="feat_meta2">Next round starts this Monday</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS (real WhatsApp messages from challenge participants) ===== -->
+<section class="sec" id="results" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="label"><span class="tick" aria-hidden="true"></span><span data-i18n="lbl_quotes">Real messages from the group</span></span>
+      <h2 data-i18n="quotes_h2">What graduates say</h2>
+    </div>
+    <div class="quotes reveal-batch">
+      <figure class="quote">
+        <span class="qmark" aria-hidden="true">&ldquo;</span>
+        <blockquote><p>Now that Donna is up and running, it is honestly mind blowing. I love it so much! I'm actually starting to build out a few more Donnas for other parts of my business right now.</p></blockquote>
+        <figcaption class="who" data-i18n="q1_who">Challenge graduate</figcaption>
+      </figure>
+      <figure class="quote">
+        <span class="qmark" aria-hidden="true">&ldquo;</span>
+        <blockquote><p>I'm still on day 3 but Donna not only reads my files and emails, I'm using her as everything in my company&hellip; all her reports deliver more than I ask. This is impressive.</p></blockquote>
+        <figcaption class="who" data-i18n="q2_who">Amazon seller, day 3 of the challenge</figcaption>
+      </figure>
+      <figure class="quote">
+        <span class="qmark" aria-hidden="true">&ldquo;</span>
+        <blockquote><p>1st task I gave Donna was to help me make order in my calendar. She did a great job! I'm sure by the end of the challenge she'll be doing a lot more for me, while I sleep!</p></blockquote>
+        <figcaption class="who" data-i18n="q3_who">Challenge participant</figcaption>
+      </figure>
     </div>
   </div>
 </section>
@@ -505,7 +557,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
   <div class="wrap">
     <div class="about reveal">
       <div class="headshot">
-        <img src="assets/jay-headshot.jpg" alt="Jay Margaliot" loading="lazy" decoding="async" width="170" height="170">
+        <img src="assets/jay-headshot-2026.jpg" alt="Jay Margaliot" loading="lazy" decoding="async" width="170" height="170">
       </div>
       <div class="about-body">
         <span class="label"><span class="tick" aria-hidden="true"></span><span data-i18n="lbl_about">The short version</span></span>
@@ -514,6 +566,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
           <div class="counter"><b class="num" data-target="10" data-suffix="+">0</b><span data-i18n="ctr_years">years in eCommerce</span></div>
           <div class="counter"><b class="num" data-target="3300" data-suffix="+">0</b><span data-i18n="ctr_members">community members</span></div>
           <div class="counter"><b class="num" data-target="10" data-suffix="+">0</b><span data-i18n="ctr_tools">AI tools built</span></div>
+          <div class="counter"><b class="num" data-target="400" data-suffix="+">0</b><span data-i18n="ctr_grads">challenge graduates</span></div>
         </div>
       </div>
     </div>
@@ -531,19 +584,19 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       <span class="label"><span class="tick" aria-hidden="true"></span><span data-i18n="lbl_social">Find me around</span></span>
     </div>
     <div class="social">
-      <a href="https://www.youtube.com/@Jay_Margaliot" aria-label="YouTube" title="YouTube">
+      <a href="https://www.youtube.com/@Jay_Margaliot" aria-label="YouTube" title="YouTube" data-track="social_youtube">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.6-.46-5.33a2.78 2.78 0 0 0-1.94-1.94C18.88 4.27 12 4.27 12 4.27s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 1.94C1 8.4 1 12 1 12s0 3.6.46 5.33c.26.96 1 1.7 1.94 1.94 1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-1.94C23 15.6 23 12 23 12ZM9.75 15.5v-7l6 3.5-6 3.5Z"/></svg>
       </a>
-      <a href="https://www.linkedin.com/in/jay-margaliot/" aria-label="LinkedIn" title="LinkedIn">
+      <a href="https://www.linkedin.com/in/jay-margaliot/" aria-label="LinkedIn" title="LinkedIn" data-track="social_linkedin">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14ZM7.12 20.45H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>
       </a>
-      <a href="https://www.instagram.com/jay_margaliot" aria-label="Instagram" title="Instagram">
+      <a href="https://www.instagram.com/jay_margaliot" aria-label="Instagram" title="Instagram" data-track="social_instagram">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
       </a>
-      <a href="https://www.facebook.com/profile.php?id=100000346298033" aria-label="Facebook" title="Facebook">
+      <a href="https://www.facebook.com/profile.php?id=100000346298033" aria-label="Facebook" title="Facebook" data-track="social_facebook">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.08 24 18.09 24 12.07Z"/></svg>
       </a>
-      <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" aria-label="WhatsApp" title="WhatsApp">
+      <a href="https://chat.whatsapp.com/F1YcpZGHueh2oSEhcsfjc1" aria-label="WhatsApp" title="WhatsApp" data-track="social_whatsapp">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.83 14.13c-.21.58-1.2 1.11-1.68 1.18-.43.06-.97.09-1.56-.1-.36-.11-.82-.26-1.41-.52-2.48-1.07-4.11-3.57-4.23-3.74-.12-.16-1.01-1.34-1.01-2.56 0-1.22.64-1.82.86-2.07.23-.25.49-.31.66-.31h.48c.15.01.36-.05.56.43.2.5.7 1.72.76 1.84.06.12.1.26.02.43-.09.16-.13.27-.25.41-.12.14-.26.32-.37.43-.12.13-.25.26-.11.51.15.25.64 1.06 1.38 1.72.94.84 1.74 1.11 1.99 1.23.25.13.4.11.54-.06.15-.16.63-.72.79-.97.17-.25.33-.21.56-.13.22.09 1.44.69 1.69.81.25.12.41.18.47.28.07.11.07.6-.14 1.18Z"/></svg>
       </a>
       <!-- TODO TikTok: no verifiable handle. @jatgptpro/@jaygptpro/@jay_margaliot all dead as of build. Add only after Jay confirms a real, live handle. -->
@@ -568,7 +621,7 @@ footer{position:relative;z-index:2;background:#070b16;border-top:1px solid var(-
       <div class="foot-bottom">
         <div class="foot-meta">
           <span data-i18n="copyright">© 2026 Jay GPT PRO LLC</span>
-          <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>
+          <a href="mailto:info@jaygptpro.com" data-track="footer_email">info@jaygptpro.com</a>
           <a href="/privacy-policy.html" data-i18n="privacy">Privacy Policy</a>
         </div>
         <span class="built-badge"><span class="tick" aria-hidden="true"></span><span data-i18n="built">Built with AI</span></span>
@@ -604,14 +657,17 @@ var I18N={
     card_toolbox_t:"AI Toolbox", card_toolbox_d:"115+ tools I've tested, sorted by what they do.",
     card_hacks_t:"Daily Claude Hacks", card_hacks_d:"A growing feed of practical Claude Code hacks.",
     card_yt_t:"YouTube", card_yt_d:"Tutorials, demos, and deep dives.",
-    card_call_t:"1-on-1 Strategy Call", card_call_d:"A personal AI roadmap for your business. $500/hr.",
+    card_call_t:"1-on-1 Strategy Call", card_call_d:"A personal AI roadmap for your business. $400 / 45 min.",
     go_enter:"Enter", go_start:"Start", go_join:"Join", go_browse:"Browse", go_read:"Read", go_watch:"Watch", go_book:"Book",
     feat_eyebrow:"The flagship", feat_title:"Your First AI Hire",
     feat_line:"Five days. No code. You walk out with an AI assistant that actually works for your business.",
     feat_cta:"Join the Challenge",
+    feat_meta1:"400+ graduates", feat_meta2:"Next round starts this Monday",
+    lbl_quotes:"Real messages from the group", quotes_h2:"What graduates say",
+    q1_who:"Challenge graduate", q2_who:"Amazon seller, day 3 of the challenge", q3_who:"Challenge participant",
     lbl_about:"The short version",
     about_bio:"I'm not a developer. I'm a business owner who learned to make AI run real parts of my business, and now I teach others how. Everything here is something I actually use.",
-    ctr_years:"years in eCommerce", ctr_members:"community members", ctr_tools:"AI tools built",
+    ctr_years:"years in eCommerce", ctr_members:"community members", ctr_tools:"AI tools built", ctr_grads:"challenge graduates",
     lbl_social:"Find me around",
     foot_close:"One link. Everything I do. Pick where you want to start.",
     foot_status:"All systems online",
@@ -636,14 +692,17 @@ var I18N={
     card_toolbox_t:"ארגז כלי AI", card_toolbox_d:"115+ כלים שבדקתי, מסודרים לפי מה שהם עושים.",
     card_hacks_t:"Daily Claude Hacks", card_hacks_d:"פיד מתעדכן של טריקים פרקטיים לקלוד קוד.",
     card_yt_t:"יוטיוב", card_yt_d:"הדרכות, דמואים והעמקות.",
-    card_call_t:"שיחת אסטרטגיה 1-on-1", card_call_d:"מפת דרכים אישית ל-AI בעסק שלך. $500 לשעה.",
+    card_call_t:"שיחת אסטרטגיה 1-on-1", card_call_d:"מפת דרכים אישית ל-AI בעסק שלך. $400 ל-45 דקות.",
     go_enter:"כניסה", go_start:"להתחיל", go_join:"הצטרפו", go_browse:"לעיון", go_read:"לקריאה", go_watch:"לצפייה", go_book:"לתיאום",
     feat_eyebrow:"המוצר הדגל", feat_title:"העובד הראשון שלך ב-AI",
     feat_line:"חמישה ימים. בלי קוד. אתם יוצאים עם עוזר AI שבאמת עובד לעסק שלכם.",
     feat_cta:"הצטרפו לאתגר",
+    feat_meta1:"400+ בוגרים", feat_meta2:"הסבב הבא מתחיל ביום שני הקרוב",
+    lbl_quotes:"הודעות אמיתיות מהקבוצה", quotes_h2:"מה אומרים הבוגרים",
+    q1_who:"בוגר האתגר", q2_who:"מוכרת אמזון, יום 3 באתגר", q3_who:"משתתף באתגר",
     lbl_about:"הגרסה הקצרה",
     about_bio:"אני לא מפתח. אני בעל עסק שלמד לגרום ל-AI לנהל חלקים אמיתיים מהעסק שלו, ועכשיו אני מלמד אחרים איך. כל מה שכאן זה משהו שאני באמת משתמש בו.",
-    ctr_years:"שנים באיקומרס", ctr_members:"חברי קהילה", ctr_tools:"כלי AI שבניתי",
+    ctr_years:"שנים באיקומרס", ctr_members:"חברי קהילה", ctr_tools:"כלי AI שבניתי", ctr_grads:"בוגרי האתגר",
     lbl_social:"איפה למצוא אותי",
     foot_close:"לינק אחד. כל מה שאני עושה. בחרו איפה להתחיל.",
     foot_status:"כל המערכות פעילות",
@@ -706,6 +765,20 @@ function init(){
   var enBtn=document.getElementById('lang-en'),heBtn=document.getElementById('lang-he');
   if(enBtn) enBtn.addEventListener('click',function(){applyLang('en');});
   if(heBtn) heBtn.addEventListener('click',function(){applyLang('he');});
+
+  // --- GA click tracking on every money link (data-track) ---
+  document.querySelectorAll('[data-track]').forEach(function(a){
+    a.addEventListener('click',function(){
+      if(typeof gtag==='function') gtag('event','link_click',{link_id:a.getAttribute('data-track'),lang:document.documentElement.lang});
+    });
+  });
+
+  // --- legacy anchor redirects (old homepage sections linked from emails/posts) ---
+  var hashMap={'#services':'#links','#resources':'#links','#contact':'#social','#hero':'#top'};
+  if(hashMap[location.hash]){
+    var tgt=document.querySelector(hashMap[location.hash]);
+    if(tgt){ history.replaceState(null,'',hashMap[location.hash]); tgt.scrollIntoView(); }
+  }
 
   // --- nav: solid + hide-on-down/show-on-up + hamburger ---
   var nav=document.getElementById('nav'), lastY=window.scrollY, ticking=false;
@@ -791,7 +864,7 @@ function init(){
     });
     h1.innerHTML=''; nodes.forEach(function(n){h1.appendChild(n);});
   })();
-  gsap.from(h1.querySelectorAll('.word'),{yPercent:115,opacity:0,duration:.7,ease:'power3.out',stagger:.045,delay:.1,
+  gsap.from(h1.querySelectorAll('.word'),{y:26,opacity:0,duration:.7,ease:'power3.out',stagger:.045,delay:.1,
     onComplete:function(){gsap.set(h1.querySelectorAll('.word'),{clearProps:'all'});}});
 
   // 3. scroll parallax depth (desktop / fine pointer only)
