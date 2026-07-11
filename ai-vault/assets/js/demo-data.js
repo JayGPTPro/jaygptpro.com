@@ -109,3 +109,23 @@ window.VAULT_DEMO = (function () {
     tags: ["All", "Images", "Listings", "Video", "Automation", "Claude Code", "Sourcing", "Research"]
   };
 })();
+
+/* round 3: demo challenge (started 2 days ago, day 3 unlocked today) */
+window.VAULT_DEMO.challenge = (function () {
+  var now = Date.now(), day = 86400000;
+  return {
+    slug: "ai-ambassador-challenge",
+    title: "AI Ambassador 5-Day Challenge",
+    description: "Five days, one AI brand ambassador for your store. Photos, voice, video, and a full content week, built by you.",
+    hero_url: "/ai-vault/assets/img/dial-macro.jpg",
+    status: "active",
+    starts_at: now - 2 * day - 3600000,
+    days: [
+      { day_number: 1, title: "Design your ambassador", body: "Pick the face, the vibe, and the name. Generate 10 candidate portraits with the reference workflow and lock your favorite.\n- Run the ambassador portrait prompt\n- Generate 10 options\n- Lock ONE and save the reference set", vimeo_id: "1191120191", vimeo_hash: "" },
+      { day_number: 2, title: "Give them a voice", body: "Clone a voice, write the tone guide, and produce your first 30-second intro clip.\n- Pick a voice\n- Write 5 tone rules\n- Render the intro clip", vimeo_id: "1191120191", vimeo_hash: "" },
+      { day_number: 3, title: "First product video", body: "Your ambassador presents YOUR product. One 20-second clip, product in hand.\n- Prep the product reference images\n- Generate the scene\n- Lip-sync the script", vimeo_id: "1191120191", vimeo_hash: "" },
+      { day_number: 4, title: "The content week", body: "Batch 7 posts in one sitting: 3 videos, 4 stills, all on brand.\n- Run the batch workflow\n- Schedule across the week", vimeo_id: "1191120191", vimeo_hash: "" },
+      { day_number: 5, title: "Ship it + measure", body: "Publish, track, and decide what the ambassador does next month.\n- Publish the first 3 pieces\n- Set up the tracking sheet\n- Post your results in the WhatsApp group", vimeo_id: "1191120191", vimeo_hash: "" }
+    ]
+  };
+})();

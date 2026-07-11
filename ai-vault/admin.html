@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=3">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -53,6 +53,18 @@
         </form>
       </div>
       <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:16px">Create / update a 5-day challenge</h3>
+        <form id="challengeForm">
+          <label class="flabel micro">Slug</label><input class="field" name="slug" required pattern="[a-z0-9-]+">
+          <label class="flabel micro">Title</label><input class="field" name="title" required>
+          <label class="flabel micro">Description</label><input class="field" name="description">
+          <label class="flabel micro">Day 1 date</label><input class="field" name="starts_date" type="date" required>
+          <label class="flabel micro">Days (one per line: day# | title | vimeo_id | mission, use // for line breaks)</label>
+          <textarea class="field" name="days" rows="6" placeholder="1 | Design your ambassador | 123456 | Pick the face // Generate 10 options // Lock ONE"></textarea>
+          <button class="btn wide" type="submit">Publish challenge</button>
+        </form>
+      </div>
+      <div class="plate pad" style="margin-bottom:20px">
         <h3 style="margin-bottom:16px">Comp a member (free access)</h3>
         <form id="compForm">
           <label class="flabel micro">Google email</label><input class="field" name="email" type="email" required>
@@ -68,8 +80,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
-<script src="/ai-vault/assets/js/vault.js?v=2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=3"></script>
+<script src="/ai-vault/assets/js/vault.js?v=3"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -109,6 +121,17 @@
     var d = formData(e.target);
     d.starts_at = new Date(d.starts_at).toISOString();
     act("upsert_session", d, e.target.querySelector("button"));
+  });
+  document.getElementById("challengeForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.starts_at = new Date(d.starts_date + "T09:00:00").toISOString(); delete d.starts_date;
+    d.days = (d.days || "").split("\n").map(function (line) {
+      var p = line.split("|").map(function (s) { return s.trim(); });
+      if (p.length < 4) return null;
+      return { day_number: Number(p[0]), title: p[1], vimeo_id: p[2] || null, body: p[3].split(" // ").join("\n") };
+    }).filter(Boolean);
+    act("upsert_challenge", d, e.target.querySelector("button"));
   });
   document.getElementById("compForm").addEventListener("submit", function (e) {
     e.preventDefault();

@@ -11,7 +11,7 @@ Estimated total: about half a day, most of it waiting for Vimeo uploads.
 1. supabase.com → New project. Name: `ai-vault`. Region: closest to US East. Save the database password in your password manager.
 2. Project Settings → API: copy the **Project URL** and the **anon public key**.
 3. Open `assets/js/vault.js` and fill the two values at the top (`SUPABASE_URL`, `SUPABASE_ANON_KEY`). This is what switches the portal from demo mode to live.
-4. SQL Editor → paste and run `supabase/migrations/0001_schema.sql`, then `0002_security.sql`.
+4. SQL Editor → paste and run the files in `supabase/migrations/` IN ORDER: `0001_schema.sql`, `0002_security.sql`, `0003_engagement.sql`, `0004_challenges.sql`.
 5. Authentication → Providers → Google → enable. (Use the same Google Cloud OAuth client as Donna or create one. APIs and Services → OAuth consent screen must be **In production**, not Testing.)
 6. Authentication → URL Configuration → Site URL: `https://jaygptpro.com/ai-vault/index.html`. Add `https://jaygptpro.com/ai-vault/*` to redirect URLs.
 7. Make yourself admin. SQL Editor:

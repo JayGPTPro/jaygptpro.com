@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=3">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -24,8 +24,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
-<script src="/ai-vault/assets/js/vault.js?v=2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=3"></script>
+<script src="/ai-vault/assets/js/vault.js?v=3"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -35,8 +35,8 @@
 
   var $ = VAULT.$, esc = VAULT.esc;
   var main = $("#main");
-  var results = await Promise.all([VAULT.getEpisodes(), VAULT.getProgressMap(), VAULT.getSocial(), VAULT.getNextSession(), VAULT.getLessons(), VAULT.getLessonDone(), VAULT.memberCount()]);
-  var episodes = results[0], prog = results[1], social = results[2], session = results[3], lessons = results[4], lessonsDone = results[5], members = results[6];
+  var results = await Promise.all([VAULT.getEpisodes(), VAULT.getProgressMap(), VAULT.getSocial(), VAULT.getNextSession(), VAULT.getLessons(), VAULT.getLessonDone(), VAULT.memberCount(), VAULT.getChallenge()]);
+  var episodes = results[0], prog = results[1], social = results[2], session = results[3], lessons = results[4], lessonsDone = results[5], members = results[6], challenge = results[7];
 
   var html = "";
   var first = (access.name || "").split(" ")[0];
@@ -46,6 +46,34 @@
     '<div><div class="micro gold">' + VAULT.fmtDate(Date.now()) + "</div>" +
     '<h1 style="margin-top:6px">The Vault Floor</h1></div>' +
     '<span class="micro">' + members + " MEMBERS INSIDE</span></div>";
+
+  /* since your last visit (returning members only) */
+  var lastVisit = VAULT.getLastVisit();
+  var sinceItems = [];
+  if (lastVisit) {
+    episodes.filter(function (e) { return e.published_at > lastVisit; }).slice(0, 2).forEach(function (e) {
+      sinceItems.push({ label: "NEW EPISODE", text: e.title, href: "/ai-vault/episode.html?ep=" + encodeURIComponent(e.slug) });
+    });
+    if (challenge) {
+      var opened = challenge.days.filter(function (d) { var u = VAULT.dayUnlockAt(challenge, d.day_number); return u > lastVisit && u <= Date.now(); });
+      if (opened.length) {
+        var od = opened[opened.length - 1];
+        sinceItems.push({ label: "CHALLENGE", text: "Day " + od.day_number + " unlocked: " + od.title, href: "/ai-vault/challenges.html" });
+      }
+    }
+    if (session && session.starts_at - Date.now() < 3 * 86400000) {
+      sinceItems.push({ label: "LIVE SOON", text: session.title, href: "/ai-vault/live.html" });
+    }
+  }
+  if (sinceItems.length) {
+    html += '<section class="band rv" style="margin-bottom:26px"><div class="plate" style="padding:16px 22px">' +
+      '<div class="micro gold" style="margin-bottom:6px">SINCE YOUR LAST VISIT</div>' +
+      sinceItems.slice(0, 3).map(function (it) {
+        return '<a href="' + it.href + '" style="display:flex;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--hairline)">' +
+          '<span class="micro" style="flex:0 0 104px;color:var(--gold-glint)">' + it.label + "</span>" +
+          '<span style="font-size:14px">' + esc(it.text) + '</span><span class="micro" style="margin-left:auto">→</span></a>';
+      }).join("") + "</div></section>";
+  }
 
   /* Start Here progress (first thing new members see, disappears when finished) */
   var doneCount = lessonsDone.length, totalLessons = lessons.length;
@@ -75,6 +103,19 @@
         "</div>" +
         '<div class="board" id="countdown"></div>' +
       "</div></section>";
+  }
+
+  /* active challenge */
+  if (challenge) {
+    var chDone = (challenge.my_done || []).length;
+    var openCount = challenge.days.filter(function (d) { return Date.now() >= VAULT.dayUnlockAt(challenge, d.day_number); }).length;
+    var todayNew = challenge.days.some(function (d) { var u = VAULT.dayUnlockAt(challenge, d.day_number); return u <= Date.now() && u > Date.now() - 86400000; });
+    html += '<section class="band rv"><a class="plate click" style="display:flex;align-items:center;gap:18px;padding:18px 22px;flex-wrap:wrap" href="/ai-vault/challenges.html">' +
+      '<span class="glint-edge"></span>' +
+      '<span class="kindtag mastermind">CHALLENGE' + (todayNew ? " · NEW DAY TODAY" : "") + "</span>" +
+      '<h3 style="flex:1;min-width:200px">' + esc(challenge.title) + "</h3>" +
+      '<span class="micro gold">' + chDone + "/" + challenge.days.length + " DAYS DONE · DAY " + openCount + " IS OPEN →</span>" +
+    "</a></section>";
   }
 
   /* this month's episode (feature) */
@@ -151,6 +192,7 @@
   if (session) VAULT.mountCountdown($("#countdown"), session.starts_at);
   document.body.classList.add("in");
   VAULT.reveal();
+  VAULT.stampVisit();
 })();
 </script>
 </body>

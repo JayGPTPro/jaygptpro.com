@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Challenges · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=3">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .dayrail { max-width: 760px; }
+  .dayplate { margin-bottom: 14px; overflow: hidden; }
+  .dayhead { display: flex; align-items: center; gap: 18px; padding: 18px 22px; cursor: pointer; }
+  .dayplate.locked .dayhead { cursor: default; }
+  .dayplate.locked { opacity: 0.55; }
+  .dayplate.open-day { border-color: var(--gold); }
+  .daynum { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); flex: 0 0 52px; }
+  .dayplate.open-day .daynum, .dayplate.done .daynum { color: var(--gold-glint); }
+  .daystate { margin-left: auto; flex: 0 0 auto; }
+  .daybody { display: none; padding: 0 22px 22px 92px; }
+  .dayplate.expanded .daybody { display: block; }
+  @media (max-width: 640px) { .daybody { padding-left: 22px; } .daynum { flex-basis: 40px; } }
+  .mission { color: var(--text-dim); font-size: 14px; white-space: pre-line; margin: 10px 0 16px; }
+  .challenge-progress { height: 3px; background: var(--hairline); border-radius: 2px; overflow: hidden; margin: 18px 0 30px; }
+  .challenge-progress span { display: block; height: 100%; background: var(--gold); transition: width 400ms var(--ease); }
+  .completeplate { text-align: center; padding: 40px 24px; border-color: var(--gold); }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=3"></script>
+<script src="/ai-vault/assets/js/vault.js?v=3"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("challenges", access);
+  VAULT.track("page_view", "challenges");
+
+  var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
+  var main = $("#main");
+  var ch = await VAULT.getChallenge();
+
+  if (!ch) {
+    main.innerHTML = '<h1>Challenges</h1><div class="micro" style="margin:8px 0 22px">FIVE DAYS. ONE SYSTEM. BUILT BY YOU.</div>' +
+      '<div class="notice">No challenge is running right now. The next one gets announced on the WhatsApp group and the schedule board.</div>';
+    document.body.classList.add("in");
+    return;
+  }
+
+  var now = Date.now();
+  var done = ch.my_done || [];
+
+  function render() {
+    var openDays = ch.days.filter(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number); });
+    var pct = Math.round((done.length / ch.days.length) * 100);
+    var allDone = done.length >= ch.days.length;
+    var todayDay = openDays.length && VAULT.dayUnlockAt(ch, openDays[openDays.length - 1].day_number) > now - 86400000 ? openDays[openDays.length - 1].day_number : null;
+
+    var html =
+      '<div class="hero-strip rv" style="margin-bottom:8px">' +
+        '<img class="bgimg" src="' + esc(ch.hero_url || "/ai-vault/assets/img/dial-macro.jpg") + '" alt=""><span class="shade"></span>' +
+        '<div class="inner">' +
+          '<span class="kindtag mastermind">ACTIVE CHALLENGE' + (todayDay ? " · DAY " + pad(todayDay) + " UNLOCKED TODAY" : "") + "</span>" +
+          '<h1 style="margin:12px 0 4px">' + esc(ch.title) + "</h1>" +
+          '<div class="micro">' + esc(ch.description || "") + "</div>" +
+        "</div>" +
+      "</div>" +
+      '<div class="dayrail">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="micro gold">' + done.length + '/' + ch.days.length + ' DAYS COMPLETE</span><span class="micro">STARTED ' + VAULT.fmtDate(ch.starts_at) + '</span></div>' +
+        '<div class="challenge-progress"><span style="width:' + pct + '%"></span></div>';
+
+    if (allDone) {
+      html += '<div class="plate completeplate rv" style="margin-bottom:20px">' +
+        '<svg style="width:40px;height:40px;margin:0 auto 12px" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.4"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>' +
+        '<h2>Challenge complete</h2>' +
+        '<div class="micro" style="margin-top:6px">POST YOUR RESULT IN THE WHATSAPP GROUP. JAY IS WATCHING</div>' +
+      "</div>";
+    }
+
+    html += ch.days.map(function (d) {
+      var unlockAt = VAULT.dayUnlockAt(ch, d.day_number);
+      var isOpen = now >= unlockAt;
+      var isDone = done.indexOf(d.day_number) >= 0;
+      var stateCls = isDone ? "done" : isOpen ? "open-day" : "locked";
+      var state = isDone
+        ? '<span class="micro gold">✓ DONE</span>'
+        : isOpen
+          ? '<span class="micro gold">OPEN</span>'
+          : '<span class="micro">🔒 OPENS ' + new Date(unlockAt).toLocaleDateString("en-US", { weekday: "short" }).toUpperCase() + "</span>";
+      var video = d.vimeo_id
+        ? '<div class="player-shell" style="margin-bottom:14px"><iframe src="https://player.vimeo.com/video/' + esc(d.vimeo_id) + (d.vimeo_hash ? "?h=" + esc(d.vimeo_hash) + "&" : "?") + 'dnt=1" allow="fullscreen" allowfullscreen title="Day ' + d.day_number + '"></iframe></div>'
+        : "";
+      return '<div class="plate dayplate rv ' + stateCls + '" data-day="' + d.day_number + '">' +
+        '<div class="dayhead">' +
+          '<span class="daynum">DAY ' + pad(d.day_number) + "</span>" +
+          '<h3 style="font-size:15px;flex:1">' + esc(d.title) + "</h3>" +
+          '<span class="daystate">' + state + "</span>" +
+        "</div>" +
+        (isOpen ? '<div class="daybody">' + video +
+          '<div class="mission">' + esc(d.body || "") + "</div>" +
+          '<button class="btn ' + (isDone ? "quiet" : "gold") + '" data-complete="' + d.day_number + '">' + (isDone ? "Completed ✓" : "Mark day " + d.day_number + " complete") + "</button>" +
+        "</div>" : "") +
+      "</div>";
+    }).join("");
+
+    html += "</div>";
+    main.innerHTML = html;
+
+    /* expand the current day: first open-not-done, else last open */
+    var current = ch.days.find(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number) && done.indexOf(d.day_number) < 0; });
+    var target = current ? current.day_number : (openDays.length ? openDays[openDays.length - 1].day_number : null);
+    if (target) { var n = main.querySelector('[data-day="' + target + '"]'); if (n) n.classList.add("expanded"); }
+
+    VAULT.reveal();
+  }
+
+  main.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-complete]");
+    if (btn) {
+      var dn = Number(btn.dataset.complete);
+      if (done.indexOf(dn) < 0) { done.push(dn); VAULT.completeChallengeDay(ch.slug, dn); VAULT.track("challenge_day", ch.slug + ":" + dn); }
+      render(); return;
+    }
+    var head = ev.target.closest(".dayhead");
+    if (head) {
+      var plate = head.parentElement;
+      if (!plate.classList.contains("locked")) plate.classList.toggle("expanded");
+    }
+  });
+
+  render();
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>

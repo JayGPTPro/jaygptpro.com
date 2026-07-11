@@ -202,6 +202,35 @@ var VAULT = (function () {
     return cfg.base + Math.floor(days / cfg.days_per_member);
   }
 
+  /* ---------- challenges (day N unlocks at starts_at + (N-1) days) ---------- */
+  async function getChallenge() {
+    if (DEMO) {
+      var c = Object.assign({}, window.VAULT_DEMO.challenge);
+      c.my_done = store("vault_challenge", "[]");
+      return c;
+    }
+    var r = await sb.from("challenges").select("*,challenge_days(*)").eq("status", "active").order("starts_at", { ascending: false }).limit(1);
+    var c2 = (r.data || [])[0]; if (!c2) return null;
+    c2.days = (c2.challenge_days || []).sort(function (a, b) { return a.day_number - b.day_number; });
+    c2.starts_at = new Date(c2.starts_at).getTime();
+    var p = await sb.from("challenge_progress").select("challenge_days(day_number)");
+    c2.my_done = (p.data || []).map(function (x) { return x.challenge_days.day_number; });
+    return c2;
+  }
+  async function completeChallengeDay(slug, dayNumber) {
+    if (DEMO) { var d = store("vault_challenge", "[]"); if (d.indexOf(dayNumber) < 0) d.push(dayNumber); localStorage.setItem("vault_challenge", JSON.stringify(d)); return; }
+    await sb.rpc("complete_challenge_day", { p_slug: slug, p_day: dayNumber });
+  }
+  function dayUnlockAt(challenge, dayNumber) { return challenge.starts_at + (dayNumber - 1) * 86400000; }
+
+  /* ---------- since your last visit ---------- */
+  function getLastVisit() {
+    var v = Number(localStorage.getItem("vault_last_visit") || 0);
+    if (!v && DEMO) v = Date.now() - 25 * 86400000; /* demo shows the band on first open */
+    return v;
+  }
+  function stampVisit() { localStorage.setItem("vault_last_visit", String(Date.now())); }
+
   function track(eventType, ref) {
     if (DEMO) return;
     try { sb.rpc("log_event", { p_event: eventType, p_ref: ref || null }); } catch (e) {}
@@ -256,6 +285,7 @@ var VAULT = (function () {
       { id: "home", label: "Vault", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Live", href: "/ai-vault/live.html" },
+      { id: "challenges", label: "Challenges", href: "/ai-vault/challenges.html" },
       { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
@@ -274,7 +304,7 @@ var VAULT = (function () {
       { id: "home", label: "Vault", ico: "◈", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Live", ico: "◉", href: "/ai-vault/live.html" },
-      { id: "ask", label: "Ask", ico: "✉", href: "/ai-vault/ask.html" },
+      { id: "challenges", label: "Challenge", ico: "◎", href: "/ai-vault/challenges.html" },
       { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
     ].map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + n.ico + "</span>" + n.label + "</a>";
@@ -332,6 +362,8 @@ var VAULT = (function () {
     getSocial: getSocial, react: react, rate: rate, askQuestion: askQuestion,
     getLessons: getLessons, getLessonDone: getLessonDone, completeLesson: completeLesson,
     getSessions: getSessions, getNextSession: getNextSession, getConsultations: getConsultations,
+    getChallenge: getChallenge, completeChallengeDay: completeChallengeDay, dayUnlockAt: dayUnlockAt,
+    getLastVisit: getLastVisit, stampVisit: stampVisit,
     memberCount: memberCount, track: track, callFn: callFn,
     renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown, reveal: reveal
   };

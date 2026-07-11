@@ -76,6 +76,24 @@ Deno.serve(async (req) => {
         });
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
+      case "upsert_challenge": {
+        const p = payload;
+        const { data: ch, error } = await admin.from("challenges").upsert({
+          slug: p.slug, title: p.title, description: p.description || null,
+          starts_at: p.starts_at, status: "active",
+        }, { onConflict: "slug" }).select("id").single();
+        if (error) return json({ error: error.message }, 400);
+        if (Array.isArray(p.days) && p.days.length) {
+          await admin.from("challenge_days").delete().eq("challenge_id", ch.id);
+          for (const d of p.days) {
+            await admin.from("challenge_days").insert({
+              challenge_id: ch.id, day_number: d.day_number, title: d.title,
+              body: d.body || null, vimeo_id: d.vimeo_id || null,
+            });
+          }
+        }
+        return json({ ok: true, id: ch.id });
+      }
       case "comp_member": {
         const email = String(payload.email).toLowerCase();
         await admin.from("comped_emails").upsert({ email, note: "comped via admin" });
