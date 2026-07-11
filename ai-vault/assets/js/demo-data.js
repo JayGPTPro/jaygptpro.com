@@ -180,11 +180,3 @@ window.VAULT_DEMO.deals = [
   { name: "A2X Accounting", category: "Finance & Ops", deal_note: "2 months free", coupon: "VAULTA2X", monthly_saving: 0, conditional: false, url: "https://a2xaccounting.com",
     description: "Automated Amazon and Shopify bookkeeping into QuickBooks or Xero. Clean books without the manual work." }
 ];
-
-/* round 8: testimonials for the join page.
-   THESE ARE PLACEHOLDERS. Replace with real, approved member quotes before a public push. */
-window.VAULT_DEMO.testimonials = [
-  { quote: "Saved me about $2k on Fiverr and another $500 a month on tools I stopped needing. The listing image workflow paid for a year of membership in a week.", name: "A Vault member", role: "Amazon seller, US" },
-  { quote: "I am not technical and I was worried I would fall behind. Every session gives me something I actually use the same day. This is really high level.", name: "A Vault member", role: "eCom seller, Israel" },
-  { quote: "The community alone is worth it. I post a problem at night and by morning Jay or one of the experts has answered it.", name: "A Vault member", role: "Amazon seller, Romania" }
-];
