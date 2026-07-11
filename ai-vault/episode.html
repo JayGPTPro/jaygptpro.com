@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
   @media (max-width: 900px) { .room { grid-template-columns: 1fr; } }
-  .titlebar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 18px 0 8px; flex-wrap: wrap; }
+  .titlebar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 18px 0 4px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -21,30 +21,31 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script src="/ai-vault/assets/js/demo-data.js"></script>
-<script src="/ai-vault/assets/js/vault.js"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
   if (!access) return;
   VAULT.renderChrome("episodes", access);
 
-  var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
+  var $ = VAULT.$, esc = VAULT.esc;
   var slug = new URLSearchParams(location.search).get("ep");
-  var ep = slug ? await VAULT.getEpisode(slug) : null;
   var main = $("#main");
-  if (!ep) { main.innerHTML = '<div class="notice">Episode not found. <a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">Back to The Reserve</a></div>'; document.body.classList.add("in"); return; }
+  var results = await Promise.all([slug ? VAULT.getEpisode(slug) : null, VAULT.getEpisodes(), VAULT.getProgressMap(), VAULT.getSocial()]);
+  var ep = results[0], episodes = results[1], prog = results[2], social = results[3];
+  if (!ep) { main.innerHTML = '<div class="notice">Episode not found. <a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">Back to Episodes</a></div>'; document.body.classList.add("in"); return; }
   document.title = ep.title + " · AI Vault";
   VAULT.track("page_view", "episode:" + ep.slug);
 
-  var episodes = await VAULT.getEpisodes();
-  var prog = await VAULT.getProgressMap();
   var myProg = prog[ep.slug] || { position: 0, completed: false };
-  var next = episodes.filter(function (e) { return e.ep_number < ep.ep_number; })[0] || null;
+  var soc = social[ep.slug] || { likes: 0 };
+  var idx = episodes.findIndex(function (e) { return e.slug === ep.slug; });
+  var next = idx >= 0 ? episodes[idx + 1] : null;
 
   var playerHtml = ep.vimeo_id
     ? '<iframe id="vplayer" src="https://player.vimeo.com/video/' + esc(ep.vimeo_id) + (ep.vimeo_hash ? "?h=" + esc(ep.vimeo_hash) + "&" : "?") + 'dnt=1&pip=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="' + esc(ep.title) + '"></iframe>'
-    : '<div class="player-poster"><span class="epnum" style="font-family:var(--font-mono);font-size:44px;color:#2E2E2C">EP ' + pad(ep.ep_number) + '</span><span class="micro">Video connects after Vimeo setup · Demo mode</span></div>';
+    : '<div class="player-poster"><img src="' + esc(ep.thumbnail_url || "") + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.45"><span class="micro" style="position:relative">VIDEO CONNECTS AFTER VIMEO SETUP</span></div>';
 
   var kindIcon = { prompt: "❯", link: "↗", file: "▼", slides: "▼", tool: "↗" };
   var caseRows = (ep.resources || []).map(function (r, i) {
@@ -55,27 +56,65 @@
   }).join("");
 
   main.innerHTML =
-    '<div class="micro" style="margin-bottom:14px"><a href="/ai-vault/episodes.html" style="color:var(--text-dim)">← The Reserve</a></div>' +
+    '<div class="micro" style="margin-bottom:14px"><a href="/ai-vault/episodes.html" style="color:var(--text-dim)">← All episodes</a></div>' +
     '<div class="room">' +
       '<div>' +
         '<div class="player-shell">' + playerHtml + "</div>" +
         '<div class="titlebar">' +
           '<div>' +
-            '<div class="micro gold">EP ' + pad(ep.ep_number) + (ep.guest_name ? " · WITH " + esc(ep.guest_name).toUpperCase() : "") + (ep.updated_note ? ' · <span style="color:var(--gold-glint)">UPDATED: ' + esc(ep.updated_note).toUpperCase() + "</span>" : "") + "</div>" +
+            '<div class="micro gold">' + VAULT.fmtMonth(ep.published_at) + " EPISODE" + (ep.guest_name ? " · WITH " + esc(ep.guest_name).toUpperCase() : "") + (ep.updated_note ? ' · <span style="color:var(--gold-glint)">UPDATED: ' + esc(ep.updated_note).toUpperCase() + "</span>" : "") + "</div>" +
             '<h1 style="margin:8px 0 6px;font-size:24px">' + esc(ep.title) + "</h1>" +
             '<div class="micro">' + VAULT.fmtDate(ep.published_at) + " · " + VAULT.fmtDuration(ep.duration_seconds) + "</div>" +
           "</div>" +
           '<div class="toggle" id="completeToggle" role="switch" tabindex="0" aria-checked="false"><span class="micro">Mark complete</span><span class="track"><span class="knob"></span></span></div>' +
         "</div>" +
-        (ep.description ? '<p style="color:var(--text-dim);font-size:14.5px;max-width:640px">' + esc(ep.description) + "</p>" : "") +
-        (next ? '<div class="band" style="margin-top:34px"><div class="band-head"><span class="micro">Next in The Reserve</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog) + "</div></div>" : "") +
+
+        '<div class="reactions">' +
+          '<button class="rbtn" id="rLike">♥ <span class="n" id="likeN">' + soc.likes + "</span></button>" +
+          '<button class="rbtn" id="rLater">🔖 Watch later</button>' +
+          '<button class="rbtn" id="rMore">⚡ More like this</button>' +
+        "</div>" +
+
+        (ep.description ? '<p style="color:var(--text-dim);font-size:14.5px;max-width:640px;margin-top:10px">' + esc(ep.description) + "</p>" : "") +
+
+        '<div class="plate pad" style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">' +
+          '<div><div class="micro">RATE THIS EPISODE</div><div class="micro" style="font-size:9px;margin-top:3px;color:#55554F">PRIVATE. ONLY JAY SEES RATINGS, THEY SHAPE FUTURE EPISODES</div></div>' +
+          '<div class="stars" id="stars">' + [1, 2, 3, 4, 5].map(function (i) { return '<button data-s="' + i + '" aria-label="' + i + ' stars">★</button>'; }).join("") + "</div>" +
+        "</div>" +
+
+        (next ? '<div class="band" style="margin-top:30px"><div class="band-head"><span class="micro">Next episode</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog, social) + "</div></div>" : "") +
       "</div>" +
       '<aside>' +
         (chapterRows ? '<div class="band"><div class="band-head"><span class="micro">Chapters</span></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
         (caseRows ? '<div class="band"><div class="band-head"><span class="micro">In the case</span></div><div class="case plate" style="padding:4px 16px">' + caseRows + "</div></div>" : "") +
-        '<div class="notice" style="font-size:12.5px">Questions on this episode? Bring them to the WhatsApp group or the next live call.</div>' +
+        '<div class="notice" style="font-size:12.5px">Questions on this episode? <a href="/ai-vault/ask.html?ctx=' + encodeURIComponent(ep.slug) + '" style="color:var(--gold-glint)">Ask Jay</a> or bring them to the next live call.</div>' +
       "</aside>" +
     "</div>";
+
+  /* ---------- reactions ---------- */
+  function setBtn(id, on) { $(id).classList.toggle("on", !!on); }
+  setBtn("#rLike", soc.my_like); setBtn("#rLater", soc.my_watch_later); setBtn("#rMore", soc.my_more);
+  $("#rLike").addEventListener("click", function () {
+    soc.my_like = !soc.my_like; soc.likes += soc.my_like ? 1 : -1;
+    $("#likeN").textContent = soc.likes; setBtn("#rLike", soc.my_like);
+    VAULT.react(ep.slug, "like", soc.my_like); VAULT.track("like", ep.slug);
+  });
+  $("#rLater").addEventListener("click", function () {
+    soc.my_watch_later = !soc.my_watch_later; setBtn("#rLater", soc.my_watch_later);
+    VAULT.react(ep.slug, "watch_later", soc.my_watch_later);
+  });
+  $("#rMore").addEventListener("click", function () {
+    soc.my_more = !soc.my_more; setBtn("#rMore", soc.my_more);
+    VAULT.react(ep.slug, "more_please", soc.my_more); VAULT.track("more_please", ep.slug);
+  });
+
+  /* ---------- private rating ---------- */
+  function paintStars(n) { $("#stars").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", Number(b.dataset.s) <= n); }); }
+  paintStars(soc.my_stars || 0);
+  $("#stars").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    var n = Number(b.dataset.s); paintStars(n); VAULT.rate(ep.slug, n); VAULT.track("rate", ep.slug + ":" + n);
+  });
 
   /* ---------- complete toggle ---------- */
   var toggle = $("#completeToggle");
@@ -125,7 +164,6 @@
       if (row) player.setCurrentTime(Number(row.dataset.seek)).then(function () { player.play(); }).catch(function () {});
     });
   } else {
-    /* demo: chapters still respond visually */
     main.addEventListener("click", function (ev) {
       var row = ev.target.closest("[data-seek]");
       if (row) { myProg.position = Number(row.dataset.seek); VAULT.saveProgress(ep, myProg.position, false); }

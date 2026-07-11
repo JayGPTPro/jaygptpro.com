@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Private Consultation · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero-strip tall rv" style="margin-bottom:30px">
+    <img class="bgimg" src="/ai-vault/assets/img/lounge.jpg" alt="">
+    <span class="shade"></span>
+    <div class="inner">
+      <span class="value-tag">A $400 SESSION · INCLUDED IN YOUR MEMBERSHIP</span>
+      <h1 style="margin:14px 0 6px">Your private 1-on-1 with Jay</h1>
+      <div class="micro">ONE STRATEGY CALL, EVERY QUARTER. NO EXTRA COST. IT EXPIRES IF YOU DO NOT USE IT.</div>
+    </div>
+  </div>
+
+  <div class="band rv">
+    <div class="band-head"><h2>Your year of consultations</h2><span class="micro" id="nextNote"></span></div>
+    <div class="qtimeline" id="timeline"></div>
+  </div>
+
+  <div class="band rv" style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="howto">
+    <div class="plate pad">
+      <div class="micro gold" style="margin-bottom:8px">WHAT TO BRING</div>
+      <p style="color:var(--text-dim);font-size:13.5px">Your store, your numbers, and ONE problem you want solved. The best sessions end with a workflow you run the same week: listing images pipeline, review mining, an AI employee for your ops. Come specific, leave armed.</p>
+    </div>
+    <div class="plate pad">
+      <div class="micro gold" style="margin-bottom:8px">HOW IT WORKS</div>
+      <p style="color:var(--text-dim);font-size:13.5px">Book any open slot on Jay's calendar. 45 minutes on Zoom, recorded, yours to keep. One session per quarter, and your quarter resets whether you used it or not, so do not leave it on the table.</p>
+    </div>
+  </div>
+
+  <div class="plate pad rv" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+    <div>
+      <h3 id="ctaTitle">Book your session for this quarter</h3>
+      <div class="micro" style="margin-top:4px" id="ctaSub">PICK ANY OPEN SLOT. CONFIRMATION LANDS IN YOUR EMAIL AND CALENDAR</div>
+    </div>
+    <a class="btn gold" id="bookBtn" href="https://jaygptpro.com/call" target="_blank" rel="noopener">Book with Jay</a>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("consultation", access);
+  VAULT.track("page_view", "consultation");
+
+  var esc = VAULT.esc;
+  if (window.innerWidth < 720) document.getElementById("howto").style.gridTemplateColumns = "1fr";
+  var consults = await VAULT.getConsultations();
+
+  var icons = { done: "✓", booked: "◆", available: "+", expired: "·" };
+  var labels = { done: "COMPLETED", booked: "BOOKED", available: "AVAILABLE", expired: "EXPIRED" };
+  document.getElementById("timeline").innerHTML = consults.map(function (c) {
+    var sub = c.status === "booked" && c.scheduled_for
+      ? new Date(c.scheduled_for).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).toUpperCase()
+      : labels[c.status] || "";
+    return '<div class="plate qcell rv ' + esc(c.status) + '">' +
+      '<div class="seal">' + (icons[c.status] || "·") + "</div>" +
+      '<div class="micro" style="color:var(--text)">' + esc(c.quarter) + "</div>" +
+      '<div class="micro ' + (c.status === "booked" ? "gold" : "") + '" style="margin-top:4px;font-size:9.5px">' + esc(sub) + "</div>" +
+    "</div>";
+  }).join("");
+
+  var booked = consults.find(function (c) { return c.status === "booked" && c.scheduled_for; });
+  if (booked) {
+    document.getElementById("nextNote").textContent = "NEXT: " + new Date(booked.scheduled_for).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
+    document.getElementById("ctaTitle").textContent = "Your session is booked";
+    document.getElementById("ctaSub").textContent = "NEED TO MOVE IT? RESCHEDULE FROM THE CALENDAR INVITE IN YOUR INBOX";
+    document.getElementById("bookBtn").textContent = "Reschedule";
+  }
+
+  document.body.classList.add("in");
+  VAULT.reveal();
+})();
+</script>
+</body>
+</html>

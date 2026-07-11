@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Ask Jay · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .askwrap { max-width: 680px; }
+</style>
+</head>
+<body>
+<main class="wrap askwrap">
+  <div class="micro gold">ASK THE AI EXPERTS</div>
+  <h1 style="margin-top:8px">Ask Jay</h1>
+  <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">Stuck on a workflow, a tool that broke, or an AI result that will not behave? Drop it here. Questions get answered in the WhatsApp group, on the next live call, or straight to your inbox, and the best ones shape future episodes.</p>
+
+  <div class="plate pad rv" style="margin-top:24px">
+    <label class="flabel micro" for="q">Your question</label>
+    <textarea class="field ask" id="q" placeholder="Example: I tried generating lifestyle images for my garlic press 20 times and the product keeps melting. What is the workflow?"></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="micro" id="ctxNote"></span>
+      <button class="btn gold" id="send">Send to Jay</button>
+    </div>
+  </div>
+
+  <div id="sent" class="notice" style="display:none;margin-top:14px">Received. It is in Jay's queue, answer lands in WhatsApp, on the next live, or in your inbox.</div>
+
+  <div class="band rv" style="margin-top:36px">
+    <div class="band-head"><span class="micro">How answers come back</span></div>
+    <div class="plate pad" style="display:grid;gap:12px">
+      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">FAST</span><span>Quick questions get answered in the WhatsApp group, usually same day.</span></div>
+      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">DEEP</span><span>Workflow questions get picked up on the next live call or Mastermind hot seat.</span></div>
+      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">BIG</span><span>The best questions become entire episodes. Claude Code for eCom started as a member question.</span></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("ask", access);
+  VAULT.track("page_view", "ask");
+
+  var ctx = new URLSearchParams(location.search).get("ctx");
+  if (ctx) document.getElementById("ctxNote").textContent = "ASKING ABOUT: " + ctx.toUpperCase().replace(/-/g, " ");
+
+  document.getElementById("send").addEventListener("click", async function () {
+    var q = document.getElementById("q").value.trim();
+    if (q.length < 5) { document.getElementById("q").focus(); return; }
+    this.textContent = "Sending..."; this.disabled = true;
+    await VAULT.askQuestion(q, ctx);
+    VAULT.track("question", ctx || "general");
+    document.getElementById("q").value = "";
+    document.getElementById("sent").style.display = "";
+    this.textContent = "Send to Jay"; this.disabled = false;
+  });
+
+  document.body.classList.add("in");
+  VAULT.reveal();
+})();
+</script>
+</body>
+</html>

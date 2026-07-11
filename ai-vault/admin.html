@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -30,6 +30,9 @@
         <label class="flabel micro">Vimeo ID</label><input class="field" name="vimeo_id" required>
         <label class="flabel micro">Vimeo hash (the h= value for hidden videos)</label><input class="field" name="vimeo_hash">
         <label class="flabel micro">Duration (minutes)</label><input class="field" name="duration_min" type="number">
+        <label class="flabel micro">Thumbnail URL (Vimeo poster or /ai-vault/assets/img/...)</label><input class="field" name="thumbnail_url">
+        <label class="flabel micro">Starting likes (social proof base, real member likes add on top)</label><input class="field" name="likes_base" type="number" value="0">
+        <label class="flabel micro">Published date (defaults to today)</label><input class="field" name="published_date" type="date">
         <label class="flabel micro">Tags (comma separated: Images, Listings, Video...)</label><input class="field" name="tags">
         <label class="flabel micro">Description</label><textarea class="field" name="description" rows="3"></textarea>
         <label class="flabel micro">Resources (one per line: kind | title | url-or-prompt-text)</label><textarea class="field" name="resources" rows="4" placeholder="prompt | Listing prompt | You are an expert...&#10;link | Tool site | https://..."></textarea>
@@ -42,6 +45,7 @@
         <h3 style="margin-bottom:16px">Schedule a live session</h3>
         <form id="sessionForm">
           <label class="flabel micro">Title</label><input class="field" name="title" required>
+          <label class="flabel micro">Type</label><select class="field" name="kind"><option value="episode">Episode</option><option value="mastermind">Mastermind</option><option value="workshop">Workshop</option></select>
           <label class="flabel micro">Guest (optional)</label><input class="field" name="guest_name">
           <label class="flabel micro">Date and time (your local time)</label><input class="field" name="starts_at" type="datetime-local" required>
           <label class="flabel micro">Zoom link</label><input class="field" name="zoom_url">
@@ -64,8 +68,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js"></script>
-<script src="/ai-vault/assets/js/vault.js"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();

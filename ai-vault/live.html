@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Live Sessions · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero-strip rv" style="margin-bottom:26px">
+    <img class="bgimg" src="/ai-vault/assets/img/corridor.jpg" alt="">
+    <span class="shade"></span>
+    <div class="inner">
+      <div class="micro gold"><span class="livedot"></span>THE SCHEDULE BOARD · ALL TIMES SHOWN IN YOUR LOCAL TIME</div>
+      <h1 style="margin-top:8px">Live Sessions</h1>
+    </div>
+  </div>
+
+  <div class="duo rv" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:30px" id="rhythm">
+    <div class="plate pad">
+      <span class="kindtag">EPISODE</span>
+      <h3 style="margin:10px 0 4px">Monthly AI Deep Dive</h3>
+      <p style="color:var(--text-dim);font-size:13.5px">One live workshop every month. A complete AI system, built in front of you. The replay lands in Episodes the same day.</p>
+    </div>
+    <div class="plate pad">
+      <span class="kindtag mastermind">MASTERMIND</span>
+      <h3 style="margin:10px 0 4px">Monthly Mastermind</h3>
+      <p style="color:var(--text-dim);font-size:13.5px">Member hot seats. Bring your store, your numbers, your problem. Leave with a plan.</p>
+    </div>
+  </div>
+
+  <div class="band-head"><h2>Upcoming</h2></div>
+  <div id="sessions"></div>
+
+  <div class="notice rv" style="margin-top:26px">Missed a live? Every episode replay lands in <a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">Episodes</a> the same day, with the prompts and links attached.</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("live", access);
+  VAULT.track("page_view", "live");
+
+  var esc = VAULT.esc;
+  var sessions = await VAULT.getSessions();
+  var box = document.getElementById("sessions");
+  if (window.innerWidth < 720) document.getElementById("rhythm").style.gridTemplateColumns = "1fr";
+
+  if (!sessions.length) {
+    box.innerHTML = '<div class="notice">Nothing scheduled right now. The next date lands here and in your email.</div>';
+  } else {
+    box.innerHTML = sessions.map(function (s, i) {
+      var d = new Date(s.starts_at);
+      var when = d.toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      var soon = s.starts_at - Date.now() < 86400000;
+      return '<div class="plate sessioncard rv" style="margin-bottom:12px">' +
+        '<div>' +
+          '<span class="kindtag ' + (s.kind === "mastermind" ? "mastermind" : "") + (soon ? " live-now" : "") + '">' + esc(s.kind || "episode") + (soon ? " · SOON" : "") + "</span>" +
+          '<h3 style="margin:8px 0 2px">' + esc(s.title) + "</h3>" +
+          '<div class="micro gold">' + esc(when.toUpperCase()) + (s.guest_name ? " · WITH " + esc(s.guest_name).toUpperCase() : "") + "</div>" +
+        "</div>" +
+        '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+          (i === 0 ? '<div class="board" data-count="' + s.starts_at + '" style="margin-right:6px"></div>' : "") +
+          '<button class="btn quiet" data-ics="' + s.starts_at + '" data-title="' + esc(s.title) + '">Add to calendar</button>' +
+          (s.zoom_url ? '<a class="btn" href="' + esc(s.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
+        "</div>" +
+      "</div>";
+    }).join("");
+    var cd = box.querySelector("[data-count]");
+    if (cd) VAULT.mountCountdown(cd, Number(cd.dataset.count));
+    box.addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-ics]");
+      if (!b) return;
+      var ts = Number(b.dataset.ics);
+      var dt = function (t) { return new Date(t).toISOString().replace(/[-:]|\.\d{3}/g, ""); };
+      var ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//AI Vault//EN\nBEGIN:VEVENT\nUID:" + ts + "@aivault\nDTSTAMP:" + dt(Date.now()) + "\nDTSTART:" + dt(ts) + "\nDTEND:" + dt(ts + 3600000) + "\nSUMMARY:AI Vault Live · " + b.dataset.title.replace(/[,;]/g, " ") + "\nDESCRIPTION:Zoom link inside the Vault: https://jaygptpro.com/ai-vault/live.html\nEND:VEVENT\nEND:VCALENDAR";
+      var a = document.createElement("a");
+      a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+      a.download = "ai-vault-live.ics"; a.click();
+    });
+  }
+  document.body.classList.add("in");
+  VAULT.reveal();
+})();
+</script>
+</body>
+</html>

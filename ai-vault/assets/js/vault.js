@@ -25,11 +25,13 @@ var VAULT = (function () {
   function fmtDuration(sec) { if (!sec) return ""; var m = Math.round(sec / 60); return m + " MIN"; }
   function fmtTime(sec) { sec = Math.max(0, Math.floor(sec)); var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return (h ? h + ":" + pad(m) : m) + ":" + pad(s); }
   function fmtDate(ts) { var d = new Date(ts); return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toUpperCase(); }
+  function fmtMonth(ts) { var d = new Date(ts); return d.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase(); }
   function memberNo(n) { return "MEMBER " + String(n || 0).padStart(4, "0"); }
 
-  /* ---------- demo progress store ---------- */
-  function demoProgress() { try { return JSON.parse(localStorage.getItem("vault_progress") || "{}"); } catch (e) { return {}; } }
-  function demoSaveProgress(map) { localStorage.setItem("vault_progress", JSON.stringify(map)); }
+  /* ---------- demo local stores ---------- */
+  function store(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || fallback); } catch (e) { return JSON.parse(fallback); } }
+  function demoProgress() { return store("vault_progress", "{}"); }
+  function demoSocial() { return store("vault_social", "{}"); }
 
   /* ---------- session + access ---------- */
   var _access = null;
@@ -60,7 +62,6 @@ var VAULT = (function () {
     return _access;
   }
 
-  /* Gate a members-only page. Redirects out if not allowed. */
   async function requireMember() {
     var a = await getAccess();
     if (DEMO) return a;
@@ -86,8 +87,8 @@ var VAULT = (function () {
   async function getEpisodes() {
     if (DEMO) return window.VAULT_DEMO.episodes;
     var r = await sb.from("episodes")
-      .select("ep_number,slug,title,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,episode_tags(tags(name))")
-      .eq("status", "published").order("ep_number", { ascending: false });
+      .select("ep_number,slug,title,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,likes_base,episode_tags(tags(name))")
+      .eq("status", "published").order("published_at", { ascending: false });
     return (r.data || []).map(function (e) {
       e.tags = (e.episode_tags || []).map(function (t) { return t.tags.name; });
       e.published_at = new Date(e.published_at).getTime();
@@ -108,6 +109,41 @@ var VAULT = (function () {
     return e;
   }
 
+  /* social: likes + my reactions + my private rating, keyed by slug */
+  async function getSocial() {
+    if (DEMO) {
+      var mine = demoSocial(), map = {};
+      window.VAULT_DEMO.episodes.forEach(function (e) {
+        var m = mine[e.slug] || {};
+        map[e.slug] = { likes: (e.likes || 0) + (m.like ? 1 : 0), my_like: !!m.like, my_watch_later: !!m.watch_later, my_more: !!m.more, my_stars: m.stars || 0 };
+      });
+      return map;
+    }
+    var r = await sb.rpc("get_episode_social");
+    var map = {};
+    (r.data || []).forEach(function (x) { map[x.slug] = { likes: x.likes, my_like: x.my_like, my_watch_later: x.my_watch_later, my_more: x.my_more, my_stars: x.my_stars || 0 }; });
+    return map;
+  }
+
+  async function react(slug, kind, on) {
+    if (DEMO) {
+      var s = demoSocial(); s[slug] = s[slug] || {};
+      s[slug][kind === "watch_later" ? "watch_later" : kind === "more_please" ? "more" : "like"] = on;
+      localStorage.setItem("vault_social", JSON.stringify(s)); return;
+    }
+    await sb.rpc("react_episode", { p_slug: slug, p_kind: kind, p_on: on });
+  }
+
+  async function rate(slug, stars) {
+    if (DEMO) { var s = demoSocial(); s[slug] = s[slug] || {}; s[slug].stars = stars; localStorage.setItem("vault_social", JSON.stringify(s)); return; }
+    await sb.rpc("rate_episode", { p_slug: slug, p_stars: stars });
+  }
+
+  async function askQuestion(body, context) {
+    if (DEMO) { var q = store("vault_questions", "[]"); q.unshift({ body: body, t: Date.now() }); localStorage.setItem("vault_questions", JSON.stringify(q)); return; }
+    await sb.rpc("ask_question", { p_body: body, p_context: context || null });
+  }
+
   async function getProgressMap() {
     if (DEMO) return demoProgress();
     var r = await sb.from("watch_progress").select("episode_id,position_seconds,completed_at,episodes(slug)");
@@ -122,7 +158,7 @@ var VAULT = (function () {
     if (DEMO) {
       var map = demoProgress();
       map[episode.slug] = { position: positionSeconds, completed: !!completed || (map[episode.slug] || {}).completed, t: Date.now() };
-      demoSaveProgress(map); return;
+      localStorage.setItem("vault_progress", JSON.stringify(map)); return;
     }
     await sb.rpc("record_watch_progress", { p_episode_slug: episode.slug, p_position: Math.floor(positionSeconds), p_completed: !!completed });
   }
@@ -133,7 +169,7 @@ var VAULT = (function () {
     return r.data || [];
   }
   async function getLessonDone() {
-    if (DEMO) { try { return JSON.parse(localStorage.getItem("vault_lessons") || "[]"); } catch (e) { return []; } }
+    if (DEMO) return store("vault_lessons", "[]");
     var r = await sb.from("lesson_progress").select("lessons(position)");
     return (r.data || []).map(function (x) { return x.lessons.position; });
   }
@@ -142,12 +178,28 @@ var VAULT = (function () {
     await sb.rpc("complete_lesson", { p_position: position });
   }
 
-  async function getNextSession() {
-    if (DEMO) return window.VAULT_DEMO.next_session;
-    var r = await sb.from("live_sessions").select("*").gte("starts_at", new Date().toISOString()).order("starts_at").limit(1);
-    var s = (r.data || [])[0]; if (!s) return null;
-    s.starts_at = new Date(s.starts_at).getTime();
-    return s;
+  async function getSessions() {
+    if (DEMO) return window.VAULT_DEMO.sessions.filter(function (s) { return s.starts_at > Date.now(); });
+    var r = await sb.from("live_sessions").select("*").gte("starts_at", new Date().toISOString()).order("starts_at");
+    return (r.data || []).map(function (s) { s.starts_at = new Date(s.starts_at).getTime(); return s; });
+  }
+  async function getNextSession() { var list = await getSessions(); return list[0] || null; }
+
+  async function getConsultations() {
+    if (DEMO) return window.VAULT_DEMO.consultations;
+    var r = await sb.from("consultations").select("*").order("quarter");
+    return (r.data || []).map(function (c) { if (c.scheduled_for) c.scheduled_for = new Date(c.scheduled_for).getTime(); return c; });
+  }
+
+  async function memberCount() {
+    var cfg = DEMO ? window.VAULT_DEMO.member_counter : null;
+    if (!DEMO) {
+      var r = await sb.rpc("get_member_count");
+      if (r.data) return r.data;
+      cfg = { base: 213, base_date: "2026-07-11", days_per_member: 2 };
+    }
+    var days = Math.max(0, (Date.now() - new Date(cfg.base_date).getTime()) / 86400000);
+    return cfg.base + Math.floor(days / cfg.days_per_member);
   }
 
   function track(eventType, ref) {
@@ -155,7 +207,6 @@ var VAULT = (function () {
     try { sb.rpc("log_event", { p_event: eventType, p_ref: ref || null }); } catch (e) {}
   }
 
-  /* Edge function caller (checkout, portal, admin) */
   async function callFn(name, payload) {
     if (DEMO) { alert("Demo mode. Connect Supabase + Stripe first (see supabase/SETUP.md)."); return null; }
     var s = await sb.auth.getSession();
@@ -171,15 +222,42 @@ var VAULT = (function () {
     return res.json();
   }
 
+  /* ---------- scroll reveals (CSS-only fallback safe: hiding is scoped to html.js)
+     rAF-throttled rect check instead of IntersectionObserver: instant scroll jumps
+     and elements left above the viewport can never get stuck hidden. ---------- */
+  function reveal() {
+    document.documentElement.classList.add("js");
+    var pending = Array.prototype.slice.call(document.querySelectorAll(".rv:not(.rv-in)"));
+    function check() {
+      if (!pending.length) return;
+      var vh = window.innerHeight;
+      pending = pending.filter(function (n) {
+        if (n.getBoundingClientRect().top < vh * 0.94) { n.classList.add("rv-in"); return false; }
+        return true;
+      });
+      if (!pending.length) window.removeEventListener("scroll", onScroll);
+    }
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { ticking = false; check(); });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    check();
+  }
+
   /* ---------- chrome (topbar + mobile tabbar) ---------- */
   var KEYMARK = '<svg class="keymark" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.4" aria-hidden="true"><circle cx="9" cy="9" r="5.2"/><circle cx="9" cy="9" r="1.8"/><path d="M13 13l7.2 7.2M17.4 17.6l2.2-2.2M15 15.2l1.6-1.6"/></svg>';
 
   function renderChrome(active, access) {
     var nav = [
+      { id: "induction", label: "Start Here", href: "/ai-vault/induction.html" },
       { id: "home", label: "Vault", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", href: "/ai-vault/episodes.html" },
-      { id: "induction", label: "Start Here", href: "/ai-vault/induction.html" },
-      { id: "account", label: "The Ledger", href: "/ai-vault/account.html" }
+      { id: "live", label: "Live", href: "/ai-vault/live.html" },
+      { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
+      { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
     var links = nav.map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '">' + n.label + "</a>";
@@ -192,9 +270,14 @@ var VAULT = (function () {
       '<a class="memberchip" href="/ai-vault/account.html" title="The Ledger"><span class="micro">' + (access ? esc((access.name || "").split(" ")[0]) : "") + '</span><span class="bezel">' + avatar + "</span></a>" +
       "</header>");
     document.body.prepend(top);
-    var icons = { home: "◈", episodes: "▦", induction: "01", account: "▣" };
-    var tabs = nav.map(function (n) {
-      return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + icons[n.id] + "</span>" + n.label + "</a>";
+    var tabs = [
+      { id: "home", label: "Vault", ico: "◈", href: "/ai-vault/home.html" },
+      { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
+      { id: "live", label: "Live", ico: "◉", href: "/ai-vault/live.html" },
+      { id: "ask", label: "Ask", ico: "✉", href: "/ai-vault/ask.html" },
+      { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
+    ].map(function (n) {
+      return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + n.ico + "</span>" + n.label + "</a>";
     }).join("");
     document.body.appendChild(el('<nav class="tabbar">' + tabs + "</nav>"));
     if (DEMO) {
@@ -202,23 +285,25 @@ var VAULT = (function () {
     }
   }
 
-  /* ---------- episode card ---------- */
-  function epCard(ep, prog) {
+  /* ---------- episode card (date-first, image thumb, likes) ---------- */
+  function epCard(ep, prog, social) {
     var p = prog && prog[ep.slug];
+    var soc = social && social[ep.slug];
     var pct = p && ep.duration_seconds ? Math.min(100, Math.round((p.position / ep.duration_seconds) * 100)) : 0;
     var thumb = ep.thumbnail_url
       ? '<img src="' + esc(ep.thumbnail_url) + '" alt="" loading="lazy">'
-      : '<span class="epnum">EP ' + pad(ep.ep_number) + "</span>";
-    return '<a class="plate ep-plate" href="/ai-vault/episode.html?ep=' + encodeURIComponent(ep.slug) + '">' +
+      : '<span class="epnum">' + fmtMonth(ep.published_at).split(" ")[0] + "</span>";
+    return '<a class="plate ep-plate rv" href="/ai-vault/episode.html?ep=' + encodeURIComponent(ep.slug) + '">' +
       '<span class="glint-edge"></span>' +
       '<div class="ep-thumb">' + thumb +
+        '<span class="chip dur">' + fmtDuration(ep.duration_seconds) + "</span>" +
         (ep.updated_note ? '<span class="updated">Updated</span>' : "") +
         (p && p.completed ? '<span class="check">✓</span>' : "") +
       "</div>" +
       '<div class="ep-body">' +
-        '<div class="micro">EP ' + pad(ep.ep_number) + (ep.guest_name ? " · " + esc(ep.guest_name).toUpperCase() : "") + "</div>" +
+        '<div class="micro gold">' + fmtMonth(ep.published_at) + (ep.guest_name ? ' · <span style="color:var(--text-dim)">WITH ' + esc(ep.guest_name).toUpperCase() + "</span>" : "") + "</div>" +
         '<div class="title">' + esc(ep.title) + "</div>" +
-        '<div class="ep-meta micro">' + fmtDuration(ep.duration_seconds) + "<span>" + fmtDate(ep.published_at) + "</span></div>" +
+        '<div class="ep-meta micro"><span>' + fmtDate(ep.published_at) + "</span>" + (soc ? '<span class="likecount">♥ ' + soc.likes + "</span>" : "") + "</div>" +
       "</div>" +
       (pct ? '<span class="ep-hairline" style="width:' + pct + '%"></span>' : "") +
       "</a>";
@@ -241,11 +326,13 @@ var VAULT = (function () {
   return {
     DEMO: DEMO, sb: function () { return sb; },
     $: $, el: el, esc: esc, pad: pad,
-    fmtDuration: fmtDuration, fmtTime: fmtTime, fmtDate: fmtDate, memberNo: memberNo,
+    fmtDuration: fmtDuration, fmtTime: fmtTime, fmtDate: fmtDate, fmtMonth: fmtMonth, memberNo: memberNo,
     getAccess: getAccess, requireMember: requireMember, signIn: signIn, signOut: signOut,
     getEpisodes: getEpisodes, getEpisode: getEpisode, getProgressMap: getProgressMap, saveProgress: saveProgress,
+    getSocial: getSocial, react: react, rate: rate, askQuestion: askQuestion,
     getLessons: getLessons, getLessonDone: getLessonDone, completeLesson: completeLesson,
-    getNextSession: getNextSession, track: track, callFn: callFn,
-    renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown
+    getSessions: getSessions, getNextSession: getNextSession, getConsultations: getConsultations,
+    memberCount: memberCount, track: track, callFn: callFn,
+    renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown, reveal: reveal
   };
 })();

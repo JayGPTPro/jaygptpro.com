@@ -4,26 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>The Reserve · AI Vault</title>
+<title>Episodes · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=2">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); }
-  body.in { opacity: 1; }
-  .controls { display: flex; gap: 12px; margin: 18px 0 26px; flex-wrap: wrap; }
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .controls { display: flex; gap: 12px; margin: 22px 0 26px; flex-wrap: wrap; }
   .controls .search { flex: 1; min-width: 220px; }
 </style>
 </head>
 <body>
 <main class="wrap">
-  <div class="band-head" style="margin-bottom:4px">
-    <div>
-      <h1>Episodes</h1>
-      <div class="micro" style="margin-top:6px">The Reserve · One deposit every month</div>
+  <div class="hero-strip rv" style="margin-bottom:26px">
+    <img class="bgimg" src="/ai-vault/assets/img/deposit-wall.jpg" alt="">
+    <span class="shade"></span>
+    <div class="inner" style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+      <div>
+        <div class="micro gold">THE RESERVE · ONE NEW EPISODE EVERY MONTH</div>
+        <h1 style="margin-top:8px">Episodes</h1>
+      </div>
+      <span class="micro mono" id="count"></span>
     </div>
-    <span class="micro mono" id="count"></span>
   </div>
   <div class="controls">
     <input class="search" id="search" type="search" placeholder="Search episodes, guests, topics..." autocomplete="off">
@@ -34,8 +37,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js"></script>
-<script src="/ai-vault/assets/js/vault.js"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=2"></script>
+<script src="/ai-vault/assets/js/vault.js?v=2"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -44,25 +47,28 @@
   VAULT.track("page_view", "episodes");
 
   var $ = VAULT.$;
-  var episodes = await VAULT.getEpisodes();
-  var prog = await VAULT.getProgressMap();
+  var results = await Promise.all([VAULT.getEpisodes(), VAULT.getProgressMap(), VAULT.getSocial()]);
+  var episodes = results[0], prog = results[1], social = results[2];
 
-  /* build tag list from data (problem-first tags come from the DB) */
   var tags = ["All"];
   episodes.forEach(function (e) { (e.tags || []).forEach(function (t) { if (tags.indexOf(t) < 0) tags.push(t); }); });
+  tags.push("Saved ★");
 
   var state = { tag: "All", q: "" };
 
   function render() {
     var q = state.q.toLowerCase();
     var list = episodes.filter(function (e) {
-      var tagOk = state.tag === "All" || (e.tags || []).indexOf(state.tag) >= 0;
+      var tagOk = state.tag === "All" ? true
+        : state.tag === "Saved ★" ? !!(social[e.slug] || {}).my_watch_later
+        : (e.tags || []).indexOf(state.tag) >= 0;
       var qOk = !q || (e.title + " " + (e.guest_name || "") + " " + (e.tags || []).join(" ")).toLowerCase().indexOf(q) >= 0;
       return tagOk && qOk;
     });
-    $("#grid").innerHTML = list.map(function (e) { return VAULT.epCard(e, prog); }).join("");
+    $("#grid").innerHTML = list.map(function (e) { return VAULT.epCard(e, prog, social); }).join("");
     $("#empty").style.display = list.length ? "none" : "";
     $("#count").textContent = String(list.length).padStart(2, "0") + " / " + String(episodes.length).padStart(2, "0");
+    VAULT.reveal();
   }
 
   $("#segments").innerHTML = tags.map(function (t) {

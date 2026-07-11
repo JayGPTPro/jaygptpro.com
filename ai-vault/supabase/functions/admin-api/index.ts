@@ -39,10 +39,12 @@ Deno.serve(async (req) => {
           vimeo_id: p.vimeo_id || null,
           vimeo_hash: p.vimeo_hash || null,
           duration_seconds: p.duration_seconds || null,
+          thumbnail_url: p.thumbnail_url || null,
+          likes_base: Number(p.likes_base) || 0,
           updated_note: p.updated_note || null,
           content_updated_at: p.updated_note ? new Date().toISOString() : null,
           status: "published",
-          published_at: new Date().toISOString(),
+          published_at: p.published_date ? new Date(p.published_date).toISOString() : new Date().toISOString(),
         }, { onConflict: "slug" }).select("id").single();
         if (error) return json({ error: error.message }, 400);
 
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
       case "upsert_session": {
         const p = payload;
         const { error } = await admin.from("live_sessions").insert({
-          title: p.title, guest_name: p.guest_name || null, starts_at: p.starts_at, zoom_url: p.zoom_url || null,
+          title: p.title, kind: p.kind || "episode", guest_name: p.guest_name || null, starts_at: p.starts_at, zoom_url: p.zoom_url || null,
         });
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
