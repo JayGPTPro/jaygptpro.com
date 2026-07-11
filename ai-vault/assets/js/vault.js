@@ -325,10 +325,10 @@ var VAULT = (function () {
   function renderChrome(active, access) {
     var nav = [
       { id: "induction", label: "Start Here", href: "/ai-vault/induction.html" },
-      { id: "home", label: "Vault", href: "/ai-vault/home.html" },
-      { id: "episodes", label: "Episodes", href: "/ai-vault/episodes.html" },
+      { id: "home", label: "Home", href: "/ai-vault/home.html" },
+      { id: "episodes", label: "AI Episodes", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Upcoming", href: "/ai-vault/live.html" },
-      { id: "challenges", label: "Programs", href: "/ai-vault/challenges.html" },
+      { id: "challenges", label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
       { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
@@ -352,10 +352,10 @@ var VAULT = (function () {
       try { localStorage.setItem("vault_theme", next); } catch (e) {}
     });
     var tabs = [
-      { id: "home", label: "Vault", ico: "◈", href: "/ai-vault/home.html" },
+      { id: "home", label: "Home", ico: "◈", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Upcoming", ico: "◉", href: "/ai-vault/live.html" },
-      { id: "challenges", label: "Programs", ico: "◎", href: "/ai-vault/challenges.html" },
+      { id: "challenges", label: "Courses", ico: "◎", href: "/ai-vault/challenges.html" },
       { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
     ].map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + n.ico + "</span>" + n.label + "</a>";
