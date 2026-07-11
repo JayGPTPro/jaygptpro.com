@@ -335,6 +335,7 @@ var VAULT = (function () {
       { id: "live", label: "Upcoming", href: "/ai-vault/live.html" },
       { id: "masterminds", label: "Masterminds", href: "/ai-vault/masterminds.html" },
       { id: "challenges", label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
+      { id: "deals", label: "Buying Club", href: "/ai-vault/tools.html" },
       { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
