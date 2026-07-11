@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=7">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=8">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .ledger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
@@ -20,8 +20,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=7"></script>
-<script src="/ai-vault/assets/js/vault.js?v=7"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=8"></script>
+<script src="/ai-vault/assets/js/vault.js?v=8"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -66,6 +66,7 @@
           '<button class="btn quiet" id="signoutBtn">Sign out</button>' +
         "</div>" +
         '<div class="micro" style="margin-top:14px;font-size:9.5px">Cancel anytime · 30-day guarantee · <a href="/ai-vault/refunds.html" style="color:var(--text-dim);text-decoration:underline">Refund policy</a></div>' +
+        '<div id="savingsLedger"></div>' +
       "</div>" +
       '<div class="plate pad">' +
         '<div class="micro" style="margin-bottom:8px">Watch history</div>' + historyRows +
@@ -81,6 +82,17 @@
     if (d && d.url) location.href = d.url;
   });
   $("#signoutBtn").addEventListener("click", VAULT.signOut);
+
+  /* member savings, makes the membership value a number */
+  VAULT.getDealSavings().then(function (mo) {
+    if (!mo) return;
+    $("#savingsLedger").innerHTML =
+      '<a href="/ai-vault/tools.html" style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid var(--hairline)">' +
+        '<div class="micro gold">MEMBER DEALS SAVING YOU</div>' +
+        '<div class="v" style="font-size:20px;margin-top:4px">$' + mo + '<span style="color:var(--text-dim);font-size:13px"> / mo · view all →</span></div>' +
+      "</a>";
+  });
+
   document.body.classList.add("in");
 })();
 </script>

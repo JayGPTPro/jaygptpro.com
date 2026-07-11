@@ -9,32 +9,46 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=7">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=8">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
-  .dealwrap { max-width: 720px; }
-  .dealcard { padding: 24px; margin-bottom: 14px; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-  .couponchip { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; border: 1px dashed var(--gold); color: var(--gold-glint); border-radius: 6px; padding: 8px 14px; cursor: pointer; user-select: none; transition: all 160ms var(--ease); }
+  .dealwrap { max-width: 820px; }
+  .savings-plate { padding: 26px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; border-color: var(--gold); }
+  .savings-plate .n { font-family: var(--font-head); font-weight: 600; font-size: 40px; letter-spacing: -0.02em; color: var(--gold); }
+  .savings-plate .n small { font-size: 18px; color: var(--text-dim); font-weight: 500; }
+  .cat-head { margin: 30px 0 12px; }
+  .dealcard { padding: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .couponchip { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; border: 1px dashed var(--gold); color: var(--gold-glint); border-radius: 6px; padding: 8px 14px; cursor: pointer; user-select: none; transition: all 160ms var(--ease); white-space: nowrap; }
   .couponchip:hover { background: rgba(201,162,39,0.08); }
+  .saving-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gold-glint); }
+  .cond-tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; border: 1px solid var(--hairline); border-radius: 4px; padding: 2px 7px; }
 </style>
 </head>
 <body>
 <main class="wrap dealwrap">
-  <div class="micro gold">TOOLS JAY ACTUALLY USES · PRICES MEMBERS ACTUALLY GET</div>
+  <div class="micro gold">THE BUYING CLUB · TOOLS JAY USES, PRICES MEMBERS GET</div>
   <h1 style="margin-top:8px">Member Deals</h1>
-  <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">Special pricing negotiated for Vault members. Click a coupon to copy it.</p>
+  <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">Special pricing negotiated for Vault members on the tools and services you already pay for. Most hold only while your membership is active. Click a coupon to copy it.</p>
 
-  <div id="deals" style="margin-top:22px"></div>
+  <div class="plate savings-plate rv" style="margin-top:22px;display:none" id="savingsPlate">
+    <div>
+      <div class="micro">AVAILABLE TO YOU RIGHT NOW</div>
+      <div class="n" id="savingsNum">$0<small> / mo in member savings</small></div>
+    </div>
+    <div class="micro" style="max-width:280px;text-align:right;color:var(--text-dim)" id="savingsNote"></div>
+  </div>
 
-  <div class="plate rv" style="padding:24px;border-style:dashed;text-align:center">
+  <div id="deals" style="margin-top:26px"></div>
+
+  <div class="plate rv" style="padding:24px;border-style:dashed;text-align:center;margin-top:8px">
     <div class="micro">MORE DEALS LANDING HERE · JAY IS NEGOTIATING</div>
-    <div class="micro" style="margin-top:6px;color:var(--dim-2)">GOT A TOOL YOU PAY FOR THAT THE VAULT SHOULD GET A DEAL ON? <a href="/ai-vault/ask.html" style="color:var(--gold-glint)">TELL JAY</a></div>
+    <div class="micro" style="margin-top:6px;color:var(--dim-2)">PAY FOR A TOOL THE VAULT SHOULD GET A DEAL ON? <a href="/ai-vault/ask.html" style="color:var(--gold-glint)">TELL JAY</a></div>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=7"></script>
-<script src="/ai-vault/assets/js/vault.js?v=7"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=8"></script>
+<script src="/ai-vault/assets/js/vault.js?v=8"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -44,18 +58,46 @@
 
   var esc = VAULT.esc;
   var deals = await VAULT.getDeals();
-  document.getElementById("deals").innerHTML = deals.map(function (d) {
-    return '<div class="plate dealcard rv">' +
-      '<div style="flex:1;min-width:240px">' +
-        '<h2 style="font-size:18px">' + esc(d.name) + "</h2>" +
-        (d.deal_note ? '<div class="micro gold" style="margin:6px 0 10px">' + esc(d.deal_note).toUpperCase() + "</div>" : "") +
-        '<p style="color:var(--text-dim);font-size:14px">' + esc(d.description || "") + "</p>" +
-      "</div>" +
-      '<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;justify-content:center">' +
-        (d.coupon ? '<span class="couponchip" data-coupon="' + esc(d.coupon) + '" title="Click to copy">COUPON: ' + esc(d.coupon) + "</span>" : "") +
-        (d.url ? '<a class="btn" href="' + esc(d.url) + '" target="_blank" rel="noopener">Get the deal ↗</a>' : "") +
-      "</div>" +
-    "</div>";
+  var total = deals.reduce(function (t, d) { return t + (d.monthly_saving || 0); }, 0);
+
+  /* savings counter */
+  if (total > 0) {
+    document.getElementById("savingsPlate").style.display = "flex";
+    document.getElementById("savingsNum").innerHTML = "$" + total + "<small> / mo in member savings</small>";
+    var net = total - 100;
+    document.getElementById("savingsNote").textContent = net > 0
+      ? "That is $" + net + "/mo more than your membership costs. The Vault pays for itself."
+      : "Use a few and your membership starts paying for itself.";
+  }
+
+  /* group by category, biggest-saving categories first */
+  var groups = {};
+  deals.forEach(function (d) { (groups[d.category || "Tools"] = groups[d.category || "Tools"] || []).push(d); });
+  var order = Object.keys(groups).sort(function (a, b) {
+    var sa = groups[a].reduce(function (t, d) { return t + (d.monthly_saving || 0); }, 0);
+    var sb = groups[b].reduce(function (t, d) { return t + (d.monthly_saving || 0); }, 0);
+    return sb - sa;
+  });
+
+  document.getElementById("deals").innerHTML = order.map(function (cat) {
+    var cards = groups[cat].map(function (d) {
+      return '<div class="plate dealcard rv">' +
+        '<div style="flex:1;min-width:240px">' +
+          '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+            '<h3 style="font-size:18px">' + esc(d.name) + "</h3>" +
+            (d.conditional ? '<span class="cond-tag">While you\'re a member</span>' : "") +
+          "</div>" +
+          (d.deal_note ? '<div class="micro gold" style="margin:8px 0 10px">' + esc(d.deal_note).toUpperCase() + "</div>" : "") +
+          '<p style="color:var(--text-dim);font-size:14px">' + esc(d.description || "") + "</p>" +
+        "</div>" +
+        '<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;justify-content:center">' +
+          (d.monthly_saving ? '<span class="saving-tag">SAVE $' + d.monthly_saving + "/MO</span>" : "") +
+          (d.coupon ? '<span class="couponchip" data-coupon="' + esc(d.coupon) + '" title="Click to copy">' + esc(d.coupon) + "</span>" : "") +
+          (d.url ? '<a class="btn" href="' + esc(d.url) + '" target="_blank" rel="noopener nofollow">Get the deal ↗</a>' : "") +
+        "</div>" +
+      "</div>";
+    }).join("");
+    return '<div class="cat-head"><span class="micro">' + esc(cat).toUpperCase() + "</span></div>" + cards;
   }).join("");
 
   document.body.addEventListener("click", function (ev) {

@@ -94,6 +94,23 @@ Deno.serve(async (req) => {
         }
         return json({ ok: true, id: ch.id });
       }
+      case "upsert_deal": {
+        const p = payload;
+        const { error } = await admin.from("tool_deals").upsert({
+          name: p.name,
+          category: p.category || "Tools",
+          deal_note: p.deal_note || null,
+          monthly_saving: Number(p.monthly_saving) || 0,
+          coupon: p.coupon || null,
+          url: p.url || null,
+          description: p.description || null,
+          conditional: p.conditional !== false,
+          model: p.model || null,
+          private_terms: p.private_terms || null,
+          active: true,
+        }, { onConflict: "name" });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
       case "comp_member": {
         const email = String(payload.email).toLowerCase();
         await admin.from("comped_emails").upsert({ email, note: "comped via admin" });

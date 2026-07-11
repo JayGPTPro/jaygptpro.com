@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=7">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=8">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -66,6 +66,22 @@
         </form>
       </div>
       <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:16px">Add / update a member deal (Buying Club)</h3>
+        <form id="dealForm">
+          <label class="flabel micro">Tool / service name</label><input class="field" name="name" required>
+          <label class="flabel micro">Category</label><input class="field" name="category" placeholder="AI Creative, Research & Analytics, Communities & Coaching, Capital, Finance & Ops...">
+          <label class="flabel micro">Deal note (member-facing, e.g. "$30/mo off")</label><input class="field" name="deal_note">
+          <label class="flabel micro">Monthly saving in USD (feeds the savings counter, 0 if not monthly)</label><input class="field" name="monthly_saving" type="number" value="0">
+          <label class="flabel micro">Coupon code (optional)</label><input class="field" name="coupon">
+          <label class="flabel micro">Link (your affiliate URL)</label><input class="field" name="url" type="url">
+          <label class="flabel micro">Description (member-facing)</label><textarea class="field" name="description" rows="2"></textarea>
+          <label class="flabel micro" style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="conditional" checked style="width:auto;margin:0"> Discount is conditional on active membership</label>
+          <label class="flabel micro">Revenue model (your note)</label><select class="field" name="model"><option value="double">Affiliate + member discount</option><option value="member_discount">Member discount only</option><option value="affiliate">Affiliate only</option><option value="rev_share">Per-customer rev share</option><option value="service">Service at member rate</option></select>
+          <label class="flabel micro" style="color:var(--gold-glint)">Private terms (ONLY you see this: real affiliate %, rev share, contact)</label><textarea class="field" name="private_terms" rows="2" placeholder="e.g. 30% affiliate on credits, $200 flat per referred Top Dog signup, contact: tomer@..."></textarea>
+          <button class="btn gold wide" type="submit">Save deal</button>
+        </form>
+      </div>
+      <div class="plate pad" style="margin-bottom:20px">
         <h3 style="margin-bottom:16px">Comp a member (free access)</h3>
         <form id="compForm">
           <label class="flabel micro">Google email</label><input class="field" name="email" type="email" required>
@@ -81,8 +97,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=7"></script>
-<script src="/ai-vault/assets/js/vault.js?v=7"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=8"></script>
+<script src="/ai-vault/assets/js/vault.js?v=8"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -133,6 +149,13 @@
       return { day_number: Number(p[0]), title: p[1], vimeo_id: p[2] || null, body: p[3].split(" // ").join("\n") };
     }).filter(Boolean);
     act("upsert_challenge", d, e.target.querySelector("button"));
+  });
+  document.getElementById("dealForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.monthly_saving = Number(d.monthly_saving) || 0;
+    d.conditional = e.target.querySelector('[name="conditional"]').checked;
+    act("upsert_deal", d, e.target.querySelector("button"));
   });
   document.getElementById("compForm").addEventListener("submit", function (e) {
     e.preventDefault();

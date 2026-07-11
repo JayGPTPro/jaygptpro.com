@@ -179,8 +179,13 @@ var VAULT = (function () {
   }
   async function getDeals() {
     if (DEMO) return window.VAULT_DEMO.deals;
-    var r = await sb.from("tool_deals").select("*").eq("active", true).order("sort");
+    var r = await sb.rpc("get_deals");
     return r.data || [];
+  }
+  async function getDealSavings() {
+    if (DEMO) return (window.VAULT_DEMO.deals || []).reduce(function (t, d) { return t + (d.monthly_saving || 0); }, 0);
+    var r = await sb.rpc("get_deal_savings");
+    return r.data || 0;
   }
   function whatsappLinks() {
     if (DEMO) return window.VAULT_DEMO.whatsapp;
@@ -420,7 +425,7 @@ var VAULT = (function () {
     getAccess: getAccess, requireMember: requireMember, signIn: signIn, signOut: signOut,
     getEpisodes: getEpisodes, getEpisode: getEpisode, getProgressMap: getProgressMap, saveProgress: saveProgress,
     getSocial: getSocial, react: react, rate: rate, askQuestion: askQuestion,
-    getQA: getQA, addReply: addReply, getPrograms: getPrograms, getDeals: getDeals, whatsappLinks: whatsappLinks,
+    getQA: getQA, addReply: addReply, getPrograms: getPrograms, getDeals: getDeals, getDealSavings: getDealSavings, whatsappLinks: whatsappLinks,
     getLessons: getLessons, getLessonDone: getLessonDone, completeLesson: completeLesson,
     getSessions: getSessions, getNextSession: getNextSession, getConsultations: getConsultations,
     getChallenge: getChallenge, completeChallengeDay: completeChallengeDay, dayUnlockAt: dayUnlockAt,

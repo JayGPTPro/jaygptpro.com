@@ -171,6 +171,12 @@ window.VAULT_DEMO.programs = [
 ];
 
 window.VAULT_DEMO.deals = [
-  { name: "Genrupt", deal_note: "Special Vault discount", coupon: "JAY20", url: "https://genrupt.com",
-    description: "Amazon listing images, A+ content, and product videos generated from an ASIN. Jay uses it on real accounts." }
+  { name: "Genrupt", category: "AI Creative", deal_note: "$30/mo off + credit bonus", coupon: "JAY20", monthly_saving: 30, conditional: true, url: "https://genrupt.com",
+    description: "Amazon listing images, A+ content, and product videos generated from an ASIN. Jay uses it on real accounts." },
+  { name: "Top Dog Community", category: "Communities & Coaching", deal_note: "$100/mo off, while you're a Vault member", coupon: "VAULT-TD", monthly_saving: 100, conditional: true, url: "https://topdog.community",
+    description: "Tomer's high-ticket seller community. Your Vault discount holds for as long as your membership is active." },
+  { name: "Helium 10", category: "Research & Analytics", deal_note: "20% off every month", coupon: "VAULT20", monthly_saving: 40, conditional: true, url: "https://helium10.com",
+    description: "The research, keyword, and operations suite most members already pay for. Member rate stacks monthly." },
+  { name: "A2X Accounting", category: "Finance & Ops", deal_note: "2 months free", coupon: "VAULTA2X", monthly_saving: 0, conditional: false, url: "https://a2xaccounting.com",
+    description: "Automated Amazon and Shopify bookkeeping into QuickBooks or Xero. Clean books without the manual work." }
 ];
