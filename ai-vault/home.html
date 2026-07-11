@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>The Vault Floor · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=3">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=4">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -24,8 +25,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=3"></script>
-<script src="/ai-vault/assets/js/vault.js?v=3"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=4"></script>
+<script src="/ai-vault/assets/js/vault.js?v=4"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -45,7 +46,7 @@
   html += '<div class="band" style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">' +
     '<div><div class="micro gold">' + VAULT.fmtDate(Date.now()) + "</div>" +
     '<h1 style="margin-top:6px">The Vault Floor</h1></div>' +
-    '<span class="micro">' + members + " MEMBERS INSIDE</span></div>";
+    VAULT.avatarStack(members) + "</div>";
 
   /* since your last visit (returning members only) */
   var lastVisit = VAULT.getLastVisit();
@@ -62,7 +63,7 @@
       }
     }
     if (session && session.starts_at - Date.now() < 3 * 86400000) {
-      sinceItems.push({ label: "LIVE SOON", text: session.title, href: "/ai-vault/live.html" });
+      sinceItems.push({ label: "COMING UP", text: session.title, href: "/ai-vault/live.html" });
     }
   }
   if (sinceItems.length) {
@@ -90,7 +91,7 @@
   if (session) {
     var when = new Date(session.starts_at).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
     html += '<section class="band rv">' +
-      '<div class="band-head"><span class="micro"><span class="livedot"></span>Next live · Schedule board</span><a class="more" href="/ai-vault/live.html">All upcoming →</a></div>' +
+      '<div class="band-head"><span class="micro"><span class="livedot"></span>Next session · Schedule board</span><a class="more" href="/ai-vault/live.html">All upcoming →</a></div>' +
       '<div class="plate pad session-plate">' +
         '<div>' +
           '<span class="kindtag ' + (session.kind === "mastermind" ? "mastermind" : "") + '">' + esc(session.kind || "episode") + "</span>" +

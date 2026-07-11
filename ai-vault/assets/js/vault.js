@@ -284,7 +284,7 @@ var VAULT = (function () {
       { id: "induction", label: "Start Here", href: "/ai-vault/induction.html" },
       { id: "home", label: "Vault", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", href: "/ai-vault/episodes.html" },
-      { id: "live", label: "Live", href: "/ai-vault/live.html" },
+      { id: "live", label: "Upcoming", href: "/ai-vault/live.html" },
       { id: "challenges", label: "Challenges", href: "/ai-vault/challenges.html" },
       { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
@@ -297,13 +297,21 @@ var VAULT = (function () {
     var top = el('<header class="topbar">' +
       '<a class="brand" href="/ai-vault/home.html">' + KEYMARK + '<span class="wordmark">AI Vault</span></a>' +
       '<nav class="topnav">' + links + "</nav>" +
-      '<a class="memberchip" href="/ai-vault/account.html" title="The Ledger"><span class="micro">' + (access ? esc((access.name || "").split(" ")[0]) : "") + '</span><span class="bezel">' + avatar + "</span></a>" +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+        '<button class="themebtn" id="themeToggle" title="Light / dark" aria-label="Toggle light or dark theme">◐</button>' +
+        '<a class="memberchip" href="/ai-vault/account.html" title="The Ledger"><span class="micro">' + (access ? esc((access.name || "").split(" ")[0]) : "") + '</span><span class="bezel">' + avatar + "</span></a>" +
+      "</div>" +
       "</header>");
     document.body.prepend(top);
+    top.querySelector("#themeToggle").addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("vault_theme", next); } catch (e) {}
+    });
     var tabs = [
       { id: "home", label: "Vault", ico: "◈", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
-      { id: "live", label: "Live", ico: "◉", href: "/ai-vault/live.html" },
+      { id: "live", label: "Upcoming", ico: "◉", href: "/ai-vault/live.html" },
       { id: "challenges", label: "Challenge", ico: "◎", href: "/ai-vault/challenges.html" },
       { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
     ].map(function (n) {
@@ -311,8 +319,16 @@ var VAULT = (function () {
     }).join("");
     document.body.appendChild(el('<nav class="tabbar">' + tabs + "</nav>"));
     if (DEMO) {
-      document.body.appendChild(el('<div style="position:fixed;bottom:0;left:0;right:0;z-index:70;text-align:center;pointer-events:none;"><span class="micro" style="background:#141414;border:1px solid #2A2A2A;border-bottom:0;border-radius:6px 6px 0 0;padding:4px 12px;display:inline-block;">Demo mode. No live data</span></div>'));
+      document.body.appendChild(el('<div style="position:fixed;bottom:0;left:0;right:0;z-index:70;text-align:center;pointer-events:none;"><span class="micro" style="background:var(--plate);border:1px solid var(--hairline);border-bottom:0;border-radius:6px 6px 0 0;padding:4px 12px;display:inline-block;">Demo mode. No live data</span></div>'));
     }
+  }
+
+  /* member avatar stack: three initials + the live count */
+  function avatarStack(count) {
+    var seeds = [["A", "#1E5C40"], ["MS", "#2C5218"], ["RK", "#5C4A16"]];
+    return '<span class="avstack" title="' + count + ' members">' +
+      seeds.map(function (s) { return '<span class="av" style="background:' + s[1] + '">' + s[0] + "</span>"; }).join("") +
+      '<span class="avplus">+' + count + "</span></span>";
   }
 
   /* ---------- episode card (date-first, image thumb, likes) ---------- */
@@ -365,6 +381,6 @@ var VAULT = (function () {
     getChallenge: getChallenge, completeChallengeDay: completeChallengeDay, dayUnlockAt: dayUnlockAt,
     getLastVisit: getLastVisit, stampVisit: stampVisit,
     memberCount: memberCount, track: track, callFn: callFn,
-    renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown, reveal: reveal
+    renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown, reveal: reveal, avatarStack: avatarStack
   };
 })();
