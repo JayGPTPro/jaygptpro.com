@@ -140,8 +140,51 @@ var VAULT = (function () {
   }
 
   async function askQuestion(body, context) {
-    if (DEMO) { var q = store("vault_questions", "[]"); q.unshift({ body: body, t: Date.now() }); localStorage.setItem("vault_questions", JSON.stringify(q)); return; }
+    if (DEMO) {
+      var q = store("vault_qa_mine", "[]");
+      q.unshift({ id: "mine-" + q.length, author: "You", body: body, created_at: Date.now(), replies: [] });
+      localStorage.setItem("vault_qa_mine", JSON.stringify(q)); return;
+    }
     await sb.rpc("ask_question", { p_body: body, p_context: context || null });
+  }
+
+  /* community Q&A board */
+  async function getQA() {
+    if (DEMO) {
+      var mine = store("vault_qa_mine", "[]");
+      var myReplies = store("vault_qa_replies", "{}");
+      var base = (window.VAULT_DEMO.qa || []).map(function (q) {
+        var extra = myReplies[q.id] || [];
+        return Object.assign({}, q, { replies: (q.replies || []).concat(extra) });
+      });
+      return mine.concat(base);
+    }
+    var r = await sb.rpc("get_qa", { p_limit: 30 });
+    return r.data || [];
+  }
+  async function addReply(questionId, body) {
+    if (DEMO) {
+      var m = store("vault_qa_replies", "{}");
+      (m[questionId] = m[questionId] || []).push({ author: "You", body: body, created_at: Date.now() });
+      localStorage.setItem("vault_qa_replies", JSON.stringify(m)); return;
+    }
+    await sb.rpc("add_reply", { p_question: questionId, p_body: body });
+  }
+
+  /* programs catalog + member deals */
+  async function getPrograms() {
+    if (DEMO) return window.VAULT_DEMO.programs;
+    var r = await sb.from("programs").select("*").eq("active", true).order("sort");
+    return r.data || [];
+  }
+  async function getDeals() {
+    if (DEMO) return window.VAULT_DEMO.deals;
+    var r = await sb.from("tool_deals").select("*").eq("active", true).order("sort");
+    return r.data || [];
+  }
+  function whatsappLinks() {
+    if (DEMO) return window.VAULT_DEMO.whatsapp;
+    return { updates_url: "https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs", community_url: "" };
   }
 
   async function getProgressMap() {
@@ -285,7 +328,7 @@ var VAULT = (function () {
       { id: "home", label: "Vault", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Upcoming", href: "/ai-vault/live.html" },
-      { id: "challenges", label: "Challenges", href: "/ai-vault/challenges.html" },
+      { id: "challenges", label: "Programs", href: "/ai-vault/challenges.html" },
       { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
@@ -312,7 +355,7 @@ var VAULT = (function () {
       { id: "home", label: "Vault", ico: "◈", href: "/ai-vault/home.html" },
       { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Upcoming", ico: "◉", href: "/ai-vault/live.html" },
-      { id: "challenges", label: "Challenge", ico: "◎", href: "/ai-vault/challenges.html" },
+      { id: "challenges", label: "Programs", ico: "◎", href: "/ai-vault/challenges.html" },
       { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
     ].map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + n.ico + "</span>" + n.label + "</a>";
@@ -376,6 +419,7 @@ var VAULT = (function () {
     getAccess: getAccess, requireMember: requireMember, signIn: signIn, signOut: signOut,
     getEpisodes: getEpisodes, getEpisode: getEpisode, getProgressMap: getProgressMap, saveProgress: saveProgress,
     getSocial: getSocial, react: react, rate: rate, askQuestion: askQuestion,
+    getQA: getQA, addReply: addReply, getPrograms: getPrograms, getDeals: getDeals, whatsappLinks: whatsappLinks,
     getLessons: getLessons, getLessonDone: getLessonDone, completeLesson: completeLesson,
     getSessions: getSessions, getNextSession: getNextSession, getConsultations: getConsultations,
     getChallenge: getChallenge, completeChallengeDay: completeChallengeDay, dayUnlockAt: dayUnlockAt,

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<meta name="robots" content="noindex, nofollow">
+<title>WhatsApp Groups · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=5">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .wawrap { max-width: 720px; }
+  .wacard { padding: 26px; margin-bottom: 16px; }
+  .wabadge { font-size: 26px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<main class="wrap wawrap">
+  <div class="micro gold">WHERE THE DAILY CONVERSATION HAPPENS</div>
+  <h1 style="margin-top:8px">The WhatsApp Groups</h1>
+  <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">The portal holds the episodes, the workflows, and the tools. The conversation lives on WhatsApp. There are two groups, join one or both:</p>
+
+  <div class="plate wacard rv" style="margin-top:22px">
+    <div class="wabadge">💬</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px">
+        <h2 style="font-size:18px">Vault Community</h2>
+        <div class="micro gold" style="margin:6px 0 10px">THE MAIN GROUP · MEMBERS, GUEST EXPERTS, AND JAY, DAILY</div>
+        <p style="color:var(--text-dim);font-size:14px">Questions, wins, tool drops, and members helping members in real time. This is where the Vault talks. Private, members only, admin approval.</p>
+      </div>
+      <a class="btn gold" id="communityBtn" href="#" style="flex:0 0 auto">👉 Join here</a>
+    </div>
+  </div>
+
+  <div class="plate wacard rv">
+    <div class="wabadge">📢</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px">
+        <h2 style="font-size:18px">Updates Only</h2>
+        <div class="micro gold" style="margin:6px 0 10px">ANNOUNCEMENTS CHANNEL · ZERO CHATTER</div>
+        <p style="color:var(--text-dim);font-size:14px">New episodes, live session reminders, and important drops. Nothing else. For members who want the signal without the conversation.</p>
+      </div>
+      <a class="btn" id="updatesBtn" href="#" target="_blank" rel="noopener" style="flex:0 0 auto">👉 Join here</a>
+    </div>
+  </div>
+
+  <div class="notice rv">Not sure? Join both. The community group is where questions get answered fastest, and you can always mute it and keep only the updates channel loud.</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=5"></script>
+<script src="/ai-vault/assets/js/vault.js?v=5"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("", access);
+  VAULT.track("page_view", "whatsapp");
+
+  var links = VAULT.whatsappLinks();
+  var up = document.getElementById("updatesBtn");
+  var co = document.getElementById("communityBtn");
+  if (links.updates_url) up.href = links.updates_url;
+  if (links.community_url) {
+    co.href = links.community_url;
+    co.target = "_blank"; co.rel = "noopener";
+  } else {
+    /* private group has no public invite link: request flow */
+    co.textContent = "Request to join";
+    co.href = "mailto:support@jaygptpro.com?subject=Add me to the Vault WhatsApp group&body=My member email: " + encodeURIComponent(access.email || "");
+  }
+  document.body.classList.add("in");
+  VAULT.reveal();
+})();
+</script>
+</body>
+</html>

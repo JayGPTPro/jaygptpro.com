@@ -5,46 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
-<title>Ask Jay · AI Vault</title>
+<title>Ask the AI Experts · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=4">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=5">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
-  .askwrap { max-width: 680px; }
+  .askwrap { max-width: 720px; }
+  .qcard { padding: 20px 22px; margin-bottom: 14px; }
+  .qhead { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; }
+  .qauthor { font-family: var(--font-head); font-weight: 600; font-size: 13.5px; }
+  .qbody { font-size: 14.5px; }
+  .replies { margin-top: 14px; border-left: 2px solid var(--hairline); padding-left: 16px; display: grid; gap: 12px; }
+  .reply .qauthor { color: var(--gold-glint); }
+  .replybox { display: flex; gap: 8px; margin-top: 14px; }
+  .replybox input { flex: 1; margin-bottom: 0; }
 </style>
 </head>
 <body>
 <main class="wrap askwrap">
-  <div class="micro gold">ASK THE AI EXPERTS</div>
-  <h1 style="margin-top:8px">Ask Jay</h1>
-  <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">Stuck on a workflow, a tool that broke, or an AI result that will not behave? Drop it here. Questions get answered in the WhatsApp group, on the next live call, or straight to your inbox, and the best ones shape future episodes.</p>
+  <div class="micro gold">MEMBERS HELPING MEMBERS · JAY AND THE GUEST EXPERTS ARE IN HERE TOO</div>
+  <h1 style="margin-top:8px">Ask the AI Experts</h1>
 
-  <div class="plate pad rv" style="margin-top:24px">
+  <div class="notice rv" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+    <span>💬 You're welcome to ask questions here or in the private Vault community WhatsApp group.</span>
+    <a class="btn quiet" href="/ai-vault/whatsapp.html" style="flex:0 0 auto">👉 Join here</a>
+  </div>
+
+  <div class="plate pad rv" style="margin-top:16px">
     <label class="flabel micro" for="q">Your question</label>
-    <textarea class="field ask" id="q" placeholder="Example: I tried generating lifestyle images for my garlic press 20 times and the product keeps melting. What is the workflow?"></textarea>
+    <textarea class="field ask" id="q" style="min-height:90px" placeholder="Example: I tried generating lifestyle images for my garlic press 20 times and the product keeps melting. What is the workflow?"></textarea>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <span class="micro" id="ctxNote"></span>
-      <button class="btn gold" id="send">Send to Jay</button>
+      <span class="micro" id="ctxNote">ANSWERS COME FROM MEMBERS, THE EXPERTS, AND JAY</span>
+      <button class="btn gold" id="send">Post question</button>
     </div>
   </div>
 
-  <div id="sent" class="notice" style="display:none;margin-top:14px">Received. It is in Jay's queue, answer lands in WhatsApp, on the next live, or in your inbox.</div>
-
-  <div class="band rv" style="margin-top:36px">
-    <div class="band-head"><span class="micro">How answers come back</span></div>
-    <div class="plate pad" style="display:grid;gap:12px">
-      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">FAST</span><span>Quick questions get answered in the WhatsApp group, usually same day.</span></div>
-      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">DEEP</span><span>Workflow questions get picked up on the next episode session or Mastermind hot seat.</span></div>
-      <div style="display:flex;gap:12px;font-size:14px"><span class="micro gold" style="flex:0 0 60px;padding-top:3px">BIG</span><span>The best questions become entire episodes. Claude Code for eCom started as a member question.</span></div>
-    </div>
+  <div class="band rv" style="margin-top:34px">
+    <div class="band-head"><span class="micro">Recent questions</span></div>
+    <div id="board"></div>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=4"></script>
-<script src="/ai-vault/assets/js/vault.js?v=4"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=5"></script>
+<script src="/ai-vault/assets/js/vault.js?v=5"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -52,22 +58,60 @@
   VAULT.renderChrome("ask", access);
   VAULT.track("page_view", "ask");
 
+  var $ = VAULT.$, esc = VAULT.esc;
   var ctx = new URLSearchParams(location.search).get("ctx");
-  if (ctx) document.getElementById("ctxNote").textContent = "ASKING ABOUT: " + ctx.toUpperCase().replace(/-/g, " ");
+  if (ctx) $("#ctxNote").textContent = "ASKING ABOUT: " + ctx.toUpperCase().replace(/-/g, " ");
 
-  document.getElementById("send").addEventListener("click", async function () {
-    var q = document.getElementById("q").value.trim();
-    if (q.length < 5) { document.getElementById("q").focus(); return; }
-    this.textContent = "Sending..."; this.disabled = true;
+  function timeAgo(ts) {
+    var d = Date.now() - new Date(ts).getTime();
+    var days = Math.floor(d / 86400000);
+    if (days > 30) return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
+    if (days >= 1) return days + "D AGO";
+    var h = Math.floor(d / 3600000);
+    return h >= 1 ? h + "H AGO" : "JUST NOW";
+  }
+
+  async function render() {
+    var qa = await VAULT.getQA();
+    $("#board").innerHTML = qa.length ? qa.map(function (q) {
+      var replies = (q.replies || []).map(function (r) {
+        return '<div class="reply"><div class="qhead"><span class="qauthor">' + esc(r.author) + '</span><span class="micro">' + timeAgo(r.created_at) + '</span></div><div class="qbody" style="color:var(--text-dim)">' + esc(r.body) + "</div></div>";
+      }).join("");
+      return '<div class="plate qcard rv">' +
+        '<div class="qhead"><span class="qauthor">' + esc(q.author) + '</span><span class="micro">' + timeAgo(q.created_at) + "</span></div>" +
+        '<div class="qbody">' + esc(q.body) + "</div>" +
+        (replies ? '<div class="replies">' + replies + "</div>" : "") +
+        '<div class="replybox"><input class="field" placeholder="Add your answer..." data-reply="' + esc(q.id) + '"><button class="btn quiet" data-send-reply="' + esc(q.id) + '">Reply</button></div>' +
+      "</div>";
+    }).join("") : '<div class="notice">No questions yet. Yours opens the board.</div>';
+    VAULT.reveal();
+  }
+
+  $("#send").addEventListener("click", async function () {
+    var q = $("#q").value.trim();
+    if (q.length < 5) { $("#q").focus(); return; }
+    this.disabled = true; this.textContent = "Posting...";
     await VAULT.askQuestion(q, ctx);
-    VAULT.track("question", ctx || "general");
-    document.getElementById("q").value = "";
-    document.getElementById("sent").style.display = "";
-    this.textContent = "Send to Jay"; this.disabled = false;
+    VAULT.track("question", ctx || "board");
+    $("#q").value = "";
+    this.disabled = false; this.textContent = "Post question";
+    render();
   });
 
+  document.body.addEventListener("click", async function (ev) {
+    var b = ev.target.closest("[data-send-reply]");
+    if (!b) return;
+    var input = document.querySelector('input[data-reply="' + b.dataset.sendReply + '"]');
+    var body = (input.value || "").trim();
+    if (body.length < 2) { input.focus(); return; }
+    b.disabled = true;
+    await VAULT.addReply(b.dataset.sendReply, body);
+    VAULT.track("reply", b.dataset.sendReply);
+    render();
+  });
+
+  await render();
   document.body.classList.add("in");
-  VAULT.reveal();
 })();
 </script>
 </body>

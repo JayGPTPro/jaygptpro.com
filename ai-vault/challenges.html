@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
-<title>Challenges · AI Vault</title>
+<title>Programs · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=4">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=5">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .dayrail { max-width: 760px; }
@@ -34,8 +34,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=4"></script>
-<script src="/ai-vault/assets/js/vault.js?v=4"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=5"></script>
+<script src="/ai-vault/assets/js/vault.js?v=5"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -45,12 +45,39 @@
 
   var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
   var main = $("#main");
+  main.innerHTML = '<div id="challengeBox"></div><div id="catalog"></div>';
+  var box = $("#challengeBox");
   var ch = await VAULT.getChallenge();
 
+  /* ---------- programs catalog (challenges + courses, member pricing) ---------- */
+  var programs = await VAULT.getPrograms();
+  $("#catalog").innerHTML =
+    '<div class="band-head" style="margin-top:40px"><h2>Challenges &amp; Courses</h2><span class="micro">MEMBER PRICING ON EVERYTHING</span></div>' +
+    '<div class="ep-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">' +
+    programs.map(function (p) {
+      var badge = p.badge === "free_members"
+        ? '<span class="kindtag mastermind">FREE FOR VAULT MEMBERS</span>'
+        : '<span class="kindtag">' + esc((p.price_note || "MEMBER DEAL")).toUpperCase() + "</span>";
+      return '<div class="plate rv" style="overflow:hidden">' +
+        '<div class="ep-thumb">' + (p.image_url ? '<img src="' + esc(p.image_url) + '" alt="" loading="lazy">' : "") + "</div>" +
+        '<div style="padding:18px 20px">' +
+          badge +
+          '<h3 style="margin:10px 0 6px">' + esc(p.title) + "</h3>" +
+          '<p style="color:var(--text-dim);font-size:13.5px;margin-bottom:14px">' + esc(p.description || "") + "</p>" +
+          '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+            '<a class="btn ' + (p.badge === "free_members" ? "gold" : "") + '" href="' + esc(p.url || "#") + '"' + (/^https?:/.test(p.url || "") ? ' target="_blank" rel="noopener"' : "") + '>' + (p.badge === "free_members" ? "Start now" : "Get the member deal") + "</a>" +
+            (p.coupon ? '<span class="micro gold mono">COUPON: ' + esc(p.coupon) + "</span>" : "") +
+          "</div>" +
+        "</div>" +
+      "</div>";
+    }).join("") + "</div>" +
+    '<div class="notice rv" style="margin-top:18px">Every future challenge, bootcamp, or seminar Jay releases outside the Vault comes with a special member price. Worth watching this page.</div>';
+
   if (!ch) {
-    main.innerHTML = '<h1>Challenges</h1><div class="micro" style="margin:8px 0 22px">FIVE DAYS. ONE SYSTEM. BUILT BY YOU.</div>' +
+    box.innerHTML = '<h1>Programs</h1><div class="micro" style="margin:8px 0 22px">CHALLENGES AND FULL COURSES, WITH MEMBER PRICING</div>' +
       '<div class="notice">No challenge is running right now. The next one gets announced on the WhatsApp group and the schedule board.</div>';
     document.body.classList.add("in");
+    VAULT.reveal();
     return;
   }
 
@@ -111,12 +138,12 @@
     }).join("");
 
     html += "</div>";
-    main.innerHTML = html;
+    box.innerHTML = html;
 
     /* expand the current day: first open-not-done, else last open */
     var current = ch.days.find(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number) && done.indexOf(d.day_number) < 0; });
     var target = current ? current.day_number : (openDays.length ? openDays[openDays.length - 1].day_number : null);
-    if (target) { var n = main.querySelector('[data-day="' + target + '"]'); if (n) n.classList.add("expanded"); }
+    if (target) { var n = box.querySelector('[data-day="' + target + '"]'); if (n) n.classList.add("expanded"); }
 
     VAULT.reveal();
   }

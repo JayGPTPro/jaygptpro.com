@@ -129,3 +129,48 @@ window.VAULT_DEMO.challenge = (function () {
     ]
   };
 })();
+
+/* round 5: community QA, WhatsApp groups, programs catalog, member deals */
+window.VAULT_DEMO.whatsapp = {
+  updates_url: "https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs",
+  community_url: ""  /* private group, admin approval. Jay pastes the invite link here (or in the DB) */
+};
+
+window.VAULT_DEMO.qa = (function () {
+  var now = Date.now(), day = 86400000;
+  return [
+    { id: "q1", author: "Tal", created_at: now - 1 * day,
+      body: "AI keeps deforming my product in lifestyle images. I tried maybe 20 times, the handle comes out melted every single time. What is the workflow?",
+      replies: [
+        { author: "Andrew", created_at: now - 1 * day + 3600000, body: "Reference sheet first, always. Lock a clean product reference set (4 angles, white bg), then generate scenes AROUND the reference. The Nano Banana episode covers the exact flow." },
+        { author: "Jay", created_at: now - 1 * day + 7200000, body: "What Andrew said. Episode: Create Full Listing Images with Nano Banana Pro, minute 29 is your exact case. Bring it to the next Mastermind if it still fights you." }
+      ] },
+    { id: "q2", author: "Jason", created_at: now - 3 * day,
+      body: "Helium 10 review export broke again this week. Anyone has a working alternative for pulling all reviews of an ASIN?",
+      replies: [
+        { author: "Michael", created_at: now - 3 * day + 5400000, body: "The scraper tool from the Review Mining episode still works, I pulled 4k reviews yesterday. Check the resources under that episode." }
+      ] },
+    { id: "q3", author: "Jona", created_at: now - 6 * day,
+      body: "Is it safe to connect Claude Code to my Seller Central account? Worried about it touching live listings.",
+      replies: [
+        { author: "Roded", created_at: now - 6 * day + 4000000, body: "Use read-only SP-API keys for the first month. It can analyze everything and change nothing. That is how I run it for clients." },
+        { author: "Jay", created_at: now - 5 * day, body: "Roded nailed it. Read-only first, write access only for flows you tested. The Claude Code episode has the exact key setup." }
+      ] }
+  ];
+})();
+
+window.VAULT_DEMO.programs = [
+  { slug: "ai-ambassador-challenge", title: "AI Ambassador 5-Day Challenge", kind: "challenge", badge: "free_members",
+    description: "Five days, one AI brand ambassador for your store. Photos, voice, video, and a full content week.",
+    price_note: "Free for Vault members", coupon: "", url: "/ai-vault/challenges.html",
+    image_url: "/ai-vault/assets/img/thumb-video.jpg" },
+  { slug: "claude-code-challenge", title: "Your First AI Hire: Claude Code 5-Day Challenge", kind: "challenge", badge: "member_deal",
+    description: "Build your first AI employee with Donna. The famous 5-day challenge, live cohort format.",
+    price_note: "Special Vault member price", coupon: "VAULT-CC", url: "https://jaygptpro.com/claude-code-challenge-join",
+    image_url: "/ai-vault/assets/img/thumb-claude.jpg" }
+];
+
+window.VAULT_DEMO.deals = [
+  { name: "Genrupt", deal_note: "Special Vault discount", coupon: "JAY20", url: "https://genrupt.com",
+    description: "Amazon listing images, A+ content, and product videos generated from an ASIN. Jay uses it on real accounts." }
+];

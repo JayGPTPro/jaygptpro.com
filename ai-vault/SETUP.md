@@ -11,7 +11,7 @@ Estimated total: about half a day, most of it waiting for Vimeo uploads.
 1. supabase.com → New project. Name: `ai-vault`. Region: closest to US East. Save the database password in your password manager.
 2. Project Settings → API: copy the **Project URL** and the **anon public key**.
 3. Open `assets/js/vault.js` and fill the two values at the top (`SUPABASE_URL`, `SUPABASE_ANON_KEY`). This is what switches the portal from demo mode to live.
-4. SQL Editor → paste and run the files in `supabase/migrations/` IN ORDER: `0001_schema.sql`, `0002_security.sql`, `0003_engagement.sql`, `0004_challenges.sql`.
+4. SQL Editor → paste and run the files in `supabase/migrations/` IN ORDER: `0001` through `0005` (schema, security, engagement, challenges, community).
 5. Authentication → Providers → Google → enable. (Use the same Google Cloud OAuth client as Donna or create one. APIs and Services → OAuth consent screen must be **In production**, not Testing.)
 6. Authentication → URL Configuration → Site URL: `https://jaygptpro.com/ai-vault/index.html`. Add `https://jaygptpro.com/ai-vault/*` to redirect URLs.
 7. Make yourself admin. SQL Editor:
@@ -92,3 +92,9 @@ Optional pretty entrance: nothing needed, that IS the URL.
 - **Legal pages** (`terms.html`, `privacy.html`, `refunds.html`) are solid reasonable defaults written for the Vault. They are not a law firm's work. Worth a one-time professional review when convenient.
 - **The public repo is fine.** The anon key in vault.js is designed to be public; RLS inside Supabase is what protects the data. The secrets (service role, Stripe secret, Resend, webhook secret) live ONLY in Supabase edge function env, never in this repo.
 - **Veteran migration (Phase B)** machinery is specced in `AI VAULT/docs/MIGRATION.md` and gets built when you say go.
+
+## Round 5 additions (community, programs, deals)
+
+- **WhatsApp community group invite:** the updates channel link is already wired. For the private community group, paste the invite link in `assets/js/demo-data.js` under `whatsapp.community_url` (demo) and later manage it in the DB. Until then the button falls back to an email request flow.
+- **Programs catalog** (`programs` table) and **Member Deals** (`tool_deals` table): seed rows via the Supabase table editor. The demo ships with the Ambassador challenge (free for members) and the Claude Code challenge (sample coupon VAULT-CC, replace with the real one), plus Genrupt with coupon JAY20.
+- **Ask the AI Experts** is now a community board: members post questions and answer each other (RPCs `get_qa`/`add_reply`). Jay moderates with the service role.
