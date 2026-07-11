@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=10">
+<link rel="icon" href="/ai-vault/assets/favicon.svg">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
@@ -22,8 +23,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=10"></script>
-<script src="/ai-vault/assets/js/vault.js?v=10"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
+<script src="/ai-vault/assets/js/vault.js?v=12"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -50,10 +51,10 @@
 
   var kindIcon = { prompt: "❯", link: "↗", file: "▼", slides: "▼", tool: "↗" };
   var caseRows = (ep.resources || []).map(function (r, i) {
-    return '<div class="row" data-res="' + i + '"><div><div style="font-size:13.5px">' + esc(r.title) + '</div><div class="micro">' + esc(r.kind).toUpperCase() + "</div></div><span class=\"micro gold\">" + (kindIcon[r.kind] || "↗") + "</span></div>";
+    return '<div class="row" role="button" tabindex="0" data-res="' + i + '"><div><div style="font-size:13.5px">' + esc(r.title) + '</div><div class="micro">' + esc(r.kind).toUpperCase() + "</div></div><span class=\"micro gold\">" + (kindIcon[r.kind] || "↗") + "</span></div>";
   }).join("");
   var chapterRows = (ep.chapters || []).map(function (c) {
-    return '<div class="row" data-seek="' + c.starts_at + '"><span style="font-size:13px">' + esc(c.title) + '</span><span class="t">' + VAULT.fmtTime(c.starts_at) + "</span></div>";
+    return '<div class="row" role="button" tabindex="0" data-seek="' + c.starts_at + '" aria-label="Jump to ' + VAULT.fmtTime(c.starts_at) + '"><span style="font-size:13px">' + esc(c.title) + '</span><span class="t">' + VAULT.fmtTime(c.starts_at) + "</span></div>";
   }).join("");
 
   main.innerHTML =
@@ -71,9 +72,9 @@
         "</div>" +
 
         '<div class="reactions">' +
-          '<button class="rbtn" id="rLike">♥ <span class="n" id="likeN">' + soc.likes + "</span></button>" +
-          '<button class="rbtn" id="rLater">🔖 Watch later</button>' +
-          '<button class="rbtn" id="rMore">⚡ More like this</button>' +
+          '<button class="rbtn" id="rLike" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.6-9.2-9C1.3 8 2.6 4.8 6 4.8c2 0 3.2 1.3 4 2.6.8-1.3 2-2.6 4-2.6 3.4 0 4.7 3.2 3.2 6.2C19 15.4 12 20 12 20z"/></svg> <span class="n" id="likeN">' + soc.likes + "</span></button>" +
+          '<button class="rbtn" id="rLater" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4h12v16l-6-4-6 4z"/></svg> Watch later</button>' +
+          '<button class="rbtn" id="rMore" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 3L4 14h6l-1 7 9-11h-6z"/></svg> More like this</button>' +
         "</div>" +
 
         (ep.description ? '<p style="color:var(--text-dim);font-size:14.5px;max-width:640px;margin-top:10px">' + esc(ep.description) + "</p>" : "") +
@@ -86,14 +87,14 @@
         (next ? '<div class="band" style="margin-top:30px"><div class="band-head"><span class="micro">Next episode</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog, social) + "</div></div>" : "") +
       "</div>" +
       '<aside>' +
-        (chapterRows ? '<div class="band"><div class="band-head"><span class="micro">Chapters</span></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
-        (caseRows ? '<div class="band"><div class="band-head"><span class="micro">In the case</span></div><div class="case plate" style="padding:4px 16px">' + caseRows + "</div></div>" : "") +
+        (chapterRows ? '<div class="band"><div class="band-head"><h2 class="micro">Chapters</h2></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
+        (caseRows ? '<div class="band"><div class="band-head"><h2 class="micro">Prompts &amp; files</h2></div><div class="case plate" style="padding:4px 16px">' + caseRows + "</div></div>" : "") +
         '<div class="notice" style="font-size:12.5px">Questions on this episode? <a href="/ai-vault/ask.html?ctx=' + encodeURIComponent(ep.slug) + '" style="color:var(--gold-glint)">Ask Jay</a> or bring them to the next session.</div>' +
       "</aside>" +
     "</div>";
 
   /* ---------- reactions ---------- */
-  function setBtn(id, on) { $(id).classList.toggle("on", !!on); }
+  function setBtn(id, on) { var b = $(id); b.classList.toggle("on", !!on); b.setAttribute("aria-pressed", !!on); }
   setBtn("#rLike", soc.my_like); setBtn("#rLater", soc.my_watch_later); setBtn("#rMore", soc.my_more);
   $("#rLike").addEventListener("click", function () {
     soc.my_like = !soc.my_like; soc.likes += soc.my_like ? 1 : -1;
@@ -130,6 +131,13 @@
   toggle.addEventListener("click", flip);
   toggle.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
 
+  /* keyboard: Enter/Space activates the resource and chapter rows */
+  main.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    var row = ev.target.closest("[data-res],[data-seek]");
+    if (row) { ev.preventDefault(); row.click(); }
+  });
+
   /* ---------- resources ---------- */
   main.addEventListener("click", function (ev) {
     var row = ev.target.closest("[data-res]");
@@ -138,7 +146,13 @@
     if (!r) return;
     VAULT.track("resource", ep.slug + ":" + r.title);
     if (r.url) { window.open(r.url, "_blank", "noopener"); return; }
-    if (r.body) { navigator.clipboard.writeText(r.body); row.querySelector(".gold").textContent = "COPIED"; setTimeout(function () { row.querySelector(".gold").textContent = "❯"; }, 1400); return; }
+    if (r.body) {
+      var badge = row.querySelector(".gold");
+      Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(r.body)).then(function () {
+        badge.textContent = "COPIED"; setTimeout(function () { badge.textContent = "❯"; }, 1400);
+      }).catch(function () { badge.textContent = "COPY FAILED"; setTimeout(function () { badge.textContent = "❯"; }, 1400); });
+      return;
+    }
     if (VAULT.DEMO) alert("Demo mode. Files connect after setup.");
     else VAULT.callFn("signed-url", { episode: ep.slug, title: r.title }).then(function (d) { if (d && d.url) window.open(d.url, "_blank", "noopener"); });
   });

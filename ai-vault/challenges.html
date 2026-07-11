@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=10">
+<link rel="icon" href="/ai-vault/assets/favicon.svg">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .dayrail { max-width: 760px; }
@@ -34,8 +35,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=10"></script>
-<script src="/ai-vault/assets/js/vault.js?v=10"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
+<script src="/ai-vault/assets/js/vault.js?v=12"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -116,16 +117,17 @@
       var isOpen = now >= unlockAt;
       var isDone = done.indexOf(d.day_number) >= 0;
       var stateCls = isDone ? "done" : isOpen ? "open-day" : "locked";
+      var lockSvg = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
       var state = isDone
         ? '<span class="micro gold">✓ DONE</span>'
         : isOpen
           ? '<span class="micro gold">OPEN</span>'
-          : '<span class="micro">🔒 OPENS ' + new Date(unlockAt).toLocaleDateString("en-US", { weekday: "short" }).toUpperCase() + "</span>";
+          : '<span class="micro">' + lockSvg + " OPENS " + new Date(unlockAt).toLocaleDateString("en-US", { weekday: "short" }).toUpperCase() + "</span>";
       var video = d.vimeo_id
         ? '<div class="player-shell" style="margin-bottom:14px"><iframe src="https://player.vimeo.com/video/' + esc(d.vimeo_id) + (d.vimeo_hash ? "?h=" + esc(d.vimeo_hash) + "&" : "?") + 'dnt=1" allow="fullscreen" allowfullscreen title="Day ' + d.day_number + '"></iframe></div>'
         : "";
       return '<div class="plate dayplate rv ' + stateCls + '" data-day="' + d.day_number + '">' +
-        '<div class="dayhead">' +
+        '<div class="dayhead"' + (isOpen ? ' role="button" tabindex="0" aria-expanded="false"' : "") + ">" +
           '<span class="daynum">DAY ' + pad(d.day_number) + "</span>" +
           '<h3 style="font-size:15px;flex:1">' + esc(d.title) + "</h3>" +
           '<span class="daystate">' + state + "</span>" +
@@ -158,8 +160,16 @@
     var head = ev.target.closest(".dayhead");
     if (head) {
       var plate = head.parentElement;
-      if (!plate.classList.contains("locked")) plate.classList.toggle("expanded");
+      if (!plate.classList.contains("locked")) {
+        var open = plate.classList.toggle("expanded");
+        if (head.hasAttribute("aria-expanded")) head.setAttribute("aria-expanded", open);
+      }
     }
+  });
+  main.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    var head = ev.target.closest(".dayhead[role='button']");
+    if (head) { ev.preventDefault(); head.click(); }
   });
 
   render();

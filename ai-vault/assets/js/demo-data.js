@@ -70,14 +70,14 @@ window.VAULT_DEMO = (function () {
   ];
 
   var lessons = [
-    { position: 1, title: "Welcome to the Vault", duration_seconds: 300, body: "What is inside, how to use it, and your first 10 minutes." },
-    { position: 2, title: "Your quick win: run your first prompt", duration_seconds: 480, body: "Take one Prompt Vault prompt and run it on your own listing. Today." },
-    { position: 3, title: "The episode library, your way", duration_seconds: 360, body: "Find episodes by problem, not by date." },
-    { position: 4, title: "The WhatsApp group", duration_seconds: 240, body: "Where the daily conversation happens and how to get help fast." },
-    { position: 5, title: "Prompt Vault and AI Toolbox", duration_seconds: 420, body: "Your two external compartments and when to reach for each." },
-    { position: 6, title: "Live sessions and replays", duration_seconds: 300, body: "How the monthly deep dives work and where replays land." },
-    { position: 7, title: "Your quarterly 1-on-1", duration_seconds: 240, body: "You get a private strategy call with Jay every quarter. Book it." },
-    { position: 8, title: "The seller AI stack", duration_seconds: 600, body: "The minimal set of tools worth your money right now." }
+    { position: 1, title: "Welcome to the Vault", body: "What is inside, how to use it, and your first 10 minutes. Watch the newest episode when you are done here.", cta: "See the latest episode", link: "/ai-vault/episodes.html" },
+    { position: 2, title: "Your quick win: run your first prompt", body: "Open the Prompt Vault, grab one prompt, and run it on your own listing. Right now. This is the ten-minute win.", cta: "Open the Prompt Vault", link: "https://prompt.jaygptpro.com" },
+    { position: 3, title: "Find episodes by your problem", body: "The library is tagged by problem, not by date. Filter to what you are stuck on and start there.", cta: "Browse AI Episodes", link: "/ai-vault/episodes.html" },
+    { position: 4, title: "Join the WhatsApp group", body: "This is where the daily conversation happens and where you get help fastest. Join and say hi.", cta: "Join the group", link: "/ai-vault/whatsapp.html" },
+    { position: 5, title: "The AI Toolbox", body: "The curated set of tools worth your money right now, kept current. Bookmark it.", cta: "Open the AI Toolbox", link: "https://jaygptpro.com/ai-toolbox" },
+    { position: 6, title: "Live sessions and masterminds", body: "One deep dive and one mastermind every month. Add the next one to your calendar so you do not miss it.", cta: "See what is upcoming", link: "/ai-vault/live.html" },
+    { position: 7, title: "Claim your quarterly 1-on-1", body: "A private strategy call with Jay, a $400 session, included every quarter. It expires if you do not use it.", cta: "Book your call", link: "/ai-vault/consultation.html" },
+    { position: 8, title: "The Buying Club", body: "Member pricing on the tools you already pay for. Most members save more than the membership costs.", cta: "See member deals", link: "/ai-vault/tools.html" }
   ];
 
   return {
@@ -179,4 +179,12 @@ window.VAULT_DEMO.deals = [
     description: "The research, keyword, and operations suite most members already pay for. Member rate stacks monthly." },
   { name: "A2X Accounting", category: "Finance & Ops", deal_note: "2 months free", coupon: "VAULTA2X", monthly_saving: 0, conditional: false, url: "https://a2xaccounting.com",
     description: "Automated Amazon and Shopify bookkeeping into QuickBooks or Xero. Clean books without the manual work." }
+];
+
+/* round 8: testimonials for the join page.
+   THESE ARE PLACEHOLDERS. Replace with real, approved member quotes before a public push. */
+window.VAULT_DEMO.testimonials = [
+  { quote: "Saved me about $2k on Fiverr and another $500 a month on tools I stopped needing. The listing image workflow paid for a year of membership in a week.", name: "A Vault member", role: "Amazon seller, US" },
+  { quote: "I am not technical and I was worried I would fall behind. Every session gives me something I actually use the same day. This is really high level.", name: "A Vault member", role: "eCom seller, Israel" },
+  { quote: "The community alone is worth it. I post a problem at night and by morning Jay or one of the experts has answered it.", name: "A Vault member", role: "Amazon seller, Romania" }
 ];

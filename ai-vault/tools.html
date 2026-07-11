@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
-<title>Member Deals · AI Vault</title>
+<title>Buying Club · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=10">
+<link rel="icon" href="/ai-vault/assets/favicon.svg">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .dealwrap { max-width: 820px; }
@@ -26,8 +27,8 @@
 </head>
 <body>
 <main class="wrap dealwrap">
-  <div class="micro gold">THE BUYING CLUB · TOOLS JAY USES, PRICES MEMBERS GET</div>
-  <h1 style="margin-top:8px">Member Deals</h1>
+  <div class="micro gold">MEMBER PRICING ON THE TOOLS YOU ALREADY PAY FOR</div>
+  <h1 style="margin-top:8px">The Buying Club</h1>
   <p style="color:var(--text-dim);margin-top:10px;font-size:14.5px">Special pricing negotiated for Vault members on the tools and services you already pay for. Most hold only while your membership is active. Click a coupon to copy it.</p>
 
   <div class="plate savings-plate rv" style="margin-top:22px;display:none" id="savingsPlate">
@@ -47,8 +48,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=10"></script>
-<script src="/ai-vault/assets/js/vault.js?v=10"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
+<script src="/ai-vault/assets/js/vault.js?v=12"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -68,6 +69,14 @@
     document.getElementById("savingsNote").textContent = net > 0
       ? "That is $" + net + "/mo more than your membership costs. The Vault pays for itself."
       : "Use a few and your membership starts paying for itself.";
+  }
+
+  /* empty state: the feature still sells itself before any deal is configured */
+  if (!deals.length) {
+    document.getElementById("deals").innerHTML = '<div class="notice">The first member deals are being negotiated right now. This is where your monthly savings will stack up, on the tools you already pay for.</div>';
+    document.body.classList.add("in");
+    VAULT.reveal();
+    return;
   }
 
   /* group by category, biggest-saving categories first */
@@ -92,7 +101,7 @@
         "</div>" +
         '<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;justify-content:center">' +
           (d.monthly_saving ? '<span class="saving-tag">SAVE $' + d.monthly_saving + "/MO</span>" : "") +
-          (d.coupon ? '<span class="couponchip" data-coupon="' + esc(d.coupon) + '" title="Click to copy">' + esc(d.coupon) + "</span>" : "") +
+          (d.coupon ? '<span class="couponchip" role="button" tabindex="0" data-coupon="' + esc(d.coupon) + '" title="Click to copy" aria-label="Copy coupon ' + esc(d.coupon) + '">' + esc(d.coupon) + "</span>" : "") +
           (d.url ? '<a class="btn" href="' + esc(d.url) + '" target="_blank" rel="noopener nofollow">Get the deal ↗</a>' : "") +
         "</div>" +
       "</div>";
@@ -100,14 +109,19 @@
     return '<div class="cat-head"><span class="micro">' + esc(cat).toUpperCase() + "</span></div>" + cards;
   }).join("");
 
+  function copyChip(chip) {
+    var orig = chip.dataset.coupon;
+    Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(orig)).then(function () {
+      chip.textContent = "COPIED ✓"; setTimeout(function () { chip.textContent = orig; }, 1200);
+    }).catch(function () { chip.textContent = "SELECT + COPY"; setTimeout(function () { chip.textContent = orig; }, 1400); });
+    VAULT.track("deal_coupon", orig);
+  }
   document.body.addEventListener("click", function (ev) {
-    var chip = ev.target.closest("[data-coupon]");
-    if (!chip) return;
-    navigator.clipboard.writeText(chip.dataset.coupon);
-    var orig = chip.textContent;
-    chip.textContent = "COPIED ✓";
-    setTimeout(function () { chip.textContent = orig; }, 1200);
-    VAULT.track("deal_coupon", chip.dataset.coupon);
+    var chip = ev.target.closest("[data-coupon]"); if (chip) copyChip(chip);
+  });
+  document.body.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    var chip = ev.target.closest("[data-coupon]"); if (chip) { ev.preventDefault(); copyChip(chip); }
   });
 
   document.body.classList.add("in");

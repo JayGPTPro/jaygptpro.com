@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=10">
+<link rel="icon" href="/ai-vault/assets/favicon.svg">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -25,8 +26,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=10"></script>
-<script src="/ai-vault/assets/js/vault.js?v=10"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
+<script src="/ai-vault/assets/js/vault.js?v=12"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -44,8 +45,8 @@
 
   /* greeting */
   html += '<div class="band" style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">' +
-    '<div><div class="micro gold">' + VAULT.fmtDate(Date.now()) + "</div>" +
-    '<h1 style="margin-top:6px">The Vault Floor</h1></div>' +
+    '<div><div class="micro gold">' + VAULT.fmtDate(Date.now()) + " · THE VAULT FLOOR</div>" +
+    '<h1 style="margin-top:6px">' + (first ? "Welcome back, " + esc(first) : "The Vault Floor") + "</h1></div>" +
     VAULT.avatarStack(members) + "</div>";
 
   /* since your last visit (returning members only) */
@@ -179,10 +180,10 @@
     "</div></a></section>";
 
   /* the compartments directory */
-  html += '<section class="band rv"><div class="band-head"><span class="micro">Compartments</span></div><div class="duo">' +
+  html += '<section class="band rv"><div class="band-head"><span class="micro">Everything inside</span></div><div class="duo">' +
     '<a class="plate compartment" href="https://prompt.jaygptpro.com" target="_blank" rel="noopener"><span class="glint-edge"></span><div><div class="micro gold">01</div><h3 style="margin-top:4px">Prompt Vault</h3><div class="micro" style="margin-top:4px">Save, organize, reuse</div></div><span class="micro">OPEN ↗</span></a>' +
     '<a class="plate compartment" href="https://jaygptpro.com/ai-toolbox" target="_blank" rel="noopener"><span class="glint-edge"></span><div><div class="micro gold">02</div><h3 style="margin-top:4px">AI Toolbox</h3><div class="micro" style="margin-top:4px">The tools that work right now</div></div><span class="micro">OPEN ↗</span></a>' +
-    '<a class="plate compartment" href="/ai-vault/tools.html"><span class="glint-edge"></span><div><div class="micro gold">03</div><h3 style="margin-top:4px">Member Deals</h3><div class="micro" style="margin-top:4px">Special tool pricing + coupons</div></div><span class="micro">OPEN →</span></a>' +
+    '<a class="plate compartment" href="/ai-vault/tools.html"><span class="glint-edge"></span><div><div class="micro gold">03</div><h3 style="margin-top:4px">Buying Club</h3><div class="micro" style="margin-top:4px" id="dealsSaving">Member pricing on your tools</div></div><span class="micro">OPEN →</span></a>' +
     '<a class="plate compartment" href="/ai-vault/whatsapp.html"><span class="glint-edge"></span><div><div class="micro gold">04</div><h3 style="margin-top:4px">WhatsApp Groups</h3><div class="micro" style="margin-top:4px">Community + updates, join one or both</div></div><span class="micro">JOIN →</span></a>' +
     '<a class="plate compartment" href="/ai-vault/faq.html"><span class="glint-edge"></span><div><div class="micro gold">05</div><h3 style="margin-top:4px">AI Vault FAQ\'s</h3><div class="micro" style="margin-top:4px">Everything members ask, answered once</div></div><span class="micro">READ →</span></a>' +
     '<a class="plate compartment" href="/ai-vault/ask.html"><span class="glint-edge"></span><div><div class="micro gold">06</div><h3 style="margin-top:4px">Ask the AI Experts</h3><div class="micro" style="margin-top:4px">Members helping members, daily</div></div><span class="micro">ASK →</span></a>' +
@@ -191,6 +192,10 @@
 
   main.innerHTML = html;
   if (session) VAULT.mountCountdown($("#countdown"), session.starts_at);
+  VAULT.getDealSavings().then(function (mo) {
+    var el = $("#dealsSaving");
+    if (el && mo) el.innerHTML = '<span style="color:var(--gold-glint)">$' + mo + "/mo in member savings live</span>";
+  });
   document.body.classList.add("in");
   VAULT.reveal();
   VAULT.stampVisit();

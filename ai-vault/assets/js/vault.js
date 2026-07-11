@@ -17,6 +17,29 @@ var VAULT = (function () {
     sb = window.supabase.createClient(VAULT_CONFIG.SUPABASE_URL, VAULT_CONFIG.SUPABASE_ANON_KEY);
   }
 
+  /* ---------- loading veil (skips the door pages, which animate themselves) ---------- */
+  (function loader() {
+    if (document.querySelector(".doorstage")) return;
+    var l = document.createElement("div");
+    l.className = "vloader";
+    l.setAttribute("aria-hidden", "true");
+    l.innerHTML = '<svg viewBox="0 0 44 44" fill="none" stroke="#C9A227" stroke-width="2"><circle cx="22" cy="22" r="16" opacity="0.14"/><path d="M22 6 a16 16 0 0 1 16 16" stroke-linecap="round"/></svg>';
+    document.documentElement.appendChild(l);
+    var gone = false;
+    function done() { if (gone) return; gone = true; l.classList.add("hide"); setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 350); }
+    function watch() {
+      if (document.body.classList.contains("in")) { done(); return; }
+      var obs = new MutationObserver(function () { if (document.body.classList.contains("in")) { obs.disconnect(); done(); } });
+      obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    }
+    if (document.body) watch(); else document.addEventListener("DOMContentLoaded", watch);
+    window.addEventListener("load", function () { setTimeout(done, 150); });
+    setTimeout(done, 8000);
+  })();
+
+  /* reveal failsafe: a slow or failed data query must never leave a blank screen */
+  setTimeout(function () { if (document.body) document.body.classList.add("in"); }, 6000);
+
   /* ---------- helpers ---------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
   function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; }
@@ -345,11 +368,11 @@ var VAULT = (function () {
     var initial = access && access.name ? esc(access.name.trim()[0].toUpperCase()) : "·";
     var avatar = access && access.avatar_url ? '<img src="' + esc(access.avatar_url) + '" alt="">' : initial;
     var top = el('<header class="topbar">' +
-      '<a class="brand" href="/ai-vault/home.html">' + KEYMARK + '<span class="wordmark">AI Vault</span></a>' +
+      '<a class="brand" href="/ai-vault/home.html" aria-label="AI Vault, home">' + KEYMARK + '<span class="wordmark">AI Vault</span></a>' +
       '<nav class="topnav">' + links + "</nav>" +
       '<div style="display:flex;align-items:center;gap:12px">' +
         '<button class="themebtn" id="themeToggle" title="Light / dark" aria-label="Toggle light or dark theme">◐</button>' +
-        '<a class="memberchip" href="/ai-vault/account.html" title="The Ledger"><span class="micro">' + (access ? esc((access.name || "").split(" ")[0]) : "") + '</span><span class="bezel">' + avatar + "</span></a>" +
+        '<a class="memberchip" href="/ai-vault/account.html" title="The Ledger" aria-label="Your account, The Ledger"><span class="micro">' + (access ? esc((access.name || "").split(" ")[0]) : "") + '</span><span class="bezel">' + avatar + "</span></a>" +
       "</div>" +
       "</header>");
     document.body.prepend(top);
@@ -358,16 +381,45 @@ var VAULT = (function () {
       document.documentElement.dataset.theme = next;
       try { localStorage.setItem("vault_theme", next); } catch (e) {}
     });
-    var tabs = [
-      { id: "home", label: "Home", ico: "◈", href: "/ai-vault/home.html" },
-      { id: "episodes", label: "Episodes", ico: "▦", href: "/ai-vault/episodes.html" },
-      { id: "live", label: "Upcoming", ico: "◉", href: "/ai-vault/live.html" },
-      { id: "challenges", label: "Courses", ico: "◎", href: "/ai-vault/challenges.html" },
-      { id: "account", label: "Profile", ico: "▣", href: "/ai-vault/account.html" }
-    ].map(function (n) {
-      return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + n.ico + "</span>" + n.label + "</a>";
-    }).join("");
-    document.body.appendChild(el('<nav class="tabbar">' + tabs + "</nav>"));
+    var ICON = {
+      home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>',
+      episodes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg>',
+      live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>',
+      more: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+      account: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5 7-5s5.8 1.4 7 5"/></svg>'
+    };
+    var tabDefs = [
+      { id: "home", label: "Home", ico: "home", href: "/ai-vault/home.html" },
+      { id: "episodes", label: "Episodes", ico: "episodes", href: "/ai-vault/episodes.html" },
+      { id: "live", label: "Upcoming", ico: "live", href: "/ai-vault/live.html" },
+      { id: "account", label: "Profile", ico: "account", href: "/ai-vault/account.html" }
+    ];
+    var moreItems = [
+      { label: "Start Here", href: "/ai-vault/induction.html" },
+      { label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
+      { label: "Masterminds", href: "/ai-vault/masterminds.html" },
+      { label: "Buying Club", href: "/ai-vault/tools.html", tag: "DEALS" },
+      { label: "Ask the Experts", href: "/ai-vault/ask.html" },
+      { label: "Your 1-on-1 with Jay", href: "/ai-vault/consultation.html" },
+      { label: "WhatsApp Groups", href: "/ai-vault/whatsapp.html" },
+      { label: "AI Vault FAQs", href: "/ai-vault/faq.html" }
+    ];
+    var moreActive = ["masterminds", "deals", "challenges", "ask", "consultation", "induction"].indexOf(active) >= 0;
+    var tabHtml = tabDefs.map(function (n) {
+      return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + ICON[n.ico] + "</span>" + n.label + "</a>";
+    }).join("") +
+      '<button type="button" class="' + (moreActive ? "active" : "") + '" id="moreTab" aria-label="More sections"><span class="ico">' + ICON.more + "</span>More</button>";
+    document.body.appendChild(el('<nav class="tabbar">' + tabHtml + "</nav>"));
+
+    var sheet = el('<div class="msheet" id="moreSheet" role="dialog" aria-label="More sections"><div class="scrim"></div><div class="panel"><div class="grab"></div>' +
+      moreItems.map(function (m) { return '<a href="' + m.href + '">' + esc(m.label) + (m.tag ? '<span class="micro">' + m.tag + "</span>" : '<span class="micro">→</span>') + "</a>"; }).join("") +
+      "</div></div>");
+    document.body.appendChild(sheet);
+    var moreTab = document.getElementById("moreTab");
+    function toggleSheet(open) { sheet.classList.toggle("open", open); }
+    moreTab.addEventListener("click", function () { toggleSheet(!sheet.classList.contains("open")); });
+    sheet.querySelector(".scrim").addEventListener("click", function () { toggleSheet(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleSheet(false); });
     if (DEMO) {
       document.body.appendChild(el('<div style="position:fixed;bottom:0;left:0;right:0;z-index:70;text-align:center;pointer-events:none;"><span class="micro" style="background:var(--plate);border:1px solid var(--hairline);border-bottom:0;border-radius:6px 6px 0 0;padding:4px 12px;display:inline-block;">Demo mode. No live data</span></div>'));
     }
@@ -407,14 +459,14 @@ var VAULT = (function () {
 
   /* ---------- countdown board ---------- */
   function mountCountdown(node, ts) {
+    node.innerHTML = ["Days", "Hrs", "Min", "Sec"].map(function (l) {
+      return '<div class="cell"><div class="num">00</div><div class="lbl">' + l + "</div></div>";
+    }).join("");
+    var nums = node.querySelectorAll(".num");
     function tick() {
       var d = Math.max(0, ts - Date.now());
-      var days = Math.floor(d / 86400000), h = Math.floor(d / 3600000) % 24, m = Math.floor(d / 60000) % 60, s = Math.floor(d / 1000) % 60;
-      node.innerHTML =
-        '<div class="cell"><div class="num">' + pad(days) + '</div><div class="lbl">Days</div></div>' +
-        '<div class="cell"><div class="num">' + pad(h) + '</div><div class="lbl">Hrs</div></div>' +
-        '<div class="cell"><div class="num">' + pad(m) + '</div><div class="lbl">Min</div></div>' +
-        '<div class="cell"><div class="num">' + pad(s) + '</div><div class="lbl">Sec</div></div>';
+      var v = [Math.floor(d / 86400000), Math.floor(d / 3600000) % 24, Math.floor(d / 60000) % 60, Math.floor(d / 1000) % 60];
+      for (var i = 0; i < 4; i++) { var t = pad(v[i]); if (nums[i].textContent !== t) nums[i].textContent = t; }
     }
     tick(); return setInterval(tick, 1000);
   }
