@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<meta name="robots" content="noindex, nofollow">
+<title>Monthly Masterminds · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=7">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .mmgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .enroll-frame { width: 100%; height: 900px; border: 0; border-radius: 10px; background: #fff; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero-strip tall rv" style="margin-bottom:30px">
+    <img class="bgimg" src="/ai-vault/assets/img/lounge.jpg" alt="">
+    <span class="shade"></span>
+    <div class="inner">
+      <span class="kindtag mastermind">INCLUDED IN YOUR MEMBERSHIP · NO EXTRA COST</span>
+      <h1 style="margin:14px 0 6px">Monthly Masterminds</h1>
+      <div class="micro">SMALL GROUP SESSIONS WHERE YOU SHARE WINS, SOLVE REAL CHALLENGES, AND BUILD CONNECTIONS WITH PEOPLE WHO GET IT</div>
+    </div>
+  </div>
+
+  <section class="band rv">
+    <div class="mmgrid">
+      <div class="plate pad">
+        <div class="micro gold" style="margin-bottom:8px">WHEN</div>
+        <p style="color:var(--text-dim);font-size:13.5px">First Wednesday of every month, 12:00 PM EST. 60 to 90 minutes on Google Meet, with 13 timezone options so nobody wakes up at 3am.</p>
+      </div>
+      <div class="plate pad">
+        <div class="micro gold" style="margin-bottom:8px">THE FORMAT</div>
+        <p style="color:var(--text-dim);font-size:13.5px">5 to 8 members per group. Quick intros, then everyone gets about 10 minutes: share a win or bring a challenge. Closing round, one key takeaway each.</p>
+      </div>
+      <div class="plate pad">
+        <div class="micro gold" style="margin-bottom:8px">HOW TO JOIN</div>
+        <p style="color:var(--text-dim);font-size:13.5px">Auto-enroll monthly and skip when you need to, or register month by month. Topics are announced one week ahead.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band rv">
+    <div class="band-head"><h2>Next sessions</h2><span class="micro">YOUR LOCAL TIME</span></div>
+    <div id="mmSessions"></div>
+  </section>
+
+  <section class="band rv">
+    <div class="band-head"><h2>Enroll</h2><span class="micro">PICK YOUR TIMEZONE AND MONTH BELOW</span></div>
+    <div class="plate" style="overflow:hidden">
+      <iframe class="enroll-frame" src="https://jaygptpro.com/vault-mastermind/" title="Mastermind enrollment" loading="lazy"></iframe>
+    </div>
+    <div class="micro" style="margin-top:10px">FORM NOT LOADING? <a href="https://jaygptpro.com/vault-mastermind/" target="_blank" rel="noopener" style="color:var(--gold-glint)">OPEN THE ENROLLMENT PAGE ↗</a></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=7"></script>
+<script src="/ai-vault/assets/js/vault.js?v=7"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("masterminds", access);
+  VAULT.track("page_view", "masterminds");
+
+  var esc = VAULT.esc;
+  var sessions = (await VAULT.getSessions()).filter(function (s) { return s.kind === "mastermind"; });
+  document.getElementById("mmSessions").innerHTML = sessions.length ? sessions.map(function (s, i) {
+    var when = new Date(s.starts_at).toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return '<div class="plate sessioncard rv" style="margin-bottom:12px">' +
+      '<div>' +
+        '<h3 style="margin:0 0 2px">' + esc(s.title) + "</h3>" +
+        '<div class="micro gold">' + esc(when.toUpperCase()) + "</div>" +
+      "</div>" +
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+        (i === 0 ? '<div class="board" data-count="' + s.starts_at + '"></div>' : "") +
+        (s.zoom_url ? '<a class="btn" href="' + esc(s.zoom_url) + '" target="_blank" rel="noopener">Meeting link</a>' : "") +
+      "</div>" +
+    "</div>";
+  }).join("") : '<div class="notice">The next Mastermind date lands here as soon as it is set. Topics are announced one week ahead.</div>';
+
+  var cd = document.querySelector("[data-count]");
+  if (cd) VAULT.mountCountdown(cd, Number(cd.dataset.count));
+
+  document.body.classList.add("in");
+  VAULT.reveal();
+})();
+</script>
+</body>
+</html>
