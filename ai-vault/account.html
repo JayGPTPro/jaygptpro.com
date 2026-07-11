@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>The Ledger · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .ledger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  @media (max-width: 760px) { .ledger-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js"></script>
+<script src="/ai-vault/assets/js/vault.js"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("account", access);
+  VAULT.track("page_view", "account");
+
+  var $ = VAULT.$, esc = VAULT.esc;
+  var episodes = await VAULT.getEpisodes();
+  var prog = await VAULT.getProgressMap();
+  var watched = episodes.filter(function (e) { return prog[e.slug]; });
+  var completed = watched.filter(function (e) { return prog[e.slug].completed; });
+  var since = access.member_since ? new Date(access.member_since) : null;
+
+  var historyRows = watched.slice(0, 12).map(function (e) {
+    var p = prog[e.slug];
+    return '<div class="ledger-line"><span><a href="/ai-vault/episode.html?ep=' + encodeURIComponent(e.slug) + '" style="color:var(--text)">' + esc(e.title) + "</a></span><span class=\"v\">" + (p.completed ? '<span style="color:var(--gold)">✓ COMPLETE</span>' : Math.round((p.position / (e.duration_seconds || 1)) * 100) + "%") + "</span></div>";
+  }).join("") || '<div class="ledger-line"><span class="micro">Nothing watched yet. The Reserve is waiting.</span></div>';
+
+  $("#main").innerHTML =
+    '<h1>The Ledger</h1><div class="micro" style="margin-top:6px">Your account</div>' +
+    '<div class="nameplate" style="margin-top:22px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px">' +
+        '<div>' +
+          '<div class="micro gold">' + VAULT.memberNo(access.member_number) + "</div>" +
+          '<h2 style="margin:10px 0 4px">' + esc(access.name || "") + "</h2>" +
+          '<div class="micro">' + esc(access.email || "") + (since ? " · MEMBER SINCE " + since.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase() : "") + "</div>" +
+        "</div>" +
+        '<div style="text-align:right">' +
+          '<div class="mono" style="font-size:30px;font-weight:500">' + completed.length + '<span style="color:var(--text-dim);font-size:16px"> / ' + episodes.length + "</span></div>" +
+          '<div class="micro">Episodes complete</div>' +
+        "</div>" +
+      "</div>" +
+    "</div>" +
+    '<div class="ledger-grid">' +
+      '<div class="plate pad">' +
+        '<div class="micro" style="margin-bottom:8px">Subscription</div>' +
+        '<div class="ledger-line" style="border-top:0"><span>Plan</span><span class="v">' + esc(access.plan || "AI Vault") + "</span></div>" +
+        '<div class="ledger-line"><span>Status</span><span class="v" style="color:var(--gold-glint)">' + esc((access.status || "active").toUpperCase()) + "</span></div>" +
+        '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
+          '<button class="btn" id="portalBtn">Manage billing</button>' +
+          '<button class="btn quiet" id="signoutBtn">Sign out</button>' +
+        "</div>" +
+        '<div class="micro" style="margin-top:14px;font-size:9.5px">Cancel anytime · 30-day guarantee · <a href="/ai-vault/refunds.html" style="color:var(--text-dim);text-decoration:underline">Refund policy</a></div>' +
+      "</div>" +
+      '<div class="plate pad">' +
+        '<div class="micro" style="margin-bottom:8px">Watch history</div>' + historyRows +
+      "</div>" +
+    "</div>" +
+    '<div class="plate pad" style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">' +
+      '<div><div class="micro gold">Private consultation</div><div style="font-size:14px;margin-top:4px">Quarterly 1-on-1 strategy call with Jay. Included in your membership.</div></div>' +
+      '<a class="btn quiet" href="https://jaygptpro.com/call" target="_blank" rel="noopener">Book</a>' +
+    "</div>";
+
+  $("#portalBtn").addEventListener("click", async function () {
+    var d = await VAULT.callFn("create-portal-session", {});
+    if (d && d.url) location.href = d.url;
+  });
+  $("#signoutBtn").addEventListener("click", VAULT.signOut);
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>

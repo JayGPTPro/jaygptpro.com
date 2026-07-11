@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>The Vault Floor · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); }
+  body.in { opacity: 1; }
+  .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .continue-plate { display: flex; gap: 20px; align-items: stretch; overflow: hidden; }
+  .continue-thumb { flex: 0 0 220px; }
+  @media (max-width: 640px) { .continue-thumb { display: none; } }
+  .compartments { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .compartments { grid-template-columns: 1fr; } }
+  .compartment { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js"></script>
+<script src="/ai-vault/assets/js/vault.js"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("home", access);
+  VAULT.track("page_view", "home");
+
+  var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
+  var main = $("#main");
+  var episodes = await VAULT.getEpisodes();
+  var prog = await VAULT.getProgressMap();
+  var session = await VAULT.getNextSession();
+
+  var html = "";
+
+  /* band 1: next session */
+  if (session) {
+    var d = new Date(session.starts_at);
+    var when = d.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    html += '<section class="band">' +
+      '<div class="band-head"><span class="micro"><span class="livedot"></span>Next session · Schedule board</span></div>' +
+      '<div class="plate pad session-plate">' +
+        '<div>' +
+          '<div class="micro gold">' + esc(when) + " · YOUR LOCAL TIME</div>" +
+          '<h2 style="margin:8px 0 4px">' + esc(session.title) + "</h2>" +
+          (session.guest_name ? '<div class="micro">WITH ' + esc(session.guest_name).toUpperCase() + "</div>" : "") +
+          '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">' +
+            '<button class="btn quiet" id="icsBtn">Add to calendar</button>' +
+            (session.zoom_url ? '<a class="btn quiet" href="' + esc(session.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
+          "</div>" +
+        "</div>" +
+        '<div class="board" id="countdown"></div>' +
+      "</div></section>";
+  }
+
+  /* band 2: continue watching */
+  var unfinished = episodes.filter(function (e) {
+    var p = prog[e.slug]; return p && !p.completed && p.position > 30;
+  }).sort(function (a, b) { return ((prog[b.slug] || {}).t || 0) - ((prog[a.slug] || {}).t || 0); });
+  if (unfinished.length) {
+    var ep = unfinished[0], p = prog[ep.slug];
+    var pct = ep.duration_seconds ? Math.min(100, Math.round((p.position / ep.duration_seconds) * 100)) : 0;
+    html += '<section class="band">' +
+      '<div class="band-head"><span class="micro">Continue</span></div>' +
+      '<a class="plate continue-plate click" href="/ai-vault/episode.html?ep=' + encodeURIComponent(ep.slug) + '">' +
+        '<div class="continue-thumb ep-thumb" style="border:0;border-right:1px solid var(--hairline)"><span class="epnum">EP ' + pad(ep.ep_number) + "</span></div>" +
+        '<div style="padding:20px 22px 20px 0;flex:1;min-width:220px;padding-left:20px">' +
+          '<div class="micro">EP ' + pad(ep.ep_number) + " · " + pct + "% WATCHED</div>" +
+          '<h3 style="margin:6px 0 6px">' + esc(ep.title) + "</h3>" +
+          '<div class="micro gold">Resume from ' + VAULT.fmtTime(p.position) + " →</div>" +
+        "</div>" +
+        '<span class="ep-hairline" style="width:' + pct + '%"></span>' +
+      "</a></section>";
+  }
+
+  /* band 3: the reserve preview */
+  html += '<section class="band">' +
+    '<div class="band-head"><h2>Newest deposits</h2><a class="more" href="/ai-vault/episodes.html">The Reserve · All episodes →</a></div>' +
+    '<div class="ep-grid">' + episodes.slice(0, 3).map(function (e) { return VAULT.epCard(e, prog); }).join("") + "</div></section>";
+
+  /* band 4: compartments */
+  html += '<section class="band">' +
+    '<div class="band-head"><span class="micro">Compartments</span></div>' +
+    '<div class="compartments">' +
+      '<a class="plate compartment" href="https://prompt.jaygptpro.com" target="_blank" rel="noopener"><span class="glint-edge"></span><div><div class="micro gold">01</div><h3 style="margin-top:4px">Prompt Vault</h3><div class="micro" style="margin-top:4px">Save, organize, reuse</div></div><span class="micro">OPEN ↗</span></a>' +
+      '<a class="plate compartment" href="https://jaygptpro.com/ai-toolbox" target="_blank" rel="noopener"><span class="glint-edge"></span><div><div class="micro gold">02</div><h3 style="margin-top:4px">AI Toolbox</h3><div class="micro" style="margin-top:4px">The tools that work right now</div></div><span class="micro">OPEN ↗</span></a>' +
+    "</div></section>";
+
+  /* band 5: private consultation */
+  html += '<section class="band">' +
+    '<div class="plate pad" style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">' +
+      '<div><div class="micro gold">Private consultation</div><h3 style="margin-top:6px">Your quarterly 1-on-1 with Jay</h3><div class="micro" style="margin-top:4px">One strategy call, every quarter. Included.</div></div>' +
+      '<a class="btn" href="https://jaygptpro.com/call" target="_blank" rel="noopener">Book your session</a>' +
+    "</div></section>";
+
+  main.innerHTML = html;
+  if (session) {
+    VAULT.mountCountdown($("#countdown"), session.starts_at);
+    var icsBtn = $("#icsBtn");
+    if (icsBtn) icsBtn.addEventListener("click", function () {
+      var dt = function (t) { return new Date(t).toISOString().replace(/[-:]|\.\d{3}/g, ""); };
+      var ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//AI Vault//EN\nBEGIN:VEVENT\nUID:" + session.starts_at + "@aivault\nDTSTAMP:" + dt(Date.now()) + "\nDTSTART:" + dt(session.starts_at) + "\nDTEND:" + dt(session.starts_at + 3600000) + "\nSUMMARY:AI Vault Live · " + session.title.replace(/[,;]/g, " ") + "\nDESCRIPTION:Zoom link inside the Vault: https://jaygptpro.com/ai-vault/home.html\nEND:VEVENT\nEND:VCALENDAR";
+      var a = document.createElement("a");
+      a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+      a.download = "ai-vault-live.ics"; a.click();
+    });
+  }
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>

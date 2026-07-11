@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Vault Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { .admin-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="wrap" id="main">
+  <h1>Vault Admin</h1>
+  <div class="micro" style="margin:6px 0 24px">Publish episodes · Manage members · This page is UI only, every action is verified server-side</div>
+  <div class="admin-grid">
+    <div class="plate pad">
+      <h3 style="margin-bottom:16px">Publish / update episode</h3>
+      <form id="epForm">
+        <label class="flabel micro">EP number</label><input class="field" name="ep_number" type="number" required>
+        <label class="flabel micro">Title</label><input class="field" name="title" required>
+        <label class="flabel micro">Slug (url name, e.g. my-episode)</label><input class="field" name="slug" required pattern="[a-z0-9-]+">
+        <label class="flabel micro">Guest name (optional)</label><input class="field" name="guest_name">
+        <label class="flabel micro">Vimeo ID</label><input class="field" name="vimeo_id" required>
+        <label class="flabel micro">Vimeo hash (the h= value for hidden videos)</label><input class="field" name="vimeo_hash">
+        <label class="flabel micro">Duration (minutes)</label><input class="field" name="duration_min" type="number">
+        <label class="flabel micro">Tags (comma separated: Images, Listings, Video...)</label><input class="field" name="tags">
+        <label class="flabel micro">Description</label><textarea class="field" name="description" rows="3"></textarea>
+        <label class="flabel micro">Resources (one per line: kind | title | url-or-prompt-text)</label><textarea class="field" name="resources" rows="4" placeholder="prompt | Listing prompt | You are an expert...&#10;link | Tool site | https://..."></textarea>
+        <label class="flabel micro">Updated note (optional, shows an UPDATED flag)</label><input class="field" name="updated_note">
+        <button class="btn gold wide" type="submit">Publish episode</button>
+      </form>
+    </div>
+    <div>
+      <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:16px">Schedule a live session</h3>
+        <form id="sessionForm">
+          <label class="flabel micro">Title</label><input class="field" name="title" required>
+          <label class="flabel micro">Guest (optional)</label><input class="field" name="guest_name">
+          <label class="flabel micro">Date and time (your local time)</label><input class="field" name="starts_at" type="datetime-local" required>
+          <label class="flabel micro">Zoom link</label><input class="field" name="zoom_url">
+          <button class="btn wide" type="submit">Post to the schedule board</button>
+        </form>
+      </div>
+      <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:16px">Comp a member (free access)</h3>
+        <form id="compForm">
+          <label class="flabel micro">Google email</label><input class="field" name="email" type="email" required>
+          <button class="btn wide" type="submit">Grant comped access</button>
+        </form>
+      </div>
+      <div class="plate pad">
+        <h3 style="margin-bottom:10px">Members</h3>
+        <div id="members" class="micro">Loading...</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js"></script>
+<script src="/ai-vault/assets/js/vault.js"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  if (!access.is_admin) { location.replace("/ai-vault/home.html"); return; }
+  VAULT.renderChrome("", access);
+
+  function formData(form) {
+    var o = {}; new FormData(form).forEach(function (v, k) { o[k] = v; }); return o;
+  }
+  async function act(action, payload, btn) {
+    var label = btn.textContent;
+    btn.textContent = "Working..."; btn.disabled = true;
+    try {
+      var r = await VAULT.callFn("admin-api", { action: action, payload: payload });
+      btn.textContent = r ? "Done ✓" : label;
+    } catch (e) { alert("Error: " + e.message); btn.textContent = label; }
+    btn.disabled = false;
+    setTimeout(function () { btn.textContent = label; }, 1800);
+  }
+
+  document.getElementById("epForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.duration_seconds = d.duration_min ? Number(d.duration_min) * 60 : null; delete d.duration_min;
+    d.tags = (d.tags || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    d.resources = (d.resources || "").split("\n").map(function (line) {
+      var p = line.split("|").map(function (s) { return s.trim(); });
+      if (p.length < 3) return null;
+      var isUrl = /^https?:/.test(p[2]);
+      return { kind: p[0], title: p[1], url: isUrl ? p[2] : null, body: isUrl ? null : p[2] };
+    }).filter(Boolean);
+    act("upsert_episode", d, e.target.querySelector("button"));
+  });
+  document.getElementById("sessionForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.starts_at = new Date(d.starts_at).toISOString();
+    act("upsert_session", d, e.target.querySelector("button"));
+  });
+  document.getElementById("compForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    act("comp_member", formData(e.target), e.target.querySelector("button"));
+  });
+
+  /* member list */
+  if (VAULT.DEMO) {
+    document.getElementById("members").innerHTML = "Demo mode. Live member list appears after setup.";
+  } else {
+    try {
+      var r = await VAULT.callFn("admin-api", { action: "list_members", payload: {} });
+      document.getElementById("members").innerHTML = '<table class="admin"><tr><th>Member</th><th>Email</th><th>Status</th><th>Plan</th></tr>' +
+        (r.members || []).map(function (m) {
+          return "<tr><td>" + VAULT.esc(m.name || "") + "</td><td>" + VAULT.esc(m.email) + "</td><td>" + VAULT.esc(m.status || "") + "</td><td>" + VAULT.esc(m.plan || "") + "</td></tr>";
+        }).join("") + "</table>";
+    } catch (e) { document.getElementById("members").textContent = "Could not load members: " + e.message; }
+  }
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>

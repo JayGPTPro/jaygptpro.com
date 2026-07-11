@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Start Here · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .rail { max-width: 680px; }
+  .lesson { display: flex; gap: 18px; padding: 18px 20px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; }
+  .lesson .num { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); padding-top: 2px; flex: 0 0 30px; }
+  .lesson.done .num { color: var(--gold); }
+  .lesson .notch { flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-size: 11px; color: transparent; transition: all 200ms var(--ease); margin-top: 1px; }
+  .lesson.done .notch { border-color: var(--gold); color: var(--gold); background: rgba(201,162,39,0.1); }
+  .progressbar { height: 2px; background: var(--hairline); border-radius: 1px; margin: 16px 0 28px; overflow: hidden; }
+  .progressbar span { display: block; height: 100%; background: var(--gold); transition: width 400ms var(--ease); }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="rail">
+    <h1>Start Here</h1>
+    <div class="micro" style="margin-top:6px">Induction · Your first 10 minutes decide your first 10 months</div>
+    <div class="progressbar"><span id="bar" style="width:0"></span></div>
+    <div id="list"></div>
+    <div class="notice" style="margin-top:20px">Finish the induction, then head to <a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">The Reserve</a> and pick the episode that matches your biggest problem right now.</div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ai-vault/assets/js/demo-data.js"></script>
+<script src="/ai-vault/assets/js/vault.js"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("induction", access);
+  VAULT.track("page_view", "induction");
+
+  var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
+  var lessons = await VAULT.getLessons();
+  var done = await VAULT.getLessonDone();
+
+  function render() {
+    $("#list").innerHTML = lessons.map(function (l) {
+      var isDone = done.indexOf(l.position) >= 0;
+      return '<div class="plate lesson click ' + (isDone ? "done" : "") + '" data-pos="' + l.position + '">' +
+        '<span class="num">' + pad(l.position) + "</span>" +
+        '<div style="flex:1"><h3 style="font-size:15px">' + esc(l.title) + "</h3>" +
+        '<p style="color:var(--text-dim);font-size:13.5px;margin-top:4px">' + esc(l.body || "") + "</p>" +
+        '<div class="micro" style="margin-top:8px">' + VAULT.fmtDuration(l.duration_seconds) + "</div></div>" +
+        '<span class="notch">✓</span>' +
+      "</div>";
+    }).join("");
+    var pct = Math.round((done.length / lessons.length) * 100);
+    $("#bar").style.width = pct + "%";
+  }
+
+  $("#list") && document.addEventListener("click", function (ev) {
+    var card = ev.target.closest(".lesson"); if (!card) return;
+    var pos = Number(card.dataset.pos);
+    if (done.indexOf(pos) < 0) { done.push(pos); VAULT.completeLesson(pos); VAULT.track("lesson", String(pos)); }
+    render();
+  });
+
+  render();
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>The Viewing Room · AI Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css">
+<style>
+  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
+  @media (max-width: 900px) { .room { grid-template-columns: 1fr; } }
+  .titlebar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 18px 0 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://player.vimeo.com/api/player.js"></script>
+<script src="/ai-vault/assets/js/demo-data.js"></script>
+<script src="/ai-vault/assets/js/vault.js"></script>
+<script>
+(async function () {
+  var access = await VAULT.requireMember();
+  if (!access) return;
+  VAULT.renderChrome("episodes", access);
+
+  var $ = VAULT.$, esc = VAULT.esc, pad = VAULT.pad;
+  var slug = new URLSearchParams(location.search).get("ep");
+  var ep = slug ? await VAULT.getEpisode(slug) : null;
+  var main = $("#main");
+  if (!ep) { main.innerHTML = '<div class="notice">Episode not found. <a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">Back to The Reserve</a></div>'; document.body.classList.add("in"); return; }
+  document.title = ep.title + " · AI Vault";
+  VAULT.track("page_view", "episode:" + ep.slug);
+
+  var episodes = await VAULT.getEpisodes();
+  var prog = await VAULT.getProgressMap();
+  var myProg = prog[ep.slug] || { position: 0, completed: false };
+  var next = episodes.filter(function (e) { return e.ep_number < ep.ep_number; })[0] || null;
+
+  var playerHtml = ep.vimeo_id
+    ? '<iframe id="vplayer" src="https://player.vimeo.com/video/' + esc(ep.vimeo_id) + (ep.vimeo_hash ? "?h=" + esc(ep.vimeo_hash) + "&" : "?") + 'dnt=1&pip=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="' + esc(ep.title) + '"></iframe>'
+    : '<div class="player-poster"><span class="epnum" style="font-family:var(--font-mono);font-size:44px;color:#2E2E2C">EP ' + pad(ep.ep_number) + '</span><span class="micro">Video connects after Vimeo setup · Demo mode</span></div>';
+
+  var kindIcon = { prompt: "❯", link: "↗", file: "▼", slides: "▼", tool: "↗" };
+  var caseRows = (ep.resources || []).map(function (r, i) {
+    return '<div class="row" data-res="' + i + '"><div><div style="font-size:13.5px">' + esc(r.title) + '</div><div class="micro">' + esc(r.kind).toUpperCase() + "</div></div><span class=\"micro gold\">" + (kindIcon[r.kind] || "↗") + "</span></div>";
+  }).join("");
+  var chapterRows = (ep.chapters || []).map(function (c) {
+    return '<div class="row" data-seek="' + c.starts_at + '"><span style="font-size:13px">' + esc(c.title) + '</span><span class="t">' + VAULT.fmtTime(c.starts_at) + "</span></div>";
+  }).join("");
+
+  main.innerHTML =
+    '<div class="micro" style="margin-bottom:14px"><a href="/ai-vault/episodes.html" style="color:var(--text-dim)">← The Reserve</a></div>' +
+    '<div class="room">' +
+      '<div>' +
+        '<div class="player-shell">' + playerHtml + "</div>" +
+        '<div class="titlebar">' +
+          '<div>' +
+            '<div class="micro gold">EP ' + pad(ep.ep_number) + (ep.guest_name ? " · WITH " + esc(ep.guest_name).toUpperCase() : "") + (ep.updated_note ? ' · <span style="color:var(--gold-glint)">UPDATED: ' + esc(ep.updated_note).toUpperCase() + "</span>" : "") + "</div>" +
+            '<h1 style="margin:8px 0 6px;font-size:24px">' + esc(ep.title) + "</h1>" +
+            '<div class="micro">' + VAULT.fmtDate(ep.published_at) + " · " + VAULT.fmtDuration(ep.duration_seconds) + "</div>" +
+          "</div>" +
+          '<div class="toggle" id="completeToggle" role="switch" tabindex="0" aria-checked="false"><span class="micro">Mark complete</span><span class="track"><span class="knob"></span></span></div>' +
+        "</div>" +
+        (ep.description ? '<p style="color:var(--text-dim);font-size:14.5px;max-width:640px">' + esc(ep.description) + "</p>" : "") +
+        (next ? '<div class="band" style="margin-top:34px"><div class="band-head"><span class="micro">Next in The Reserve</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog) + "</div></div>" : "") +
+      "</div>" +
+      '<aside>' +
+        (chapterRows ? '<div class="band"><div class="band-head"><span class="micro">Chapters</span></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
+        (caseRows ? '<div class="band"><div class="band-head"><span class="micro">In the case</span></div><div class="case plate" style="padding:4px 16px">' + caseRows + "</div></div>" : "") +
+        '<div class="notice" style="font-size:12.5px">Questions on this episode? Bring them to the WhatsApp group or the next live call.</div>' +
+      "</aside>" +
+    "</div>";
+
+  /* ---------- complete toggle ---------- */
+  var toggle = $("#completeToggle");
+  function setToggle(on) { toggle.classList.toggle("on", on); toggle.setAttribute("aria-checked", on); }
+  setToggle(!!myProg.completed);
+  function flip() {
+    var on = !toggle.classList.contains("on");
+    setToggle(on);
+    VAULT.saveProgress(ep, myProg.position || 0, on);
+    if (on) VAULT.track("complete", ep.slug);
+  }
+  toggle.addEventListener("click", flip);
+  toggle.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+
+  /* ---------- resources ---------- */
+  main.addEventListener("click", function (ev) {
+    var row = ev.target.closest("[data-res]");
+    if (!row) return;
+    var r = ep.resources[Number(row.dataset.res)];
+    if (!r) return;
+    VAULT.track("resource", ep.slug + ":" + r.title);
+    if (r.url) { window.open(r.url, "_blank", "noopener"); return; }
+    if (r.body) { navigator.clipboard.writeText(r.body); row.querySelector(".gold").textContent = "COPIED"; setTimeout(function () { row.querySelector(".gold").textContent = "❯"; }, 1400); return; }
+    if (VAULT.DEMO) alert("Demo mode. Files connect after setup.");
+    else VAULT.callFn("signed-url", { episode: ep.slug, title: r.title }).then(function (d) { if (d && d.url) window.open(d.url, "_blank", "noopener"); });
+  });
+
+  /* ---------- Vimeo progress tracking ---------- */
+  if (ep.vimeo_id && window.Vimeo) {
+    var player = new Vimeo.Player($("#vplayer"));
+    var last = 0, completed = !!myProg.completed;
+    if (myProg.position > 30 && !completed) {
+      player.on("loaded", function () { player.setCurrentTime(myProg.position).catch(function () {}); });
+    }
+    player.on("play", function () { VAULT.track("play", ep.slug); });
+    player.on("timeupdate", function (d) {
+      myProg.position = d.seconds;
+      if (d.seconds - last >= 15) { last = d.seconds; VAULT.saveProgress(ep, d.seconds, completed); }
+      if (!completed && ep.duration_seconds && d.seconds / ep.duration_seconds >= 0.9) {
+        completed = true; setToggle(true); VAULT.saveProgress(ep, d.seconds, true); VAULT.track("complete", ep.slug);
+      }
+    });
+    player.on("pause", function (d) { VAULT.saveProgress(ep, d.seconds, completed); });
+    window.addEventListener("pagehide", function () { VAULT.saveProgress(ep, myProg.position || 0, completed); });
+    main.addEventListener("click", function (ev) {
+      var row = ev.target.closest("[data-seek]");
+      if (row) player.setCurrentTime(Number(row.dataset.seek)).then(function () { player.play(); }).catch(function () {});
+    });
+  } else {
+    /* demo: chapters still respond visually */
+    main.addEventListener("click", function (ev) {
+      var row = ev.target.closest("[data-seek]");
+      if (row) { myProg.position = Number(row.dataset.seek); VAULT.saveProgress(ep, myProg.position, false); }
+    });
+  }
+
+  document.body.classList.add("in");
+})();
+</script>
+</body>
+</html>
