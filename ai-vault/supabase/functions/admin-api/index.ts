@@ -111,6 +111,82 @@ Deno.serve(async (req) => {
         }, { onConflict: "name" });
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
+      case "upsert_program": {
+        const p = payload;
+        const { error } = await admin.from("programs").upsert({
+          slug: p.slug,
+          title: p.title,
+          kind: p.kind || "challenge",
+          badge: p.badge || "member_deal",
+          description: p.description || null,
+          price_note: p.price_note || null,
+          coupon: p.coupon || null,
+          url: p.url || null,
+          image_url: p.image_url || null,
+          sort: Number(p.sort) || 0,
+          active: p.active !== false,
+        }, { onConflict: "slug" });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "set_deal_active": {
+        const { error } = await admin.from("tool_deals")
+          .update({ active: payload.active !== false }).eq("name", payload.name);
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "unpublish_episode": {
+        const { error } = await admin.from("episodes")
+          .update({ status: "draft" }).eq("slug", payload.slug);
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "list_sessions": {
+        const { data } = await admin.from("live_sessions")
+          .select("id,title,kind,guest_name,starts_at")
+          .gte("starts_at", new Date(Date.now() - 86400000).toISOString())
+          .order("starts_at");
+        return json({ sessions: data || [] });
+      }
+      case "delete_session": {
+        const { error } = await admin.from("live_sessions").delete().eq("id", payload.id);
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "set_whatsapp_links": {
+        const { error } = await admin.from("feature_flags").upsert({
+          key: "whatsapp_links",
+          enabled: true,
+          payload: {
+            community_url: payload.community_url || "",
+            updates_url: payload.updates_url || "",
+          },
+        });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "set_member_counter": {
+        // resetting the base restarts the slow-growth clock from today
+        const { error } = await admin.from("feature_flags").upsert({
+          key: "member_counter",
+          enabled: true,
+          payload: {
+            base: Number(payload.base) || 0,
+            base_date: new Date().toISOString().slice(0, 10),
+            days_per_member: Number(payload.days_per_member) || 2,
+          },
+        });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      case "set_consultation": {
+        const email = String(payload.email || "").toLowerCase();
+        const { data: prof } = await admin.from("profiles").select("id")
+          .or(`google_email.ilike.${email},primary_email.ilike.${email}`).maybeSingle();
+        if (!prof) return json({ error: "No member with that email" }, 404);
+        const { error } = await admin.from("consultations").upsert({
+          user_id: prof.id,
+          quarter: payload.quarter,
+          status: payload.status || "available",
+          scheduled_for: payload.scheduled_for || null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id,quarter" });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
       case "comp_member": {
         const email = String(payload.email).toLowerCase();
         await admin.from("comped_emails").upsert({ email, note: "comped via admin" });

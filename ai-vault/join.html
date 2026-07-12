@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<!-- demo phase only: remove this noindex at public launch -->
+<meta name="robots" content="noindex, nofollow">
 <title>Join the AI Vault · Where AI Meets eCommerce</title>
 <meta name="description" content="Monthly AI deep dives, ready-to-use workflows, member deals that pay for your membership, and a private community for eCommerce sellers. $100/month, cancel anytime, 30-day guarantee.">
 <meta property="og:type" content="website">
@@ -19,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=13">
 <style>
   .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 0 auto; }
   @media (max-width: 700px) { .plans { grid-template-columns: 1fr; } }
@@ -126,8 +128,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
-<script src="/ai-vault/assets/js/vault.js?v=12"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=13"></script>
+<script src="/ai-vault/assets/js/vault.js?v=13"></script>
 <script>
 VAULT.memberCount().then(function (n) {
   document.getElementById("memberStack").innerHTML = VAULT.avatarStack(n) + '<span class="micro">SELLERS INSIDE</span>';
@@ -147,8 +149,10 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
     if (VAULT.DEMO) { alert("Demo mode. Stripe connects during setup (supabase/SETUP.md)."); return; }
     var a = await VAULT.getAccess();
     if (!a.session) {
+      /* come back HERE after Google, not to the members door. The intent
+         script below then sends the buyer straight to Stripe. */
       sessionStorage.setItem("vault_intent", btn.dataset.plan);
-      VAULT.signIn(); return;
+      VAULT.signIn("/ai-vault/join.html"); return;
     }
     try {
       var d = await VAULT.callFn("create-checkout", { plan: btn.dataset.plan });

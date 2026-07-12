@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=13">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -40,6 +40,44 @@
         <label class="flabel micro">Resources (one per line: kind | title | url-or-prompt-text)</label><textarea class="field" name="resources" rows="4" placeholder="prompt | Listing prompt | You are an expert...&#10;link | Tool site | https://..."></textarea>
         <label class="flabel micro">Updated note (optional, shows an UPDATED flag)</label><input class="field" name="updated_note">
         <button class="btn gold wide" type="submit">Publish episode</button>
+      </form>
+    </div>
+    <div class="plate pad">
+      <h3 style="margin-bottom:16px">Add / update a program (Challenges &amp; Courses)</h3>
+      <form id="programForm">
+        <label class="flabel micro">Slug</label><input class="field" name="slug" required pattern="[a-z0-9-]+">
+        <label class="flabel micro">Title</label><input class="field" name="title" required>
+        <label class="flabel micro">Type</label><select class="field" name="kind"><option value="challenge">Challenge</option><option value="course">Course</option><option value="bootcamp">Bootcamp</option><option value="seminar">Seminar</option></select>
+        <label class="flabel micro">Badge</label><select class="field" name="badge"><option value="free_members">Free for members</option><option value="member_deal">Member deal</option><option value="coming_soon">Coming soon</option></select>
+        <label class="flabel micro">Description</label><textarea class="field" name="description" rows="2"></textarea>
+        <label class="flabel micro">Price note (e.g. "Free for Vault members")</label><input class="field" name="price_note">
+        <label class="flabel micro">Coupon (optional)</label><input class="field" name="coupon">
+        <label class="flabel micro">Link (sales page or /ai-vault/challenges.html)</label><input class="field" name="url">
+        <label class="flabel micro">Image URL (optional)</label><input class="field" name="image_url">
+        <label class="flabel micro">Sort order (lower shows first)</label><input class="field" name="sort" type="number" value="0">
+        <button class="btn wide" type="submit">Save program</button>
+      </form>
+    </div>
+    <div class="plate pad">
+      <h3 style="margin-bottom:16px">Quick operations</h3>
+      <form id="unpublishForm" style="margin-bottom:22px">
+        <label class="flabel micro">Unpublish an episode (back to draft, hidden from members)</label>
+        <input class="field" name="slug" placeholder="episode-slug" required pattern="[a-z0-9-]+">
+        <button class="btn wide" type="submit">Unpublish</button>
+      </form>
+      <form id="dealToggleForm" style="margin-bottom:22px">
+        <label class="flabel micro">Turn a Buying Club deal on / off (exact tool name)</label>
+        <input class="field" name="name" placeholder="Tool name" required>
+        <label class="flabel micro" style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="active" checked style="width:auto;margin:0"> Deal is active</label>
+        <button class="btn wide" type="submit">Apply</button>
+      </form>
+      <form id="consultForm">
+        <label class="flabel micro">Set a member's 1-on-1 (after booking or completing a call)</label>
+        <input class="field" name="email" type="email" placeholder="member@email.com" required>
+        <input class="field" name="quarter" placeholder="2026-Q3" required pattern="\d{4}-Q[1-4]">
+        <select class="field" name="status"><option value="booked">Booked</option><option value="done">Done</option><option value="available">Available</option><option value="expired">Expired</option></select>
+        <label class="flabel micro">Scheduled for (only for Booked)</label><input class="field" name="scheduled_for" type="datetime-local">
+        <button class="btn wide" type="submit">Save consultation</button>
       </form>
     </div>
     <div>
@@ -89,6 +127,27 @@
           <button class="btn wide" type="submit">Grant comped access</button>
         </form>
       </div>
+      <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:16px">Portal settings</h3>
+        <form id="waForm" style="margin-bottom:22px">
+          <label class="flabel micro">WhatsApp community invite link (private group)</label>
+          <input class="field" name="community_url" placeholder="https://chat.whatsapp.com/...">
+          <label class="flabel micro">WhatsApp updates channel link</label>
+          <input class="field" name="updates_url" placeholder="https://chat.whatsapp.com/...">
+          <button class="btn wide" type="submit">Save WhatsApp links</button>
+        </form>
+        <form id="counterForm">
+          <label class="flabel micro">Member counter base (growth clock restarts today)</label>
+          <input class="field" name="base" type="number" required>
+          <label class="flabel micro">Days per +1 member</label>
+          <input class="field" name="days_per_member" type="number" value="2">
+          <button class="btn wide" type="submit">Save counter</button>
+        </form>
+      </div>
+      <div class="plate pad" style="margin-bottom:20px">
+        <h3 style="margin-bottom:10px">Upcoming sessions</h3>
+        <div id="sessions" class="micro">Loading...</div>
+      </div>
       <div class="plate pad">
         <h3 style="margin-bottom:10px">Members</h3>
         <div id="members" class="micro">Loading...</div>
@@ -98,8 +157,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
-<script src="/ai-vault/assets/js/vault.js?v=12"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=13"></script>
+<script src="/ai-vault/assets/js/vault.js?v=13"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -138,7 +197,7 @@
     e.preventDefault();
     var d = formData(e.target);
     d.starts_at = new Date(d.starts_at).toISOString();
-    act("upsert_session", d, e.target.querySelector("button"));
+    act("upsert_session", d, e.target.querySelector("button")).then(loadSessions);
   });
   document.getElementById("challengeForm").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -162,6 +221,59 @@
     e.preventDefault();
     act("comp_member", formData(e.target), e.target.querySelector("button"));
   });
+  document.getElementById("programForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    act("upsert_program", formData(e.target), e.target.querySelector("button"));
+  });
+  document.getElementById("unpublishForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!confirm("Hide this episode from members?")) return;
+    act("unpublish_episode", formData(e.target), e.target.querySelector("button"));
+  });
+  document.getElementById("dealToggleForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.active = e.target.querySelector('[name="active"]').checked;
+    act("set_deal_active", d, e.target.querySelector("button"));
+  });
+  document.getElementById("consultForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.scheduled_for = d.scheduled_for ? new Date(d.scheduled_for).toISOString() : null;
+    act("set_consultation", d, e.target.querySelector("button"));
+  });
+  document.getElementById("waForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    act("set_whatsapp_links", formData(e.target), e.target.querySelector("button"));
+  });
+  document.getElementById("counterForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    act("set_member_counter", formData(e.target), e.target.querySelector("button"));
+  });
+
+  /* upcoming sessions with delete */
+  async function loadSessions() {
+    var box = document.getElementById("sessions");
+    if (VAULT.DEMO) { box.innerHTML = "Demo mode. Live session list appears after setup."; return; }
+    try {
+      var r = await VAULT.callFn("admin-api", { action: "list_sessions", payload: {} });
+      var list = (r && r.sessions) || [];
+      if (!list.length) { box.textContent = "Nothing scheduled."; return; }
+      box.innerHTML = list.map(function (s) {
+        var when = new Date(s.starts_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--hairline)">' +
+          '<span>' + VAULT.esc(s.title) + ' <span style="color:var(--text-dim)">· ' + VAULT.esc(s.kind) + " · " + when + "</span></span>" +
+          '<button class="btn quiet" data-del="' + VAULT.esc(s.id) + '" style="padding:5px 12px;font-size:11px">Delete</button></div>';
+      }).join("");
+    } catch (e) { box.textContent = "Could not load sessions: " + e.message; }
+  }
+  document.getElementById("sessions").addEventListener("click", async function (ev) {
+    var b = ev.target.closest("[data-del]");
+    if (!b || !confirm("Delete this session from the schedule board?")) return;
+    await act("delete_session", { id: b.dataset.del }, b);
+    loadSessions();
+  });
+  loadSessions();
 
   /* member list */
   if (VAULT.DEMO) {

@@ -68,7 +68,9 @@ end; $$;
 
 create or replace function log_event(p_event text, p_ref text default null)
 returns void language sql security definer set search_path = public as $$
-  insert into portal_events (user_id, event_type, ref) values (auth.uid(), left(p_event, 40), left(p_ref, 200));
+  insert into portal_events (user_id, event_type, ref)
+  select auth.uid(), left(p_event, 40), left(p_ref, 200)
+  where auth.uid() is not null;  -- anonymous callers cannot flood the events table
 $$;
 
 -- ===== RLS =====

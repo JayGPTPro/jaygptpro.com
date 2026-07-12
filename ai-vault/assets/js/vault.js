@@ -69,6 +69,9 @@ var VAULT = (function () {
     if (!s.data.session) { _access = { has_access: false, session: false }; return _access; }
     var u = s.data.session.user;
     var r = await sb.rpc("get_my_access");
+    /* a failed access check is a connection problem, NOT a missing membership.
+       Do not cache it, so a retry re-queries. */
+    if (r.error) return { session: true, error: true };
     var row = (r.data && r.data[0]) || {};
     _access = {
       session: true,
@@ -88,16 +91,47 @@ var VAULT = (function () {
   async function requireMember() {
     var a = await getAccess();
     if (DEMO) return a;
+    if (a.error) { connectionNotice(); return null; }
     if (!a.session) { location.href = "/ai-vault/index.html"; return null; }
     if (!a.has_access) { location.href = "/ai-vault/locked.html"; return null; }
     return a;
   }
 
-  async function signIn() {
-    if (DEMO) { location.href = "/ai-vault/home.html"; return; }
+  /* full-stop retry plate: shown when the access check itself failed */
+  function connectionNotice() {
+    document.body.classList.add("in");
+    if (document.getElementById("vaultRetry")) return;
+    var n = el('<div id="vaultRetry" class="plate pad" style="position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:90;text-align:center;max-width:340px;width:calc(100% - 48px)">' +
+      '<div class="micro gold" style="margin-bottom:10px">CONNECTION HICCUP</div>' +
+      '<p style="font-size:13.5px;color:var(--text-dim);margin-bottom:18px">The Vault did not answer. Your membership is fine, the connection is not.</p>' +
+      '<button class="btn gold wide">Try again</button></div>');
+    n.querySelector("button").addEventListener("click", function () { location.reload(); });
+    document.body.appendChild(n);
+  }
+
+  /* corner toast: shown once when a content query fails, page keeps rendering */
+  var _dataNoticed = false;
+  function dataNotice() {
+    if (_dataNoticed) return; _dataNoticed = true;
+    function mount() {
+      var n = el('<div class="plate" style="position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:14px;align-items:center;padding:10px 16px;white-space:nowrap">' +
+        '<span class="micro">SOME DATA DID NOT LOAD</span>' +
+        '<button class="btn quiet" style="padding:6px 14px;font-size:12px">Reload</button></div>');
+      n.querySelector("button").addEventListener("click", function () { location.reload(); });
+      document.body.appendChild(n);
+    }
+    if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
+  }
+  function guard(r, fallback) {
+    if (r && r.error) { console.error("vault query failed", r.error); dataNotice(); }
+    return r && r.data != null ? r.data : fallback;
+  }
+
+  async function signIn(redirect) {
+    if (DEMO) { location.href = redirect || "/ai-vault/home.html"; return; }
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: location.origin + "/ai-vault/index.html" }
+      options: { redirectTo: location.origin + (redirect || "/ai-vault/index.html") }
     });
   }
   async function signOut() {
@@ -112,7 +146,7 @@ var VAULT = (function () {
     var r = await sb.from("episodes")
       .select("ep_number,slug,title,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,likes_base,episode_tags(tags(name))")
       .eq("status", "published").order("published_at", { ascending: false });
-    return (r.data || []).map(function (e) {
+    return guard(r, []).map(function (e) {
       e.tags = (e.episode_tags || []).map(function (t) { return t.tags.name; });
       e.published_at = new Date(e.published_at).getTime();
       return e;
@@ -124,6 +158,7 @@ var VAULT = (function () {
     var r = await sb.from("episodes")
       .select("*,episode_tags(tags(name)),episode_chapters(title,starts_at,position),episode_resources(kind,title,url,body,position)")
       .eq("slug", slug).single();
+    if (r.error && r.error.code !== "PGRST116") dataNotice(); /* PGRST116 = not found, a legit miss */
     var e = r.data; if (!e) return null;
     e.tags = (e.episode_tags || []).map(function (t) { return t.tags.name; });
     e.chapters = (e.episode_chapters || []).sort(function (a, b) { return a.position - b.position; });
@@ -144,7 +179,7 @@ var VAULT = (function () {
     }
     var r = await sb.rpc("get_episode_social");
     var map = {};
-    (r.data || []).forEach(function (x) { map[x.slug] = { likes: x.likes, my_like: x.my_like, my_watch_later: x.my_watch_later, my_more: x.my_more, my_stars: x.my_stars || 0 }; });
+    guard(r, []).forEach(function (x) { map[x.slug] = { likes: x.likes, my_like: x.my_like, my_watch_later: x.my_watch_later, my_more: x.my_more, my_stars: x.my_stars || 0 }; });
     return map;
   }
 
@@ -183,7 +218,7 @@ var VAULT = (function () {
       return mine.concat(base);
     }
     var r = await sb.rpc("get_qa", { p_limit: 30 });
-    return r.data || [];
+    return guard(r, []);
   }
   async function addReply(questionId, body) {
     if (DEMO) {
@@ -198,28 +233,30 @@ var VAULT = (function () {
   async function getPrograms() {
     if (DEMO) return window.VAULT_DEMO.programs;
     var r = await sb.from("programs").select("*").eq("active", true).order("sort");
-    return r.data || [];
+    return guard(r, []);
   }
   async function getDeals() {
     if (DEMO) return window.VAULT_DEMO.deals;
     var r = await sb.rpc("get_deals");
-    return r.data || [];
+    return guard(r, []);
   }
   async function getDealSavings() {
     if (DEMO) return (window.VAULT_DEMO.deals || []).reduce(function (t, d) { return t + (d.monthly_saving || 0); }, 0);
     var r = await sb.rpc("get_deal_savings");
-    return r.data || 0;
+    return guard(r, 0);
   }
-  function whatsappLinks() {
+  async function whatsappLinks() {
     if (DEMO) return window.VAULT_DEMO.whatsapp;
-    return { updates_url: "https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs", community_url: "" };
+    var r = await sb.rpc("get_whatsapp_links");
+    var d = guard(r, {}) || {};
+    return { updates_url: d.updates_url || "", community_url: d.community_url || "" };
   }
 
   async function getProgressMap() {
     if (DEMO) return demoProgress();
     var r = await sb.from("watch_progress").select("episode_id,position_seconds,completed_at,episodes(slug)");
     var map = {};
-    (r.data || []).forEach(function (p) {
+    guard(r, []).forEach(function (p) {
       if (p.episodes) map[p.episodes.slug] = { position: p.position_seconds, completed: !!p.completed_at, updated: true };
     });
     return map;
@@ -237,12 +274,12 @@ var VAULT = (function () {
   async function getLessons() {
     if (DEMO) return window.VAULT_DEMO.lessons;
     var r = await sb.from("lessons").select("*").order("position");
-    return r.data || [];
+    return guard(r, []);
   }
   async function getLessonDone() {
     if (DEMO) return store("vault_lessons", "[]");
     var r = await sb.from("lesson_progress").select("lessons(position)");
-    return (r.data || []).map(function (x) { return x.lessons.position; });
+    return guard(r, []).filter(function (x) { return x.lessons; }).map(function (x) { return x.lessons.position; });
   }
   async function completeLesson(position) {
     if (DEMO) { var d = await getLessonDone(); if (d.indexOf(position) < 0) d.push(position); localStorage.setItem("vault_lessons", JSON.stringify(d)); return; }
@@ -252,14 +289,20 @@ var VAULT = (function () {
   async function getSessions() {
     if (DEMO) return window.VAULT_DEMO.sessions.filter(function (s) { return s.starts_at > Date.now(); });
     var r = await sb.from("live_sessions").select("*").gte("starts_at", new Date().toISOString()).order("starts_at");
-    return (r.data || []).map(function (s) { s.starts_at = new Date(s.starts_at).getTime(); return s; });
+    return guard(r, []).map(function (s) { s.starts_at = new Date(s.starts_at).getTime(); return s; });
   }
   async function getNextSession() { var list = await getSessions(); return list[0] || null; }
 
   async function getConsultations() {
     if (DEMO) return window.VAULT_DEMO.consultations;
-    var r = await sb.from("consultations").select("*").order("quarter");
-    return (r.data || []).map(function (c) { if (c.scheduled_for) c.scheduled_for = new Date(c.scheduled_for).getTime(); return c; });
+    /* the RPC self-heals: creates the current quarter as available, expires stale ones */
+    var r = await sb.rpc("get_my_consultations");
+    return guard(r, []).map(function (c) {
+      if (c.scheduled_for) c.scheduled_for = new Date(c.scheduled_for).getTime();
+      var m = /^(\d{4})-Q(\d)$/.exec(c.quarter || "");
+      if (m) c.quarter = "Q" + m[2] + " " + m[1];
+      return c;
+    });
   }
 
   async function memberCount() {
@@ -281,11 +324,11 @@ var VAULT = (function () {
       return c;
     }
     var r = await sb.from("challenges").select("*,challenge_days(*)").eq("status", "active").order("starts_at", { ascending: false }).limit(1);
-    var c2 = (r.data || [])[0]; if (!c2) return null;
+    var c2 = guard(r, [])[0]; if (!c2) return null;
     c2.days = (c2.challenge_days || []).sort(function (a, b) { return a.day_number - b.day_number; });
     c2.starts_at = new Date(c2.starts_at).getTime();
     var p = await sb.from("challenge_progress").select("challenge_days(day_number)");
-    c2.my_done = (p.data || []).map(function (x) { return x.challenge_days.day_number; });
+    c2.my_done = guard(p, []).filter(function (x) { return x.challenge_days; }).map(function (x) { return x.challenge_days.day_number; });
     return c2;
   }
   async function completeChallengeDay(slug, dayNumber) {
@@ -330,21 +373,39 @@ var VAULT = (function () {
     var pending = Array.prototype.slice.call(document.querySelectorAll(".rv:not(.rv-in)"));
     function check() {
       if (!pending.length) return;
-      var vh = window.innerHeight;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 800;
       pending = pending.filter(function (n) {
         if (n.getBoundingClientRect().top < vh * 0.94) { n.classList.add("rv-in"); return false; }
         return true;
       });
       if (!pending.length) window.removeEventListener("scroll", onScroll);
     }
-    var ticking = false;
+    /* timestamp throttle, NOT requestAnimationFrame: a starved rAF callback
+       would leave the old ticking flag stuck and jam reveals forever */
+    var lastCheck = 0;
     function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () { ticking = false; check(); });
+      var now = Date.now();
+      if (now - lastCheck < 80) return;
+      lastCheck = now;
+      check();
     }
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("load", onScroll);
     check();
+    /* settle loop: fast for the first 3s (fonts/images shift layout), then a
+       slow heartbeat until everything revealed. Ten rect reads per beat is
+       nothing, and reveals must never depend on scroll events firing. */
+    var kicks = 0;
+    var kicker = setInterval(function () {
+      check();
+      kicks++;
+      if (!pending.length) { clearInterval(kicker); return; }
+      if (kicks >= 10) {
+        clearInterval(kicker);
+        kicker = setInterval(function () { check(); if (!pending.length) clearInterval(kicker); }, 1500);
+      }
+    }, 300);
   }
 
   /* ---------- chrome (topbar + mobile tabbar) ---------- */

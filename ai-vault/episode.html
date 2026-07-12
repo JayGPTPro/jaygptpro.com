@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=12">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=13">
 <style>
   body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
   .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
@@ -23,8 +23,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=12"></script>
-<script src="/ai-vault/assets/js/vault.js?v=12"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=13"></script>
+<script src="/ai-vault/assets/js/vault.js?v=13"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -153,8 +153,9 @@
       }).catch(function () { badge.textContent = "COPY FAILED"; setTimeout(function () { badge.textContent = "❯"; }, 1400); });
       return;
     }
+    /* v1: file resources ship as URLs (Vimeo/Drive). A row with neither url nor
+       body only exists in demo data. */
     if (VAULT.DEMO) alert("Demo mode. Files connect after setup.");
-    else VAULT.callFn("signed-url", { episode: ep.slug, title: r.title }).then(function (d) { if (d && d.url) window.open(d.url, "_blank", "noopener"); });
   });
 
   /* ---------- Vimeo progress tracking ---------- */

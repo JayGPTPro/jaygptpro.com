@@ -11,7 +11,7 @@ Estimated total: about half a day, most of it waiting for Vimeo uploads.
 1. supabase.com → New project. Name: `ai-vault`. Region: closest to US East. Save the database password in your password manager.
 2. Project Settings → API: copy the **Project URL** and the **anon public key**.
 3. Open `assets/js/vault.js` and fill the two values at the top (`SUPABASE_URL`, `SUPABASE_ANON_KEY`). This is what switches the portal from demo mode to live.
-4. SQL Editor → paste and run the files in `supabase/migrations/` IN ORDER: `0001` through `0005` (schema, security, engagement, challenges, community).
+4. SQL Editor → paste and run the files in `supabase/migrations/` IN ORDER: `0001` through `0007` (schema, security, engagement, challenges, community, buying club, go-live ops).
 5. Authentication → Providers → Google → enable. (Use the same Google Cloud OAuth client as Donna or create one. APIs and Services → OAuth consent screen must be **In production**, not Testing.)
 6. Authentication → URL Configuration → Site URL: `https://jaygptpro.com/ai-vault/index.html`. Add `https://jaygptpro.com/ai-vault/*` to redirect URLs.
 7. Make yourself admin. SQL Editor:
@@ -95,6 +95,6 @@ Optional pretty entrance: nothing needed, that IS the URL.
 
 ## Round 5 additions (community, programs, deals)
 
-- **WhatsApp community group invite:** the updates channel link is already wired. For the private community group, paste the invite link in `assets/js/demo-data.js` under `whatsapp.community_url` (demo) and later manage it in the DB. Until then the button falls back to an email request flow.
-- **Programs catalog** (`programs` table) and **Member Deals** (`tool_deals` table): seed rows via the Supabase table editor. The demo ships with the Ambassador challenge (free for members) and the Claude Code challenge (sample coupon VAULT-CC, replace with the real one), plus Genrupt with coupon JAY20.
+- **WhatsApp links** live in the database (`feature_flags` key `whatsapp_links`, seeded by migration 0007) and are managed from the admin page (Portal settings). Until the community invite link is set, the button falls back to an email request flow. Demo mode still reads `assets/js/demo-data.js`.
+- **Programs catalog** (`programs` table) and **Member Deals** (`tool_deals` table): both have admin forms now. The demo ships with the Ambassador challenge (free for members) and the Claude Code challenge (sample coupon VAULT-CC, replace with the real one), plus Genrupt with coupon JAY20.
 - **Ask the AI Experts** is now a community board: members post questions and answer each other (RPCs `get_qa`/`add_reply`). Jay moderates with the service role.
