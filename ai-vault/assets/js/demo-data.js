@@ -1,6 +1,10 @@
 /* AI VAULT demo data. Used only when VAULT_CONFIG is empty (demo mode).
    Lets the whole portal render before Supabase exists.
-   All demo videos point at a sample Vimeo video; real episodes replace them via the admin. */
+   Episode titles, dates, guests, descriptions, likes, and resources are the REAL
+   23 episodes from the current Circle space (captured 2026-07-16, see
+   AI VAULT/docs/research/circle-episodes-raw.md). Durations are estimates until
+   the real videos are uploaded. All demo videos point at a sample Vimeo video;
+   real episodes replace them via the admin. */
 
 window.VAULT_DEMO = (function () {
   var now = Date.now();
@@ -8,65 +12,85 @@ window.VAULT_DEMO = (function () {
   var V = "1191120191"; // sample public Vimeo video for the demo
   var IMG = "/ai-vault/assets/img/";
 
-  function ep(n, slug, title, guest, tags, thumb, mins, daysAgo, likes, desc, resources, chapters, updated) {
+  function ep(n, slug, title, guest, tags, thumb, mins, dateStr, likes, desc, resources, chapters, updated) {
     return {
       ep_number: n, slug: slug, title: title, guest_name: guest, tags: tags,
       thumbnail_url: IMG + thumb, duration_seconds: mins * 60,
-      published_at: now - daysAgo * day, likes: likes, updated_note: updated || null,
+      published_at: new Date(dateStr + "T12:00:00").getTime(), likes: likes, updated_note: updated || null,
       vimeo_id: V, vimeo_hash: "", description: desc,
       resources: resources || [], chapters: chapters || []
     };
   }
 
   var episodes = [
-    ep(17, "skills-for-claude-code", "Skills for Claude Code", null, ["Claude Code", "Automation"], "thumb-claude.jpg", 83, 20, 24,
-      "Turn your best workflows into reusable skills your AI employee runs on command.",
-      [{ kind: "prompt", title: "Skill starter template" }, { kind: "link", title: "Skills documentation", url: "https://docs.claude.com" }, { kind: "file", title: "Session slides (PDF)" }],
-      [{ title: "Why skills change everything", starts_at: 0 }, { title: "Anatomy of a skill", starts_at: 620 }, { title: "Live build: listing audit skill", starts_at: 1740 }, { title: "Testing and evals", starts_at: 3300 }, { title: "Q&A", starts_at: 4200 }]),
-    ep(16, "claude-code-for-ecom", "Claude Code for eCom Sellers", null, ["Claude Code"], "thumb-claude.jpg", 90, 50, 31,
-      "The most requested episode ever. Your first AI employee, working on your Amazon business.",
-      [{ kind: "prompt", title: "CLAUDE.md starter for sellers" }, { kind: "link", title: "Install guide", url: "https://claude.com/claude-code" }],
-      [{ title: "Setup in 10 minutes", starts_at: 0 }, { title: "First real task", starts_at: 900 }, { title: "MCP connections", starts_at: 2400 }], "Part 2 added"),
-    ep(15, "ai-prompts-masterclass", "AI Prompts That Sell: The Masterclass", null, ["Listings", "Research"], "thumb-listings.jpg", 70, 80, 14,
-      "The exact prompt patterns behind listings, ads, and emails that convert.",
-      [{ kind: "prompt", title: "The 12 seller prompt patterns" }]),
-    ep(14, "brand-apps-andrew", "Brand Apps with Andrew Erickson", "Andrew Erickson", ["Video", "Images"], "thumb-video.jpg", 78, 110, 11,
-      "Custom brand applications that multiply your creative output.",
-      [{ kind: "link", title: "Andrew's app stack", url: "https://jaygptpro.com/ai-toolbox" }]),
-    ep(13, "voc-ai-reviews", "Review Mining with VOC AI", null, ["Research"], "dial-macro.jpg", 65, 140, 9,
-      "Turn thousands of reviews into product decisions in minutes.",
-      [{ kind: "link", title: "VOC AI setup", url: "https://www.voc.ai" }, { kind: "prompt", title: "Review insight extraction prompt" }]),
-    ep(12, "genspark-deep-dive", "GenSpark Deep Dive", null, ["Research", "Automation"], "dial-macro.jpg", 60, 170, 8,
-      "The AI research agent that does competitor homework for you."),
-    ep(11, "sourcing-china-ai", "Sourcing from China with AI", "Alex Jurca", ["Sourcing"], "thumb-sourcing.jpg", 85, 200, 12,
-      "Supplier discovery, negotiation scripts, and QC checklists, all AI-assisted.",
-      [{ kind: "file", title: "Negotiation script pack" }]),
-    ep(10, "n8n-automation", "n8n Automation for Amazon", "Roded Yizhaky", ["Automation"], "thumb-automation.jpg", 80, 230, 13,
-      "Hands-off workflows connecting SP-API, Ads API, and your inbox.",
-      [{ kind: "link", title: "Workflow templates", url: "https://n8n.io" }]),
-    ep(9, "canva-ai-sellers", "Canva AI for Sellers", "John Aspinall", ["Images"], "thumb-images.jpg", 62, 260, 7,
-      "Fast, on-brand creatives without a designer."),
-    ep(8, "sora-lifestyle-videos", "Product Lifestyle Videos with Sora 2", null, ["Video"], "thumb-video.jpg", 74, 290, 15,
-      "Scroll-stopping lifestyle video from nothing but your product photos.",
-      [{ kind: "prompt", title: "Sora scene prompts" }]),
-    ep(7, "ai-video-ads", "AI Video Ads: VEO 3 and Kling", null, ["Video"], "thumb-video.jpg", 68, 320, 11,
-      "15-second ads that used to cost $1,500, now $1.50."),
-    ep(6, "ai-review-loop", "The AI Review Loop", "Andrew Erickson", ["Research", "Listings"], "dial-macro.jpg", 75, 350, 10,
-      "A closed loop from reviews to listing fixes to ranking gains.",
-      [{ kind: "prompt", title: "Review loop prompts" }]),
-    ep(5, "custom-gpts-ecom", "Build Custom GPTs for eCom Workflows", null, ["Automation"], "thumb-automation.jpg", 72, 380, 10,
-      "Your knowledge, packaged into assistants your team actually uses."),
-    ep(4, "gemini-flash-image", "Gemini 2.5 Flash Image", null, ["Images"], "thumb-images.jpg", 58, 410, 10,
-      "The fastest way to production-grade product imagery."),
-    ep(3, "rufus-aeo-listings", "Writing Amazon Listings with AI: Rufus and AEO", "Andre Queiroz", ["Listings"], "thumb-listings.jpg", 78, 440, 13,
-      "Listings optimized for the AI shopping assistant era.",
-      [{ kind: "prompt", title: "AEO listing prompts" }]),
-    ep(2, "ambassador-challenge", "AI Ambassador Workflow: 5-Day Challenge", null, ["Automation", "Video"], "thumb-video.jpg", 87, 470, 16,
-      "The full 5-day system for AI brand ambassadors.",
-      [{ kind: "file", title: "Challenge workbook" }]),
-    ep(1, "nano-banana-listing-images", "Create Full Listing Images with Nano Banana Pro", "Michael Shackelford", ["Images"], "thumb-images.jpg", 93, 500, 19,
-      "The most-liked session in Vault history. A complete listing image set, live.",
-      [{ kind: "prompt", title: "Listing image prompt system" }, { kind: "file", title: "Reference sheet template" }])
+    ep(23, "brand-book-product-inserts", "Brand Book & Product Inserts with Claude Code", "Tomer Rabinovich", ["Claude Code"], "thumb-claude.jpg", 75, "2026-06-25", 2,
+      "Tomer Rabinovich builds a brand book Claude can actually use, then turns it into product inserts customers scan: QR flows, landing pages, and follow-up done right.",
+      [{ kind: "file", title: "Brand Book Builder skill" }, { kind: "file", title: "Insert Creator skill" }, { kind: "link", title: "Claude Design", url: "https://claude.ai/design" }, { kind: "link", title: "Tomer's 5 Day Customer Challenge", url: "https://jointopdog.com/5day-customer-challenge" }]),
+    ep(22, "claude-code-meets-amazon", "Claude Code Meets Amazon", null, ["Claude Code"], "thumb-claude.jpg", 90, "2026-05-21", 11,
+      "The direct follow up to the Claude Code session, deep into Amazon: SQP funnel diagnostics, market basket analysis, competitor gold mining, IDQ audits, and the skills Jay runs on his own brand.",
+      [{ kind: "link", title: "Episode resources, skills, and install instructions", url: "https://jaygptpro.com/claude-code-amazon/" }, { kind: "link", title: "AI Vault custom skills, one line install", url: "https://github.com/JayGPTPro/aivault-amazon-skills" }, { kind: "link", title: "49 free Amazon skills (nexscope)", url: "https://github.com/nexscope-ai/Amazon-Skills" }]),
+    ep(21, "claude-code-next-level", "Claude Code: The Next Level of AI", null, ["Claude Code", "Automation"], "thumb-claude.jpg", 120, "2026-04-14", 9,
+      "From installation to building custom eCommerce tools to a fully autonomous AI employee. The massive live session that closes the gap between chatting with AI and building systems.",
+      [{ kind: "link", title: "Jay's custom instructions and guide", url: "https://jaygptpro.com/custom-ai-instructions.html" }, { kind: "link", title: "The full hacks library", url: "https://jaygptpro.com/daily-claude-hacks" }, { kind: "link", title: "Amazon Landing Page skill", url: "https://jaygptpro.com/claude/amazon-landing-page-skill.html" }]),
+    ep(20, "powerful-ai-prompts", "The Secrets Behind Powerful AI Prompts", null, ["Research"], "dial-macro.jpg", 70, "2026-03-12", 13,
+      "The Architect Method: a 6 step system for building prompts that work again and again, demoed live from scratch on a real Amazon product.",
+      [{ kind: "link", title: "The Prompt Vault", url: "https://prompt.jaygptpro.com" }, { kind: "prompt", title: "Deep Amazon Product Analysis prompt" }]),
+    ep(19, "brand-app-vibe-coding", "Build Your Brand App with Vibe Coding", "Andrew Erickson", ["Automation"], "thumb-automation.jpg", 80, "2026-02-12", 5,
+      "Why interactive utilities are replacing static PDFs, and how to build and publish a working brand app in an afternoon without traditional coding.",
+      [{ kind: "prompt", title: "Andrew's prompt guide" }, { kind: "file", title: "Shopify integration SOP" }], null, "Part 2 added"),
+    ep(18, "ai-ambassador-challenge", "The Full AI Ambassador Workflow: 5-Day Challenge", null, ["Video"], "thumb-video.jpg", 87, "2026-01-08", 17,
+      "Five days, one AI brand ambassador: brand DNA, casting, identity lock, a custom content agent, and a finished vertical UGC video.",
+      [{ kind: "link", title: "Prompts and checklists, day by day", url: "https://jaygptpro.com/ai-ambassador-challenge.html" }, { kind: "link", title: "Bonus: CapCut editing walkthrough", url: "https://www.youtube.com/watch?v=keMgxb42hDw" }]),
+    ep(17, "nano-banana-pro-listing-images", "Live Workshop: Create Full Listing Images with Nano Banana Pro", "Michael Shackelford", ["Images"], "thumb-images.jpg", 93, "2025-12-04", 21,
+      "The most liked session in Vault history. A complete Amazon listing image set built live: main images, lifestyle scenes, infographics, and a one click Christmas version.",
+      [{ kind: "link", title: "Jay's prompt pack from the workshop", url: "https://jaygptpro.com/amazon-listing-images.html" }, { kind: "link", title: "Nano Banana Pro inside AI Studio", url: "https://aistudio.google.com" }]),
+    ep(16, "rufus-aeo-listings", "Writing Amazon Listings with AI: Optimized for Rufus and AEO", null, ["Listings"], "thumb-listings.jpg", 78, "2025-11-06", 13,
+      "A three step workflow for listings that speak to humans, rank for SEO, and make sense to Rufus and ChatGPT: review analysis, keyword research, listing generation.",
+      [{ kind: "prompt", title: "Prompt pack with all three prompts" }]),
+    ep(15, "sourcing-china-ai", "The 4-Step AI Framework for Sourcing from China", "Alex Jurca", ["Sourcing"], "thumb-sourcing.jpg", 85, "2025-10-23", 3,
+      "Source smarter, safer, and faster: supplier discovery beyond Alibaba, AI vetting prompts that score risk, compliance validation, and spotting trending products first.",
+      [{ kind: "file", title: "Full presentation with all prompts" }]),
+    ep(14, "ai-product-ideation", "AI Product Ideation with Andrew Erickson", "Andrew Erickson", ["Research"], "dial-macro.jpg", 65, "2025-10-16", 7,
+      "Keyword intent clusters, the 80 20 innovation rule, and a custom GPT that turns Amazon data into ten differentiated product ideas.",
+      [{ kind: "link", title: "Product Dev GPT", url: "https://chatgpt.com/g/g-68a316448ee08191bd7105697b19f45a-product-dev-gpt" }]),
+    ep(13, "sora-2-deep-dive", "Deep Dive into Sora 2, the Next Gen Video Creation Tool", null, ["Video"], "thumb-video.jpg", 68, "2025-10-09", 4,
+      "Everything sellers need to start making real product videos with Sora 2, from first signup to the finished, watermark free clip.",
+      [{ kind: "prompt", title: "The two Sora prompts from the episode" }, { kind: "link", title: "Sora 2", url: "https://sora.com" }]),
+    ep(12, "canva-ai-secrets", "The Canva AI Secrets That Every Seller Should Know", "John Aspinall", ["Images"], "thumb-images.jpg", 62, "2025-09-30", 10,
+      "Magic Background Remover, Magic Eraser, Magic Edit, seasonal visuals without a designer, and the VEO 3 integration.",
+      [{ kind: "link", title: "Canva", url: "https://www.canva.com" }]),
+    ep(11, "community-live-session", "Let's Talk AI Together: Community Live Session", null, ["Community"], "dial-macro.jpg", 60, "2025-09-25", 6,
+      "Member introductions, live polls, the Nano Banana prompt library reveal, a new tools spotlight, and the book club launch.",
+      [{ kind: "link", title: "Nano Banana prompt library", url: "https://promptaivault.lovable.app/" }]),
+    ep(10, "n8n-automation", "Intro to Automation with n8n", "Roded Yizhaky", ["Automation"], "thumb-automation.jpg", 50, "2025-09-18", 5,
+      "Your first real automation, built step by step: invoices pulled from Gmail and saved to Drive automatically.",
+      [{ kind: "file", title: "The workflow JSON from the episode" }],
+      [{ title: "Intro and meet Roded", starts_at: 0 }, { title: "What is n8n and why it matters", starts_at: 190 }, { title: "Gmail and Drive credentials", starts_at: 460 }, { title: "Building the Gmail trigger", starts_at: 860 }, { title: "Filters and expressions", starts_at: 1170 }, { title: "Saving files to Google Drive", starts_at: 1560 }, { title: "First workflow test", starts_at: 1950 }, { title: "Expanding to more use cases", starts_at: 2220 }, { title: "FAQs and next steps", starts_at: 2520 }]),
+    ep(9, "product-lifestyle-video", "Live Workshop: Create a Full Product Lifestyle Video with AI", null, ["Video"], "thumb-video.jpg", 120, "2025-09-11", 8,
+      "The videos that used to cost thousands, made for a few dollars: scene planning from reviews, AI images, cinematic motion, and the final edit.",
+      [{ kind: "prompt", title: "Ready to use video prompts", url: "https://jaygptpro.com/product-video-prompts.html" }]),
+    ep(8, "nano-banana-deep-dive", "A Deep Dive into Gemini 2.5 Flash Image (Nano Banana)", "Michael Shackelford", ["Images"], "thumb-images.jpg", 70, "2025-08-28", 12,
+      "The fastest, most accurate AI image editor so far: consistent products across angles, text replacement, prop swaps, and brand level consistency."),
+    ep(7, "ai-review-loop", "AI Review Loop with Andrew Erickson", "Andrew Erickson", ["Automation"], "thumb-automation.jpg", 75, "2025-08-21", 11,
+      "One AI critiques another: n8n flows that generate, judge, and refine content from a B plus to an A plus result.",
+      [{ kind: "file", title: "The n8n flow from the episode" }]),
+    ep(6, "smarter-video-ads", "Smarter Video Ads with AI", null, ["Video"], "thumb-video.jpg", 55, "2025-08-14", 8,
+      "One smart prompt plus VEO 3: keyword matching video ads for Sponsored Brand Video campaigns that lift CTR without editing or outsourcing.",
+      [{ kind: "prompt", title: "VEO 3 Master Specialist prompt", url: "https://jaygptpro.com/veo3-master-specialist.html" }]),
+    ep(5, "genspark-deep-dive", "A Deep Dive into GenSpark", null, ["Research", "Automation"], "dial-macro.jpg", 60, "2025-08-07", 9,
+      "While ChatGPT gives you guidance, GenSpark completes tasks: slides, sheets, docs, images, videos, and the Super Agent workflow that runs it all."),
+    ep(4, "custom-gpts-ecom", "Build Custom GPTs for eCom Workflows", null, ["Automation"], "thumb-automation.jpg", 72, "2025-07-31", 11,
+      "Why custom GPTs beat regular chats for recurring tasks, and the six building blocks of every great one: identity, context, tone, process, rules, knowledge.",
+      [{ kind: "link", title: "Custom GPT Architect", url: "https://chatgpt.com/g/g-6888d7adb23c81918ed9ac5a5265bc25-custom-gpt-architect" }]),
+    ep(3, "voc-ai-reviews", "Master Reviews with VOC AI", null, ["Research"], "dial-macro.jpg", 65, "2025-07-24", 7,
+      "Analyze up to 30 ASINs and 50,000 reviews, spot trends, optimize listings, and trigger removal cases for bad reviews with a click.",
+      [{ kind: "link", title: "VOC AI", url: "https://insight.voc.ai/" }]),
+    ep(2, "listing-images-that-convert", "Create Listing Images That Convert", null, ["Images"], "thumb-images.jpg", 70, "2025-07-21", 7,
+      "A step by step workshop for planning, generating, and designing product images that drive conversions.",
+      [{ kind: "prompt", title: "The image prompts", url: "https://jaygptpro.com/product-image-prompts.html" }]),
+    ep(1, "deep-product-analysis", "Deep Product Analysis with 2 AI Prompts", null, ["Research"], "dial-macro.jpg", 55, "2025-07-14", 9,
+      "Turn Amazon reviews into a clear map of buyer avatars, pain points, and purchase drivers.",
+      [{ kind: "prompt", title: "The analysis prompts", url: "https://jaygptpro.com/analysis-prompts.html" }])
   ];
 
   var lessons = [
@@ -94,10 +118,12 @@ window.VAULT_DEMO = (function () {
     },
     episodes: episodes,
     lessons: lessons,
+    /* real cadence: monthly episode on a Thursday evening IDT, mastermind on the
+       first Wednesday at 12pm EST (dates from the Circle calendar, 2026-07-16) */
     sessions: [
-      { kind: "episode", title: "AI Agents for Amazon Operations", guest_name: "Andrew Erickson", starts_at: now + 9 * day + 7200000, zoom_url: "#" },
-      { kind: "mastermind", title: "Monthly Mastermind", guest_name: null, starts_at: now + 16 * day + 3600000, zoom_url: "#" },
-      { kind: "episode", title: "Q3 AI Stack Refresh", guest_name: null, starts_at: now + 40 * day, zoom_url: null }
+      { kind: "episode", title: "Monthly AI Episode: July", guest_name: null, starts_at: new Date("2026-07-30T21:00:00+03:00").getTime(), zoom_url: "#" },
+      { kind: "mastermind", title: "Monthly Mastermind", guest_name: null, starts_at: new Date("2026-08-05T12:00:00-04:00").getTime(), zoom_url: "#" },
+      { kind: "episode", title: "Monthly AI Episode: August", guest_name: null, starts_at: new Date("2026-08-27T21:00:00+03:00").getTime(), zoom_url: null }
     ],
     consultations: [
       { quarter: "Q1 2026", status: "done", scheduled_for: null },
@@ -106,7 +132,7 @@ window.VAULT_DEMO = (function () {
       { quarter: "Q4 2026", status: "available", scheduled_for: null }
     ],
     member_counter: { base: 213, base_date: "2026-07-11", days_per_member: 2 },
-    tags: ["All", "Images", "Listings", "Video", "Automation", "Claude Code", "Sourcing", "Research"]
+    tags: ["All", "Images", "Listings", "Video", "Automation", "Claude Code", "Sourcing", "Research", "Community"]
   };
 })();
 

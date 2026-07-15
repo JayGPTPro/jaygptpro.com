@@ -482,7 +482,7 @@ var VAULT = (function () {
     sheet.querySelector(".scrim").addEventListener("click", function () { toggleSheet(false); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleSheet(false); });
     if (DEMO) {
-      document.body.appendChild(el('<div style="position:fixed;bottom:0;left:0;right:0;z-index:70;text-align:center;pointer-events:none;"><span class="micro" style="background:var(--plate);border:1px solid var(--hairline);border-bottom:0;border-radius:6px 6px 0 0;padding:4px 12px;display:inline-block;">Demo mode. No live data</span></div>'));
+      document.body.appendChild(el('<div class="demobadge"><span class="micro" style="background:var(--plate);border:1px solid var(--hairline);border-bottom:0;border-radius:6px 6px 0 0;padding:4px 12px;display:inline-block;">Demo mode. No live data</span></div>'));
     }
   }
 
