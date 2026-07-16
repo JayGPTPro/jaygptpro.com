@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>Start Here · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .rail { max-width: 680px; }
   .lesson { display: flex; gap: 18px; padding: 18px 20px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; }
   .lesson .num { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); padding-top: 2px; flex: 0 0 30px; }
@@ -35,8 +35,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -58,7 +58,7 @@
         '<p style="color:var(--text-dim);font-size:13.5px;margin-top:4px">' + esc(l.body || "") + "</p>" +
         (l.link ? '<a class="btn quiet" style="margin-top:12px;padding:9px 16px;font-size:13px" href="' + esc(l.link) + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + ' data-do="' + l.position + '">' + esc(l.cta || "Open") + (ext ? " ↗" : " →") + "</a>" : "") +
         "</div>" +
-        '<button class="notch" data-toggle="' + l.position + '" aria-label="' + (isDone ? "Mark not done" : "Mark done") + '" aria-pressed="' + isDone + '">✓</button>' +
+        '<button class="notch" data-toggle="' + l.position + '" aria-label="' + (isDone ? "Completed" : "Mark done") + '" aria-pressed="' + isDone + '"' + (isDone ? " disabled" : "") + '>✓</button>' +
       "</div>";
     }).join("");
     var pct = Math.round((done.length / lessons.length) * 100);
@@ -71,7 +71,20 @@
 
   document.addEventListener("click", function (ev) {
     var doBtn = ev.target.closest("[data-do]");
-    if (doBtn) { markDone(Number(doBtn.dataset.do)); return; }        /* opening the resource completes the step */
+    if (doBtn) {
+      /* opening the resource completes the step. For same-tab links, persist the
+         completion BEFORE navigating away, or the RPC gets aborted mid-flight */
+      var pos = Number(doBtn.dataset.do);
+      var sameTab = doBtn.target !== "_blank";
+      if (sameTab && !VAULT.DEMO && done.indexOf(pos) < 0) {
+        ev.preventDefault();
+        var href = doBtn.href;
+        done.push(pos); VAULT.track("lesson", String(pos));
+        Promise.resolve(VAULT.completeLesson(pos)).catch(function () {}).then(function () { location.href = href; });
+        return;
+      }
+      markDone(pos); return;
+    }
     var toggle = ev.target.closest("[data-toggle]");
     if (toggle) { ev.preventDefault(); markDone(Number(toggle.dataset.toggle)); return; }
   });

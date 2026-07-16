@@ -174,9 +174,15 @@ Deno.serve(async (req) => {
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
       case "set_consultation": {
-        const email = String(payload.email || "").toLowerCase();
-        const { data: prof } = await admin.from("profiles").select("id")
-          .or(`google_email.ilike.${email},primary_email.ilike.${email}`).maybeSingle();
+        // escape ilike wildcards (never strip: _ is legal in emails) so the
+        // lookup is case-insensitive equality, not a pattern match.
+        // '*' must be rejected outright: PostgREST rewrites it to % BEFORE the
+        // escaping reaches Postgres, and no real email contains one.
+        const email = String(payload.email || "").toLowerCase().trim();
+        if (!email || email.includes("*")) return json({ error: "Invalid email" }, 400);
+        const emailPat = email.replace(/([\\%_])/g, "\\$1");
+        let prof = (await admin.from("profiles").select("id").ilike("google_email", emailPat).maybeSingle()).data;
+        if (!prof) prof = (await admin.from("profiles").select("id").ilike("primary_email", emailPat).maybeSingle()).data;
         if (!prof) return json({ error: "No member with that email" }, 404);
         const { error } = await admin.from("consultations").upsert({
           user_id: prof.id,
@@ -188,16 +194,34 @@ Deno.serve(async (req) => {
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
       case "comp_member": {
-        const email = String(payload.email).toLowerCase();
-        await admin.from("comped_emails").upsert({ email, note: "comped via admin" });
-        // if they already have a profile, flip it now
-        await admin.from("profiles").update({ access_type: "comped" }).ilike("google_email", email);
-        return json({ ok: true });
+        const email = String(payload.email || "").toLowerCase().trim();
+        // '*' rejected: PostgREST rewrites it to % (see set_consultation), and
+        // this is an UPDATE, a stray wildcard must never comp unintended members
+        if (!email || email.includes("*")) return json({ error: "Invalid email" }, 400);
+        const pat = email.replace(/([\\%_])/g, "\\$1");
+        const { error: ceErr } = await admin.from("comped_emails").upsert({ email, note: "comped via admin" });
+        if (ceErr) return json({ error: ceErr.message }, 400);
+        // if they already have a profile, flip it now: Google email first, then
+        // the paid-with email (primary_email), same lookup order as consultations
+        let { data: rows, error: upErr } = await admin.from("profiles")
+          .update({ access_type: "comped" }).ilike("google_email", pat).select("id");
+        if (upErr) return json({ error: upErr.message }, 400);
+        if (!rows || rows.length === 0) {
+          ({ data: rows, error: upErr } = await admin.from("profiles")
+            .update({ access_type: "comped" }).ilike("primary_email", pat).select("id"));
+          if (upErr) return json({ error: upErr.message }, 400);
+        }
+        const matched = rows?.length || 0;
+        return json({
+          ok: true, matched,
+          note: matched ? undefined :
+            "No existing profile matched. They will be comped on their FIRST Google login, and only if this is the email of their Google account.",
+        });
       }
       case "list_members": {
         const { data } = await admin.from("profiles")
           .select("display_name,google_email,access_type,created_at,subscriptions(status,price_lookup_key)")
-          .order("created_at", { ascending: false }).limit(200);
+          .order("created_at", { ascending: false }).limit(1000);
         const members = (data || []).map((m: Record<string, unknown>) => {
           const subs = (m.subscriptions as Array<{ status: string; price_lookup_key: string }>) || [];
           const live = subs.find((s) => ["active", "trialing", "past_due"].includes(s.status)) || subs[0];

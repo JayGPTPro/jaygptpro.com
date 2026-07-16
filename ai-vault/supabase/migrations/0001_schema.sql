@@ -57,7 +57,8 @@ create index on subscriptions (user_id);
 create table stripe_events (
   id           text primary key,
   type         text not null,
-  created      bigint not null,
+  created      bigint not null,               -- Stripe event time, ordering guard only
+  claimed_at   timestamptz not null default now(),  -- when THIS claim was taken (staleness base)
   processed_at timestamptz
 );
 
@@ -69,10 +70,11 @@ create table refunds_log (
 );
 
 create table emails_log (               -- atomic claim dedup for every send
-  key     text primary key,
-  user_id uuid references profiles(id) on delete set null,
-  kind    text not null,
-  sent_at timestamptz
+  key        text primary key,
+  user_id    uuid references profiles(id) on delete set null,
+  kind       text not null,
+  claimed_at timestamptz not null default now(),  -- when a sender claimed the key
+  sent_at    timestamptz                          -- set ONLY after a 2xx from the provider
 );
 
 create table migration_allowlist (      -- veterans from Circle (phase B)

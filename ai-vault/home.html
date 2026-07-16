@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>The Vault Floor · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
   .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 720px) { .duo { grid-template-columns: 1fr; } }
-  .compartment { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; }
-  .starthere { display: flex; align-items: center; gap: 20px; padding: 18px 22px; flex-wrap: wrap; }
+  /* a.plate sets display:block with higher specificity, so match it here */
+  a.plate.compartment, .compartment { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; }
+  a.plate.starthere, .starthere { display: flex; align-items: center; gap: 20px; padding: 18px 22px; flex-wrap: wrap; }
   .starthere .bar { flex: 1; min-width: 160px; height: 3px; background: var(--hairline); border-radius: 2px; overflow: hidden; }
   .starthere .bar span { display: block; height: 100%; background: var(--gold); }
 </style>
@@ -26,8 +27,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -116,7 +117,9 @@
       '<span class="glint-edge"></span>' +
       '<span class="kindtag mastermind">CHALLENGE' + (todayNew ? " · NEW DAY TODAY" : "") + "</span>" +
       '<h3 style="flex:1;min-width:200px">' + esc(challenge.title) + "</h3>" +
-      '<span class="micro gold">' + chDone + "/" + challenge.days.length + " DAYS DONE · DAY " + openCount + " IS OPEN →</span>" +
+      '<span class="micro gold">' + (openCount > 0
+        ? chDone + "/" + challenge.days.length + " DAYS DONE · DAY " + openCount + " IS OPEN →"
+        : "STARTS " + VAULT.fmtDate(challenge.starts_at) + " →") + "</span>" +
     "</a></section>";
   }
 

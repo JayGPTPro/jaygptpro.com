@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <!-- demo phase only: remove this noindex at public launch -->
 <meta name="robots" content="noindex, nofollow">
 <title>Join the AI Vault · Where AI Meets eCommerce</title>
@@ -21,14 +21,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
   .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 0 auto; }
   @media (max-width: 700px) { .plans { grid-template-columns: 1fr; } }
   .plan { padding: 30px 28px; text-align: left; position: relative; }
   .includes { max-width: 760px; margin: 44px auto; }
   .includes .row { display: flex; gap: 14px; padding: 14px 4px; border-top: 1px solid var(--hairline); font-size: 14px; }
-  .includes .row .k { color: var(--gold); flex: 0 0 auto; }
+  .includes .row .k { color: var(--gold-glint); flex: 0 0 auto; font-family: var(--font-mono); font-size: 12px; padding-top: 2px; }
   .faq { max-width: 760px; margin: 40px auto 60px; }
   .quotes { max-width: 760px; margin: 44px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 700px) { .quotes { grid-template-columns: 1fr; } }
@@ -155,9 +155,17 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
+/* anyone landing back on join.html is not mid-fulfillment: clear the just-paid
+   marker so a canceled Stripe checkout never triggers the wait plate on index.
+   pageshow covers the browser Back button too (bfcache restores skip scripts) */
+try { sessionStorage.removeItem("vault_checkout_at"); } catch (e) {}
+window.addEventListener("pageshow", function (e) {
+  if (e.persisted) { try { sessionStorage.removeItem("vault_checkout_at"); } catch (err) {} }
+});
+
 VAULT.memberCount().then(function (n) {
   document.getElementById("memberStack").innerHTML = VAULT.avatarStack(n) + '<span class="micro">SELLERS INSIDE</span>';
 });
@@ -183,7 +191,13 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
     }
     try {
       var d = await VAULT.callFn("create-checkout", { plan: btn.dataset.plan });
-      if (d && d.url) location.href = d.url;
+      if (d && d.url) {
+        /* mark the checkout so index.html waits for the webhook instead of
+           bouncing the just-paid buyer to the rejection plate */
+        sessionStorage.setItem("vault_checkout_at", String(Date.now()));
+        location.href = d.url; return;
+      }
+      throw new Error("no checkout url");
     } catch (e) {
       if (String(e.message).indexOf("already") >= 0) location.href = "/ai-vault/home.html";
       else alert("Checkout error. Please try again or email support@jaygptpro.com");
@@ -194,10 +208,21 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
   var intent = sessionStorage.getItem("vault_intent");
   if (!intent || VAULT.DEMO) return;
   var a = await VAULT.getAccess();
-  if (a.session) {
+  if (!a.session) return;
+  /* keep the intent until checkout actually hands us a URL, so a failed call
+     leaves the buyer with a retriable state instead of a silent dead end */
+  try {
+    var d = await VAULT.callFn("create-checkout", { plan: intent });
+    if (d && d.url) {
+      sessionStorage.removeItem("vault_intent");
+      sessionStorage.setItem("vault_checkout_at", String(Date.now()));
+      location.href = d.url; return;
+    }
+    throw new Error("no checkout url");
+  } catch (e) {
     sessionStorage.removeItem("vault_intent");
-    var d = await VAULT.callFn("create-checkout", { plan: intent }).catch(function () { return null; });
-    if (d && d.url) location.href = d.url;
+    if (String(e.message).indexOf("already") >= 0) { location.href = "/ai-vault/home.html"; return; }
+    alert("Checkout error. Please try again or email support@jaygptpro.com");
   }
 })();
 </script>

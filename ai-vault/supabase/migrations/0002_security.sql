@@ -52,7 +52,8 @@ begin
   values (auth.uid(), eid, greatest(0, least(p_position, coalesce(dur, p_position))), case when p_completed then now() end, now())
   on conflict (user_id, episode_id) do update set
     position_seconds = excluded.position_seconds,
-    completed_at = coalesce(watch_progress.completed_at, excluded.completed_at),
+    -- p_completed=true keeps the original completion stamp; false clears it (un-complete sticks)
+    completed_at = case when p_completed then coalesce(watch_progress.completed_at, now()) else null end,
     updated_at = now();
 end; $$;
 
@@ -107,9 +108,10 @@ create policy "update own prefs"       on email_preferences for update using (us
 -- content: members only (the actual vault door)
 create policy "members read episodes"  on episodes          for select using (status = 'published' and has_vault_access(auth.uid()));
 create policy "members read tags"      on tags              for select using (has_vault_access(auth.uid()));
-create policy "members read ep tags"   on episode_tags      for select using (has_vault_access(auth.uid()));
-create policy "members read chapters"  on episode_chapters  for select using (has_vault_access(auth.uid()));
-create policy "members read resources" on episode_resources for select using (has_vault_access(auth.uid()));
+-- child rows stay hidden until the parent episode is published (no draft leaks)
+create policy "members read ep tags"   on episode_tags      for select using (has_vault_access(auth.uid()) and exists (select 1 from episodes e where e.id = episode_id and e.status = 'published'));
+create policy "members read chapters"  on episode_chapters  for select using (has_vault_access(auth.uid()) and exists (select 1 from episodes e where e.id = episode_id and e.status = 'published'));
+create policy "members read resources" on episode_resources for select using (has_vault_access(auth.uid()) and exists (select 1 from episodes e where e.id = episode_id and e.status = 'published'));
 create policy "members read lessons"   on lessons           for select using (has_vault_access(auth.uid()));
 create policy "members read sessions"  on live_sessions     for select using (has_vault_access(auth.uid()));
 

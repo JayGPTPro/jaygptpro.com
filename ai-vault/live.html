@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>Upcoming · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
 </style>
 </head>
 <body>
@@ -44,8 +44,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -93,7 +93,12 @@
     if (!b) return;
     var ts = Number(b.dataset.ics);
     var dt = function (t) { return new Date(t).toISOString().replace(/[-:]|\.\d{3}/g, ""); };
-    var ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//AI Vault//EN\nBEGIN:VEVENT\nUID:" + ts + "@aivault\nDTSTAMP:" + dt(Date.now()) + "\nDTSTART:" + dt(ts) + "\nDTEND:" + dt(ts + 3600000) + "\nSUMMARY:AI Vault · " + b.dataset.title.replace(/[,;]/g, " ") + "\nDESCRIPTION:Zoom link inside the Vault: https://jaygptpro.com/ai-vault/live.html\nEND:VEVENT\nEND:VCALENDAR";
+    /* RFC 5545 requires CRLF line endings; Outlook desktop rejects bare LF */
+    var ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AI Vault//EN", "BEGIN:VEVENT",
+      "UID:" + ts + "@aivault", "DTSTAMP:" + dt(Date.now()), "DTSTART:" + dt(ts), "DTEND:" + dt(ts + 3600000),
+      "SUMMARY:AI Vault · " + b.dataset.title.replace(/[,;]/g, " "),
+      "DESCRIPTION:Zoom link inside the Vault: https://jaygptpro.com/ai-vault/live.html",
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
     var a = document.createElement("a");
     a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
     a.download = "ai-vault-session.ics"; a.click();

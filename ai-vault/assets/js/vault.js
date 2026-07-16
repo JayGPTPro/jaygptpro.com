@@ -65,6 +65,8 @@ var VAULT = (function () {
       _access = Object.assign({ has_access: true, demo: true }, window.VAULT_DEMO.member);
       return _access;
     }
+    /* supabase-js CDN failed to load: treat as a connection problem, never a blank page */
+    if (!sb) return { session: true, error: true };
     var s = await sb.auth.getSession();
     if (!s.data.session) { _access = { has_access: false, session: false }; return _access; }
     var u = s.data.session.user;
@@ -129,14 +131,19 @@ var VAULT = (function () {
 
   async function signIn(redirect) {
     if (DEMO) { location.href = redirect || "/ai-vault/home.html"; return; }
+    if (!sb) { alert("Connection hiccup: the sign-in library did not load. Please reload the page."); location.reload(); return; }
     await sb.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: location.origin + (redirect || "/ai-vault/index.html") }
     });
   }
   async function signOut() {
-    if (!DEMO) await sb.auth.signOut();
-    localStorage.removeItem("vault_seen_door");
+    if (!DEMO && sb) await sb.auth.signOut();
+    /* clear every per-member key so the next account on this browser starts clean */
+    ["vault_seen_door", "vault_last_visit", "vault_progress", "vault_social",
+     "vault_qa_mine", "vault_qa_replies", "vault_lessons", "vault_challenge"]
+      .forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    try { sessionStorage.removeItem("vault_intent"); sessionStorage.removeItem("vault_checkout_at"); } catch (e) {}
     location.href = "/ai-vault/index.html";
   }
 
@@ -144,7 +151,7 @@ var VAULT = (function () {
   async function getEpisodes() {
     if (DEMO) return window.VAULT_DEMO.episodes;
     var r = await sb.from("episodes")
-      .select("ep_number,slug,title,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,likes_base,episode_tags(tags(name))")
+      .select("ep_number,slug,title,description,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,likes_base,episode_tags(tags(name))")
       .eq("status", "published").order("published_at", { ascending: false });
     return guard(r, []).map(function (e) {
       e.tags = (e.episode_tags || []).map(function (t) { return t.tags.name; });
@@ -209,12 +216,14 @@ var VAULT = (function () {
   /* community Q&A board */
   async function getQA() {
     if (DEMO) {
-      var mine = store("vault_qa_mine", "[]");
       var myReplies = store("vault_qa_replies", "{}");
-      var base = (window.VAULT_DEMO.qa || []).map(function (q) {
+      function withReplies(q) {
         var extra = myReplies[q.id] || [];
         return Object.assign({}, q, { replies: (q.replies || []).concat(extra) });
-      });
+      }
+      /* your own questions get your replies merged too, not only the seeded ones */
+      var mine = store("vault_qa_mine", "[]").map(withReplies);
+      var base = (window.VAULT_DEMO.qa || []).map(withReplies);
       return mine.concat(base);
     }
     var r = await sb.rpc("get_qa", { p_limit: 30 });
@@ -254,10 +263,11 @@ var VAULT = (function () {
 
   async function getProgressMap() {
     if (DEMO) return demoProgress();
-    var r = await sb.from("watch_progress").select("episode_id,position_seconds,completed_at,episodes(slug)");
+    var r = await sb.from("watch_progress").select("episode_id,position_seconds,completed_at,updated_at,episodes(slug)");
     var map = {};
     guard(r, []).forEach(function (p) {
-      if (p.episodes) map[p.episodes.slug] = { position: p.position_seconds, completed: !!p.completed_at, updated: true };
+      /* t mirrors the demo contract: Continue Watching sorts on it */
+      if (p.episodes) map[p.episodes.slug] = { position: p.position_seconds, completed: !!p.completed_at, updated: true, t: p.updated_at ? new Date(p.updated_at).getTime() : 0 };
     });
     return map;
   }
@@ -265,7 +275,8 @@ var VAULT = (function () {
   async function saveProgress(episode, positionSeconds, completed) {
     if (DEMO) {
       var map = demoProgress();
-      map[episode.slug] = { position: positionSeconds, completed: !!completed || (map[episode.slug] || {}).completed, t: Date.now() };
+      /* honor an explicit false: un-completing must stick */
+      map[episode.slug] = { position: positionSeconds, completed: !!completed, t: Date.now() };
       localStorage.setItem("vault_progress", JSON.stringify(map)); return;
     }
     await sb.rpc("record_watch_progress", { p_episode_slug: episode.slug, p_position: Math.floor(positionSeconds), p_completed: !!completed });
@@ -327,7 +338,11 @@ var VAULT = (function () {
     var c2 = guard(r, [])[0]; if (!c2) return null;
     c2.days = (c2.challenge_days || []).sort(function (a, b) { return a.day_number - b.day_number; });
     c2.starts_at = new Date(c2.starts_at).getTime();
-    var p = await sb.from("challenge_progress").select("challenge_days(day_number)");
+    /* scope progress to THIS challenge: challenge_progress holds rows from every
+       past challenge, and day_numbers 1..5 repeat across them */
+    var p = await sb.from("challenge_progress")
+      .select("challenge_days!inner(day_number,challenge_id)")
+      .eq("challenge_days.challenge_id", c2.id);
     c2.my_done = guard(p, []).filter(function (x) { return x.challenge_days; }).map(function (x) { return x.challenge_days.day_number; });
     return c2;
   }
@@ -346,8 +361,10 @@ var VAULT = (function () {
   function stampVisit() { localStorage.setItem("vault_last_visit", String(Date.now())); }
 
   function track(eventType, ref) {
-    if (DEMO) return;
-    try { sb.rpc("log_event", { p_event: eventType, p_ref: ref || null }); } catch (e) {}
+    if (DEMO || !sb) return;
+    /* supabase-js builders are lazy: the request only fires when the thenable
+       is consumed, so fire-and-forget still needs a .then() */
+    try { sb.rpc("log_event", { p_event: eventType, p_ref: ref || null }).then(function () {}, function () {}); } catch (e) {}
   }
 
   async function callFn(name, payload) {
@@ -368,18 +385,28 @@ var VAULT = (function () {
   /* ---------- scroll reveals (CSS-only fallback safe: hiding is scoped to html.js)
      rAF-throttled rect check instead of IntersectionObserver: instant scroll jumps
      and elements left above the viewport can never get stuck hidden. ---------- */
+  /* module-level reveal state: reveal() may be called again after a re-render,
+     so listeners and heartbeats must never stack */
+  var _rvPending = [];
+  var _rvArmed = false;
+  var _rvKicker = null;
+  function _rvCheck() {
+    if (!_rvPending.length) return;
+    var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+    _rvPending = _rvPending.filter(function (n) {
+      if (n.getBoundingClientRect().top < vh * 0.94) { n.classList.add("rv-in"); return false; }
+      return true;
+    });
+  }
   function reveal() {
     document.documentElement.classList.add("js");
-    var pending = Array.prototype.slice.call(document.querySelectorAll(".rv:not(.rv-in)"));
-    function check() {
-      if (!pending.length) return;
-      var vh = window.innerHeight || document.documentElement.clientHeight || 800;
-      pending = pending.filter(function (n) {
-        if (n.getBoundingClientRect().top < vh * 0.94) { n.classList.add("rv-in"); return false; }
-        return true;
-      });
-      if (!pending.length) window.removeEventListener("scroll", onScroll);
-    }
+    /* collect any not-yet-revealed nodes (new ones after a re-render included) */
+    Array.prototype.forEach.call(document.querySelectorAll(".rv:not(.rv-in)"), function (n) {
+      if (_rvPending.indexOf(n) < 0) _rvPending.push(n);
+    });
+    _rvCheck();
+    if (_rvArmed) { restartKicker(); return; }
+    _rvArmed = true;
     /* timestamp throttle, NOT requestAnimationFrame: a starved rAF callback
        would leave the old ticking flag stuck and jam reveals forever */
     var lastCheck = 0;
@@ -387,25 +414,28 @@ var VAULT = (function () {
       var now = Date.now();
       if (now - lastCheck < 80) return;
       lastCheck = now;
-      check();
+      _rvCheck();
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     window.addEventListener("load", onScroll);
-    check();
     /* settle loop: fast for the first 3s (fonts/images shift layout), then a
        slow heartbeat until everything revealed. Ten rect reads per beat is
        nothing, and reveals must never depend on scroll events firing. */
-    var kicks = 0;
-    var kicker = setInterval(function () {
-      check();
-      kicks++;
-      if (!pending.length) { clearInterval(kicker); return; }
-      if (kicks >= 10) {
-        clearInterval(kicker);
-        kicker = setInterval(function () { check(); if (!pending.length) clearInterval(kicker); }, 1500);
-      }
-    }, 300);
+    function restartKicker() {
+      if (_rvKicker) clearInterval(_rvKicker);
+      var kicks = 0;
+      _rvKicker = setInterval(function () {
+        _rvCheck();
+        kicks++;
+        if (!_rvPending.length) { clearInterval(_rvKicker); _rvKicker = null; return; }
+        if (kicks >= 10) {
+          clearInterval(_rvKicker);
+          _rvKicker = setInterval(function () { _rvCheck(); if (!_rvPending.length) { clearInterval(_rvKicker); _rvKicker = null; } }, 1500);
+        }
+      }, 300);
+    }
+    restartKicker();
   }
 
   /* ---------- chrome (topbar + mobile tabbar) ---------- */
@@ -426,7 +456,8 @@ var VAULT = (function () {
     var links = nav.map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '">' + n.label + "</a>";
     }).join("");
-    var initial = access && access.name ? esc(access.name.trim()[0].toUpperCase()) : "·";
+    var trimmedName = access && access.name ? String(access.name).trim() : "";
+    var initial = trimmedName ? esc(trimmedName[0].toUpperCase()) : "·";
     var avatar = access && access.avatar_url ? '<img src="' + esc(access.avatar_url) + '" alt="">' : initial;
     var top = el('<header class="topbar">' +
       '<a class="brand" href="/ai-vault/home.html" aria-label="AI Vault, home">' + KEYMARK + '<span class="wordmark">AI Vault</span></a>' +

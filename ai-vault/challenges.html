@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>Challenges & Courses · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .dayrail { max-width: 760px; }
   .dayplate { margin-bottom: 14px; overflow: hidden; }
   .dayhead { display: flex; align-items: center; gap: 18px; padding: 18px 22px; cursor: pointer; }
@@ -35,8 +35,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -101,7 +101,7 @@
         "</div>" +
       "</div>" +
       '<div class="dayrail">' +
-        '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="micro gold">' + done.length + '/' + ch.days.length + ' DAYS COMPLETE</span><span class="micro">STARTED ' + VAULT.fmtDate(ch.starts_at) + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="micro gold">' + done.length + '/' + ch.days.length + ' DAYS COMPLETE</span><span class="micro">' + (ch.starts_at > Date.now() ? 'STARTS ' : 'STARTED ') + VAULT.fmtDate(ch.starts_at) + '</span></div>' +
         '<div class="challenge-progress"><span style="width:' + pct + '%"></span></div>';
 
     if (allDone) {

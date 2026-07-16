@@ -35,7 +35,8 @@ alter table challenge_days     enable row level security;
 alter table challenge_progress enable row level security;
 
 create policy "members read challenges" on challenges     for select using (status in ('active','archived') and has_vault_access(auth.uid()));
-create policy "members read days"       on challenge_days for select using (has_vault_access(auth.uid()));
+-- day content stays hidden while the parent challenge is a draft
+create policy "members read days"       on challenge_days for select using (has_vault_access(auth.uid()) and exists (select 1 from challenges c where c.id = challenge_id and c.status in ('active','archived')));
 create policy "read own challenge prog" on challenge_progress for select using (user_id = auth.uid());
 
 -- day content is readable, but COMPLETING a locked day is rejected server-side

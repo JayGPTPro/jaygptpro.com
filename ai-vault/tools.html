@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>Buying Club · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .dealwrap { max-width: 820px; }
   .savings-plate { padding: 26px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; border-color: var(--gold); }
   .savings-plate .n { font-family: var(--font-head); font-weight: 600; font-size: 40px; letter-spacing: -0.02em; color: var(--gold); }
@@ -48,8 +48,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -111,9 +111,21 @@
 
   function copyChip(chip) {
     var orig = chip.dataset.coupon;
-    Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(orig)).then(function () {
-      chip.textContent = "COPIED ✓"; setTimeout(function () { chip.textContent = orig; }, 1200);
-    }).catch(function () { chip.textContent = "SELECT + COPY"; setTimeout(function () { chip.textContent = orig; }, 1400); });
+    /* no clipboard: keep the code visible, make it selectable, and pre-select it
+       (the chip's own user-select:none would otherwise block manual copying) */
+    function copyFail() {
+      chip.textContent = orig;
+      chip.style.userSelect = "text"; chip.style.webkitUserSelect = "text";
+      try {
+        var r = document.createRange(); r.selectNodeContents(chip);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      } catch (e) {}
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(orig).then(function () {
+        chip.textContent = "COPIED ✓"; setTimeout(function () { chip.textContent = orig; }, 1200);
+      }).catch(copyFail);
+    } else { copyFail(); }
     VAULT.track("deal_coupon", orig);
   }
   document.body.addEventListener("click", function (ev) {

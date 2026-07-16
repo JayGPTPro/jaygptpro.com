@@ -24,9 +24,11 @@ returns table (
   order by d.sort, d.monthly_saving desc;
 $$;
 
--- total monthly savings available to a member (for the counter)
+-- total monthly savings available to a member (for the counter).
+-- Public on purpose: join.html shows the aggregate to anonymous prospects as the
+-- "pays for itself" proof. Deal details (coupons, terms) stay member-gated.
 create or replace function get_deal_savings()
 returns int language sql stable security definer set search_path = public as $$
   select coalesce(sum(monthly_saving), 0)::int
-  from tool_deals where active and has_vault_access(auth.uid());
+  from tool_deals where active;
 $$;

@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>The Viewing Room · AI Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
   @media (max-width: 900px) { .room { grid-template-columns: 1fr; } }
   .titlebar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 18px 0 4px; flex-wrap: wrap; }
@@ -23,8 +23,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -42,8 +42,11 @@
 
   var myProg = prog[ep.slug] || { position: 0, completed: false };
   var soc = social[ep.slug] || { likes: 0 };
+  /* episodes are newest-first, so the chronological "next" is the entry BEFORE
+     this one; on the newest episode fall back to the previous one */
   var idx = episodes.findIndex(function (e) { return e.slug === ep.slug; });
-  var next = idx >= 0 ? episodes[idx + 1] : null;
+  var next = idx > 0 ? episodes[idx - 1] : (idx === 0 ? episodes[1] : null);
+  var nextLabel = idx > 0 ? "Next episode" : "Watch next";
 
   var playerHtml = ep.vimeo_id
     ? '<iframe id="vplayer" src="https://player.vimeo.com/video/' + esc(ep.vimeo_id) + (ep.vimeo_hash ? "?h=" + esc(ep.vimeo_hash) + "&" : "?") + 'dnt=1&pip=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="' + esc(ep.title) + '"></iframe>'
@@ -84,7 +87,7 @@
           '<div class="stars" id="stars">' + [1, 2, 3, 4, 5].map(function (i) { return '<button data-s="' + i + '" aria-label="' + i + ' stars">★</button>'; }).join("") + "</div>" +
         "</div>" +
 
-        (next ? '<div class="band" style="margin-top:30px"><div class="band-head"><span class="micro">Next episode</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog, social) + "</div></div>" : "") +
+        (next ? '<div class="band" style="margin-top:30px"><div class="band-head"><span class="micro">' + nextLabel + '</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog, social) + "</div></div>" : "") +
       "</div>" +
       '<aside>' +
         (chapterRows ? '<div class="band"><div class="band-head"><h2 class="micro">Chapters</h2></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
@@ -125,6 +128,12 @@
   function flip() {
     var on = !toggle.classList.contains("on");
     setToggle(on);
+    /* myProg.completed is the single source of truth: the Vimeo tracker reads it
+       too, so periodic saves never resurrect an un-completed state.
+       userUncompleted suppresses the 90% auto-complete for this session, or the
+       very next timeupdate past 90% would flip the toggle right back on. */
+    myProg.completed = on;
+    myProg.userUncompleted = !on;
     VAULT.saveProgress(ep, myProg.position || 0, on);
     if (on) VAULT.track("complete", ep.slug);
   }
@@ -148,9 +157,12 @@
     if (r.url) { window.open(r.url, "_blank", "noopener"); return; }
     if (r.body) {
       var badge = row.querySelector(".gold");
-      Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(r.body)).then(function () {
-        badge.textContent = "COPIED"; setTimeout(function () { badge.textContent = "❯"; }, 1400);
-      }).catch(function () { badge.textContent = "COPY FAILED"; setTimeout(function () { badge.textContent = "❯"; }, 1400); });
+      function copyFail() { badge.textContent = "COPY FAILED"; setTimeout(function () { badge.textContent = "❯"; }, 1400); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(r.body).then(function () {
+          badge.textContent = "COPIED"; setTimeout(function () { badge.textContent = "❯"; }, 1400);
+        }).catch(copyFail);
+      } else { copyFail(); }
       return;
     }
     /* v1: file resources ship as URLs (Vimeo/Drive). A row with neither url nor
@@ -159,22 +171,29 @@
   });
 
   /* ---------- Vimeo progress tracking ---------- */
+  /* a saved position already past the 90% mark with completed=false means the
+     member un-completed a finished episode: keep the auto-complete suppressed
+     across sessions too, or the first play would instantly re-complete it */
+  if (!myProg.completed && ep.duration_seconds && (myProg.position || 0) / ep.duration_seconds >= 0.9) {
+    myProg.userUncompleted = true;
+  }
+
   if (ep.vimeo_id && window.Vimeo) {
     var player = new Vimeo.Player($("#vplayer"));
-    var last = 0, completed = !!myProg.completed;
-    if (myProg.position > 30 && !completed) {
+    var last = 0;
+    if (myProg.position > 30 && !myProg.completed) {
       player.on("loaded", function () { player.setCurrentTime(myProg.position).catch(function () {}); });
     }
     player.on("play", function () { VAULT.track("play", ep.slug); });
     player.on("timeupdate", function (d) {
       myProg.position = d.seconds;
-      if (d.seconds - last >= 15) { last = d.seconds; VAULT.saveProgress(ep, d.seconds, completed); }
-      if (!completed && ep.duration_seconds && d.seconds / ep.duration_seconds >= 0.9) {
-        completed = true; setToggle(true); VAULT.saveProgress(ep, d.seconds, true); VAULT.track("complete", ep.slug);
+      if (d.seconds - last >= 15) { last = d.seconds; VAULT.saveProgress(ep, d.seconds, myProg.completed); }
+      if (!myProg.completed && !myProg.userUncompleted && ep.duration_seconds && d.seconds / ep.duration_seconds >= 0.9) {
+        myProg.completed = true; setToggle(true); VAULT.saveProgress(ep, d.seconds, true); VAULT.track("complete", ep.slug);
       }
     });
-    player.on("pause", function (d) { VAULT.saveProgress(ep, d.seconds, completed); });
-    window.addEventListener("pagehide", function () { VAULT.saveProgress(ep, myProg.position || 0, completed); });
+    player.on("pause", function (d) { VAULT.saveProgress(ep, d.seconds, myProg.completed); });
+    window.addEventListener("pagehide", function () { VAULT.saveProgress(ep, myProg.position || 0, myProg.completed); });
     main.addEventListener("click", function (ev) {
       var row = ev.target.closest("[data-seek]");
       if (row) player.setCurrentTime(Number(row.dataset.seek)).then(function () { player.play(); }).catch(function () {});
@@ -182,7 +201,7 @@
   } else {
     main.addEventListener("click", function (ev) {
       var row = ev.target.closest("[data-seek]");
-      if (row) { myProg.position = Number(row.dataset.seek); VAULT.saveProgress(ep, myProg.position, false); }
+      if (row) { myProg.position = Number(row.dataset.seek); VAULT.saveProgress(ep, myProg.position, myProg.completed); }
     });
   }
 

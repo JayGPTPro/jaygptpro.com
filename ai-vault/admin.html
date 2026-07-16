@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{if(localStorage.getItem("vault_theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="robots" content="noindex, nofollow">
 <title>Vault Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=16">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
 <style>
-  body { opacity: 0; transition: opacity 300ms var(--ease); } body.in { opacity: 1; }
+  html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 860px) { .admin-grid { grid-template-columns: 1fr; } }
 </style>
@@ -157,8 +157,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=16"></script>
-<script src="/ai-vault/assets/js/vault.js?v=16"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
+<script src="/ai-vault/assets/js/vault.js?v=17"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -174,10 +174,19 @@
     btn.textContent = "Working..."; btn.disabled = true;
     try {
       var r = await VAULT.callFn("admin-api", { action: action, payload: payload });
-      btn.textContent = r ? "Done ✓" : label;
+      /* actions that report a match count must not fake success on zero matches */
+      if (r && r.matched === 0) {
+        btn.textContent = "No match";
+        alert(r.note || "No matching member found. Check the email.");
+      } else if (r && typeof r.matched === "number") {
+        btn.textContent = "Done ✓ (" + r.matched + ")";
+      } else {
+        btn.textContent = r ? "Done ✓" : label;
+      }
+      if (r && r.note && r.matched !== 0) alert(r.note);
     } catch (e) { alert("Error: " + e.message); btn.textContent = label; }
     btn.disabled = false;
-    setTimeout(function () { btn.textContent = label; }, 1800);
+    setTimeout(function () { btn.textContent = label; }, 3200);
   }
 
   document.getElementById("epForm").addEventListener("submit", function (e) {
