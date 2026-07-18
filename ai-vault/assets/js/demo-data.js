@@ -111,7 +111,7 @@ window.VAULT_DEMO = (function () {
       avatar_url: "",
       member_number: 42,
       member_since: "2025-09-21",
-      plan: "Monthly, $100",
+      plan: "Monthly, $100",   /* switch to "Guest access" to preview the comped state */
       status: "active",
       is_admin: true,
       first_login: !localStorage.getItem("vault_seen_door")
@@ -165,18 +165,22 @@ window.VAULT_DEMO.whatsapp = {
 window.VAULT_DEMO.qa = (function () {
   var now = Date.now(), day = 86400000;
   return [
-    { id: "q1", author: "Tal", created_at: now - 1 * day,
+    /* a member's own unpublished question: shows the private treatment */
+    { id: "q0", author: "You", created_at: now - 2 * 3600000, public: false, replies: [],
+      body: "My account got suppressed last week and I do not want to post the details publicly. What is the fastest path back?" },
+    { id: "q1", author: "Tal", public: true, created_at: now - 1 * day,
+      answer: "Reference sheet first, then generate scenes around it. The Nano Banana Pro episode walks the exact flow at minute 29.",
+      answered_at: now - 1 * day + 5400000,
       body: "AI keeps deforming my product in lifestyle images. I tried maybe 20 times, the handle comes out melted every single time. What is the workflow?",
       replies: [
         { author: "Andrew", created_at: now - 1 * day + 3600000, body: "Reference sheet first, always. Lock a clean product reference set (4 angles, white bg), then generate scenes AROUND the reference. The Nano Banana episode covers the exact flow." },
-        { author: "Jay", created_at: now - 1 * day + 7200000, body: "What Andrew said. Episode: Create Full Listing Images with Nano Banana Pro, minute 29 is your exact case. Bring it to the next Mastermind if it still fights you." }
       ] },
-    { id: "q2", author: "Jason", created_at: now - 3 * day,
+    { id: "q2", public: true, author: "Jason", created_at: now - 3 * day,
       body: "Helium 10 review export broke again this week. Anyone has a working alternative for pulling all reviews of an ASIN?",
       replies: [
         { author: "Michael", created_at: now - 3 * day + 5400000, body: "The scraper tool from the Review Mining episode still works, I pulled 4k reviews yesterday. Check the resources under that episode." }
       ] },
-    { id: "q3", author: "Jona", created_at: now - 6 * day,
+    { id: "q3", public: true, author: "Jona", created_at: now - 6 * day,
       body: "Is it safe to connect Claude Code to my Seller Central account? Worried about it touching live listings.",
       replies: [
         { author: "Roded", created_at: now - 6 * day + 4000000, body: "Use read-only SP-API keys for the first month. It can analyze everything and change nothing. That is how I run it for clients." },

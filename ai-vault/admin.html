@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -56,6 +56,19 @@
         <label class="flabel micro">Image URL (optional)</label><input class="field" name="image_url">
         <label class="flabel micro">Sort order (lower shows first)</label><input class="field" name="sort" type="number" value="0">
         <button class="btn wide" type="submit">Save program</button>
+      </form>
+    </div>
+    <div class="plate pad">
+      <h3 style="margin-bottom:16px">Incoming questions</h3>
+      <div class="micro" style="margin-bottom:12px">Members ask privately. Answering publishes the thread to the board unless you untick publish.</div>
+      <div id="questionQueue" style="margin-bottom:16px"><span class="micro">Loading...</span></div>
+      <form id="answerForm">
+        <label class="flabel micro">Question id (click one above to fill this)</label>
+        <input class="field" name="id" id="answerId" placeholder="paste or click a question" required>
+        <label class="flabel micro">Your answer</label>
+        <textarea class="field" name="answer" id="answerBody" style="min-height:110px" placeholder="Answer the member. This is what they see under their question."></textarea>
+        <label class="flabel micro" style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="publish" checked style="width:auto;margin:0"> Publish to the board (other members can see it)</label>
+        <button class="btn gold wide" type="submit">Send answer</button>
       </form>
     </div>
     <div class="plate pad">
@@ -157,8 +170,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -170,23 +183,36 @@
     var o = {}; new FormData(form).forEach(function (v, k) { o[k] = v; }); return o;
   }
   async function act(action, payload, btn) {
-    var label = btn.textContent;
+    /* remember the ORIGINAL caption once: re-entering while "Done ✓" is still
+       showing would otherwise capture that as the label and keep it forever */
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    var label = btn.dataset.label;
+    if (btn._restore) clearTimeout(btn._restore);
     btn.textContent = "Working..."; btn.disabled = true;
     try {
       var r = await VAULT.callFn("admin-api", { action: action, payload: payload });
+      /* demo mode returns null: that is NOT a success, and a caller that clears
+         its form on success must not be told the write landed */
+      if (!r) { btn.textContent = label; return false; }
       /* actions that report a match count must not fake success on zero matches */
       if (r && r.matched === 0) {
         btn.textContent = "No match";
-        alert(r.note || "No matching member found. Check the email.");
+        VAULT.toast(r.note || "No matching member found. Check the email.", "bad");
+        return false;                   /* nothing was changed */
       } else if (r && typeof r.matched === "number") {
         btn.textContent = "Done ✓ (" + r.matched + ")";
       } else {
         btn.textContent = r ? "Done ✓" : label;
       }
-      if (r && r.note && r.matched !== 0) alert(r.note);
-    } catch (e) { alert("Error: " + e.message); btn.textContent = label; }
-    btn.disabled = false;
-    setTimeout(function () { btn.textContent = label; }, 3200);
+      if (r && r.note) VAULT.toast(r.note);
+      return true;                      /* callers can tell success from failure */
+    } catch (e) {
+      VAULT.toast("Error: " + e.message, "bad"); btn.textContent = label;
+      return false;
+    } finally {
+      btn.disabled = false;
+      btn._restore = setTimeout(function () { btn.textContent = label; }, 3200);
+    }
   }
 
   document.getElementById("epForm").addEventListener("submit", function (e) {
@@ -230,6 +256,43 @@
     e.preventDefault();
     act("comp_member", formData(e.target), e.target.querySelector("button"));
   });
+
+  /* ---------- incoming questions ---------- */
+  async function loadQuestions() {
+    var box = document.getElementById("questionQueue");
+    /* never call an edge function on page load in demo mode: callFn alerts, and
+       an alert nobody asked for on every visit is worse than no queue */
+    if (VAULT.DEMO) { box.innerHTML = '<span class="micro">Demo mode. The question queue appears once Supabase is connected.</span>'; return; }
+    try {
+      var r = await VAULT.callFn("admin-api", { action: "list_questions", payload: {} });
+      var qs = (r && r.questions) || [];
+      if (!qs.length) { box.innerHTML = '<span class="micro">No questions yet.</span>'; return; }
+      box.innerHTML = qs.map(function (q) {
+        return '<div class="ledger-line" style="cursor:pointer;gap:14px" data-qid="' + VAULT.esc(q.id) + '">' +
+          '<span style="flex:1"><span class="micro gold">' + VAULT.esc(q.asked_by) + (q.published ? " · PUBLISHED" : " · PRIVATE") + (q.answer ? " · ANSWERED" : "") + "</span><br>" +
+          VAULT.esc(String(q.body || "").slice(0, 120)) + "</span></div>";
+      }).join("");
+    } catch (e) {
+      box.innerHTML = '<span class="micro" style="color:var(--live)">Could not load questions. Reload the page.</span>';
+    }
+  }
+  document.getElementById("questionQueue").addEventListener("click", function (ev) {
+    var row = ev.target.closest("[data-qid]"); if (!row) return;
+    document.getElementById("answerId").value = row.dataset.qid;
+    document.getElementById("answerBody").focus();
+  });
+  document.getElementById("answerForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var d = formData(e.target);
+    d.publish = !!e.target.querySelector('[name="publish"]').checked;
+    /* only clear the form once the answer actually saved: a failed submit must
+       not throw away what Jay just typed */
+    var ok = await act("answer_question", d, e.target.querySelector("button"));
+    if (!ok) return;
+    e.target.reset();
+    loadQuestions();
+  });
+  loadQuestions();
   document.getElementById("programForm").addEventListener("submit", function (e) {
     e.preventDefault();
     act("upsert_program", formData(e.target), e.target.querySelector("button"));

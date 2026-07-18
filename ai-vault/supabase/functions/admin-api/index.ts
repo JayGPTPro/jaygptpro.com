@@ -133,6 +133,27 @@ Deno.serve(async (req) => {
           .update({ active: payload.active !== false }).eq("name", payload.name);
         return error ? json({ error: error.message }, 400) : json({ ok: true });
       }
+      case "list_questions": {
+        /* the board is private by default, so Jay needs to see what came in */
+        const { data, error } = await admin.from("questions")
+          .select("id,body,answer,public,created_at,profiles(display_name,google_email)")
+          .order("created_at", { ascending: false }).limit(100);
+        if (error) return json({ error: error.message }, 400);
+        return json({ questions: (data || []).map((q: Record<string, unknown>) => {
+          const p = q.profiles as { display_name?: string; google_email?: string } | null;
+          return { id: q.id, body: q.body, answer: q.answer, published: q.public, created_at: q.created_at, asked_by: p?.display_name || p?.google_email || "Member" };
+        }) });
+      }
+      case "answer_question": {
+        /* answering publishes the thread: questions are private until Jay decides
+           the answer helps everyone (questions.public defaults to false) */
+        const body = String(payload.answer || "").trim();
+        if (!payload.id) return json({ error: "question id required" }, 400);
+        const patch: Record<string, unknown> = { public: payload.publish !== false };
+        if (body) { patch.answer = body; patch.answered_at = new Date().toISOString(); }
+        const { error } = await admin.from("questions").update(patch).eq("id", payload.id);
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
       case "unpublish_episode": {
         const { error } = await admin.from("episodes")
           .update({ status: "draft" }).eq("slug", payload.slug);

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
 </style>
@@ -44,8 +44,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -56,6 +56,8 @@
   var esc = VAULT.esc;
   var sessions = await VAULT.getSessions();
   var firstTs = sessions.length ? sessions[0].starts_at : null;
+  /* UTC basic format for calendar links and ics files */
+  var gdt = function (t) { return new Date(t).toISOString().replace(/[-:]|\.\d{3}/g, ""); };
 
   function card(s) {
     var d = new Date(s.starts_at);
@@ -70,7 +72,8 @@
       '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
         (s.starts_at === firstTs ? '<div class="board" data-count="' + s.starts_at + '" style="margin-right:6px"></div>' : "") +
         '<button class="btn quiet" data-ics="' + s.starts_at + '" data-title="' + esc(s.title) + '">Add to calendar</button>' +
-        (s.zoom_url ? '<a class="btn" href="' + esc(s.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
+        '<a class="btn quiet" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent("AI Vault · " + s.title) + '&dates=' + gdt(s.starts_at) + "/" + gdt(s.starts_at + 3600000) + '&details=' + encodeURIComponent("Zoom link inside the Vault: https://jaygptpro.com/ai-vault/live.html") + '">Google Calendar</a>' +
+        (s.zoom_url && s.zoom_url !== "#" ? '<a class="btn" href="' + esc(s.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
       "</div>" +
     "</div>";
   }
@@ -99,9 +102,21 @@
       "SUMMARY:AI Vault · " + b.dataset.title.replace(/[,;]/g, " "),
       "DESCRIPTION:Zoom link inside the Vault: https://jaygptpro.com/ai-vault/live.html",
       "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    /* a data: URL with download works on desktop Chrome only. iOS Safari ignores
+       both, and Firefox needs the anchor inside the document, so the tap would do
+       nothing at all. Blob + a real anchor, with a new-tab fallback. */
+    var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
-    a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
-    a.download = "ai-vault-session.ics"; a.click();
+    a.href = url; a.download = "ai-vault-session.ics"; a.style.display = "none";
+    document.body.appendChild(a);
+    try { a.click(); } catch (e) { window.open(url, "_blank", "noopener"); }
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 4000);
+    /* phones give no download UI: say where the file went so the tap is never silent */
+    VAULT.toast("Calendar file saved. On a phone, open it from Downloads to add the session.");
   });
 
   document.body.classList.add("in");

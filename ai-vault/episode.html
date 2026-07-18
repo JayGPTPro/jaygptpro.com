@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .room { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
@@ -23,8 +23,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -56,8 +56,15 @@
   var caseRows = (ep.resources || []).map(function (r, i) {
     return '<div class="row" role="button" tabindex="0" data-res="' + i + '"><div><div style="font-size:13.5px">' + esc(r.title) + '</div><div class="micro">' + esc(r.kind).toUpperCase() + "</div></div><span class=\"micro gold\">" + (kindIcon[r.kind] || "↗") + "</span></div>";
   }).join("");
+  /* chapters only seek when a player exists: without one they are a plain
+     timestamp list, never a button that silently does nothing. The two reasons
+     differ, so the note has to say the true one. */
+  var seekable = !!(ep.vimeo_id && window.Vimeo);
+  var playerBroken = !!ep.vimeo_id && !window.Vimeo;   /* video exists, API script failed */
+  var chapterNote = seekable ? "" : (playerBroken ? "PLAYER DID NOT LOAD. RELOAD THE PAGE" : "JUMPS WORK ONCE THE VIDEO IS LIVE");
   var chapterRows = (ep.chapters || []).map(function (c) {
-    return '<div class="row" role="button" tabindex="0" data-seek="' + c.starts_at + '" aria-label="Jump to ' + VAULT.fmtTime(c.starts_at) + '"><span style="font-size:13px">' + esc(c.title) + '</span><span class="t">' + VAULT.fmtTime(c.starts_at) + "</span></div>";
+    return '<div class="row"' + (seekable ? ' role="button" tabindex="0" data-seek="' + c.starts_at + '" aria-label="Jump to ' + VAULT.fmtTime(c.starts_at) + '"' : ' style="cursor:default"') +
+      '><span style="font-size:13px">' + esc(c.title) + '</span><span class="t">' + VAULT.fmtTime(c.starts_at) + "</span></div>";
   }).join("");
 
   main.innerHTML =
@@ -69,14 +76,16 @@
           '<div>' +
             '<div class="micro gold">' + VAULT.fmtMonth(ep.published_at) + " EPISODE" + (ep.guest_name ? " · WITH " + esc(ep.guest_name).toUpperCase() : "") + (ep.updated_note ? ' · <span style="color:var(--gold-glint)">UPDATED: ' + esc(ep.updated_note).toUpperCase() + "</span>" : "") + "</div>" +
             '<h1 style="margin:8px 0 6px;font-size:24px">' + esc(ep.title) + "</h1>" +
-            '<div class="micro">' + VAULT.fmtDate(ep.published_at) + " · " + VAULT.fmtDuration(ep.duration_seconds) + "</div>" +
+            /* join only the parts that exist, or a missing duration leaves a
+               dangling " · " after the date */
+            '<div class="micro">' + [VAULT.fmtDate(ep.published_at), VAULT.fmtDuration(ep.duration_seconds)].filter(Boolean).join(" · ") + "</div>" +
           "</div>" +
           '<div class="toggle" id="completeToggle" role="switch" tabindex="0" aria-checked="false"><span class="micro">Mark complete</span><span class="track"><span class="knob"></span></span></div>' +
         "</div>" +
 
         '<div class="reactions">' +
           '<button class="rbtn" id="rLike" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.6-9.2-9C1.3 8 2.6 4.8 6 4.8c2 0 3.2 1.3 4 2.6.8-1.3 2-2.6 4-2.6 3.4 0 4.7 3.2 3.2 6.2C19 15.4 12 20 12 20z"/></svg> <span class="n" id="likeN">' + soc.likes + "</span></button>" +
-          '<button class="rbtn" id="rLater" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4h12v16l-6-4-6 4z"/></svg> Watch later</button>' +
+          '<button class="rbtn" id="rLater" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4h12v16l-6-4-6 4z"/></svg> Save</button>' +
           '<button class="rbtn" id="rMore" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 3L4 14h6l-1 7 9-11h-6z"/></svg> More like this</button>' +
         "</div>" +
 
@@ -90,35 +99,86 @@
         (next ? '<div class="band" style="margin-top:30px"><div class="band-head"><span class="micro">' + nextLabel + '</span></div><div class="ep-grid" style="grid-template-columns:minmax(0,340px)">' + VAULT.epCard(next, prog, social) + "</div></div>" : "") +
       "</div>" +
       '<aside>' +
-        (chapterRows ? '<div class="band"><div class="band-head"><h2 class="micro">Chapters</h2></div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
+        (chapterRows ? '<div class="band"><div class="band-head"><h2 class="micro">Chapters</h2>' + (chapterNote ? '<span class="micro">' + chapterNote + "</span>" : "") + '</div><div class="chapters plate" style="padding:4px 16px">' + chapterRows + "</div></div>" : "") +
         (caseRows ? '<div class="band"><div class="band-head"><h2 class="micro">Prompts &amp; files</h2></div><div class="case plate" style="padding:4px 16px">' + caseRows + "</div></div>" : "") +
-        '<div class="notice" style="font-size:12.5px">Questions on this episode? <a href="/ai-vault/ask.html?ctx=' + encodeURIComponent(ep.slug) + '" style="color:var(--gold-glint)">Ask Jay</a> or bring them to the next session.</div>' +
+        '<div class="notice" style="font-size:12.5px">Questions on this episode? <a href="/ai-vault/ask.html?ctx=' + encodeURIComponent(ep.slug) + '" style="color:var(--gold-glint)">Ask the Experts</a> or bring them to the next session.</div>' +
       "</aside>" +
     "</div>";
 
   /* ---------- reactions ---------- */
+  /* every write is optimistic: paint first, then roll the paint back if the
+     server refuses, so the UI never claims something the Vault did not record */
+  function saveFailed(node, msg) {
+    var n = node.querySelector(".failnote");
+    if (!n) {
+      /* el() returns a node still owned by its template fragment, so always
+         append explicitly rather than testing parentNode */
+      n = VAULT.el('<span class="micro failnote" style="color:var(--live);margin-left:10px"></span>');
+      node.appendChild(n);
+    }
+    n.textContent = msg || "NOT SAVED. TRY AGAIN";   /* reused node must say the CURRENT reason */
+    clearTimeout(n._t); n._t = setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 3200);
+  }
   function setBtn(id, on) { var b = $(id); b.classList.toggle("on", !!on); b.setAttribute("aria-pressed", !!on); }
+  function paintLike() { $("#likeN").textContent = soc.likes; setBtn("#rLike", soc.my_like); }
+  function paintStars(n) { $("#stars").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", Number(b.dataset.s) <= n); }); }
   setBtn("#rLike", soc.my_like); setBtn("#rLater", soc.my_watch_later); setBtn("#rMore", soc.my_more);
+  paintStars(soc.my_stars || 0);
+
+  /* one write in flight per control. Without this, a fast second click can settle
+     before the first and roll the UI back to a stale snapshot, so the buttons end
+     up asserting a state the server never received. */
+  var busy = {};
+  async function optimistic(key, node, paint, write) {
+    /* a click arriving mid-write is refused, not queued: say so instead of
+       swallowing it, so the member knows to wait rather than assuming it worked */
+    if (busy[key]) { saveFailed(node, "SAVING, ONE MOMENT"); return; }
+    busy[key] = true;
+    var undo = paint();           /* paint returns the exact undo for what it changed */
+    try { await write(); }
+    catch (e) { undo(); saveFailed(node); }
+    finally { busy[key] = false; }
+  }
+
   $("#rLike").addEventListener("click", function () {
-    soc.my_like = !soc.my_like; soc.likes += soc.my_like ? 1 : -1;
-    $("#likeN").textContent = soc.likes; setBtn("#rLike", soc.my_like);
-    VAULT.react(ep.slug, "like", soc.my_like); VAULT.track("like", ep.slug);
+    optimistic("like", $("#rLike").parentNode, function () {
+      var wasOn = soc.my_like, wasCount = soc.likes;
+      soc.my_like = !wasOn; soc.likes = wasCount + (soc.my_like ? 1 : -1);
+      paintLike();
+      return function () { soc.my_like = wasOn; soc.likes = wasCount; paintLike(); };
+    }, function () {
+      return VAULT.react(ep.slug, "like", soc.my_like).then(function () { VAULT.track("like", ep.slug); });
+    });
   });
   $("#rLater").addEventListener("click", function () {
-    soc.my_watch_later = !soc.my_watch_later; setBtn("#rLater", soc.my_watch_later);
-    VAULT.react(ep.slug, "watch_later", soc.my_watch_later);
+    optimistic("later", $("#rLater").parentNode, function () {
+      var was = soc.my_watch_later;
+      soc.my_watch_later = !was; setBtn("#rLater", soc.my_watch_later);
+      return function () { soc.my_watch_later = was; setBtn("#rLater", was); };
+    }, function () { return VAULT.react(ep.slug, "watch_later", soc.my_watch_later); });
   });
   $("#rMore").addEventListener("click", function () {
-    soc.my_more = !soc.my_more; setBtn("#rMore", soc.my_more);
-    VAULT.react(ep.slug, "more_please", soc.my_more); VAULT.track("more_please", ep.slug);
+    optimistic("more", $("#rMore").parentNode, function () {
+      var was = soc.my_more;
+      soc.my_more = !was; setBtn("#rMore", soc.my_more);
+      return function () { soc.my_more = was; setBtn("#rMore", was); };
+    }, function () {
+      return VAULT.react(ep.slug, "more_please", soc.my_more).then(function () { VAULT.track("more_please", ep.slug); });
+    });
   });
 
   /* ---------- private rating ---------- */
-  function paintStars(n) { $("#stars").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", Number(b.dataset.s) <= n); }); }
-  paintStars(soc.my_stars || 0);
   $("#stars").addEventListener("click", function (ev) {
     var b = ev.target.closest("button"); if (!b) return;
-    var n = Number(b.dataset.s); paintStars(n); VAULT.rate(ep.slug, n); VAULT.track("rate", ep.slug + ":" + n);
+    var n = Number(b.dataset.s);
+    optimistic("rate", $("#stars").parentNode, function () {
+      var was = soc.my_stars || 0;
+      soc.my_stars = n; paintStars(n);      /* assign optimistically so a later
+                                               rollback restores the real value */
+      return function () { soc.my_stars = was; paintStars(was); };
+    }, function () {
+      return VAULT.rate(ep.slug, n).then(function () { VAULT.track("rate", ep.slug + ":" + n); });
+    });
   });
 
   /* ---------- complete toggle ---------- */
@@ -127,15 +187,43 @@
   setToggle(!!myProg.completed);
   function flip() {
     var on = !toggle.classList.contains("on");
-    setToggle(on);
-    /* myProg.completed is the single source of truth: the Vimeo tracker reads it
-       too, so periodic saves never resurrect an un-completed state.
-       userUncompleted suppresses the 90% auto-complete for this session, or the
-       very next timeupdate past 90% would flip the toggle right back on. */
-    myProg.completed = on;
-    myProg.userUncompleted = !on;
-    VAULT.saveProgress(ep, myProg.position || 0, on);
-    if (on) VAULT.track("complete", ep.slug);
+    optimistic("complete", toggle.parentNode, function () {
+      var was = !!myProg.completed, wasSuppress = autoSuppressUntil;
+      /* myProg.completed is the single source of truth: the Vimeo tracker reads it
+         too, so periodic saves never resurrect an un-completed state */
+      myProg.completed = on;
+      /* cover the gap between this click and the player landing back on 0 */
+      if (!on) autoSuppressUntil = Date.now() + 8000;
+      setToggle(on);
+      return function () { myProg.completed = was; autoSuppressUntil = wasSuppress; setToggle(was); };
+    }, function () {
+      /* un-completing means "I want to watch this again", so the resume point goes
+         back to the start: keeping it at the end would drop the member on the last
+         seconds of the video, which is the opposite of what they asked for */
+      var pos = on ? (myProg.position || 0) : 0;
+      /* loud: this is a deliberate click, so a refused write must be visible */
+      return VAULT.saveProgress(ep, pos, on, true)
+        .then(function () {
+          if (on) { VAULT.track("complete", ep.slug); return; }
+          /* The resume point is zeroed RIGHT NOW, so any exit during the rewind
+             (pagehide, pause, a tab close) can only ever save 0. seeking then
+             blocks the stale pre-seek timeupdate ticks from putting the old end
+             position back, and returning the seek promise keeps busy.complete
+             held until the player has actually moved. */
+          myProg.position = 0;
+          lastSaved = 0;
+          if (!vimeoPlayer) { autoTried = false; return; }
+          seeking = true;
+          return vimeoPlayer.setCurrentTime(0).then(function () {
+            autoTried = false;      /* a genuine re-watch may auto-complete again */
+            seeking = false;
+          }, function () {
+            /* the seek was refused: the player is still at the end, so leave
+               autoTried set or the auto-complete would undo this very click */
+            seeking = false;
+          });
+        });
+    });
   }
   toggle.addEventListener("click", flip);
   toggle.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
@@ -167,45 +255,71 @@
     }
     /* v1: file resources ship as URLs (Vimeo/Drive). A row with neither url nor
        body only exists in demo data. */
-    if (VAULT.DEMO) alert("Demo mode. Files connect after setup.");
+    if (VAULT.DEMO) VAULT.toast("Demo mode. Files attach once the real episodes are uploaded.");
   });
 
-  /* ---------- Vimeo progress tracking ---------- */
-  /* a saved position already past the 90% mark with completed=false means the
-     member un-completed a finished episode: keep the auto-complete suppressed
-     across sessions too, or the first play would instantly re-complete it */
-  if (!myProg.completed && ep.duration_seconds && (myProg.position || 0) / ep.duration_seconds >= 0.9) {
-    myProg.userUncompleted = true;
-  }
+  /* ---------- Vimeo progress tracking ----------
+     Un-completing rewinds to the start (see flip), and a position of 0 already
+     stops the 90% auto-complete from firing on the tail of the previous watch.
+     So the only guard still needed is a short window covering the moment between
+     the click and the player actually landing on 0. No persistent state, which
+     means an episode can never end up permanently barred from auto-completing. */
+  var autoSuppressUntil = 0, lastSaved = 0, autoTried = false, vimeoPlayer = null;
+  var seeking = false;   /* true while a rewind is in flight: timeupdate is stale then */
 
   if (ep.vimeo_id && window.Vimeo) {
     var player = new Vimeo.Player($("#vplayer"));
-    var last = 0;
+    vimeoPlayer = player;            /* flip() rewinds through this on un-complete */
     if (myProg.position > 30 && !myProg.completed) {
+      lastSaved = myProg.position;
       player.on("loaded", function () { player.setCurrentTime(myProg.position).catch(function () {}); });
     }
     player.on("play", function () { VAULT.track("play", ep.slug); });
     player.on("timeupdate", function (d) {
+      /* a rewind is in flight: these seconds are from before it, so ignore them
+         entirely rather than let them overwrite the reset */
+      if (seeking) return;
       myProg.position = d.seconds;
-      if (d.seconds - last >= 15) { last = d.seconds; VAULT.saveProgress(ep, d.seconds, myProg.completed); }
-      if (!myProg.completed && !myProg.userUncompleted && ep.duration_seconds && d.seconds / ep.duration_seconds >= 0.9) {
-        myProg.completed = true; setToggle(true); VAULT.saveProgress(ep, d.seconds, true); VAULT.track("complete", ep.slug);
+      /* a backwards seek (rewind, chapter jump) must reset the throttle baseline,
+         or no periodic save fires again until playback passes the old high point */
+      if (d.seconds < lastSaved) lastSaved = d.seconds;
+      /* never write completion state while a deliberate one is in flight: the
+         optimistic value could get committed by this save and survive a rollback */
+      if (d.seconds - lastSaved >= 15 && !busy.complete) { lastSaved = d.seconds; VAULT.saveProgress(ep, d.seconds, myProg.completed); }
+      if (!myProg.completed && !autoTried && Date.now() > autoSuppressUntil && ep.duration_seconds && d.seconds / ep.duration_seconds >= 0.9) {
+        /* once per watch: a refused auto-complete must not re-arm itself on the
+           next tick (timeupdate fires ~4x a second, that would be a write storm).
+           flip() clears autoTried on an un-complete so a real re-watch counts.
+           It shares the "complete" lock with flip(), so the two can never race. */
+        autoTried = true;
+        optimistic("complete", toggle.parentNode, function () {
+          var was = !!myProg.completed;
+          myProg.completed = true; setToggle(true);
+          return function () { myProg.completed = was; setToggle(was); };
+        }, function () {
+          return VAULT.saveProgress(ep, d.seconds, true, true).then(function () { VAULT.track("complete", ep.slug); });
+        });
       }
     });
-    player.on("pause", function (d) { VAULT.saveProgress(ep, d.seconds, myProg.completed); });
-    window.addEventListener("pagehide", function () { VAULT.saveProgress(ep, myProg.position || 0, myProg.completed); });
+    /* both skip while a completion write or a rewind is in flight: the seconds
+       they would save are the pre-rewind ones the member just discarded */
+    player.on("pause", function (d) { if (!busy.complete && !seeking) VAULT.saveProgress(ep, d.seconds, myProg.completed); });
+    window.addEventListener("pagehide", function () { if (!busy.complete && !seeking) VAULT.saveProgress(ep, myProg.position || 0, myProg.completed); });
     main.addEventListener("click", function (ev) {
       var row = ev.target.closest("[data-seek]");
       if (row) player.setCurrentTime(Number(row.dataset.seek)).then(function () { player.play(); }).catch(function () {});
     });
-  } else {
-    main.addEventListener("click", function (ev) {
-      var row = ev.target.closest("[data-seek]");
-      if (row) { myProg.position = Number(row.dataset.seek); VAULT.saveProgress(ep, myProg.position, myProg.completed); }
-    });
+  } else if (playerBroken) {
+    /* the video exists but the Vimeo API script did not load: nothing can track
+       watch time this page load, so say so instead of losing progress quietly */
+    console.error("Vimeo player API missing: watch progress is not being recorded");
+    var warn = VAULT.el('<div class="notice" style="margin-top:14px;border-left-color:var(--live)">The video player script did not load, so your progress on this episode is not being saved. Reload the page to fix it.</div>');
+    $(".player-shell").after(warn);
   }
 
   document.body.classList.add("in");
+  /* the Next episode card carries .rv: without this it stays at opacity 0 forever */
+  VAULT.reveal();
 })();
 </script>
 </body>

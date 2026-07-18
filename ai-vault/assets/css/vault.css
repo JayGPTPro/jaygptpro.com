@@ -112,6 +112,20 @@ a.plate:hover .glint-edge { opacity: 1; }
 .btn.quiet:hover { color: var(--text); border-color: var(--btn-border); background: var(--plate); }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
+/* ---------- skip link: invisible until keyboard focus ---------- */
+.skiplink {
+  position: fixed; top: -48px; left: 16px; z-index: 300;
+  padding: 10px 18px; border-radius: 8px;
+  background: var(--gold); color: #0A0A0A;
+  font-family: var(--font-head); font-weight: 600; font-size: 13px;
+  transition: top 160ms var(--ease);
+}
+.skiplink:focus { top: 12px; }
+/* the topbar is sticky: anything scrolled to by fragment or scrollIntoView must
+   clear it, or its first ~62px land underneath the bar */
+main[id], [id] { scroll-margin-top: 84px; }
+main:focus { outline: none; }
+
 /* ---------- top bar ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 50;
@@ -298,9 +312,10 @@ a.plate:hover .ep-thumb img { transform: scale(1.035); }
   }
   .tabbar .ico { display: flex; width: 21px; height: 21px; }
   .tabbar .ico svg { width: 21px; height: 21px; }
+  /* the fade is a scroll hint for the overflowing tag row only: JS adds .at-end
+     when it is scrolled through, and short groups never get masked at all */
   .segments { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); }
-  /* JS adds .at-end when scrolled to the end, so the last filter is never stuck faded */
-  .segments.at-end { -webkit-mask-image: none; mask-image: none; }
+  .segments.at-end, .segments.no-fade { -webkit-mask-image: none; mask-image: none; }
   .ep-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
   h1 { font-size: 25px; }
   .board .cell { min-width: 48px; } .board .cell .num { font-size: 20px; }
@@ -314,6 +329,24 @@ a.plate:hover .ep-thumb img { transform: scale(1.035); }
 /* mobile "more" sheet */
 .msheet { position: fixed; inset: 0; z-index: 80; display: none; }
 .msheet.open { display: block; }
+/* the single bottom message column: toasts and the failed-read notice both mount
+   here, so nothing can cover the tab bar, the demo badge, or another message.
+   z-index 120 clears the login doorstage (100), which is opaque and full screen. */
+#vaultToasts {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(104px + env(safe-area-inset-bottom));
+  z-index: 120; display: flex; flex-direction: column; gap: 8px; align-items: center;
+  pointer-events: none; width: calc(100% - 32px); max-width: 460px;
+}
+/* the message column must never sit on an open sheet, and the sheet must never
+   hide a message: while the sheet is open the column steps aside entirely.
+   The class is toggled in renderChrome, so this needs no :has() support. */
+body.sheet-open #vaultToasts { display: none; }
+/* a sheet taller than the screen (small phones in landscape) must scroll, or its
+   first rows are clipped above the viewport with no way to reach them.
+   100% of the fixed .msheet box, NOT 100vh: on mobile 100vh is the large viewport
+   (toolbars hidden) and would let the panel grow past the visible area again. */
+.msheet .panel { max-height: calc(100% - 24px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .msheet .scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
 .msheet .panel { position: absolute; left: 0; right: 0; bottom: 0; background: var(--plate); border-top: 1px solid var(--hairline); border-radius: 16px 16px 0 0; padding: 10px 10px calc(18px + env(safe-area-inset-bottom)); box-shadow: inset 0 1px 0 var(--plate-bevel), 0 -18px 44px rgba(0,0,0,0.45); }
 .msheet .grab { width: 40px; height: 4px; background: var(--hairline); border-radius: 2px; margin: 4px auto 12px; }
@@ -322,7 +355,13 @@ a.plate:hover .ep-thumb img { transform: scale(1.035); }
 .msheet a .micro { color: var(--gold-glint); }
 
 /* ---------- login / door ---------- */
-.doorstage { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+/* flex-start + padding + scroll, NOT align-items:center: a plate taller than the
+   viewport (locked.html on a phone in landscape) is clipped at BOTH ends when
+   centered, putting "Sign out and try another account" permanently off-screen on
+   the one page whose whole job is to fix a wrong-account sign-in. */
+.doorstage { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 24px 0; }
+/* keeps the plate optically centered whenever it does fit */
+.doorstage > .loginplate { margin: auto; }
 .doorpanel { position: absolute; top: 0; bottom: 0; width: 51%; background: linear-gradient(180deg, #101010, #0C0C0C); z-index: 4; }
 .doorpanel.left { left: 0; border-right: 1px solid rgba(201,162,39,0.0); }
 .doorpanel.right { right: 0; }

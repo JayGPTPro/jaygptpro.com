@@ -111,27 +111,99 @@ var VAULT = (function () {
     document.body.appendChild(n);
   }
 
-  /* corner toast: shown once when a content query fails, page keeps rendering */
+  /* non-blocking corner message. The portal never uses alert(): a modal steals
+     the page, stacks up when something retries, and cannot be styled. */
+  /* ONE message column for the whole portal. Everything that talks to the member
+     from the bottom of the screen lives here, so nothing can cover the tab bar,
+     the demo badge, or another message's buttons. */
+  function toastHost() {
+    var host = document.getElementById("vaultToasts");
+    if (!host) {
+      /* clears the mobile tab bar AND the demo badge, safe-area included: both
+         use env(safe-area-inset-bottom), so this must too or it lands on them */
+      /* z-index 120 clears the login doorstage (100), which is a full-screen
+         OPAQUE panel: a message under it is invisible, and the sign-in-failure
+         message is raised from exactly that screen. The More sheet is handled by
+         hiding this column while it is open, not by sitting under it. */
+      /* styled in vault.css, NOT inline: an inline display:flex would beat the
+         rule that hides the column while the More sheet is open */
+      host = el('<div id="vaultToasts"></div>');
+      document.body.appendChild(host);
+    }
+    return host;
+  }
+  function dismissAfter(n, ms) {
+    /* BOTH timers live on the node: the fade and the detach. A refresh that
+       cancels only the first would leave the second to delete a live message. */
+    clearTimeout(n._t); clearTimeout(n._f);
+    n.style.transition = ""; n.style.opacity = "1";
+    n._t = setTimeout(function () {
+      n.style.transition = "opacity 300ms var(--ease)"; n.style.opacity = "0";
+      n._f = setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 320);
+    }, ms);
+  }
+  function toast(msg, kind) {
+    function mount() {
+      var host = toastHost();
+      var ms = kind === "bad" ? 6000 : 4200;
+      /* repeats say nothing new: refresh the existing one instead of stacking.
+         Scan the whole column, not just the last child: the sticky failed-read
+         row can sit after a toast and would hide the match. */
+      var twin = Array.prototype.find.call(host.children, function (c) { return c._msg === msg; });
+      if (twin) { dismissAfter(twin, ms); return; }
+      var n = el('<div class="plate pad" style="pointer-events:auto;padding:12px 18px;font-size:13.5px;text-align:center;box-shadow:var(--shadow-lift)' +
+        (kind === "bad" ? ";border-left:2px solid var(--live)" : "") + '">' + esc(msg) + "</div>");
+      n._msg = msg;
+      host.appendChild(n);
+      /* hard cap: a column that grows past the viewport hides the page itself.
+         Sticky rows (the failed-read notice) are never evicted by chatter. */
+      while (host.children.length > 3) {
+        var oldest = Array.prototype.find.call(host.children, function (c) { return !c._sticky; });
+        if (!oldest) break;
+        host.removeChild(oldest);
+      }
+      dismissAfter(n, ms);
+    }
+    if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
+  }
+
+  /* shown once when a content query fails, page keeps rendering. It mounts in the
+     SAME column as every other message: two fixed bars guessing their own bottom
+     offsets is how one ends up sitting on the tab bar or stealing its clicks. */
   var _dataNoticed = false;
   function dataNotice() {
     if (_dataNoticed) return; _dataNoticed = true;
     function mount() {
-      var n = el('<div class="plate" style="position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:14px;align-items:center;padding:10px 16px;white-space:nowrap">' +
+      var host = toastHost();
+      var n = el('<div class="plate" style="pointer-events:auto;display:flex;gap:14px;align-items:center;justify-content:center;padding:10px 16px;box-shadow:var(--shadow-lift)">' +
         '<span class="micro">SOME DATA DID NOT LOAD</span>' +
         '<button class="btn quiet" style="padding:6px 14px;font-size:12px">Reload</button></div>');
       n.querySelector("button").addEventListener("click", function () { location.reload(); });
-      document.body.appendChild(n);
+      n._sticky = true;   /* stays until the member reloads, never auto-dismissed */
+      host.appendChild(n);
     }
     if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
   }
+  /* which reads failed this page load: an empty list means "nothing yet" or
+     "could not load", and the copy for those two is not the same */
+  var lastReadFailed = {};
+
   function guard(r, fallback) {
     if (r && r.error) { console.error("vault query failed", r.error); dataNotice(); }
     return r && r.data != null ? r.data : fallback;
   }
 
+  /* MEMBER WRITES must fail loudly. supabase-js resolves { error } instead of
+     throwing, so without this a rejected write looks exactly like a success and
+     the UI happily reports "saved" while the member's action is gone. */
+  function mustWrite(r, what) {
+    if (r && r.error) { console.error("vault write failed", what, r.error); throw new Error(what + ": " + (r.error.message || "write failed")); }
+    return r;
+  }
+
   async function signIn(redirect) {
     if (DEMO) { location.href = redirect || "/ai-vault/home.html"; return; }
-    if (!sb) { alert("Connection hiccup: the sign-in library did not load. Please reload the page."); location.reload(); return; }
+    if (!sb) { toast("The sign-in library did not load. Reloading...", "bad"); setTimeout(function () { location.reload(); }, 1200); return; }
     await sb.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: location.origin + (redirect || "/ai-vault/index.html") }
@@ -153,6 +225,9 @@ var VAULT = (function () {
     var r = await sb.from("episodes")
       .select("ep_number,slug,title,description,guest_name,duration_seconds,published_at,updated_note,thumbnail_url,likes_base,episode_tags(tags(name))")
       .eq("status", "published").order("published_at", { ascending: false });
+    /* a failed read and an empty library both come back as [], so flag the failure:
+       pages must not tell a member to reload when nothing is published yet */
+    lastReadFailed.episodes = !!(r && r.error);
     return guard(r, []).map(function (e) {
       e.tags = (e.episode_tags || []).map(function (t) { return t.tags.name; });
       e.published_at = new Date(e.published_at).getTime();
@@ -196,21 +271,24 @@ var VAULT = (function () {
       s[slug][kind === "watch_later" ? "watch_later" : kind === "more_please" ? "more" : "like"] = on;
       localStorage.setItem("vault_social", JSON.stringify(s)); return;
     }
-    await sb.rpc("react_episode", { p_slug: slug, p_kind: kind, p_on: on });
+    mustWrite(await sb.rpc("react_episode", { p_slug: slug, p_kind: kind, p_on: on }), "reaction");
   }
 
   async function rate(slug, stars) {
     if (DEMO) { var s = demoSocial(); s[slug] = s[slug] || {}; s[slug].stars = stars; localStorage.setItem("vault_social", JSON.stringify(s)); return; }
-    await sb.rpc("rate_episode", { p_slug: slug, p_stars: stars });
+    mustWrite(await sb.rpc("rate_episode", { p_slug: slug, p_stars: stars }), "rating");
   }
 
   async function askQuestion(body, context) {
     if (DEMO) {
       var q = store("vault_qa_mine", "[]");
-      q.unshift({ id: "mine-" + q.length, author: "You", body: body, created_at: Date.now(), replies: [] });
+      /* public:false mirrors live mode, where ask_question inserts a PRIVATE row
+         (questions.public defaults to false). Without it the demo would show a
+         just-posted question as if the whole community could already see it. */
+      q.unshift({ id: "mine-" + q.length, author: "You", body: body, created_at: Date.now(), public: false, replies: [] });
       localStorage.setItem("vault_qa_mine", JSON.stringify(q)); return;
     }
-    await sb.rpc("ask_question", { p_body: body, p_context: context || null });
+    mustWrite(await sb.rpc("ask_question", { p_body: body, p_context: context || null }), "question");
   }
 
   /* community Q&A board */
@@ -226,8 +304,12 @@ var VAULT = (function () {
       var base = (window.VAULT_DEMO.qa || []).map(withReplies);
       return mine.concat(base);
     }
+    /* the board REPLACES the visible list, so a failed read must be a real
+       failure here: guard() would return [] and paint "No questions yet" over
+       the whole community board, which reads as "your post vanished" */
     var r = await sb.rpc("get_qa", { p_limit: 30 });
-    return guard(r, []);
+    if (r && r.error) { console.error("vault query failed get_qa", r.error); throw new Error("board unavailable"); }
+    return (r && r.data) || [];
   }
   async function addReply(questionId, body) {
     if (DEMO) {
@@ -235,7 +317,7 @@ var VAULT = (function () {
       (m[questionId] = m[questionId] || []).push({ author: "You", body: body, created_at: Date.now() });
       localStorage.setItem("vault_qa_replies", JSON.stringify(m)); return;
     }
-    await sb.rpc("add_reply", { p_question: questionId, p_body: body });
+    mustWrite(await sb.rpc("add_reply", { p_question: questionId, p_body: body }), "reply");
   }
 
   /* programs catalog + member deals */
@@ -272,19 +354,31 @@ var VAULT = (function () {
     return map;
   }
 
-  async function saveProgress(episode, positionSeconds, completed) {
+  async function saveProgress(episode, positionSeconds, completed, loud) {
     if (DEMO) {
       var map = demoProgress();
       /* honor an explicit false: un-completing must stick */
       map[episode.slug] = { position: positionSeconds, completed: !!completed, t: Date.now() };
       localStorage.setItem("vault_progress", JSON.stringify(map)); return;
     }
-    await sb.rpc("record_watch_progress", { p_episode_slug: episode.slug, p_position: Math.floor(positionSeconds), p_completed: !!completed });
+    /* background saves (timeupdate, pagehide) must never reject into their
+       handlers, so the silent path swallows both query errors and transport
+       failures. A deliberate member action passes loud=true and gets a real
+       rejection it can roll back from. */
+    if (!loud) {
+      try {
+        var q = await sb.rpc("record_watch_progress", { p_episode_slug: episode.slug, p_position: Math.floor(positionSeconds), p_completed: !!completed });
+        if (q && q.error) console.error("vault write failed progress", q.error);
+      } catch (e) { console.error("vault write failed progress", e); }
+      return;
+    }
+    mustWrite(await sb.rpc("record_watch_progress", { p_episode_slug: episode.slug, p_position: Math.floor(positionSeconds), p_completed: !!completed }), "progress");
   }
 
   async function getLessons() {
     if (DEMO) return window.VAULT_DEMO.lessons;
     var r = await sb.from("lessons").select("*").order("position");
+    lastReadFailed.lessons = !!(r && r.error);
     return guard(r, []);
   }
   async function getLessonDone() {
@@ -294,7 +388,7 @@ var VAULT = (function () {
   }
   async function completeLesson(position) {
     if (DEMO) { var d = await getLessonDone(); if (d.indexOf(position) < 0) d.push(position); localStorage.setItem("vault_lessons", JSON.stringify(d)); return; }
-    await sb.rpc("complete_lesson", { p_position: position });
+    mustWrite(await sb.rpc("complete_lesson", { p_position: position }), "lesson");
   }
 
   async function getSessions() {
@@ -348,7 +442,7 @@ var VAULT = (function () {
   }
   async function completeChallengeDay(slug, dayNumber) {
     if (DEMO) { var d = store("vault_challenge", "[]"); if (d.indexOf(dayNumber) < 0) d.push(dayNumber); localStorage.setItem("vault_challenge", JSON.stringify(d)); return; }
-    await sb.rpc("complete_challenge_day", { p_slug: slug, p_day: dayNumber });
+    mustWrite(await sb.rpc("complete_challenge_day", { p_slug: slug, p_day: dayNumber }), "challenge day");
   }
   function dayUnlockAt(challenge, dayNumber) { return challenge.starts_at + (dayNumber - 1) * 86400000; }
 
@@ -367,8 +461,13 @@ var VAULT = (function () {
     try { sb.rpc("log_event", { p_event: eventType, p_ref: ref || null }).then(function () {}, function () {}); } catch (e) {}
   }
 
+  var _demoNoticed = false;
   async function callFn(name, payload) {
-    if (DEMO) { alert("Demo mode. Connect Supabase + Stripe first (see supabase/SETUP.md)."); return null; }
+    if (DEMO) {
+      /* one quiet notice per page: never a modal, never stacked */
+      if (!_demoNoticed) { _demoNoticed = true; toast("Demo mode. This connects once Supabase and Stripe are set up."); }
+      return null;
+    }
     var s = await sb.auth.getSession();
     var res = await fetch(VAULT_CONFIG.SUPABASE_URL + "/functions/v1/" + name, {
       method: "POST",
@@ -450,7 +549,7 @@ var VAULT = (function () {
       { id: "masterminds", label: "Masterminds", href: "/ai-vault/masterminds.html" },
       { id: "challenges", label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
       { id: "deals", label: "Buying Club", href: "/ai-vault/tools.html" },
-      { id: "ask", label: "Ask Jay", href: "/ai-vault/ask.html" },
+      { id: "ask", label: "Ask the Experts", href: "/ai-vault/ask.html" },
       { id: "consultation", label: "1-on-1", href: "/ai-vault/consultation.html" }
     ];
     var links = nav.map(function (n) {
@@ -468,6 +567,12 @@ var VAULT = (function () {
       "</div>" +
       "</header>");
     document.body.prepend(top);
+    /* keyboard users jump straight past the chrome: skip link is the FIRST focusable.
+       tabIndex -1 makes <main> programmatically focusable (Safari will not move
+       focus to a non-focusable fragment target) without joining the tab order */
+    var mainEl = document.querySelector("main");
+    if (mainEl) { if (!mainEl.id) mainEl.id = "main"; mainEl.tabIndex = -1; }
+    document.body.prepend(el('<a class="skiplink" href="#main">Skip to content</a>'));
     top.querySelector("#themeToggle").addEventListener("click", function () {
       var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
       document.documentElement.dataset.theme = next;
@@ -508,7 +613,11 @@ var VAULT = (function () {
       "</div></div>");
     document.body.appendChild(sheet);
     var moreTab = document.getElementById("moreTab");
-    function toggleSheet(open) { sheet.classList.toggle("open", open); }
+    function toggleSheet(open) {
+      sheet.classList.toggle("open", open);
+      /* the message column hides itself while the sheet is up (see vault.css) */
+      document.body.classList.toggle("sheet-open", open);
+    }
     moreTab.addEventListener("click", function () { toggleSheet(!sheet.classList.contains("open")); });
     sheet.querySelector(".scrim").addEventListener("click", function () { toggleSheet(false); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleSheet(false); });
@@ -536,7 +645,9 @@ var VAULT = (function () {
     return '<a class="plate ep-plate rv" href="/ai-vault/episode.html?ep=' + encodeURIComponent(ep.slug) + '">' +
       '<span class="glint-edge"></span>' +
       '<div class="ep-thumb">' + thumb +
-        '<span class="chip dur">' + fmtDuration(ep.duration_seconds) + "</span>" +
+        /* the chip is a styled pill: with no duration it would paint as an empty
+           bordered box on the thumbnail, so it is omitted entirely */
+        (ep.duration_seconds ? '<span class="chip dur">' + fmtDuration(ep.duration_seconds) + "</span>" : "") +
         (ep.updated_note ? '<span class="updated">Updated</span>' : "") +
         (p && p.completed ? '<span class="check">✓</span>' : "") +
       "</div>" +
@@ -574,6 +685,8 @@ var VAULT = (function () {
     getLessons: getLessons, getLessonDone: getLessonDone, completeLesson: completeLesson,
     getSessions: getSessions, getNextSession: getNextSession, getConsultations: getConsultations,
     getChallenge: getChallenge, completeChallengeDay: completeChallengeDay, dayUnlockAt: dayUnlockAt,
+    toast: toast,
+    readFailed: function (key) { return !!lastReadFailed[key]; },
     getLastVisit: getLastVisit, stampVisit: stampVisit,
     memberCount: memberCount, track: track, callFn: callFn,
     renderChrome: renderChrome, epCard: epCard, mountCountdown: mountCountdown, reveal: reveal, avatarStack: avatarStack

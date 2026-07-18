@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .ledger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
@@ -21,8 +21,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -33,14 +33,30 @@
   var $ = VAULT.$, esc = VAULT.esc;
   var episodes = await VAULT.getEpisodes();
   var prog = await VAULT.getProgressMap();
-  var watched = episodes.filter(function (e) { return prog[e.slug]; });
+  /* "watch history" means most recently WATCHED, not most recently published */
+  var watched = episodes.filter(function (e) { return prog[e.slug]; })
+    .sort(function (a, b) { return (prog[b.slug].t || 0) - (prog[a.slug].t || 0); });
   var completed = watched.filter(function (e) { return prog[e.slug].completed; });
   var since = access.member_since ? new Date(access.member_since) : null;
+  /* comped members have no Stripe customer: get_my_access reports plan "Guest access" */
+  var comped = /guest access/i.test(access.plan || "");
 
   var historyRows = watched.slice(0, 12).map(function (e) {
     var p = prog[e.slug];
-    return '<div class="ledger-line"><span><a href="/ai-vault/episode.html?ep=' + encodeURIComponent(e.slug) + '" style="color:var(--text)">' + esc(e.title) + "</a></span><span class=\"v\">" + (p.completed ? '<span style="color:var(--gold)">✓ COMPLETE</span>' : Math.round((p.position / (e.duration_seconds || 1)) * 100) + "%") + "</span></div>";
-  }).join("") || '<div class="ledger-line"><span class="micro">Nothing watched yet. The Reserve is waiting.</span></div>';
+    /* an episode published without a duration has no percentage to show: report
+       the timecode instead of dividing by 1 and printing something like 75100% */
+    var state = p.completed
+      ? '<span style="color:var(--gold)">✓ COMPLETE</span>'
+      : (e.duration_seconds ? Math.min(100, Math.round((p.position / e.duration_seconds) * 100)) + "%" : VAULT.fmtTime(p.position || 0) + " IN");
+    return '<div class="ledger-line"><span><a href="/ai-vault/episode.html?ep=' + encodeURIComponent(e.slug) + '" style="color:var(--text)">' + esc(e.title) + '</a></span><span class="v">' + state + "</span></div>";
+  }).join("") || (VAULT.readFailed("episodes")
+    /* a failed read must never be reported as "you have watched nothing" */
+    ? '<div class="ledger-line"><span class="micro" style="color:var(--live)">Your history did not load. Reload the page to try again.</span></div>'
+    : '<div class="ledger-line"><span class="micro">Nothing watched yet. The Reserve is waiting.</span></div>');
+  /* the list is capped: say so rather than silently dropping older activity */
+  if (watched.length > 12) {
+    historyRows += '<div class="ledger-line"><span class="micro">' + (watched.length - 12) + ' MORE EPISODES IN YOUR HISTORY</span><span class="v"><a href="/ai-vault/episodes.html" style="color:var(--gold-glint)">All episodes →</a></span></div>';
+  }
 
   $("#main").innerHTML =
     '<h1>The Ledger</h1><div class="micro" style="margin-top:6px">Your account</div>' +
@@ -52,7 +68,10 @@
           '<div class="micro">' + esc(access.email || "") + (since ? " · MEMBER SINCE " + since.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase() : "") + "</div>" +
         "</div>" +
         '<div style="text-align:right">' +
-          '<div class="mono" style="font-size:30px;font-weight:500">' + completed.length + '<span style="color:var(--text-dim);font-size:16px"> / ' + episodes.length + "</span></div>" +
+          /* a zeroed counter on a failed read reads as "the portal lost my progress" */
+          '<div class="mono" style="font-size:30px;font-weight:500">' + (VAULT.readFailed("episodes")
+            ? '<span style="font-size:15px;color:var(--text-dim)">NOT LOADED</span>'
+            : completed.length + '<span style="color:var(--text-dim);font-size:16px"> / ' + episodes.length + "</span>") + "</div>" +
           '<div class="micro">Episodes complete</div>' +
         "</div>" +
       "</div>" +
@@ -63,10 +82,14 @@
         '<div class="ledger-line" style="border-top:0"><span>Plan</span><span class="v">' + esc(access.plan || "AI Vault") + "</span></div>" +
         '<div class="ledger-line"><span>Status</span><span class="v" style="color:var(--gold-glint)">' + esc((access.status || "active").toUpperCase()) + "</span></div>" +
         '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
-          '<button class="btn" id="portalBtn">Manage billing</button>' +
+          /* a comped member has no Stripe customer, so the billing portal would
+             404 forever behind a "try again" label. Say the truth instead. */
+          (comped ? "" : '<button class="btn" id="portalBtn">Manage billing</button>') +
           '<button class="btn quiet" id="signoutBtn">Sign out</button>' +
         "</div>" +
-        '<div class="micro" style="margin-top:14px;font-size:9.5px">Cancel anytime · 30-day guarantee · <a href="/ai-vault/refunds.html" style="color:var(--text-dim);text-decoration:underline">Refund policy</a></div>' +
+        '<div class="micro" style="margin-top:14px;font-size:9.5px">' + (comped
+          ? "Guest access, nothing to pay and nothing to cancel. Jay set this up for you."
+          : 'Cancel anytime · 30-day guarantee · <a href="/ai-vault/refunds.html" style="color:var(--text-dim);text-decoration:underline">Refund policy</a>') + "</div>" +
         '<div id="savingsLedger"></div>' +
       "</div>" +
       '<div class="plate pad">' +
@@ -75,10 +98,13 @@
     "</div>" +
     '<div class="plate pad" style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">' +
       '<div><div class="micro gold">Private consultation</div><div style="font-size:14px;margin-top:4px">Quarterly 1-on-1 strategy call with Jay. Included in your membership.</div></div>' +
-      '<a class="btn quiet" href="https://jaygptpro.com/call" target="_blank" rel="noopener">Book</a>' +
+      /* the 1-on-1 page owns this decision: it knows which quarters are already
+         used and makes its own button inert. A raw "Book" link here would let a
+         member book a second call for a quarter they already spent. */
+      '<a class="btn quiet" href="/ai-vault/consultation.html">See your sessions</a>' +
     "</div>";
 
-  $("#portalBtn").addEventListener("click", async function () {
+  if ($("#portalBtn")) $("#portalBtn").addEventListener("click", async function () {
     var btn = this;
     btn.disabled = true; btn.textContent = "Opening billing...";
     try {

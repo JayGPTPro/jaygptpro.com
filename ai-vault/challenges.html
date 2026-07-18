@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .dayrail { max-width: 760px; }
@@ -35,8 +35,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -66,7 +66,11 @@
           '<h3 style="margin:10px 0 6px">' + esc(p.title) + "</h3>" +
           '<p style="color:var(--text-dim);font-size:13.5px;margin-bottom:14px">' + esc(p.description || "") + "</p>" +
           '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
-            '<a class="btn ' + (p.badge === "free_members" ? "gold" : "") + '" href="' + esc(p.url || "#") + '"' + (/^https?:/.test(p.url || "") ? ' target="_blank" rel="noopener"' : "") + '>' + (p.badge === "free_members" ? "Start now" : "Get the member deal") + "</a>" +
+            /* no link yet: a live-looking button that goes nowhere is worse than
+               saying the link is not open, so show the state instead */
+            (p.url && p.url !== "#"
+              ? '<a class="btn ' + (p.badge === "free_members" ? "gold" : "") + '" href="' + esc(p.url) + '"' + (/^https?:/.test(p.url) ? ' target="_blank" rel="noopener"' : "") + '>' + (p.badge === "free_members" ? "Start now" : "Get the member deal") + "</a>"
+              : '<span class="micro">LINK OPENS WHEN THIS ONE GOES LIVE</span>') +
             (p.coupon ? '<span class="micro gold mono">COUPON: ' + esc(p.coupon) + "</span>" : "") +
           "</div>" +
         "</div>" +
@@ -84,11 +88,14 @@
 
   var now = Date.now();
   var done = ch.my_done || [];
+  var expandedDay = null;   /* the day the member has open, preserved across renders */
 
   function render() {
     var openDays = ch.days.filter(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number); });
-    var pct = Math.round((done.length / ch.days.length) * 100);
-    var allDone = done.length >= ch.days.length;
+    /* a challenge can exist with zero days while Jay is still building it in the
+       admin: never celebrate completion of an empty board, and never divide by 0 */
+    var pct = ch.days.length ? Math.round((done.length / ch.days.length) * 100) : 0;
+    var allDone = ch.days.length > 0 && done.length >= ch.days.length;
     var todayDay = openDays.length && VAULT.dayUnlockAt(ch, openDays[openDays.length - 1].day_number) > now - 86400000 ? openDays[openDays.length - 1].day_number : null;
 
     var html =
@@ -101,8 +108,14 @@
         "</div>" +
       "</div>" +
       '<div class="dayrail">' +
-        '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="micro gold">' + done.length + '/' + ch.days.length + ' DAYS COMPLETE</span><span class="micro">' + (ch.starts_at > Date.now() ? 'STARTS ' : 'STARTED ') + VAULT.fmtDate(ch.starts_at) + '</span></div>' +
-        '<div class="challenge-progress"><span style="width:' + pct + '%"></span></div>';
+        (ch.days.length
+          ? '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="micro gold">' + done.length + '/' + ch.days.length + ' DAYS COMPLETE</span><span class="micro">' + (ch.starts_at > Date.now() ? 'STARTS ' : 'STARTED ') + VAULT.fmtDate(ch.starts_at) + '</span></div>' +
+            '<div class="challenge-progress"><span style="width:' + pct + '%"></span></div>'
+          /* days not published yet. Only promise a start date that is still ahead:
+             openCount is 0 here because there are no days, not because it is early */
+          : '<div class="notice">' + (ch.starts_at > Date.now()
+              ? "The days for this challenge are not published yet. They land here before it starts on " + VAULT.fmtDate(ch.starts_at) + "."
+              : "The days for this challenge are being posted. They land on this page as Jay publishes them.") + "</div>");
 
     if (allDone) {
       html += '<div class="plate completeplate rv" style="margin-bottom:20px">' +
@@ -122,7 +135,9 @@
         ? '<span class="micro gold">✓ DONE</span>'
         : isOpen
           ? '<span class="micro gold">OPEN</span>'
-          : '<span class="micro">' + lockSvg + " OPENS " + new Date(unlockAt).toLocaleDateString("en-US", { weekday: "short" }).toUpperCase() + "</span>";
+          /* a bare weekday is ambiguous once the unlock is more than a week out */
+          : '<span class="micro">' + lockSvg + " OPENS " + new Date(unlockAt).toLocaleDateString("en-US",
+              unlockAt - now > 6 * 86400000 ? { month: "short", day: "numeric" } : { weekday: "short" }).toUpperCase() + "</span>";
       var video = d.vimeo_id
         ? '<div class="player-shell" style="margin-bottom:14px"><iframe src="https://player.vimeo.com/video/' + esc(d.vimeo_id) + (d.vimeo_hash ? "?h=" + esc(d.vimeo_hash) + "&" : "?") + 'dnt=1" allow="fullscreen" allowfullscreen title="Day ' + d.day_number + '"></iframe></div>'
         : "";
@@ -142,20 +157,58 @@
     html += "</div>";
     box.innerHTML = html;
 
-    /* expand the current day: first open-not-done, else last open */
-    var current = ch.days.find(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number) && done.indexOf(d.day_number) < 0; });
-    var target = current ? current.day_number : (openDays.length ? openDays[openDays.length - 1].day_number : null);
-    if (target) { var n = box.querySelector('[data-day="' + target + '"]'); if (n) n.classList.add("expanded"); }
+    /* keep the day the member is actually reading open across re-renders; only
+       fall back to the heuristic (first open-not-done, else last open) on load */
+    var target = expandedDay;
+    if (!target) {
+      var current = ch.days.find(function (d) { return now >= VAULT.dayUnlockAt(ch, d.day_number) && done.indexOf(d.day_number) < 0; });
+      target = current ? current.day_number : (openDays.length ? openDays[openDays.length - 1].day_number : null);
+    }
+    if (target) {
+      var n = box.querySelector('[data-day="' + target + '"]');
+      if (n) {
+        n.classList.add("expanded");
+        /* the markup ships aria-expanded="false", so the opened day must be
+           corrected here or screen readers announce it as collapsed */
+        var h = n.querySelector(".dayhead[aria-expanded]");
+        if (h) h.setAttribute("aria-expanded", "true");
+      }
+    }
 
     VAULT.reveal();
   }
 
-  main.addEventListener("click", function (ev) {
+  main.addEventListener("click", async function (ev) {
     var btn = ev.target.closest("[data-complete]");
     if (btn) {
       var dn = Number(btn.dataset.complete);
-      if (done.indexOf(dn) < 0) { done.push(dn); VAULT.completeChallengeDay(ch.slug, dn); VAULT.track("challenge_day", ch.slug + ":" + dn); }
-      render(); return;
+      if (done.indexOf(dn) < 0) {
+        /* optimistic paint, rolled back if the Vault refuses: otherwise the day
+           shows Completed and the guard above blocks every retry. The acted-on
+           day stays expanded so any failure message lands where the member looks */
+        expandedDay = dn;
+        done.push(dn); render();
+        try {
+          await VAULT.completeChallengeDay(ch.slug, dn);
+          VAULT.track("challenge_day", ch.slug + ":" + dn);
+        } catch (e) {
+          var i = done.indexOf(dn); if (i >= 0) done.splice(i, 1);
+          /* force the failed day open even if the member browsed elsewhere while
+             the write was in flight: otherwise the retry button lands in a
+             collapsed body and the rollback looks like nothing happened */
+          expandedDay = dn;
+          render();
+          var again = main.querySelector('[data-complete="' + dn + '"]');
+          if (again) {
+            again.textContent = "Could not save. Try again";
+            again.scrollIntoView({ block: "nearest" });
+            setTimeout(function () { if (again.parentNode) again.textContent = "Mark day " + dn + " complete"; }, 3200);
+          }
+        }
+      }
+      /* an already-done day needs no re-render: doing one would collapse the day
+         the member is reading and expand a different one */
+      return;
     }
     var head = ev.target.closest(".dayhead");
     if (head) {
@@ -163,6 +216,7 @@
       if (!plate.classList.contains("locked")) {
         var open = plate.classList.toggle("expanded");
         if (head.hasAttribute("aria-expanded")) head.setAttribute("aria-expanded", open);
+        expandedDay = open ? Number(plate.dataset.day) : null;   /* remember for re-renders */
       }
     }
   });

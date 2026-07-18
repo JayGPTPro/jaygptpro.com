@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .askwrap { max-width: 720px; }
@@ -26,7 +26,7 @@
 </head>
 <body>
 <main class="wrap askwrap">
-  <div class="micro gold">MEMBERS HELPING MEMBERS · JAY AND THE GUEST EXPERTS ARE IN HERE TOO</div>
+  <div class="micro gold">ASK JAY DIRECTLY · PUBLISHED ANSWERS BECOME THE BOARD EVERYONE LEARNS FROM</div>
   <h1 style="margin-top:8px">Ask the AI Experts</h1>
 
   <div class="notice rv" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
@@ -38,7 +38,7 @@
     <label class="flabel micro" for="q">Your question</label>
     <textarea class="field ask" id="q" style="min-height:90px" placeholder="Example: I tried generating lifestyle images for my garlic press 20 times and the product keeps melting. What is the workflow?"></textarea>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <span class="micro" id="ctxNote">ANSWERS COME FROM MEMBERS, THE EXPERTS, AND JAY</span>
+      <span class="micro" id="ctxNote">GOES TO JAY FIRST. PUBLISHED TO THE BOARD WHEN THE ANSWER HELPS EVERYONE</span>
       <button class="btn gold" id="send">Post question</button>
     </div>
   </div>
@@ -50,8 +50,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -62,6 +62,8 @@
   var $ = VAULT.$, esc = VAULT.esc;
   var ctx = new URLSearchParams(location.search).get("ctx");
   if (ctx) $("#ctxNote").textContent = "ASKING ABOUT: " + ctx.toUpperCase().replace(/-/g, " ");
+  /* honesty in demo mode: posts live in this browser only, nobody else sees them */
+  if (VAULT.DEMO) $("#ctxNote").textContent = "DEMO MODE. POSTS ARE VISIBLE ONLY TO YOU ON THIS DEVICE";
 
   function timeAgo(ts) {
     var d = Date.now() - new Date(ts).getTime();
@@ -73,30 +75,75 @@
   }
 
   async function render() {
+    /* a re-render rebuilds every reply box: keep anything already typed */
+    var drafts = {};
+    document.querySelectorAll("input[data-reply]").forEach(function (i) { if (i.value.trim()) drafts[i.dataset.reply] = i.value; });
     var qa = await VAULT.getQA();
     $("#board").innerHTML = qa.length ? qa.map(function (q) {
       var replies = (q.replies || []).map(function (r) {
         return '<div class="reply"><div class="qhead"><span class="qauthor">' + esc(r.author) + '</span><span class="micro">' + timeAgo(r.created_at) + '</span></div><div class="qbody" style="color:var(--text-dim)">' + esc(r.body) + "</div></div>";
       }).join("");
+      /* Jay can answer straight on the question row (questions.answer). Without
+         this the member sees their question sitting there as if nobody replied. */
+      if (q.answer) {
+        replies = '<div class="reply"><div class="qhead"><span class="qauthor">Jay</span><span class="micro">' +
+          (q.answered_at ? timeAgo(q.answered_at) : "") + '</span></div><div class="qbody" style="color:var(--text-dim)">' +
+          esc(q.answer) + "</div></div>" + replies;
+      }
+      /* questions reach Jay privately and only go on the board when he publishes
+         the answer. A member's own unpublished row must say so, or they sit
+         waiting for community replies that nobody can even see. */
+      /* treat a missing flag as unpublished: it is the safer default, and it can
+         never invite replies to a thread nobody else can see */
+      var isPrivate = q.public !== true;
       return '<div class="plate qcard rv">' +
-        '<div class="qhead"><span class="qauthor">' + esc(q.author) + '</span><span class="micro">' + timeAgo(q.created_at) + "</span></div>" +
+        '<div class="qhead"><span class="qauthor">' + esc(q.author) + '</span><span class="micro">' + timeAgo(q.created_at) + "</span>" +
+          (isPrivate ? '<span class="micro gold" style="margin-left:auto">WITH JAY · NOT ON THE BOARD YET</span>' : "") + "</div>" +
         '<div class="qbody">' + esc(q.body) + "</div>" +
         (replies ? '<div class="replies">' + replies + "</div>" : "") +
-        '<div class="replybox"><input class="field" placeholder="Add your answer..." data-reply="' + esc(q.id) + '"><button class="btn quiet" data-send-reply="' + esc(q.id) + '">Reply</button></div>' +
+        (isPrivate
+          ? '<div class="micro" style="margin-top:12px;color:var(--dim-2)">Jay answers here. If the answer helps everyone he publishes the thread to the board.</div>'
+          : '<div class="replybox"><input class="field" placeholder="Add your answer..." data-reply="' + esc(q.id) + '"><button class="btn quiet" data-send-reply="' + esc(q.id) + '">Reply</button></div>') +
       "</div>";
-    }).join("") : '<div class="notice">No questions yet. Yours opens the board.</div>';
+    }).join("") : '<div class="notice">No published questions yet. Ask yours and Jay answers you directly.</div>';
+    document.querySelectorAll("input[data-reply]").forEach(function (i) { if (drafts[i.dataset.reply]) i.value = drafts[i.dataset.reply]; });
     VAULT.reveal();
+  }
+
+  /* one reset timer per button: a stale one must never relabel a live request */
+  function setLabel(btn, text, revertTo, ms) {
+    if (btn._resetTimer) clearTimeout(btn._resetTimer);
+    btn.textContent = text;
+    if (revertTo) btn._resetTimer = setTimeout(function () { btn.textContent = revertTo; }, ms || 2200);
   }
 
   $("#send").addEventListener("click", async function () {
     var q = $("#q").value.trim();
-    if (q.length < 5) { $("#q").focus(); return; }
-    this.disabled = true; this.textContent = "Posting...";
-    await VAULT.askQuestion(q, ctx);
-    VAULT.track("question", ctx || "board");
-    $("#q").value = "";
-    this.disabled = false; this.textContent = "Post question";
-    render();
+    var btn = this;
+    if (q.length < 5) { $("#q").focus(); setLabel(btn, "Add a bit more detail", "Post question"); return; }
+    if (btn._resetTimer) clearTimeout(btn._resetTimer);
+    btn.disabled = true; btn.textContent = "Posting...";
+    try {
+      await VAULT.askQuestion(q, ctx);
+      VAULT.track("question", ctx || "board");
+      /* only clear the member's text AFTER the write is confirmed */
+      $("#q").value = "";
+      setLabel(btn, "Posted ✓", "Post question");
+    } catch (e) {
+      setLabel(btn, "Could not post. Try again", "Post question", 3200);
+      btn.disabled = false;
+      return;
+    }
+    btn.disabled = false;
+    /* the board refresh is a SEPARATE failure: a stale list must never be
+       reported as a failed post, or the member re-posts and duplicates it */
+    try {
+      await render();
+      var board = $("#board");
+      if (board) board.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) {
+      setLabel(btn, "Posted. Reload to see it", "Post question", 3800);
+    }
   });
 
   document.body.addEventListener("click", async function (ev) {
@@ -104,14 +151,33 @@
     if (!b) return;
     var input = document.querySelector('input[data-reply="' + b.dataset.sendReply + '"]');
     var body = (input.value || "").trim();
-    if (body.length < 2) { input.focus(); return; }
-    b.disabled = true;
-    await VAULT.addReply(b.dataset.sendReply, body);
-    VAULT.track("reply", b.dataset.sendReply);
-    render();
+    if (body.length < 2) { input.focus(); setLabel(b, "Write an answer first", "Reply"); return; }
+    if (b._resetTimer) clearTimeout(b._resetTimer);
+    b.disabled = true; b.textContent = "Posting...";
+    try {
+      await VAULT.addReply(b.dataset.sendReply, body);
+      VAULT.track("reply", b.dataset.sendReply);
+      input.value = "";               /* clear only after the write is confirmed */
+    } catch (e) {
+      setLabel(b, "Failed, retry", "Reply");
+      b.disabled = false;
+      return;
+    }
+    /* posted: a failed board refresh is its own, much softer problem */
+    try { await render(); }
+    catch (e) { setLabel(b, "Posted. Reload to see it", "Reply", 3800); b.disabled = false; }
   });
 
-  await render();
+  /* a cold-load failure must not blank the page or claim the board is empty */
+  try {
+    await render();
+  } catch (e) {
+    $("#board").innerHTML = '<div class="notice" style="border-left-color:var(--live)">The question board did not load. Your access is fine, the connection is not. Reload the page to try again.</div>';
+  } finally {
+    /* render() calls reveal() at its END, so a throw would leave every .rv block
+       (the notice, the ask form, the board itself) stuck at opacity 0 */
+    VAULT.reveal();
+  }
   document.body.classList.add("in");
 })();
 </script>

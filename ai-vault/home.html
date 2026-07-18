@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .session-plate { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -27,8 +27,8 @@
 <main class="wrap" id="main"></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -89,6 +89,27 @@
     "</a></section>";
   }
 
+  /* continue watching: the returning member's number one job, so it sits high */
+  var unfinished = episodes.filter(function (e) {
+    var p = prog[e.slug]; return p && !p.completed && p.position > 30;
+  }).sort(function (a, b) { return ((prog[b.slug] || {}).t || 0) - ((prog[a.slug] || {}).t || 0); });
+  if (unfinished.length) {
+    var cwEp = unfinished[0], cwP = prog[cwEp.slug];
+    var cwPct = cwEp.duration_seconds ? Math.min(100, Math.round((cwP.position / cwEp.duration_seconds) * 100)) : 0;
+    html += '<section class="band rv">' +
+      '<div class="band-head"><span class="micro">Continue watching</span></div>' +
+      '<a class="plate click" style="display:flex;align-items:center;gap:20px;padding:16px 22px;overflow:hidden" href="/ai-vault/episode.html?ep=' + encodeURIComponent(cwEp.slug) + '">' +
+        '<div style="flex:1;min-width:200px">' +
+          /* no duration means no honest percentage: the resume timecode below
+             carries the state instead of printing a contradictory "0% WATCHED" */
+          '<div class="micro">' + VAULT.fmtMonth(cwEp.published_at) + (cwEp.duration_seconds ? " · " + cwPct + "% WATCHED" : "") + "</div>" +
+          '<h3 style="margin:6px 0">' + esc(cwEp.title) + "</h3>" +
+          '<div class="micro gold">Resume from ' + VAULT.fmtTime(cwP.position) + " →</div>" +
+        "</div>" +
+        '<span class="ep-hairline" style="width:' + cwPct + '%"></span>' +
+      "</a></section>";
+  }
+
   /* next live session */
   if (session) {
     var when = new Date(session.starts_at).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -101,7 +122,7 @@
           '<div class="micro gold">' + esc(when) + " · YOUR LOCAL TIME" + (session.guest_name ? " · WITH " + esc(session.guest_name).toUpperCase() : "") + "</div>" +
           '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">' +
             '<a class="btn quiet" href="/ai-vault/live.html">Details + calendar</a>' +
-            (session.zoom_url ? '<a class="btn quiet" href="' + esc(session.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
+            (session.zoom_url && session.zoom_url !== "#" ? '<a class="btn quiet" href="' + esc(session.zoom_url) + '" target="_blank" rel="noopener">Zoom link</a>' : "") +
           "</div>" +
         "</div>" +
         '<div class="board" id="countdown"></div>' +
@@ -117,9 +138,13 @@
       '<span class="glint-edge"></span>' +
       '<span class="kindtag mastermind">CHALLENGE' + (todayNew ? " · NEW DAY TODAY" : "") + "</span>" +
       '<h3 style="flex:1;min-width:200px">' + esc(challenge.title) + "</h3>" +
+      /* "starts" only when it genuinely has not started: with zero published days
+         openCount is 0 even for a challenge that began days ago */
       '<span class="micro gold">' + (openCount > 0
         ? chDone + "/" + challenge.days.length + " DAYS DONE · DAY " + openCount + " IS OPEN →"
-        : "STARTS " + VAULT.fmtDate(challenge.starts_at) + " →") + "</span>" +
+        : (challenge.starts_at > Date.now()
+            ? "STARTS " + VAULT.fmtDate(challenge.starts_at) + " →"
+            : "DAYS ARE BEING POSTED →")) + "</span>" +
     "</a></section>";
   }
 
@@ -140,30 +165,11 @@
       "</a></section>";
   }
 
-  /* continue watching */
-  var unfinished = episodes.filter(function (e) {
-    var p = prog[e.slug]; return p && !p.completed && p.position > 30;
-  }).sort(function (a, b) { return ((prog[b.slug] || {}).t || 0) - ((prog[a.slug] || {}).t || 0); });
-  if (unfinished.length) {
-    var ep = unfinished[0], p = prog[ep.slug];
-    var pct = ep.duration_seconds ? Math.min(100, Math.round((p.position / ep.duration_seconds) * 100)) : 0;
-    html += '<section class="band rv">' +
-      '<div class="band-head"><span class="micro">Continue watching</span></div>' +
-      '<a class="plate click" style="display:flex;align-items:center;gap:20px;padding:16px 22px;overflow:hidden" href="/ai-vault/episode.html?ep=' + encodeURIComponent(ep.slug) + '">' +
-        '<div style="flex:1;min-width:200px">' +
-          '<div class="micro">' + VAULT.fmtMonth(ep.published_at) + " · " + pct + "% WATCHED</div>" +
-          '<h3 style="margin:6px 0">' + esc(ep.title) + "</h3>" +
-          '<div class="micro gold">Resume from ' + VAULT.fmtTime(p.position) + " →</div>" +
-        "</div>" +
-        '<span class="ep-hairline" style="width:' + pct + '%"></span>' +
-      "</a></section>";
-  }
-
   /* saved for later */
   var saved = episodes.filter(function (e) { return (social[e.slug] || {}).my_watch_later; });
   if (saved.length) {
     html += '<section class="band rv">' +
-      '<div class="band-head"><span class="micro">Saved for later</span><span class="micro mono">' + saved.length + "</span></div>" +
+      '<div class="band-head"><span class="micro">Saved</span><span class="micro mono">' + saved.length + "</span></div>" +
       '<div class="ep-grid">' + saved.slice(0, 3).map(function (e) { return VAULT.epCard(e, prog, social); }).join("") + "</div></section>";
   }
 

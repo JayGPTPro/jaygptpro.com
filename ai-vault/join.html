@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 0 auto; }
   @media (max-width: 700px) { .plans { grid-template-columns: 1fr; } }
@@ -155,15 +155,22 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 /* anyone landing back on join.html is not mid-fulfillment: clear the just-paid
    marker so a canceled Stripe checkout never triggers the wait plate on index.
    pageshow covers the browser Back button too (bfcache restores skip scripts) */
 try { sessionStorage.removeItem("vault_checkout_at"); } catch (e) {}
 window.addEventListener("pageshow", function (e) {
-  if (e.persisted) { try { sessionStorage.removeItem("vault_checkout_at"); } catch (err) {} }
+  if (!e.persisted) return;
+  try { sessionStorage.removeItem("vault_checkout_at"); } catch (err) {}
+  /* bfcache replays the DOM exactly as it was left, so a buyer who pressed Back
+     from Stripe or Google returns to a buy button frozen on "Opening checkout..."
+     and disabled. Scripts do not re-run, so this handler has to revive it. */
+  document.querySelectorAll("[data-plan]").forEach(function (b) {
+    if (b.dataset.label) { b.disabled = false; b.textContent = b.dataset.label; }
+  });
 });
 
 VAULT.memberCount().then(function (n) {
@@ -181,13 +188,22 @@ VAULT.reveal();
 document.querySelectorAll("[data-plan]").forEach(function (btn) {
   btn.addEventListener("click", async function () {
     VAULT.track("checkout_start", btn.dataset.plan);
-    if (VAULT.DEMO) { alert("Demo mode. Stripe connects during setup (supabase/SETUP.md)."); return; }
+    if (VAULT.DEMO) { VAULT.toast("Demo mode. Checkout opens once Stripe is connected."); return; }
+    /* a buy button that looks idle for three seconds gets tapped twice, and the
+       second tap opens a second Stripe session */
+    if (btn.disabled) return;
+    /* the original caption lives on the element so the bfcache handler above can
+       restore it after a Back from Stripe or Google */
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    var label = btn.dataset.label;
+    btn.disabled = true; btn.textContent = "Opening checkout...";
+    function restore() { btn.disabled = false; btn.textContent = label; }
     var a = await VAULT.getAccess();
     if (!a.session) {
       /* come back HERE after Google, not to the members door. The intent
          script below then sends the buyer straight to Stripe. */
       sessionStorage.setItem("vault_intent", btn.dataset.plan);
-      VAULT.signIn("/ai-vault/join.html"); return;
+      VAULT.signIn("/ai-vault/join.html"); return;   /* leaving the page: stay disabled */
     }
     try {
       var d = await VAULT.callFn("create-checkout", { plan: btn.dataset.plan });
@@ -199,8 +215,9 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
       }
       throw new Error("no checkout url");
     } catch (e) {
-      if (String(e.message).indexOf("already") >= 0) location.href = "/ai-vault/home.html";
-      else alert("Checkout error. Please try again or email support@jaygptpro.com");
+      if (String(e.message).indexOf("already") >= 0) { location.href = "/ai-vault/home.html"; return; }
+      VAULT.toast("Checkout did not open. Try again, or email support@jaygptpro.com", "bad");
+      restore();
     }
   });
 });
@@ -209,6 +226,15 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
   if (!intent || VAULT.DEMO) return;
   var a = await VAULT.getAccess();
   if (!a.session) return;
+  /* the buyer is back from Google and checkout is being opened FOR them: show it
+     on the matching button instead of letting the page look idle and clickable */
+  var resumeBtn = document.querySelector('[data-plan="' + intent + '"]');
+  if (resumeBtn && !resumeBtn.dataset.label) resumeBtn.dataset.label = resumeBtn.textContent;
+  /* read from dataset, the SAME source the bfcache handler restores from: the
+     signed-out path returns here as a fresh document, so a local variable would
+     leave this button dead after a Back from Stripe */
+  var resumeLabel = resumeBtn ? resumeBtn.dataset.label : "";
+  if (resumeBtn) { resumeBtn.disabled = true; resumeBtn.textContent = "Opening checkout..."; }
   /* keep the intent until checkout actually hands us a URL, so a failed call
      leaves the buyer with a retriable state instead of a silent dead end */
   try {
@@ -222,7 +248,8 @@ document.querySelectorAll("[data-plan]").forEach(function (btn) {
   } catch (e) {
     sessionStorage.removeItem("vault_intent");
     if (String(e.message).indexOf("already") >= 0) { location.href = "/ai-vault/home.html"; return; }
-    alert("Checkout error. Please try again or email support@jaygptpro.com");
+    VAULT.toast("Checkout did not open. Try again, or email support@jaygptpro.com", "bad");
+    if (resumeBtn) { resumeBtn.disabled = false; resumeBtn.textContent = resumeLabel; }
   }
 })();
 </script>

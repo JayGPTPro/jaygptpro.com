@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .rail { max-width: 680px; }
-  .lesson { display: flex; gap: 18px; padding: 18px 20px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; }
+  .lesson { display: flex; gap: 18px; padding: 18px 20px; align-items: flex-start; margin-bottom: 12px; }
   .lesson .num { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); padding-top: 2px; flex: 0 0 30px; }
   .lesson.done .num { color: var(--gold); }
   .lesson .notch { flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-size: 11px; color: transparent; transition: all 200ms var(--ease); margin-top: 1px; }
@@ -35,8 +35,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -49,7 +49,25 @@
   var done = await VAULT.getLessonDone();
 
   function render() {
-    $("#list").innerHTML = lessons.map(function (l) {
+    /* no lessons is either a failed read or an unseeded table: say which, rather
+       than rendering a blank rail under the title */
+    if (!lessons.length) {
+      $("#list").innerHTML = '<div class="notice"' + (VAULT.readFailed("lessons") ? ' style="border-left-color:var(--live)"' : "") + ">" +
+        (VAULT.readFailed("lessons")
+          ? "The induction did not load. Your access is fine, the connection is not. Reload the page to try again."
+          : "The induction steps are being set up. They land here shortly.") + "</div>";
+      $("#bar").style.width = "0%";
+      return;
+    }
+    var allDone = done.length >= lessons.length;
+    $("#list").innerHTML = (allDone
+      ? '<div class="plate pad" style="border-color:var(--gold);text-align:center;margin-bottom:16px">' +
+        '<svg style="width:38px;height:38px;margin:0 auto 10px" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.4"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>' +
+        '<h2>Induction complete</h2>' +
+        '<p style="color:var(--text-dim);font-size:13.5px;margin:8px 0 16px">You know your way around the Vault. From here, the library is yours.</p>' +
+        '<a class="btn gold" href="/ai-vault/episodes.html">Open the AI Episodes</a>' +
+        "</div>"
+      : "") + lessons.map(function (l) {
       var isDone = done.indexOf(l.position) >= 0;
       var ext = /^https?:/.test(l.link || "");
       return '<div class="plate lesson ' + (isDone ? "done" : "") + '" data-pos="' + l.position + '">' +
@@ -65,8 +83,24 @@
     $("#bar").style.width = pct + "%";
   }
 
-  function markDone(pos) {
-    if (done.indexOf(pos) < 0) { done.push(pos); VAULT.completeLesson(pos); VAULT.track("lesson", String(pos)); render(); }
+  async function markDone(pos) {
+    if (done.indexOf(pos) >= 0) return;
+    /* paint immediately, but put the lesson back if the Vault refuses the write,
+       otherwise the notch renders disabled and the member cannot retry */
+    done.push(pos); render();
+    try {
+      await VAULT.completeLesson(pos);
+      VAULT.track("lesson", String(pos));
+    } catch (e) {
+      var i = done.indexOf(pos); if (i >= 0) done.splice(i, 1);
+      render();
+      var row = $('[data-pos="' + pos + '"]');
+      if (row) {
+        var n = VAULT.el('<span class="micro" style="color:var(--live);display:block;margin-top:8px">NOT SAVED. TRY AGAIN</span>');
+        row.querySelector("div").appendChild(n);
+        setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 3200);
+      }
+    }
   }
 
   document.addEventListener("click", function (ev) {
@@ -80,7 +114,15 @@
         ev.preventDefault();
         var href = doBtn.href;
         done.push(pos); VAULT.track("lesson", String(pos));
-        Promise.resolve(VAULT.completeLesson(pos)).catch(function () {}).then(function () { location.href = href; });
+        /* the member asked to go somewhere: never hold navigation hostage to the
+           network. Show a pending label, race the write against a short timer,
+           and go either way (a failed completion is logged, not swallowed) */
+        var origLabel = doBtn.textContent;
+        doBtn.textContent = "Opening...";
+        Promise.race([
+          Promise.resolve(VAULT.completeLesson(pos)).catch(function (err) { console.error("lesson completion not saved before navigation", pos, err); }),
+          new Promise(function (r) { setTimeout(r, 1500); })
+        ]).then(function () { doBtn.textContent = origLabel; location.href = href; });
         return;
       }
       markDone(pos); return;

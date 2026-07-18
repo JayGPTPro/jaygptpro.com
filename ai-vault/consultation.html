@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
 </style>
@@ -53,8 +53,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -79,12 +79,52 @@
     "</div>";
   }).join("");
 
-  var booked = consults.find(function (c) { return c.status === "booked" && c.scheduled_for; });
-  if (booked) {
-    document.getElementById("nextNote").textContent = "NEXT: " + new Date(booked.scheduled_for).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
+  /* Only a booking still ahead of us is "your next session". A past booked row
+     (Jay has not flipped it to done yet) must never hide a quarter the member can
+     still claim, and a quarter already used must not offer a second booking. */
+  var upcoming = consults.find(function (c) { return c.status === "booked" && c.scheduled_for && c.scheduled_for > Date.now(); });
+  var claimable = consults.find(function (c) { return c.status === "available"; });
+  var btn = document.getElementById("bookBtn");
+  function makeInert(label) {
+    btn.textContent = label;
+    btn.classList.remove("gold"); btn.classList.add("quiet");
+    btn.removeAttribute("href"); btn.removeAttribute("target"); btn.removeAttribute("rel");
+    btn.style.pointerEvents = "none";
+  }
+
+  /* bare noun, so each call site can add its own possessive without doubling it.
+     A row with no quarter value must never print "Book undefined". */
+  var qLabel = (claimable && claimable.quarter) ? claimable.quarter : "next";
+
+  if (!consults.length) {
+    /* the query failed or returned nothing: never claim a session is used on
+       missing data. Leave the booking path open and say the board did not load. */
+    document.getElementById("ctaSub").textContent = "YOUR QUARTERS DID NOT LOAD. RELOAD THE PAGE, OR JUST BOOK BELOW";
+  } else if (upcoming) {
+    document.getElementById("nextNote").textContent = "NEXT: " + new Date(upcoming.scheduled_for).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
     document.getElementById("ctaTitle").textContent = "Your session is booked";
-    document.getElementById("ctaSub").textContent = "NEED TO MOVE IT? RESCHEDULE FROM THE CALENDAR INVITE IN YOUR INBOX";
-    document.getElementById("bookBtn").textContent = "Reschedule";
+    /* the booking page cannot move an existing slot, it would just create a
+       second one, so the control states the real reschedule path instead */
+    document.getElementById("ctaSub").textContent = claimable
+      ? "MOVE IT FROM THE CALENDAR INVITE IN YOUR INBOX. YOUR " + qLabel.toUpperCase() + " SESSION IS ALSO OPEN"
+      : "NEED TO MOVE IT? RESCHEDULE FROM THE CALENDAR INVITE IN YOUR INBOX";
+    if (claimable) { btn.textContent = claimable.quarter ? "Book " + qLabel : "Book your next session"; }
+    else { makeInert("Booked"); }
+  } else if (claimable) {
+    document.getElementById("ctaTitle").textContent = "Book your " + qLabel + " session";
+    document.getElementById("ctaSub").textContent = "INCLUDED IN YOUR MEMBERSHIP. IT DOES NOT ROLL OVER TO THE NEXT QUARTER";
+  } else if (consults.every(function (c) { return c.status === "done"; })) {
+    /* genuinely all used: the only state where offering a booking would be wrong */
+    document.getElementById("nextNote").textContent = "";
+    document.getElementById("ctaTitle").textContent = "This quarter's session is used";
+    document.getElementById("ctaSub").textContent = "YOUR NEXT ONE OPENS WITH THE NEW QUARTER. JAY WILL SEE YOU THEN";
+    makeInert("See you next quarter");
+  } else {
+    /* expired quarters, or a booking with no date yet: never assert "used" and
+       never remove the way to reach Jay */
+    document.getElementById("nextNote").textContent = "";
+    document.getElementById("ctaTitle").textContent = "Your quarterly session";
+    document.getElementById("ctaSub").textContent = "IF A QUARTER LAPSED OR A BOOKING LOOKS WRONG, BOOK BELOW OR EMAIL SUPPORT@JAYGPTPRO.COM";
   }
 
   document.body.classList.add("in");

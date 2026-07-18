@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="/ai-vault/assets/favicon.svg">
-<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=17">
+<link rel="stylesheet" href="/ai-vault/assets/css/vault.css?v=30">
 <style>
   html.js body { opacity: 0; transition: opacity 300ms var(--ease); } html.js body.in { opacity: 1; }
   .controls { display: flex; gap: 12px; margin: 22px 0 26px; flex-wrap: wrap; }
@@ -31,16 +31,20 @@
     </div>
   </div>
   <div class="controls">
-    <input class="search" id="search" type="search" placeholder="Search episodes, guests, topics..." aria-label="Search episodes, guests, topics" autocomplete="off">
+    <input class="search" id="search" type="search" placeholder="Search episodes, guests, topics...  ( / )" aria-label="Search episodes, guests, topics" autocomplete="off">
     <div class="segments" id="segments"></div>
+    <div class="segments no-fade" id="sortseg" style="flex:0 0 auto" role="group" aria-label="Sort episodes">
+      <button data-sort="new" class="active">Newest</button>
+      <button data-sort="loved">Most loved</button>
+    </div>
   </div>
   <div class="ep-grid" id="grid"></div>
   <div class="notice" id="empty" style="display:none;margin-top:14px">Nothing in this drawer. Try another filter.</div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/ai-vault/assets/js/demo-data.js?v=17"></script>
-<script src="/ai-vault/assets/js/vault.js?v=17"></script>
+<script src="/ai-vault/assets/js/demo-data.js?v=30"></script>
+<script src="/ai-vault/assets/js/vault.js?v=30"></script>
 <script>
 (async function () {
   var access = await VAULT.requireMember();
@@ -56,7 +60,7 @@
   episodes.forEach(function (e) { (e.tags || []).forEach(function (t) { if (tags.indexOf(t) < 0) tags.push(t); }); });
   tags.push("Saved ★");
 
-  var state = { tag: "All", q: "" };
+  var state = { tag: "All", q: "", sort: "new" };
 
   function render() {
     var q = state.q.toLowerCase();
@@ -67,7 +71,20 @@
       var qOk = !q || (e.title + " " + (e.guest_name || "") + " " + (e.tags || []).join(" ")).toLowerCase().indexOf(q) >= 0;
       return tagOk && qOk;
     });
+    if (state.sort === "loved") {
+      list = list.slice().sort(function (a, b) {
+        return ((social[b.slug] || {}).likes || 0) - ((social[a.slug] || {}).likes || 0);
+      });
+    }
     $("#grid").innerHTML = list.map(function (e) { return VAULT.epCard(e, prog, social); }).join("");
+    /* three distinct states: a filter miss, a library that failed to load, and a
+       library that is genuinely empty. Never tell a member to reload for the last
+       one, and never blame a filter they did not set for the other two. */
+    $("#empty").textContent = episodes.length
+      ? "Nothing in this drawer. Try another filter."
+      : (VAULT.readFailed("episodes")
+          ? "The episode library did not load. Reload the page to try again."
+          : "No episodes are published yet. The first one lands here the day it airs.");
     $("#empty").style.display = list.length ? "none" : "";
     $("#count").textContent = String(list.length).padStart(2, "0") + " / " + String(episodes.length).padStart(2, "0");
     VAULT.reveal();
@@ -83,6 +100,20 @@
     render();
   });
   $("#search").addEventListener("input", function (ev) { state.q = ev.target.value; render(); });
+  $("#sortseg").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    state.sort = b.dataset.sort;
+    $("#sortseg").querySelectorAll("button").forEach(function (x) { x.classList.toggle("active", x === b); });
+    render();
+  });
+  /* "/" jumps to search from anywhere on the page */
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "/" || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var t = document.activeElement;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    ev.preventDefault();
+    $("#search").focus();
+  });
 
   /* the right-edge fade is a scroll hint: drop it once the row is scrolled to the end */
   (function () {
