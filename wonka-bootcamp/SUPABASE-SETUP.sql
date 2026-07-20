@@ -21,7 +21,7 @@
 
 -- ------------------------------------------------------------
 -- STEP 1 . the round row
--- Day N unlocks at 14:20 New York on start_date + (N-1) days.
+-- Day N unlocks at 9:00 AM New York on start_date + (N-1) days.
 -- Round 1 starts Monday 27 July 2026 (day 10 opens 5 August).
 -- 'wonka_r1' is a brand-new id, so this cannot collide with any Donna round.
 -- ------------------------------------------------------------

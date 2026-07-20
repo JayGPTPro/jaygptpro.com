@@ -43,23 +43,19 @@ Then two things that are not SQL:
 
 ---
 
-## 2. Decide one number: when does a day open?  (2 minutes)
+## 2. ~~Decide one number: when does a day open?~~  DONE (20.7)
 
-**There is a 5 hour 20 minute hole on launch day and it will generate support
-emails.**
+There was a 5 hour 20 minute hole on launch day: the landing page counts down
+to 9:00 AM New York, but the portal did not unlock Day 1 until 2:20 PM. A
+customer whose countdown hit zero would have logged in to ten locked doors.
 
-- Your landing page counts down to **9:00 AM New York** on 27 July.
-- The portal does not unlock Day 1 until **2:20 PM New York**.
+**The portal now unlocks each day at 9:00 AM New York sharp**, the same moment
+the landing countdown hits zero (verified: both are 13:00 UTC; in Israel that
+is 4:00 PM). Every locked door, tooltip and toast shows the new time
+automatically.
 
-So a customer whose countdown hits zero logs in, finds every door locked, and
-writes to you. Pick one:
-
-- **Option A (recommended):** move the portal to 9:00 AM New York so it matches
-  what the landing page already promises. 9 AM is also a better daily habit for
-  a US audience. One line, tell me and it is done.
-- **Option B:** move the landing countdown to 2:20 PM New York instead.
-
-Either is fine. Leaving them different is the only wrong answer.
+If you ever want a different daily hour, it is one line: `UNLOCK_HOUR_NY` in
+the CONFIG block of `index.html`.
 
 ---
 
