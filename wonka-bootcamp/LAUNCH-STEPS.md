@@ -8,27 +8,35 @@ state, the completion flow and mobile have all been tested end to end.
 
 ---
 
-## 1. Open the database gate  (20 minutes, do this first)
+## 1. Open the database gate  (10 minutes, do this first)
 
 Nobody can log in until this is done. Not even you.
 
-1. Go to **https://supabase.com** and open the project `faqjilunlzljbgrnpcgi`.
+**This is the same Supabase project that runs your live Donna Challenge.** The
+project is named `donna-challenge` in your dashboard, not `faqjilunlzljbgrnpcgi`
+(that is its internal id). Wonka reuses Donna's tables and just adds its own
+round, the same way Donna's own rounds sit side by side. I rewrote the script so
+it **only inserts rows** and never touches anything Donna depends on.
+
+1. Go to **https://supabase.com** and open the project **`donna-challenge`**.
 2. Left sidebar → **SQL Editor** → **New query**.
 3. Open the file `SUPABASE-SETUP.sql` (same folder as this one), copy all of it,
    paste it into the box.
 4. **Before running**, find STEP 2 in the pasted text and replace
    `buyer1@example.com` / `buyer2@example.com` with the real buyer addresses,
    one line each. Your two addresses are already in the list.
+   **If a buyer is also a Donna member, leave them out and tell me** . moving
+   them to the Wonka round would disturb their Donna access, so that case needs
+   handling separately.
 5. Press **Run**.
-6. Read the table it prints at the bottom. You should see one `round` row dated
-   2026-07-27, your members, and five `policy` rows. If you see an error
-   instead, copy it back to me.
+6. Read the table it prints at the bottom. You should see the `wonka_r1` round
+   dated 2026-07-27 and your members. If you see an error, copy it back to me.
 
 Then two things that are not SQL:
 
 7. Left sidebar → **Authentication** → **URL Configuration** → **Redirect URLs**
-   → add `https://jaygptpro.com/wonka-bootcamp/` → Save.
-   Without this the login email sends people to a blank page.
+   → add `https://jaygptpro.com/wonka-bootcamp/` → Save. Donna's existing URLs
+   stay; you are adding one. Without this the login email lands on a blank page.
 8. Open `https://jaygptpro.com/wonka-bootcamp/` in a private window and try to
    sign in with an address that is **not** on the list. It must refuse you.
    A gate that has never said no has not been tested.
