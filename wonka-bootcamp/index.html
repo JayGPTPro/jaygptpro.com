@@ -5941,7 +5941,9 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 
 1. SUPABASE: rounds table
    INSERT INTO rounds (id, start_date) VALUES ('wonka_r1', 'YYYY-MM-DD');
-   TODO: real start date (currently FALLBACK_START_DATE = 2026-09-07 placeholder).
+   FALLBACK_START_DATE is already set to 2026-07-27 (round 1). This row still has
+   to exist in Supabase: the portal only falls back to that constant when the
+   rounds lookup fails.
 
 2. SUPABASE: allowed_emails
    Each paying member gets a row with round = 'wonka_r1'
@@ -5981,9 +5983,16 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
    - Complete a day: lever, seal, confetti, map room lights up
    - Mobile at 375px: single column, no elevator rail, all readable
 
-10. 3D MAP (map3d.js):
-   - Export index.html AND map3d.js TOGETHER (same commit); bump the
-     import('./map3d.js?v=N') version on every export (GH Pages cache-bust).
+10. THE MAP (mapart.js is the live engine; map3d.js is the ?engine=3d rollback):
+   - Export index.html AND mapart.js TOGETHER (same commit).
+   - BUMP MAP_ENGINE_V IN index.html AND BUILD IN mapart.js TO THE SAME STRING.
+     That query string is the browser's cache key; GH Pages serves with
+     max-age=600, so a returning visitor inside that window keeps the engine
+     they already have. Five deploys shipped on 20.7 under a frozen ?v=3 and
+     Jay ran a two-revision-old build. The loader now console.warns
+     "STALE ENGINE" when the two disagree, but bump them anyway.
+   - Verify on the live URL with a HARD reload. curl sends no cache headers, so
+     it proves the server updated and proves nothing about what a visitor sees.
    - Rollback ladder: (a) hand a user ?map2d (instant, per-user);
      (b) set CONFIG.MAP3D:false and re-export (~10 min cache);
      (c) restore the dated backup index.html kept in the SOURCE folder.
