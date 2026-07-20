@@ -34,8 +34,9 @@ on conflict (id) do update set start_date = excluded.start_date;
 -- STEP 2 . who is allowed in
 -- One row per paying member. Replace the two sample lines with the real
 -- buyers, one per line. Your two addresses are already here.
---   round = 'wonka_r1'  -> this bootcamp
---   round = 'both'      -> all access
+--   round = 'wonka_r1'   -> this bootcamp
+--   round = 'wonka_all'  -> every Wonka round (Donna's 'both' does NOT open
+--                           Wonka; the table is shared and 'both' is hers)
 --   early_access_max_day = N -> may open days 1..N before their unlock date
 --
 -- on conflict (email): if an address already exists (e.g. a Donna member who

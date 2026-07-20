@@ -2704,7 +2704,7 @@ const CONFIG = {
   ROUND_ID: 'wonka_r1',             // TODO: create this round row in the rounds table + use in allowed_emails
   STORAGE_PREFIX: 'wonka-bootcamp', // NEVER 'donna-challenge' (same domain, must not collide)
   SALT: 'wonka2026',
-  ADMIN_EMAILS: ['info@jaygptpro.com'],
+  ADMIN_EMAILS: ['info@jaygptpro.com', 'jmargaliot@gmail.com'],
   WHATSAPP_LINK: '#',               // TODO: paste the WhatsApp group invite link
   SUPPORT_EMAIL: 'info@jaygptpro.com',
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
@@ -3269,7 +3269,7 @@ const DEMO_LOCK_LAST = 0;
 function isDayUnlocked(dayNum) {
   const onLocalhost = ['localhost', '127.0.0.1'].includes(location.hostname);
   if (onLocalhost && DEMO_LOCK_LAST > 0 && dayNum > DAYS.length - DEMO_LOCK_LAST) return false;
-  if (isAdmin() || userRound === 'both') return true;
+  if (isAdmin() || userRound === 'wonka_all') return true;
   if (earlyAccessMaxDay && dayNum <= earlyAccessMaxDay) return true;
   return new Date() >= dayUnlockTime(dayNum);
 }
@@ -3382,7 +3382,12 @@ async function checkAllowed(email, isRequery) {
   }
 
   const round = data.round;
-  if (round !== CONFIG.ROUND_ID && round !== 'both' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
+  /* The allowed_emails table is SHARED with the live Donna portals, where
+     round='both' is Donna's own all-access pass. Honoring it here quietly gave
+     four Donna insiders a Wonka ticket (caught by Jay on the 20.7 setup run),
+     so Wonka accepts only its own values: this round's id, 'wonka_all' (the
+     Wonka-specific all-access), or an admin address. */
+  if (round !== CONFIG.ROUND_ID && round !== 'wonka_all' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
     hideLoading();
     $('na-email').textContent = email;
     $('na-reason').textContent = 'Your ticket is real, but it opens a different factory. This portal belongs to another round or program. Write to us and we will point you at the right gate.';
@@ -5795,7 +5800,7 @@ async function boot() {
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
   if (IS_LOCAL && /[?&]preview\b/.test(location.search)) {
     userEmail = 'preview@localhost';
-    userRound = 'both';
+    userRound = 'wonka_all';
     await enterFactory();
     return;
   }
@@ -5864,7 +5869,7 @@ if (['localhost', '127.0.0.1'].includes(location.hostname)) {
   window.__wonkaQA = {
     enter(email) {
       userEmail = email || 'preview@localhost';
-      userRound = 'both';
+      userRound = 'wonka_all';
       return enterFactory();
     },
     openDay(n) { return openDay(n, true, true); },
@@ -5947,7 +5952,9 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 
 2. SUPABASE: allowed_emails
    Each paying member gets a row with round = 'wonka_r1'
-   (or round = 'both' for all-access; early_access_max_day for previews).
+   (or round = 'wonka_all' for Wonka-wide access; early_access_max_day for
+   previews). Donna's round='both' does NOT open Wonka: the table is shared
+   and 'both' is Donna's own all-access value.
 
 3. SUPABASE: auth redirect URL
    Add the deployed portal URL (e.g. https://jaygptpro.com/wonka-portal/)
