@@ -2701,7 +2701,7 @@ html.map-booting #map3d-stage::after{
 const CONFIG = {
   SUPABASE_URL: 'https://faqjilunlzljbgrnpcgi.supabase.co',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0',
-  ROUND_ID: 'wonka_r1',             // TODO: create this round row in the rounds table + use in allowed_emails
+  ROUND_ID: 'wonka_r1',             // the rounds row exists (created 20.7); allowed_emails uses this value
   STORAGE_PREFIX: 'wonka-bootcamp', // NEVER 'donna-challenge' (same domain, must not collide)
   SALT: 'wonka2026',
   ADMIN_EMAILS: ['info@jaygptpro.com', 'jmargaliot@gmail.com'],
@@ -2710,7 +2710,7 @@ const CONFIG = {
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
   UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the door opening are the same moment
   TOTAL_DAYS: 10,
-  FALLBACK_START_DATE: '2026-07-27', // TODO: set the real round start date (also in the rounds table)
+  FALLBACK_START_DATE: '2026-08-03', // Mon 3 Aug 2026, day 10 opens Wed 12 Aug. Must match the rounds table row.
   MAP3D: true,                       // 3D isometric factory map. false = instant rollback to the 2D map
 };
 </script>
@@ -5944,11 +5944,12 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 
 0. LANDING PAGE CONFIG: landing-page/index.html CONFIG block (roundStartDate + roundStartLabel + Stripe links) must match the round you are launching; the portal date below and the landing countdown must agree.
 
-1. SUPABASE: rounds table
-   INSERT INTO rounds (id, start_date) VALUES ('wonka_r1', 'YYYY-MM-DD');
-   FALLBACK_START_DATE is already set to 2026-07-27 (round 1). This row still has
-   to exist in Supabase: the portal only falls back to that constant when the
-   rounds lookup fails.
+1. SUPABASE: rounds table . DONE 20.7, the wonka_r1 row exists.
+   The table has several NOT NULL columns beyond id/start_date (name, end_date,
+   language, status, ...), so use the full INSERT in SUPABASE-SETUP.sql rather
+   than a two-column one. Round 1 = 2026-08-03 to 2026-08-12, matching
+   FALLBACK_START_DATE; the constant is only a fallback for when the rounds
+   lookup fails, so the row is what actually governs.
 
 2. SUPABASE: allowed_emails
    Each paying member gets a row with round = 'wonka_r1'

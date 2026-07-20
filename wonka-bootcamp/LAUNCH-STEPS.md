@@ -1,45 +1,50 @@
 # Wonka Bootcamp . what Jay has to do
 
-Round 1 opens **Monday 27 July 2026**. Everything below is the part a machine
-cannot do: it needs your accounts, your decisions, or your money.
+Round 1 opens **Monday 3 August 2026** (day 10 opens Wednesday 12 August).
+Everything below is the part a machine cannot do: it needs your accounts, your
+decisions, or your money.
 
-Everything else is done. The portal, the map, the day pages, the locked-day
-state, the completion flow and mobile have all been tested end to end.
+Everything else is done and verified. The portal, the map, the day pages, the
+locked-day state, the completion flow and mobile have all been tested end to
+end, twice, most recently against the August date.
 
 ---
 
-## 1. Open the database gate  (10 minutes, do this first)
+## 1. ~~Open the database gate~~  MOSTLY DONE (20.7)
 
-Nobody can log in until this is done. Not even you.
+The round exists and both your addresses can get in. Two small things left.
 
-**This is the same Supabase project that runs your live Donna Challenge.** The
-project is named `donna-challenge` in your dashboard, not `faqjilunlzljbgrnpcgi`
-(that is its internal id). Wonka reuses Donna's tables and just adds its own
-round, the same way Donna's own rounds sit side by side. I rewrote the script so
-it **only inserts rows** and never touches anything Donna depends on.
+**a. Move the date** . the round row still says 27 July. Open
+https://supabase.com/dashboard/project/faqjilunlzljbgrnpcgi/sql/new
+and run this:
 
-1. Go to **https://supabase.com** and open the project **`donna-challenge`**.
-2. Left sidebar → **SQL Editor** → **New query**.
-3. Open the file `SUPABASE-SETUP.sql` (same folder as this one), copy all of it,
-   paste it into the box.
-4. **Before running**, find STEP 2 in the pasted text and replace
-   `buyer1@example.com` / `buyer2@example.com` with the real buyer addresses,
-   one line each. Your two addresses are already in the list.
-   **If a buyer is also a Donna member, leave them out and tell me** . moving
-   them to the Wonka round would disturb their Donna access, so that case needs
-   handling separately.
-5. Press **Run**.
-6. Read the table it prints at the bottom. You should see the `wonka_r1` round
-   dated 2026-07-27 and your members. If you see an error, copy it back to me.
+```sql
+update rounds
+   set start_date            = '2026-08-03',
+       end_date              = '2026-08-12',
+       welcome_dates_display = 'August 3 . 12, 2026'
+ where id = 'wonka_r1';
 
-Then two things that are not SQL:
+select id, start_date::text, end_date::text from rounds where id = 'wonka_r1';
+```
 
-7. Left sidebar → **Authentication** → **URL Configuration** → **Redirect URLs**
-   → add `https://jaygptpro.com/wonka-bootcamp/` → Save. Donna's existing URLs
-   stay; you are adding one. Without this the login email lands on a blank page.
-8. Open `https://jaygptpro.com/wonka-bootcamp/` in a private window and try to
-   sign in with an address that is **not** on the list. It must refuse you.
-   A gate that has never said no has not been tested.
+Expect one row: `wonka_r1 | 2026-08-03 | 2026-08-12`.
+
+**b. The login redirect** . open
+https://supabase.com/dashboard/project/faqjilunlzljbgrnpcgi/auth/url-configuration
+→ **Redirect URLs** → **Add URL** → `https://jaygptpro.com/wonka-bootcamp/` →
+Save. Donna's existing URLs stay, you are adding one. Without this the login
+email lands on a blank page.
+
+**c. Test the gate both ways.** Private window on
+https://jaygptpro.com/wonka-bootcamp/ :
+sign in with an address that is **not** on the list (must refuse), then with
+`jmargaliot@gmail.com` (must let you in, with all ten days open since you are
+an admin). A gate that has never said no has not been tested.
+
+Adding buyers later is two lines of SQL; send me the addresses and I will hand
+you the exact block. If a buyer is also a Donna member, flag them . that case
+is handled differently so their Donna access is not disturbed.
 
 ---
 
