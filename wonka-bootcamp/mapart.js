@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.webp';
-const BUILD = 'art-2026-07-20-e';
+const BUILD = 'art-2026-07-20-f';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -473,15 +473,17 @@ export async function mount(container, api, opts) {
      them are calibrated against pathLen. `?speed=N` scales all of them at once
      so the number can be dialled in live in a real browser instead of guessed
      one push at a time. Reference: the whole path is ~2953 units long, so
-     key:400 crosses the entire map in ~7.4s (it was 140 = 21s, which is what Jay
-     kept calling slow, then 320 = 9.2s, which he still wanted quicker). */
+     These are Jay's locked numbers, picked live in his own browser with ?speed=
+     on 20.7: 140 was 21s to cross the map and far too slow, 400 was 7.4s and a
+     touch hot, and he settled on ?speed=0.75 of that, so the multiplier is baked
+     in here as the base. key:300 crosses the whole map in ~9.8s. */
   const SPEED_MUL = Math.max(0.25, Math.min(4, parseFloat(
     (/[?&]speed=([\d.]+)/.exec(location.search) || [])[1]) || 1));
   const WALK = {
-    key:       400 * SPEED_MUL,   // holding an arrow key
-    click:     700 * SPEED_MUL,   // clicking a day or a spot on the road
-    clickMax:  1.7 / SPEED_MUL,   // ceiling for one click-walk, seconds
-    approach:  520 * SPEED_MUL,   // stepping off the path into the building
+    key:       300 * SPEED_MUL,   // holding an arrow key
+    click:     525 * SPEED_MUL,   // clicking a day or a spot on the road
+    clickMax:  2.25 / SPEED_MUL,  // ceiling for one click-walk, seconds
+    approach:  390 * SPEED_MUL,   // stepping off the path into the building
   };
 
   /* ---------- path: arc-length parameterized polyline ---------- */
