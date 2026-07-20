@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.webp';
-const BUILD = 'art-2026-07-20-c';
+const BUILD = 'art-2026-07-20-d';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -295,6 +295,16 @@ export async function mount(container, api, opts) {
     img.src = MAP_IMG + '?v=4';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
+  /* Distances ALONG THE PATH are measured in the authoring reference frame, never
+     in the artwork's native pixels. Every speed and threshold here was calibrated
+     against a 1536x1024 map . walk duration (dist/300), the key-walk step
+     (140/pathLen), the approach leg (len/260), the start offset and the 55px card
+     / 140px Enter windows . so measuring in native pixels silently HALVED all of
+     them the moment the map was upscaled to 3072x2048 (Jay: "Wonka walks very
+     slowly now"). Normalized coordinates are resolution independent; pixel
+     quantities derived from them are not. Layout (cover scale, disp) still uses
+     the real NAT_W/NAT_H . that one genuinely wants the true size. */
+  const ART_W = 1536, ART_H = 1024;
 
   /* flowing chocolate: a feathered cutout of the churn pool under the waterfall
      ONLY (the sign and the boats stay rock still), re-drawn every frame in
@@ -462,8 +472,8 @@ export async function mount(container, api, opts) {
   const segLens = [];
   let pathLen = 0;
   for (let i = 1; i < PATH.length; i++) {
-    const dx = (PATH[i][0] - PATH[i - 1][0]) * NAT_W;
-    const dy = (PATH[i][1] - PATH[i - 1][1]) * NAT_H;
+    const dx = (PATH[i][0] - PATH[i - 1][0]) * ART_W;
+    const dy = (PATH[i][1] - PATH[i - 1][1]) * ART_H;
     const l = Math.hypot(dx, dy);
     segLens.push(l);
     pathLen += l;
@@ -486,11 +496,11 @@ export async function mount(container, api, opts) {
     let best = 0, bestD = Infinity, acc = 0;
     for (let i = 0; i < segLens.length; i++) {
       const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1];
-      const vx = (bx - ax) * NAT_W, vy = (by - ay) * NAT_H;
-      const wx = (nx - ax) * NAT_W, wy = (ny - ay) * NAT_H;
+      const vx = (bx - ax) * ART_W, vy = (by - ay) * ART_H;
+      const wx = (nx - ax) * ART_W, wy = (ny - ay) * ART_H;
       const c = Math.max(0, Math.min(1, (vx * wx + vy * wy) / (vx * vx + vy * vy || 1)));
       const px = ax + (bx - ax) * c, py = ay + (by - ay) * c;
-      const d = Math.hypot((nx - px) * NAT_W, (ny - py) * NAT_H);
+      const d = Math.hypot((nx - px) * ART_W, (ny - py) * ART_H);
       if (d < bestD) { bestD = d; best = (acc + segLens[i] * c) / pathLen; }
       acc += segLens[i];
     }
@@ -834,9 +844,9 @@ export async function mount(container, api, opts) {
     const [px, py] = posAt(doorT[day]);
     const h = HOTSPOTS[day];
     const dx = h[0] - px, dy = h[1] - py;
-    const len = Math.hypot(dx * NAT_W, dy * NAT_H) || 1;
+    const len = Math.hypot(dx * ART_W, dy * ART_H) || 1;
     // stop just inside the building's face, where its door would be
-    const k = Math.max(0, len - h[2] * NAT_W * 0.45) / len;
+    const k = Math.max(0, len - h[2] * ART_W * 0.45) / len;
     approach = { fx: px, fy: py, tx: px + dx * k, ty: py + dy * k, t: 0,
                  dur: Math.max(0.55, Math.min(1.15, len / 260)), day };
     plates[day - 1].el.classList.add('on');
@@ -1025,7 +1035,7 @@ export async function mount(container, api, opts) {
     const ny = (e.clientY - rect.top - disp.y) / disp.h;
     if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
     const near = nearestT(nx, ny);
-    if (near.dist < NAT_W * 0.06) {
+    if (near.dist < ART_W * 0.06) {
       userMoved = true;
       userPanned = false;
       approach = null;   // abort a room entry the user changed their mind about
