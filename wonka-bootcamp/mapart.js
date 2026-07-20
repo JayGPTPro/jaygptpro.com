@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.webp';
-const BUILD = 'art-2026-07-20-d';
+const BUILD = 'art-2026-07-20-e';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -468,6 +468,22 @@ export async function mount(container, api, opts) {
     if (justDragged) { e.stopPropagation(); e.preventDefault(); }
   }, true);
 
+  /* ---------- walk speed (all in ART_W units per second) ----------
+     Kept together and named because they are pure feel, and because three of
+     them are calibrated against pathLen. `?speed=N` scales all of them at once
+     so the number can be dialled in live in a real browser instead of guessed
+     one push at a time. Reference: the whole path is ~2953 units long, so
+     key:400 crosses the entire map in ~7.4s (it was 140 = 21s, which is what Jay
+     kept calling slow, then 320 = 9.2s, which he still wanted quicker). */
+  const SPEED_MUL = Math.max(0.25, Math.min(4, parseFloat(
+    (/[?&]speed=([\d.]+)/.exec(location.search) || [])[1]) || 1));
+  const WALK = {
+    key:       400 * SPEED_MUL,   // holding an arrow key
+    click:     700 * SPEED_MUL,   // clicking a day or a spot on the road
+    clickMax:  1.7 / SPEED_MUL,   // ceiling for one click-walk, seconds
+    approach:  520 * SPEED_MUL,   // stepping off the path into the building
+  };
+
   /* ---------- path: arc-length parameterized polyline ---------- */
   const segLens = [];
   let pathLen = 0;
@@ -848,7 +864,7 @@ export async function mount(container, api, opts) {
     // stop just inside the building's face, where its door would be
     const k = Math.max(0, len - h[2] * ART_W * 0.45) / len;
     approach = { fx: px, fy: py, tx: px + dx * k, ty: py + dy * k, t: 0,
-                 dur: Math.max(0.55, Math.min(1.15, len / 260)), day };
+                 dur: Math.max(0.3, Math.min(0.72, len / WALK.approach)), day };
     plates[day - 1].el.classList.add('on');
     wonka.classList.add('walking');
     wonka.classList.remove('idle');
@@ -1018,7 +1034,7 @@ export async function mount(container, api, opts) {
       startApproach(day);
       return;
     }
-    walkTween = { from: charT, to: doorT[day], t: 0, dur: Math.max(0.4, Math.min(3.4, dist / 300)), day };
+    walkTween = { from: charT, to: doorT[day], t: 0, dur: Math.max(0.3, Math.min(WALK.clickMax, dist / WALK.click)), day };
     plates[day - 1].el.classList.add('on');
     hots.forEach((h) => h.classList.remove('target'));
     hots[day - 1].classList.add('target'); // the destination door pulses while he walks
@@ -1041,7 +1057,7 @@ export async function mount(container, api, opts) {
       approach = null;   // abort a room entry the user changed their mind about
       hots.forEach((h) => h.classList.remove('target'));
       const dist = Math.abs(charT - near.t) * pathLen;
-      walkTween = { from: charT, to: near.t, t: 0, dur: Math.max(0.3, Math.min(3.4, dist / 300)), day: null };
+      walkTween = { from: charT, to: near.t, t: 0, dur: Math.max(0.25, Math.min(WALK.clickMax, dist / WALK.click)), day: null };
       wonka.classList.add('walking');
       wonka.classList.remove('idle');
     }
@@ -1109,7 +1125,7 @@ export async function mount(container, api, opts) {
           if (day) startApproach(day);
         }
       } else if (keys.fwd || keys.back) {
-        const dTdt = (140 / pathLen) * dt;
+        const dTdt = (WALK.key / pathLen) * dt;
         const prev = charT;
         charT = Math.min(1, Math.max(0, charT + (keys.fwd ? dTdt : -dTdt)));
         facingLeft = posAt(charT)[0] < posAt(prev)[0];
