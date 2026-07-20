@@ -2240,6 +2240,25 @@ body.map-3d #elevator{display:none}
   #re-stage{width:88vw}
   #re-label{top:calc(48% + 44vw + 20px)}
 }
+/* ============================================================
+   BOOT . the painted map needs ~3MB before it can mount, and until
+   then the 2D portal was flashing into view first. The class goes on
+   <html> from an inline script so it applies before first paint, and
+   comes off either when the map mounts or if it fails (so a broken
+   engine still lands the visitor on the working 2D portal).
+   ============================================================ */
+html.map-booting .tour-hero,
+html.map-booting .checker,
+html.map-booting #factory-map,
+html.map-booting .river-wrap,
+html.map-booting #elevator{display:none!important}
+html.map-booting #map3d-stage{display:block;min-height:70vh}
+/* brass ring, so the wait reads as loading rather than a blank plum page */
+html.map-booting #map3d-stage::after{
+  content:"";position:absolute;left:50%;top:46%;width:44px;height:44px;margin:-22px 0 0 -22px;
+  border-radius:50%;border:3px solid rgba(184,115,51,.25);border-top-color:#E9C88A;
+  animation:mapBoot .9s linear infinite}
+@keyframes mapBoot{to{transform:rotate(360deg)}}
 /* brass scrollbar on plum */
 ::-webkit-scrollbar{width:12px}
 ::-webkit-scrollbar-track{background:var(--night)}
@@ -2250,6 +2269,16 @@ body.map-3d #elevator{display:none}
 ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#E9B96F,var(--brass))}
 </style>
 </head>
+<script>
+/* before first paint: hide the 2D portal so it never flashes ahead of the map.
+   A failsafe clears it if the engine never settles, and initMapEngine clears it
+   on failure, so the 2D portal always remains reachable. */
+(function () {
+  var d = document.documentElement;
+  d.classList.add('map-booting');
+  setTimeout(function () { d.classList.remove('map-booting'); }, 9000);
+})();
+</script>
 <body>
 
 <!-- S0 film grain overlay (fixed, whole world) -->
@@ -5620,6 +5649,7 @@ function fallbackTo2D() {
   map3dCtl = null;
   MAP_MODE = '2d';
   document.body.classList.remove('map-3d');
+  document.documentElement.classList.remove('map-booting');
   latchMap3dFailure();
   track('map3d_fallback');
   const stage = $('map3d-stage');
@@ -5649,6 +5679,7 @@ async function initMapEngine() {
     map3dCtl = ctl;
     MAP_MODE = '3d';
     document.body.classList.add('map-3d');
+    document.documentElement.classList.remove('map-booting');
     // localhost only: raw controller for visual QA (never on the real domain)
     if (['localhost', '127.0.0.1'].includes(location.hostname)) window.__map3dCtl = ctl;
     ctl.onFatal(() => fallbackTo2D());
@@ -5662,6 +5693,7 @@ async function initMapEngine() {
     track('map3d_fallback');
     map3dCtl = null;
     MAP_MODE = '2d';
+    document.documentElement.classList.remove('map-booting'); // show the 2D portal at once
   }
 }
 

@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.png';
-const BUILD = 'art-2026-07-19-c';
+const BUILD = 'art-2026-07-19-d';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -952,9 +952,11 @@ export async function mount(container, api, opts) {
 
   /* ---------- walk-into-a-room camera zoom ---------- */
   let zooming = false;
+  let introRunning = false;   // declared here: resetZoom reads it
   function resetZoom() {
     approach = null;
     zooming = false;
+    if (introRunning) return;      // the arrival shot owns the wrapper until it ends
     zoomWrap.style.transition = 'none';
     zoomWrap.style.transform = 'none';
     fadeCurtain.style.transition = 'none';
@@ -1106,7 +1108,7 @@ export async function mount(container, api, opts) {
       wonka.classList.toggle('walking', moving);
       wonka.classList.toggle('idle', !moving);
       // follow camera: while Wonka moves, the viewport glides after him
-      if (moving && !zooming) {
+      if (moving && !zooming && !introRunning) {
         const [wx, wy] = charPos();
         centerCamOn(wx, wy, false);
       }
@@ -1175,7 +1177,7 @@ export async function mount(container, api, opts) {
           dropChar3d('render loop failed', err3);
         }
       }
-      const pk = Math.min(1, dt * 5);
+      const pk = introRunning ? 0 : Math.min(1, dt * 5);
       parX += (parTX - parX) * pk;
       parY += (parTY - parY) * pk;
       applyParallax();
@@ -1205,8 +1207,40 @@ export async function mount(container, api, opts) {
     const cur = states.find((s) => s.isCurrent) || states[0];
     charT = Math.max(0, (doorT[cur.day] || 0) - 18 / pathLen);
   }
+  /* ---------- arrival shot ----------
+     Jay asked for an intro when the map opens. Of his two ideas . survey the
+     whole island first, or push in on the gate sign and pull back . the second
+     wins: it opens on the one thing that names the place ("Welcome to the Wonka
+     Creative Factory"), then reveals the factory around it, and lands exactly
+     where the visitor needs to be. Runs once per page load, never on the way
+     back from a day page, and any input cuts it short. */
+  const GATE_SIGN = [0.500, 0.735];
+  function playArrival() {
+    if (REDUCED || TOUCH) return;
+    introRunning = true;
+    const [gx, gy] = toPx(GATE_SIGN[0], GATE_SIGN[1]);
+    zoomWrap.style.transition = 'none';
+    zoomWrap.style.transformOrigin = gx + 'px ' + gy + 'px';
+    zoomWrap.style.transform = 'scale(2.25)';
+    void zoomWrap.offsetWidth;
+    zoomWrap.style.transition = 'transform 2200ms cubic-bezier(.22,.72,.2,1)';
+    zoomWrap.style.transform = 'scale(1)';
+    const done = () => {
+      if (!introRunning) return;
+      introRunning = false;
+      zoomWrap.removeEventListener('transitionend', done);
+      zoomWrap.style.transition = 'none';
+      zoomWrap.style.transform = 'none';
+    };
+    zoomWrap.addEventListener('transitionend', done);
+    setTimeout(done, 2600);                       // pane/tab throttling safety
+    ['pointerdown', 'keydown', 'wheel'].forEach((ev) =>
+      window.addEventListener(ev, done, { once: true, passive: true }));
+  }
+
   layout();
   applyStates(states);
+  playArrival();
   requestAnimationFrame(() => {
     img.classList.add('m3d-in');
     wonka.classList.add('show');
