@@ -9,8 +9,8 @@
    ============================================================ */
 
 /* ---------- the painted world ---------- */
-const MAP_IMG = 'map-art/map-final.png';
-const BUILD = 'art-2026-07-20-b';
+const MAP_IMG = 'map-art/map-final.webp';
+const BUILD = 'art-2026-07-20-c';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -292,7 +292,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=3';
+    img.src = MAP_IMG + '?v=4';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
 
