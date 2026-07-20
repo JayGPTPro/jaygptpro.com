@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.png';
-const BUILD = 'art-2026-07-19-d';
+const BUILD = 'art-2026-07-20-a';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -1208,34 +1208,99 @@ export async function mount(container, api, opts) {
     charT = Math.max(0, (doorT[cur.day] || 0) - 18 / pathLen);
   }
   /* ---------- arrival shot ----------
-     Jay asked for an intro when the map opens. Of his two ideas . survey the
-     whole island first, or push in on the gate sign and pull back . the second
-     wins: it opens on the one thing that names the place ("Welcome to the Wonka
-     Creative Factory"), then reveals the factory around it, and lands exactly
-     where the visitor needs to be. Runs once per page load, never on the way
-     back from a day page, and any input cuts it short. */
+     The opening camera move when the map mounts. Runs once per page load,
+     never on the way back from a day page, and any input cuts it short.
+
+     THE PAINTING MUST BE OPAQUE BEFORE THE CAMERA MOVES. The first build
+     faded .ma-img in over 1.1s while the 2.2s pull-back was already running,
+     so the close-up . the whole point of the shot . played out on an empty
+     screen and the map only became visible once it was nearly pulled back
+     (measured: 0% opacity at scale 2.25, 100% at scale 1.09). That is what
+     read as "unclear". The fade is now short and lands inside the opening
+     hold, so every variant starts on a picture you can actually see.
+
+     Three candidates behind ?arrive=N for Jay to compare live, the same
+     picker pattern that settled the room-enter transitions. */
   const GATE_SIGN = [0.500, 0.735];
+  const ARRIVE_DEFAULT = '1';
+  const EASE_SETTLE = 'cubic-bezier(.36,.04,.22,1)';
+  const ARRIVALS = {
+    // 1: open ON the sign that names the place, then reveal the factory around it
+    1: [
+      { at: 'sign', k: 2.25, hold: 620 },
+      { rest: true, ms: 1700, ease: EASE_SETTLE },
+    ],
+    // 2: establishing frame first, dive to the sign, then pull back out
+    2: [
+      { rest: true, hold: 780 },
+      { at: 'sign', k: 2.00, ms: 1150, ease: 'cubic-bezier(.44,.06,.32,.98)', hold: 620 },
+      { rest: true, ms: 1350, ease: EASE_SETTLE },
+    ],
+    // 3: the whole island in one wide frame, then push in until it fills the screen
+    3: [
+      { at: 'island', hold: 900 },
+      { rest: true, ms: 1600, ease: EASE_SETTLE },
+    ],
+  };
+  /* A shot frame is expressed as translate+scale with origin 0 0, so any
+     normalized point of the painting can be centred at any zoom without
+     touching the pan/camera system. The resting frame is literally no
+     transform, which is what the rest of the engine expects to inherit. */
+  function shotFrame(step) {
+    if (step.rest) return 'none';
+    const W = pinW(), H = pinH();
+    const island = step.at === 'island';
+    // 0.94 keeps a little night sky around the island instead of a tight fit
+    const k = island ? Math.min(W / disp.w, H / disp.h) * 0.94 : step.k;
+    const [px, py] = toPx(island ? 0.5 : GATE_SIGN[0], island ? 0.5 : GATE_SIGN[1]);
+    return 'translate(' + (W / 2 - k * px) + 'px,' + (H / 2 - k * py) + 'px) scale(' + k + ')';
+  }
+  let introRun = 0;                 // run token: stale timers must not kill a new shot
+  let introTimers = [];
+  function endArrival() {
+    introTimers.forEach(clearTimeout);
+    introTimers = [];
+    if (!introRunning) return;
+    introRunning = false;
+    zoomWrap.style.transition = 'none';
+    zoomWrap.style.transform = 'none';
+  }
   function playArrival() {
     if (REDUCED || TOUCH) return;
+    const q = /[?&]arrive=(\d)\b/.exec(location.search);
+    const pick = (q && ARRIVALS[q[1]]) ? q[1] : ARRIVE_DEFAULT;
+    const steps = ARRIVALS[pick];
+    const run = ++introRun;
     introRunning = true;
-    const [gx, gy] = toPx(GATE_SIGN[0], GATE_SIGN[1]);
+    diagLog('arrival v' + pick);
+
+    // short enough to finish inside the opening hold of every variant
+    img.style.transition = 'opacity 420ms ease';
+    img.classList.add('m3d-in');
+
+    zoomWrap.style.transformOrigin = '0 0';
     zoomWrap.style.transition = 'none';
-    zoomWrap.style.transformOrigin = gx + 'px ' + gy + 'px';
-    zoomWrap.style.transform = 'scale(2.25)';
+    zoomWrap.style.transform = shotFrame(steps[0]);
     void zoomWrap.offsetWidth;
-    zoomWrap.style.transition = 'transform 2200ms cubic-bezier(.22,.72,.2,1)';
-    zoomWrap.style.transform = 'scale(1)';
-    const done = () => {
-      if (!introRunning) return;
-      introRunning = false;
-      zoomWrap.removeEventListener('transitionend', done);
-      zoomWrap.style.transition = 'none';
-      zoomWrap.style.transform = 'none';
-    };
-    zoomWrap.addEventListener('transitionend', done);
-    setTimeout(done, 2600);                       // pane/tab throttling safety
+
+    let t = 0;
+    steps.forEach((step, i) => {
+      if (i > 0) {
+        const ms = step.ms || 1200;
+        const at = t;
+        introTimers.push(setTimeout(() => {
+          if (introRun !== run) return;
+          zoomWrap.style.transition = 'transform ' + ms + 'ms ' + (step.ease || 'ease');
+          zoomWrap.style.transform = shotFrame(step);
+        }, at));
+        t += ms;
+      }
+      t += step.hold || 0;
+    });
+    // timer-driven, not transitionend: a throttled tab never fires the last one
+    introTimers.push(setTimeout(() => { if (introRun === run) endArrival(); }, t + 140));
     ['pointerdown', 'keydown', 'wheel'].forEach((ev) =>
-      window.addEventListener(ev, done, { once: true, passive: true }));
+      window.addEventListener(ev, endArrival, { once: true, passive: true }));
   }
 
   layout();
