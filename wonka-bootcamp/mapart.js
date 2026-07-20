@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-07-20-g';
+export const BUILD = 'art-2026-07-21-a';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -269,6 +269,41 @@ export async function mount(container, api, opts) {
   img.alt = '';
   img.setAttribute('aria-hidden', 'true');
   zoomWrap.appendChild(img);
+  /* ambient loop video (Seedance 2, 20.7): the painting itself breathing .
+     waterfall pouring, smoke drifting, gears turning, the boat crews stirring.
+     Each candidate was composited back onto the still in post (the model
+     zooms ~2.6% and repaints textures), so the video frame equals MAP_IMG's
+     framing exactly: path audit 0/178 off-road on the moving frames, and the
+     interactive layer needs no recalibration. Preview-only for now: ?vid=1/2/3
+     picks a candidate, no param = the still image; Jay locks one later. The
+     canvas fx (stars/smoke/lanterns) are suspended while the video plays .
+     the film already contains that life, and doubling smoke reads as haze. */
+  const vidPick = (/[?&]vid=([123])\b/.exec(location.search) || [])[1];
+  let vid = null, vidLive = false;
+  if (vidPick && !REDUCED) {
+    vid = document.createElement('video');
+    vid.className = 'ma-img ma-vid';         // inherits sizing + the m3d-in fade
+    vid.muted = true; vid.loop = true; vid.playsInline = true;
+    vid.autoplay = true; vid.preload = 'auto';
+    vid.addEventListener('canplaythrough', () => {
+      vidLive = true;
+      vid.classList.add('m3d-in');           // ~1s dissolve hides the texture shift
+      vid.play().catch(() => {});
+      diagLog('map video v' + vidPick + ' live');
+    }, { once: true });
+    vid.addEventListener('error', () => {    // any failure: the still simply stays
+      vidLive = false;
+      try { vid.remove(); } catch (e) {}
+      vid = null;
+      diagLog('map video failed, still image kept');
+    });
+    vid.src = 'map-art/video/loop' + vidPick + '.mp4';
+    zoomWrap.appendChild(vid);               // above the painting, below the fx
+    // a hidden tab refuses autoplay; nudge the film when the tab comes forward
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && vid && vidLive && vid.paused) vid.play().catch(() => {});
+    });
+  }
   // life layers: fxFar = star twinkles (sky), fxNear = smoke/shimmer/ripples/lanterns.
   // m3d-in matters: the host page ships `#map3d-stage canvas{opacity:0}` (a fade-in
   // hook for the 3D engine) which otherwise hides EVERY canvas in the stage forever.
@@ -323,6 +358,7 @@ export async function mount(container, api, opts) {
     // translateZ(0) forces each strip onto its own compositor layer; some GPUs
     // otherwise draw-but-never-display the canvases (seen on Jay's machine)
     img.style.transform = 'translate(' + (disp.x + parX * PAR_IMG) + 'px,' + (disp.y + parY * PAR_IMG) + 'px) translateZ(0)';
+    if (vid) vid.style.transform = img.style.transform;   // the film rides the painting exactly
     fxNear.style.transform = 'translate(' + (parX * PAR_IMG) + 'px,' + (parY * PAR_IMG) + 'px) translateZ(0)';
     fxFar.style.transform = 'translate(' + (parX * PAR_FAR) + 'px,' + (parY * PAR_FAR) + 'px) translateZ(0)';
     layer.style.transform = 'translate(' + (parX * PAR_LAYER) + 'px,' + (parY * PAR_LAYER) + 'px) translateZ(0)';
@@ -357,6 +393,7 @@ export async function mount(container, api, opts) {
     fxScale = dpr;
     img.style.width = disp.w + 'px';
     img.style.height = disp.h + 'px';
+    if (vid) { vid.style.width = disp.w + 'px'; vid.style.height = disp.h + 'px'; }
     applyParallax();
     placeAll();
   }
@@ -378,7 +415,17 @@ export async function mount(container, api, opts) {
     });
   });
   const lampFx = LANTERNS.map(() => ({ ph: Math.random() * Math.PI * 2, sp: fxRand(5, 10), r: fxRand(10, 15) }));
+  let fxCleared = false;
   function drawFx(t, dt) {
+    if (vidLive) {
+      if (!fxCleared) {
+        fxFar.getContext('2d').clearRect(0, 0, fxFar.width, fxFar.height);
+        fxNear.getContext('2d').clearRect(0, 0, fxNear.width, fxNear.height);
+        fxCleared = true;
+      }
+      return;                       // the film carries the smoke/stars/lanterns
+    }
+    fxCleared = false;
     const k = disp.w / NAT_W * (NAT_W / 1536); // px per 1536-wide art unit
     const far = fxFar.getContext('2d');
     far.setTransform(fxScale, 0, 0, fxScale, 0, 0);
