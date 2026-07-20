@@ -10,7 +10,7 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.png';
-const BUILD = 'art-2026-07-20-a';
+const BUILD = 'art-2026-07-20-b';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -133,7 +133,7 @@ const CSS = `
 .ma-img{position:absolute;left:0;top:0;user-select:none;-webkit-user-drag:none;pointer-events:none;
   filter:saturate(1.02);opacity:0;transition:opacity 1.1s ease}
 .ma-img.m3d-in{opacity:1}
-.ma-layer{position:absolute;left:0;top:0;transform-origin:0 0}
+.ma-layer{position:absolute;left:0;top:0;transform-origin:0 0;transition:opacity 620ms ease}
 .ma-hot{position:absolute;transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;pointer-events:auto}
 .ma-hot .ring{position:absolute;inset:8%;border-radius:50%;border:3px solid rgba(245,184,65,0);
   box-shadow:0 0 0 0 rgba(245,184,65,0);transition:border-color .25s ease, box-shadow .25s ease}
@@ -1222,7 +1222,7 @@ export async function mount(container, api, opts) {
      Three candidates behind ?arrive=N for Jay to compare live, the same
      picker pattern that settled the room-enter transitions. */
   const GATE_SIGN = [0.500, 0.735];
-  const ARRIVE_DEFAULT = '1';
+  const ARRIVE_DEFAULT = '3';   // Jay's pick (20.7): the whole island, then fill the frame
   const EASE_SETTLE = 'cubic-bezier(.36,.04,.22,1)';
   const ARRIVALS = {
     // 1: open ON the sign that names the place, then reveal the factory around it
@@ -1262,11 +1262,26 @@ export async function mount(container, api, opts) {
     introTimers = [];
     if (!introRunning) return;
     introRunning = false;
+    layer.style.opacity = '1';        // never leave the board hidden, cut or not
     zoomWrap.style.transition = 'none';
     zoomWrap.style.transform = 'none';
   }
   function playArrival() {
     if (REDUCED || TOUCH) return;
+    try { runArrival(); } catch (e) {
+      /* the shot is decoration; it must never be able to leave the board hidden
+         or the map parked mid-zoom (a crashed intro once took the whole
+         animation loop with it) */
+      diagLog('arrival failed: ' + (e && e.message));
+      introRunning = false;
+      introTimers.forEach(clearTimeout);
+      introTimers = [];
+      layer.style.opacity = '1';
+      zoomWrap.style.transition = 'none';
+      zoomWrap.style.transform = 'none';
+    }
+  }
+  function runArrival() {
     const q = /[?&]arrive=(\d)\b/.exec(location.search);
     const pick = (q && ARRIVALS[q[1]]) ? q[1] : ARRIVE_DEFAULT;
     const steps = ARRIVALS[pick];
@@ -1281,8 +1296,15 @@ export async function mount(container, api, opts) {
     zoomWrap.style.transformOrigin = '0 0';
     zoomWrap.style.transition = 'none';
     zoomWrap.style.transform = shotFrame(steps[0]);
+    /* The board (hotspots, day cards, "You are here", Wonka) rides inside the
+       zoom wrapper, so in the wide establishing frame it is on screen from the
+       first moment and the shot stops reading as a painting. Hold it back and
+       fade it in over the final move, so the island lands and the game board
+       arrives with it. */
+    layer.style.opacity = '0';
     void zoomWrap.offsetWidth;
 
+    const last = steps.length - 1;
     let t = 0;
     steps.forEach((step, i) => {
       if (i > 0) {
@@ -1292,6 +1314,7 @@ export async function mount(container, api, opts) {
           if (introRun !== run) return;
           zoomWrap.style.transition = 'transform ' + ms + 'ms ' + (step.ease || 'ease');
           zoomWrap.style.transform = shotFrame(step);
+          if (i === last) layer.style.opacity = '1';
         }, at));
         t += ms;
       }
