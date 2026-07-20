@@ -5658,6 +5658,9 @@ function fallbackTo2D() {
   initAnimations();
 }
 
+// Cache key for the map engine module. Must equal `BUILD` in mapart.js.
+const MAP_ENGINE_V = 'art-2026-07-20-g';
+
 async function initMapEngine() {
   if (!MAP3D_WANTED) return;
   if (!supportsWebGL()) { track('map3d_fallback'); return; }
@@ -5666,10 +5669,21 @@ async function initMapEngine() {
     const mod = await Promise.race([
       // The painted map is THE map now. ?engine=3d still loads the old procedural
       // Track-B engine, ?map2d / ?force2d still reach the 2D fallbacks.
-      import((/[?&]engine=3d\b/.test(location.search) ? './map3d.js?v=2' : './mapart.js?v=3')
+      // MAP_ENGINE_V IS THE CACHE KEY AND MUST MATCH mapart.js's BUILD. GitHub
+      // Pages serves this file with max-age=600, so a returning visitor inside
+      // that window keeps running whatever ?v= they already have. Five engine
+      // changes shipped on 20.7 under a frozen ?v=3, and Jay ended up on a build
+      // two revisions old with the walk speed he had already rejected. The
+      // mismatch check below turns that into a console warning instead of a
+      // ghost bug. Bump BOTH strings together, every time.
+      import((/[?&]engine=3d\b/.test(location.search) ? './map3d.js?v=2' : './mapart.js?v=' + MAP_ENGINE_V)
         + (['localhost', '127.0.0.1'].includes(location.hostname) ? '&dev=' + Date.now() : '')),
       new Promise((resolve, reject) => setTimeout(() => reject(new Error('map3d import timeout')), 8000)),
     ]);
+    if (mod.BUILD && mod.BUILD !== MAP_ENGINE_V) {
+      console.warn('[map] STALE ENGINE: asked for ' + MAP_ENGINE_V + ', got ' + mod.BUILD
+        + '. Hard-reload, and bump MAP_ENGINE_V in index.html next deploy.');
+    }
     const ctl = await mod.mount($('map3d-stage'), window.WonkaMapAPI, {
       tier: detectQualityTier(),
       reduced: REDUCED,

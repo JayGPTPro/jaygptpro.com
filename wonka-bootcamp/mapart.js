@@ -10,7 +10,9 @@
 
 /* ---------- the painted world ---------- */
 const MAP_IMG = 'map-art/map-final.webp';
-const BUILD = 'art-2026-07-20-f';
+// Exported so index.html can prove the browser actually got the engine it asked
+// for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
+export const BUILD = 'art-2026-07-20-g';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
