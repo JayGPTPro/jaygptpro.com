@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-07-21-a';
+export const BUILD = 'art-2026-07-21-b';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -278,7 +278,7 @@ export async function mount(container, api, opts) {
      picks a candidate, no param = the still image; Jay locks one later. The
      canvas fx (stars/smoke/lanterns) are suspended while the video plays .
      the film already contains that life, and doubling smoke reads as haze. */
-  const vidPick = (/[?&]vid=([123])\b/.exec(location.search) || [])[1];
+  const vidPick = (/[?&]vid=([1-4])\b/.exec(location.search) || [])[1];
   let vid = null, vidLive = false;
   if (vidPick && !REDUCED) {
     vid = document.createElement('video');
@@ -329,7 +329,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=4';
+    img.src = MAP_IMG + '?v=5';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
   /* Distances ALONG THE PATH are measured in the authoring reference frame, never
@@ -415,17 +415,11 @@ export async function mount(container, api, opts) {
     });
   });
   const lampFx = LANTERNS.map(() => ({ ph: Math.random() * Math.PI * 2, sp: fxRand(5, 10), r: fxRand(10, 15) }));
-  let fxCleared = false;
   function drawFx(t, dt) {
-    if (vidLive) {
-      if (!fxCleared) {
-        fxFar.getContext('2d').clearRect(0, 0, fxFar.width, fxFar.height);
-        fxNear.getContext('2d').clearRect(0, 0, fxNear.width, fxNear.height);
-        fxCleared = true;
-      }
-      return;                       // the film carries the smoke/stars/lanterns
-    }
-    fxCleared = false;
+    /* While the ambient film plays it carries the water and the smoke, so the
+       canvas smoke is skipped (doubling reads as haze). Stars and lantern
+       flicker stay on . they sit outside the film's motion zones and keep the
+       whole frame alive, not just the river. */
     const k = disp.w / NAT_W * (NAT_W / 1536); // px per 1536-wide art unit
     const far = fxFar.getContext('2d');
     far.setTransform(fxScale, 0, 0, fxScale, 0, 0);
@@ -450,7 +444,7 @@ export async function mount(container, api, opts) {
     const ctx = fxNear.getContext('2d');
     ctx.setTransform(fxScale, 0, 0, fxScale, 0, 0);
     ctx.clearRect(0, 0, fxNear.width, fxNear.height);
-    for (const p of puffs) {
+    for (const p of vidLive ? [] : puffs) {
       const u = (t * p.sp + p.ph) % 1;
       const nx = p.sx + p.drift * u + Math.sin(t * 0.7 + p.seed) * 0.005 * u;
       const ny = p.sy - u * 0.10;
