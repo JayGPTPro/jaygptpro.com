@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-07-21-c';
+export const BUILD = 'art-2026-07-21-d';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -278,7 +278,7 @@ export async function mount(container, api, opts) {
      picks a candidate, no param = the still image; Jay locks one later. The
      canvas fx (stars/smoke/lanterns) are suspended while the video plays .
      the film already contains that life, and doubling smoke reads as haze. */
-  const vidPick = (/[?&]vid=([1-5])\b/.exec(location.search) || [])[1];
+  const vidPick = (/[?&]vid=([1-8])\b/.exec(location.search) || [])[1];
   let vid = null, vidLive = false;
   if (vidPick && !REDUCED) {
     vid = document.createElement('video');
