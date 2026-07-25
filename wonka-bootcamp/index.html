@@ -2710,7 +2710,7 @@ const CONFIG = {
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
   UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the door opening are the same moment
   TOTAL_DAYS: 10,
-  FALLBACK_START_DATE: '2026-08-03', // Mon 3 Aug 2026, day 10 opens Wed 12 Aug. Must match the rounds table row.
+  FALLBACK_START_DATE: '2026-08-10', // Mon 10 Aug 2026. Weekdays only: day 10 opens Fri 21 Aug. Must match the rounds table row.
   MAP3D: true,                       // 3D isometric factory map. false = instant rollback to the 2D map
 };
 </script>
@@ -3253,11 +3253,21 @@ function nyOffsetMinutes(dateUtc) {
   } catch (e) { return -300; }
 }
 function dayUnlockTime(dayNum) {
-  // Day N unlocks at UNLOCK_HOUR_NY New York time on start_date + (N-1) days, + buffer
+  // Day N unlocks at UNLOCK_HOUR_NY New York time on the Nth WEEKDAY from start_date
+  // (Sat/Sun are skipped: a Mon 10 Aug start puts day 6 on Mon 17 Aug, day 10 on Fri 21 Aug).
+  // start_date itself is expected to be a weekday; if it ever lands on a weekend it
+  // rolls forward to the next Monday rather than unlocking on the weekend.
   const start = roundStartDate || CONFIG.FALLBACK_START_DATE;
   const [y, mo, d] = start.split('-').map(Number);
+  let cal = new Date(Date.UTC(y, mo - 1, d));
+  let left = dayNum - 1;
+  while (cal.getUTCDay() === 0 || cal.getUTCDay() === 6) cal.setUTCDate(cal.getUTCDate() + 1);
+  while (left > 0) {
+    cal.setUTCDate(cal.getUTCDate() + 1);
+    if (cal.getUTCDay() !== 0 && cal.getUTCDay() !== 6) left--;
+  }
   // first guess as if NY were UTC, then correct by the real offset at that moment
-  let guess = new Date(Date.UTC(y, mo - 1, d + (dayNum - 1), CONFIG.UNLOCK_HOUR_NY, CONFIG.UNLOCK_BUFFER_MIN, 0));
+  let guess = new Date(Date.UTC(cal.getUTCFullYear(), cal.getUTCMonth(), cal.getUTCDate(), CONFIG.UNLOCK_HOUR_NY, CONFIG.UNLOCK_BUFFER_MIN, 0));
   const off = nyOffsetMinutes(guess);
   return new Date(guess.getTime() - off * 60000);
 }
@@ -5947,7 +5957,7 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 1. SUPABASE: rounds table . DONE 20.7, the wonka_r1 row exists.
    The table has several NOT NULL columns beyond id/start_date (name, end_date,
    language, status, ...), so use the full INSERT in SUPABASE-SETUP.sql rather
-   than a two-column one. Round 1 = 2026-08-03 to 2026-08-12, matching
+   than a two-column one. Round 1 = 2026-08-10 to 2026-08-21 (weekdays only), matching
    FALLBACK_START_DATE; the constant is only a fallback for when the rounds
    lookup fails, so the row is what actually governs.
 

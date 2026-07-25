@@ -1,6 +1,7 @@
 # Wonka Bootcamp . what Jay has to do
 
-Round 1 opens **Monday 3 August 2026** (day 10 opens Wednesday 12 August).
+Round 1 opens **Monday 10 August 2026**, weekdays only: days 1-5 run Mon 10
+to Fri 14 Aug, the weekend is skipped, and day 10 opens **Friday 21 August**.
 Everything below is the part a machine cannot do: it needs your accounts, your
 decisions, or your money.
 
@@ -20,15 +21,15 @@ and run this:
 
 ```sql
 update rounds
-   set start_date            = '2026-08-03',
-       end_date              = '2026-08-12',
-       welcome_dates_display = 'August 3 . 12, 2026'
+   set start_date            = '2026-08-10',
+       end_date              = '2026-08-21',
+       welcome_dates_display = 'August 10 . 21, 2026'
  where id = 'wonka_r1';
 
 select id, start_date::text, end_date::text from rounds where id = 'wonka_r1';
 ```
 
-Expect one row: `wonka_r1 | 2026-08-03 | 2026-08-12`.
+Expect one row: `wonka_r1 | 2026-08-10 | 2026-08-21`.
 
 **b. The login redirect** . open
 https://supabase.com/dashboard/project/faqjilunlzljbgrnpcgi/auth/url-configuration

@@ -27,18 +27,19 @@
 
 
 -- ------------------------------------------------------------
--- RUN THIS NOW . round 1 moves back one week
--- Was Monday 27 July. Now Monday 3 August 2026, so day 10 opens Wed 12 Aug.
--- Day N unlocks at 9:00 AM New York on start_date + (N-1) days, which is the
--- same moment the landing page countdown reaches zero.
+-- RUN THIS NOW . round 1 is Monday 10 August 2026 (decided 25.7)
+-- WEEKDAYS ONLY: days 1-5 = Mon 10 to Fri 14 Aug, the weekend is skipped,
+-- days 6-10 = Mon 17 to Fri 21 Aug. The portal code now counts weekdays.
+-- Day N unlocks at 9:00 AM New York (16:00 Israel), the same moment the
+-- landing page countdown reaches zero.
 -- ------------------------------------------------------------
 update rounds
-   set start_date            = '2026-08-03',
-       end_date              = '2026-08-12',
-       welcome_dates_display = 'August 3 . 12, 2026'
+   set start_date            = '2026-08-10',
+       end_date              = '2026-08-21',
+       welcome_dates_display = 'August 10 . 21, 2026'
  where id = 'wonka_r1';
 
--- check: expect one row, wonka_r1 | 2026-08-03 | 2026-08-12
+-- check: expect one row, wonka_r1 | 2026-08-10 | 2026-08-21
 select id, start_date::text, end_date::text, status
   from rounds where id = 'wonka_r1';
 
