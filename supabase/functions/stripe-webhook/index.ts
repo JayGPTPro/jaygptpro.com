@@ -21,6 +21,12 @@ const EVERGREEN_PLINKS = new Set([
 ]);
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+// Cross-sell products. These ride along inside somebody else's checkout, so they must
+// never be treated as the thing that was bought: not for round resolution, and not as
+// a purchase on their own.
+const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6'; // "Donna Challenge. Full Access", $250
+const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
+
 const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1TRshDRqcDuiISNTcGBCP4yl': 'bina_r1',
   'plink_1TRshHRqcDuiISNT5UgwSDd0': 'bina_r2',
@@ -114,21 +120,29 @@ async function ensureEvergreenRound(supabase: SupabaseClient): Promise<string> {
   return id;
 }
 
-async function fetchSessionProductId(sessionId: string): Promise<string | null> {
-  if (!sessionId || !stripeKey) return null;
+// Every product in the checkout session, in order. A cross-sell means a session can
+// carry more than one, so the single-product helper below picks the first that is NOT
+// an add-on: an add-on must never decide which round the buyer belongs to.
+async function fetchSessionProductIds(sessionId: string): Promise<string[]> {
+  if (!sessionId || !stripeKey) return [];
   try {
     const url = `https://api.stripe.com/v1/checkout/sessions/${sessionId}/line_items?limit=10&expand[]=data.price.product`;
     const res = await fetch(url, { headers: { 'Authorization': `Bearer ${stripeKey}` } });
-    if (!res.ok) { console.error('fetchSessionProductId failed:', res.status, await res.text()); return null; }
+    if (!res.ok) { console.error('fetchSessionProductIds failed:', res.status, await res.text()); return []; }
     const json = await res.json();
-    const items = json?.data || [];
-    for (const item of items) {
+    const out: string[] = [];
+    for (const item of (json?.data || [])) {
       const product = item?.price?.product;
-      if (typeof product === 'string') return product;
-      if (product && typeof product === 'object' && product.id) return product.id;
+      if (typeof product === 'string') out.push(product);
+      else if (product && typeof product === 'object' && product.id) out.push(product.id);
     }
-    return null;
-  } catch (e) { console.error('fetchSessionProductId error:', e); return null; }
+    return out;
+  } catch (e) { console.error('fetchSessionProductIds error:', e); return []; }
+}
+
+async function fetchSessionProductId(sessionId: string): Promise<string | null> {
+  const ids = await fetchSessionProductIds(sessionId);
+  return ids.find(id => !ADDON_PRODUCTS.has(id)) || ids[0] || null;
 }
 
 async function roundFromPlink(supabase: SupabaseClient, plinkId: string): Promise<string | null> {
@@ -331,14 +345,20 @@ Deno.serve(async (req: Request) => {
     const currencyLower = (currency || '').toLowerCase();
     const couponUsedFromAmount = couponFromAmount(amountPaid);
 
+    // Read the line items ONCE. Needed for two independent things: resolving the round when
+    // the payment link did not, and spotting a cross-sell. The add-on check must run even
+    // when the round already resolved, which is the normal Wonka case.
+    const sessionProductIds = sessionId ? await fetchSessionProductIds(sessionId) : [];
+    const tookDonnaAddon = sessionProductIds.includes(DONNA_ADDON_PRODUCT);
+
     let canonicalRound: string | null = null;
     if (paymentLinkId) canonicalRound = await roundFromPlink(supabase, paymentLinkId);
     // Known evergreen plinks resolve directly, no STRIPE_SECRET_KEY needed.
     if (!canonicalRound && paymentLinkId && EVERGREEN_PLINKS.has(paymentLinkId)) {
       canonicalRound = await ensureEvergreenRound(supabase);
     }
-    if (!canonicalRound && sessionId) {
-      const productId = await fetchSessionProductId(sessionId);
+    if (!canonicalRound && sessionProductIds.length) {
+      const productId = sessionProductIds.find(id => !ADDON_PRODUCTS.has(id)) || null;
       if (productId === EVERGREEN_PRODUCT) {
         // Evergreen: assign to the upcoming Monday cohort (create the row if it doesn't exist yet).
         canonicalRound = await ensureEvergreenRound(supabase);
@@ -389,8 +409,15 @@ Deno.serve(async (req: Request) => {
           if (!canonicalRound) canonicalRound = await ensureEvergreenRound(supabase);
           const englishRound = canonicalRound || 'unknown';
           const allowedEmailsRound = canonicalToAllowedEmailsRound(englishRound);
-          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: customerEmail.toLowerCase(), name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound})` });
+          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: customerEmail.toLowerCase(), name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, addon_donna: tookDonnaAddon, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound}${tookDonnaAddon ? ', +donna addon' : ''})` });
           if (insertEmailErr && !String(insertEmailErr.message).includes('duplicate')) console.error('allowed_emails insert error:', insertEmailErr);
+          // The insert above is a no-op for somebody already in the table (email is UNIQUE),
+          // so the add-on has to be granted separately or a returning buyer never gets it.
+          // Only ever turns the flag ON: a later purchase without the add-on must not revoke it.
+          if (tookDonnaAddon) {
+            const { error: addonErr } = await supabase.from('allowed_emails').update({ addon_donna: true }).ilike('email', customerEmail.toLowerCase()).eq('addon_donna', false);
+            if (addonErr) console.error('addon_donna grant error:', addonErr);
+          }
           if (canonicalRound) await upgradeAllowedEmailRound(supabase, customerEmail, allowedEmailsRound);
           await reconcileAccessFor(supabase, customerEmail);
 
