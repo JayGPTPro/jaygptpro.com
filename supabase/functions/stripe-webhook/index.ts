@@ -382,6 +382,11 @@ Deno.serve(async (req: Request) => {
       } else {
         // English branch
         if (customerEmail) {
+          // FIX (2026-06-13): never fall through to the legacy R1/R2 welcome (which shows stale
+          // April dates when round2 is still 'upcoming'). If the link/product didn't resolve to a
+          // round, default to the upcoming Monday evergreen cohort (always correct current dates),
+          // so the buyer lands on a real round and gets the proper send-welcome-english.
+          if (!canonicalRound) canonicalRound = await ensureEvergreenRound(supabase);
           const englishRound = canonicalRound || 'unknown';
           const allowedEmailsRound = canonicalToAllowedEmailsRound(englishRound);
           const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: customerEmail.toLowerCase(), name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound})` });
@@ -393,8 +398,8 @@ Deno.serve(async (req: Request) => {
             const isEvergreen = englishRound.startsWith('wk_');
             const shortRound = canonicalToShort(englishRound);
             // Looked up BEFORE claiming the welcome so a lookup failure cannot burn the claim.
-            // Deliberately consulted LAST, below, so that every path that already worked keeps
-            // working byte for byte. This only replaces the legacy generic fallback.
+            // Deliberately consulted LAST, below, so every path that already works keeps working
+            // byte for byte. This only replaces the legacy generic fallback.
             const customSlug = await welcomeFnSlugFor(supabase, englishRound);
             // Atomic claim before sending. Prevents duplicates if event is replayed.
             const may = await claimWelcome(supabase, customerEmail);
@@ -405,9 +410,9 @@ Deno.serve(async (req: Request) => {
               } else if (shortRound === 'r4' || shortRound === 'r5') {
                 await sendWelcomeEnglishAsync(customerEmail, shortRound);
               } else if (customSlug && customSlug !== 'send-welcome-email') {
-                // A non-Donna product naming its own welcome function (Wonka, and whatever
-                // follows). Excludes 'send-welcome-email' so round1/round2 keep the exact
-                // legacy call below rather than gaining a round argument they never had.
+                // A non-Donna product naming its own welcome function (Wonka, and whatever follows).
+                // Excludes 'send-welcome-email' so round1/round2 keep the exact legacy call below
+                // rather than gaining a round argument they have never been sent.
                 await sendWelcomeBySlugAsync(customSlug, customerEmail, englishRound);
               } else {
                 // Round 1/2/unknown: legacy generic welcome (rare path, only if product/plink lookup failed)
