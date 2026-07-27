@@ -221,6 +221,34 @@ async function sendWelcomeEnglishAsync(email: string, round: string) {
   } catch (e) { console.error('send-welcome-english call failed:', e); }
 }
 
+// A round row may name its own welcome function in `welcome_email_fn_slug`.
+// This is how a NON-Donna product (Wonka, and whatever comes after it) gets the
+// right welcome without another hardcoded branch in here. Returns '' when the
+// round has no slug, which keeps every existing round on its current path.
+async function welcomeFnSlugFor(supabase: SupabaseClient, canonical: string): Promise<string> {
+  if (!canonical || canonical === 'unknown') return '';
+  try {
+    const { data, error } = await supabase
+      .from('rounds')
+      .select('welcome_email_fn_slug')
+      .eq('id', canonical)
+      .maybeSingle();
+    if (!error && data?.welcome_email_fn_slug) return String(data.welcome_email_fn_slug);
+  } catch (e) { console.error('welcomeFnSlugFor exception:', e); }
+  return '';
+}
+
+async function sendWelcomeBySlugAsync(slug: string, email: string, round: string) {
+  if (!email || !formSecret || !slug) return;
+  // Guard the slug: it becomes a URL path segment.
+  if (!/^[a-z0-9-]{1,60}$/.test(slug)) { console.error('Refusing suspicious welcome slug:', slug); return; }
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/${slug}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify({ email, round }) });
+    const detail = await res.json().catch(() => ({}));
+    console.log(`${slug} status:`, res.status, JSON.stringify(detail));
+  } catch (e) { console.error(`${slug} call failed:`, e); }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   try {
@@ -364,6 +392,10 @@ Deno.serve(async (req: Request) => {
           if (couponUsed !== 'TEST') {
             const isEvergreen = englishRound.startsWith('wk_');
             const shortRound = canonicalToShort(englishRound);
+            // Looked up BEFORE claiming the welcome so a lookup failure cannot burn the claim.
+            // Deliberately consulted LAST, below, so that every path that already worked keeps
+            // working byte for byte. This only replaces the legacy generic fallback.
+            const customSlug = await welcomeFnSlugFor(supabase, englishRound);
             // Atomic claim before sending. Prevents duplicates if event is replayed.
             const may = await claimWelcome(supabase, customerEmail);
             if (may) {
@@ -372,6 +404,11 @@ Deno.serve(async (req: Request) => {
                 await sendWelcomeEnglishAsync(customerEmail, englishRound);
               } else if (shortRound === 'r4' || shortRound === 'r5') {
                 await sendWelcomeEnglishAsync(customerEmail, shortRound);
+              } else if (customSlug && customSlug !== 'send-welcome-email') {
+                // A non-Donna product naming its own welcome function (Wonka, and whatever
+                // follows). Excludes 'send-welcome-email' so round1/round2 keep the exact
+                // legacy call below rather than gaining a round argument they never had.
+                await sendWelcomeBySlugAsync(customSlug, customerEmail, englishRound);
               } else {
                 // Round 1/2/unknown: legacy generic welcome (rare path, only if product/plink lookup failed)
                 await sendWelcomeEmailAsync(customerEmail);
