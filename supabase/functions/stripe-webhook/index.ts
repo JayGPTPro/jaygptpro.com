@@ -27,6 +27,13 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6'; // "Donna Challenge. Full Access", $250
 const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
 
+// Fallback for when STRIPE_SECRET_KEY is absent and line items cannot be read.
+// Every USD total that can only be reached by adding the $250 Donna cross-sell:
+//   Golden 699 + 250, Golden 499 (WONKA200) + 250, Private Tour 2999 + 250.
+// Amount matching is brittle by nature, so it is used ONLY as a fallback and it
+// announces itself in the logs. Set the key and this stops being consulted.
+const DONNA_ADDON_TOTALS_USD = new Set([94900, 74900, 324900]);
+
 const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1TRshDRqcDuiISNTcGBCP4yl': 'bina_r1',
   'plink_1TRshHRqcDuiISNT5UgwSDd0': 'bina_r2',
@@ -349,7 +356,14 @@ Deno.serve(async (req: Request) => {
     // the payment link did not, and spotting a cross-sell. The add-on check must run even
     // when the round already resolved, which is the normal Wonka case.
     const sessionProductIds = sessionId ? await fetchSessionProductIds(sessionId) : [];
-    const tookDonnaAddon = sessionProductIds.includes(DONNA_ADDON_PRODUCT);
+    let tookDonnaAddon = sessionProductIds.includes(DONNA_ADDON_PRODUCT);
+    // No key means no line items, so fall back to the total. USD only: the Bina
+    // side prices in ILS and has no cross-sell, and matching across currencies
+    // would be a coincidence waiting to happen.
+    if (!tookDonnaAddon && !stripeKey && currencyLower === 'usd' && DONNA_ADDON_TOTALS_USD.has(amountPaid)) {
+      tookDonnaAddon = true;
+      console.warn(`Donna add-on inferred from total ${amountPaid} because STRIPE_SECRET_KEY is not set. Set the key to read line items properly.`);
+    }
 
     let canonicalRound: string | null = null;
     if (paymentLinkId) canonicalRound = await roundFromPlink(supabase, paymentLinkId);
