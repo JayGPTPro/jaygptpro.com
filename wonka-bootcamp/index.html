@@ -260,6 +260,23 @@ body::before{
 .btn-google:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
 .btn-google:active{transform:translateY(1px)}
 .btn-google svg{width:20px;height:20px}
+.purchase-hi{display:none;text-align:start}
+.ticket-card.bought .buy-hide{display:none}
+.ticket-card.bought .purchase-hi{display:block}
+.purchase-hi .ph-eyebrow{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.22em;
+  text-transform:uppercase;color:#3FB950;margin-bottom:8px}
+.purchase-hi h2{margin:0 0 6px;font-size:1.35rem;line-height:1.25}
+.purchase-hi .ph-lead{margin:0 0 16px;font-size:.92rem;line-height:1.55;opacity:.85}
+.purchase-hi ol{margin:0 0 16px;padding-inline-start:20px;font-size:.9rem;line-height:1.6}
+.purchase-hi li{margin:9px 0}
+.purchase-hi .ph-warn{border-inline-start:3px solid #F5B841;background:rgba(245,184,65,.09);
+  padding:10px 13px;border-radius:0 8px 8px 0;margin:14px 0;font-size:.86rem;line-height:1.55}
+.purchase-hi .ph-wa{display:inline-flex;align-items:center;gap:9px;background:#25D366;color:#07240f;
+  font-weight:700;text-decoration:none;padding:11px 18px;border-radius:10px;font-size:.92rem;margin-top:4px}
+.purchase-hi .ph-wa:hover{filter:brightness(1.08)}
+.purchase-hi .ph-wa svg{width:19px;height:19px;flex:none}
+.purchase-hi .ph-when{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.06em;
+  opacity:.7;margin-top:18px}
 .gate-msg{position:relative;z-index:2;min-height:20px;margin-top:14px;font-size:.9rem;color:#FFE1B0;font-family:var(--font-mono);letter-spacing:.02em}
 
 /* --- generic status screens: the GATE OFFICE window --- */
@@ -2390,16 +2407,34 @@ html.map-booting #map3d-stage::after{
   <!-- golden ticket login card -->
   <div class="ticket-card">
     <div class="ticket-inner">
-      <div class="ticket-eyebrow">Admit One</div>
-      <div class="ticket-title">Present Your Golden Ticket</div>
-      <p class="ticket-sub">The Wonka Creative Bootcamp<br>Members only. The gates open for ticket holders.</p>
+      <div class="ticket-eyebrow buy-hide">Admit One</div>
+      <div class="ticket-title buy-hide">Present Your Golden Ticket</div>
+      <p class="ticket-sub buy-hide">The Wonka Creative Bootcamp<br>Members only. The gates open for ticket holders.</p>
+
+      <div class="purchase-hi">
+        <div class="ph-eyebrow">Payment received</div>
+        <h2>You are in.</h2>
+        <p class="ph-lead">Your ticket is being registered right now. Three things, and then you are done until the gates open.</p>
+        <ol>
+          <li><b>Sign in below with the same email you just paid with.</b> That is the address on your ticket, and the gate only knows that one.</li>
+          <li><b>Check your inbox for the receipt, and check spam.</b> First emails from a new sender land there more often than you would think, and everything from here comes from the same address.</li>
+          <li><b>Join the WhatsApp group.</b> That is where the daily unlocks, the questions and everybody else's work live.</li>
+        </ol>
+        <div class="ph-warn"><b>If the gate refuses you</b>, it is almost always a different email. Sign in with the one on your receipt. If it still refuses, reply to the receipt and it gets fixed the same day.</div>
+        <a class="ph-wa" id="ph-wa" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2z"/></svg>
+          Join the WhatsApp group
+        </a>
+        <div class="ph-when" id="ph-when"></div>
+      </div>
+
       <div class="booth">
         <button class="btn-google" id="btn-signin">
           <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.85-6.85C35.9 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.98 6.2C12.4 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.15-3.1-.4-4.5H24v9h12.4c-.55 2.9-2.2 5.35-4.7 7l7.6 5.9c4.45-4.1 6.8-10.15 6.8-17.4z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.45-.75-3-.75-4.6s.25-3.15.75-4.6l-8-6.2C.9 16.5 0 20.15 0 24s.9 7.5 2.6 10.8l8-6.2z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.45-5.65l-7.6-5.9c-2.1 1.4-4.8 2.25-7.85 2.25-6.3 0-11.6-3.8-13.4-9.9l-8 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
           Sign in with Google
         </button>
       </div>
-      <div class="booth-line">The Booth Is Open</div>
+      <div class="booth-line buy-hide">The Booth Is Open</div>
       <div class="gate-msg" id="gate-msg"></div>
       <div class="ticket-serial">SERIAL WCB-R1 . NON TRANSFERABLE . FACTORY GATES</div>
     </div>
@@ -3139,6 +3174,30 @@ const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matche
    failed a mount (sessionStorage latch . a crashing driver retries next
    session, not on every navigation). MAP_MODE flips to '3d' only after a
    successful mount. */
+/* Post-purchase welcome. Stripe redirects here with ?purchase=success after checkout.
+   The redirect is cosmetic: access is granted by the webhook, not by landing on this page.
+   Someone who closes the tab before the redirect is still a paying member. */
+(function purchaseWelcome(){
+  try{
+    if (!/[?&]purchase=success\b/.test(location.search)) return;
+    var card = document.querySelector('.ticket-card');
+    if (card) card.classList.add('bought');
+    var wa = document.getElementById('ph-wa');
+    if (wa) {
+      if (CONFIG.WHATSAPP_LINK && /^https?:/.test(CONFIG.WHATSAPP_LINK)) wa.href = CONFIG.WHATSAPP_LINK;
+      else wa.style.display = 'none';   // no link yet: hide it rather than ship a dead button
+    }
+    var when = document.getElementById('ph-when');
+    if (when) {
+      var d = new Date((CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
+      when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
+        : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
+    }
+    /* strip the query so a refresh or a shared URL does not re-show this */
+    history.replaceState(null,'',location.pathname);
+  }catch(e){}
+})();
+
 const MAP3D_WANTED = /[?&]map2d\b/.test(location.search) ? false
   : /[?&]map3d\b/.test(location.search) ? (sessionStorage.removeItem(P + '-map3d-failed'), true)
   : (CONFIG.MAP3D && !sessionStorage.getItem(P + '-map3d-failed'));
