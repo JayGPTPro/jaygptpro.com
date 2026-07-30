@@ -72,7 +72,11 @@ main{max-width:880px;margin:0 auto;padding:34px 24px 90px}
 /* ---------- video ---------- */
 .video{
   border-radius:22px; aspect-ratio:16/9; overflow:hidden; position:relative;
-  background:linear-gradient(135deg,#1a1a2e 0%,#0a0a14 55%,#1a1a2e 100%);
+  background:
+    radial-gradient(ellipse 62% 58% at 50% 54%,rgba(8,8,18,0.68),rgba(8,8,18,0.30) 75%),
+    linear-gradient(180deg,rgba(8,8,18,0.34) 0%,rgba(8,8,18,0.42) 55%,rgba(8,8,18,0.66) 100%),
+    url("poster.jpg") center/cover no-repeat,
+    linear-gradient(135deg,#1a1a2e 0%,#0a0a14 55%,#1a1a2e 100%);
   border:2px solid rgba(249,115,22,0.45);
   box-shadow:var(--shadow-xl),0 0 80px rgba(249,115,22,0.18);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -87,8 +91,10 @@ main{max-width:880px;margin:0 auto;padding:34px 24px 90px}
 }
 .video:hover .play{transform:scale(1.08)}
 .video .play::after{content:'';border-style:solid;border-width:13px 0 13px 21px;border-color:transparent transparent transparent #fff;margin-left:5px}
-.video .vtitle{color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:1.15rem;padding:0 20px;text-align:center}
-.video .vmeta{color:rgba(255,255,255,0.55);font-size:0.85rem;margin-top:5px;font-family:'JetBrains Mono',monospace}
+.video .vtitle{color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:1.2rem;padding:0 20px;text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);position:relative;z-index:1}
+.video .vmeta{color:rgba(255,255,255,0.66);font-size:0.85rem;margin-top:5px;font-family:'JetBrains Mono',monospace;
+  text-shadow:0 1px 8px rgba(0,0,0,0.6);position:relative;z-index:1}
 .chapters{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
 .chip{
   font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:500;
@@ -104,8 +110,10 @@ main{max-width:880px;margin:0 auto;padding:34px 24px 90px}
   color:rgba(255,255,255,0.6);font-size:0.82rem}
 .ccbadge{font-family:'JetBrains Mono',monospace;font-size:0.66rem;font-weight:700;letter-spacing:0.5px;
   background:rgba(255,255,255,0.16);color:#fff;border-radius:4px;padding:2px 6px}
-.vsubs{display:block;text-align:center;margin-top:12px;font-size:0.85rem;color:var(--text-3)}
-.vsubs .ccbadge{background:var(--bg-soft);color:var(--text-2);border:1px solid var(--border);margin-inline-end:6px}
+.vsubs{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-top:14px;font-size:0.9rem;color:var(--text-2)}
+.vsubs .ccbadge{background:var(--bg-soft);color:var(--text-2);border:1px solid var(--border);flex:none}
+.vsubs b{color:var(--text)}
 
 /* ---------- inline + header links ---------- */
 a.ilink{color:var(--orange-dark);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(234,88,12,0.3)}
@@ -278,11 +286,12 @@ footer a{color:var(--orange-dark);font-weight:600;text-decoration:none}
   <div class="video" id="player" onclick="playVideo()">
     <div class="play"></div>
     <div class="vtitle">The full walkthrough, one product end to end</div>
-    <div class="vmeta">34 min &middot; Vimeo</div>
+    <div class="vmeta">31 min &middot; Vimeo</div>
     <div class="vcc"><span class="ccbadge">CC</span> Subtitles available</div>
   </div>
   <div class="chapters" id="chapters"></div>
-  <p class="vsubs"><span class="ccbadge">CC</span> Recommended: turn subtitles on in the player. &nbsp;&middot;&nbsp; <a href="https://vimeo.com/1214072583/1969c9d104" target="_blank" rel="noopener">Open on Vimeo</a></p>
+  <p class="vsubs"><span class="ccbadge">CC</span> <span><b>Recommended: watch with subtitles on.</b> Hit CC in the player, it makes the walkthrough much easier to follow.</span></p>
+  <p class="vlink"><a href="https://vimeo.com/1214206075" target="_blank" rel="noopener">Open on Vimeo</a></p>
 </section>
 
 <!-- ============ SETUP ============ -->
@@ -486,23 +495,23 @@ footer a{color:var(--orange-dark);font-weight:600;text-decoration:none}
 
 <script>
 /* ---- video ---- */
-var VIDEO = "https://player.vimeo.com/video/1214072583?h=1969c9d104&badge=0&autopause=0&player_id=0&app_id=58479&texttrack=en";
+var VIDEO = "https://player.vimeo.com/video/1214206075?badge=0&autopause=0&player_id=0&app_id=58479&texttrack=en";
 var CHAPTERS = [
   ["0:00","Before you start"],
-  ["2:40","Prepare the photos"],
-  ["4:19","Start the run"],
-  ["6:09","The inputs"],
-  ["7:31","Research and brief"],
-  ["11:15","Product reference"],
-  ["14:51","Smoke test"],
-  ["16:42","Genrupt: main images"],
-  ["19:49","Pick the style"],
-  ["22:44","Restyle and generate"],
-  ["23:53","Final per slot"],
-  ["25:08","Back to Claude Code"],
-  ["27:40","A+ and export"],
-  ["29:44","Synthetic panel"],
-  ["32:27","The finished set"]
+  ["2:53","Prepare the photos"],
+  ["4:04","Start the run"],
+  ["5:47","The inputs"],
+  ["7:12","Research and brief"],
+  ["10:40","Product reference"],
+  ["14:00","Smoke test"],
+  ["15:54","Genrupt: main images"],
+  ["18:42","Pick the style"],
+  ["21:18","Restyle and generate"],
+  ["22:19","Final per slot"],
+  ["23:26","Back to Claude Code"],
+  ["25:39","A+ and export"],
+  ["27:32","Synthetic panel"],
+  ["29:56","The finished set"]
 ];
 function playVideo(at){
   var p = document.getElementById('player');
