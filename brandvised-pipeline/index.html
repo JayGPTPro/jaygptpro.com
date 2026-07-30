@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Creative Pipeline &middot; How to run a product</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Assistant:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f7; --bg-2:#ffffff; --bg-cream:#fff9f2; --bg-soft:#eeeef2;
+  --orange:#f97316; --orange-light:#fb923c; --orange-dark:#ea580c; --orange-soft:rgba(249,115,22,0.08);
+  --text:#0a0a0f; --text-2:#2a2a35; --text-3:#55556a; --dim:#55556a;
+  --green:#16a34a; --green-dark:#15803d; --green-bg:#dcfce7;
+  --red:#dc2626;
+  --border:#e5e5eb; --border-hi:#d4d4dc;
+  --radius:18px; --radius-sm:10px;
+  --shadow-sm:0 1px 3px rgba(20,20,40,0.04),0 1px 2px rgba(20,20,40,0.03);
+  --shadow:0 4px 12px rgba(20,20,40,0.05),0 2px 4px rgba(20,20,40,0.04);
+  --shadow-lg:0 20px 50px rgba(20,20,40,0.08),0 8px 20px rgba(20,20,40,0.04);
+  --shadow-xl:0 40px 80px rgba(20,20,40,0.1),0 15px 30px rgba(20,20,40,0.06);
+  --shadow-orange:0 20px 50px rgba(249,115,22,0.25),0 10px 20px rgba(249,115,22,0.15);
+}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{
+  font-family:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.num,.step-tab,.pill{font-family:'Outfit',sans-serif}
+
+/* ---------- header ---------- */
+.top{
+  text-align:center; padding:52px 24px 30px; position:relative; overflow:hidden;
+  background:radial-gradient(900px 320px at 50% -60px,rgba(249,115,22,0.10),transparent 70%),var(--bg);
+}
+.top .eyebrow{
+  display:inline-block; background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff; padding:6px 16px; border-radius:20px; font-family:'Outfit',sans-serif;
+  font-size:0.78rem; font-weight:800; letter-spacing:0.6px; margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(249,115,22,0.25);
+}
+.top h1{font-size:2.5rem;font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin-bottom:8px}
+.top h1 .accent{color:var(--orange)}
+.top .sub{color:var(--text-3);font-size:1.05rem;font-weight:500;max-width:560px;margin:0 auto}
+.top .sub::after{content:'';display:block;width:60px;height:3px;margin:18px auto 0;border-radius:2px;
+  background:linear-gradient(90deg,var(--orange),var(--orange-light))}
+
+/* ---------- sticky nav ---------- */
+.stepnav{
+  position:sticky; top:0; z-index:100; padding:11px 20px;
+  background:rgba(245,245,247,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex; justify-content:center; gap:7px; flex-wrap:wrap;
+}
+.step-tab{
+  padding:8px 15px; border-radius:var(--radius-sm); border:1px solid var(--border);
+  background:var(--bg-2); color:var(--text-3); font-size:0.83rem; font-weight:600;
+  text-decoration:none; white-space:nowrap; box-shadow:var(--shadow-sm);
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.step-tab:hover{background:var(--bg-cream);color:var(--text);border-color:var(--orange-light);transform:translateY(-1px);box-shadow:var(--shadow)}
+.step-tab.on{background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;border-color:var(--orange-dark);box-shadow:0 4px 16px rgba(249,115,22,0.35)}
+.step-tab b{font-weight:800;opacity:0.65;margin-inline-end:5px}
+.step-tab.on b{opacity:0.85}
+
+main{max-width:880px;margin:0 auto;padding:34px 24px 90px}
+
+/* ---------- video ---------- */
+.video{
+  border-radius:22px; aspect-ratio:16/9; overflow:hidden; position:relative;
+  background:linear-gradient(135deg,#1a1a2e 0%,#0a0a14 55%,#1a1a2e 100%);
+  border:2px solid rgba(249,115,22,0.45);
+  box-shadow:var(--shadow-xl),0 0 80px rgba(249,115,22,0.18);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer; transition:box-shadow 0.4s ease;
+}
+.video:hover{box-shadow:var(--shadow-xl),0 0 100px rgba(249,115,22,0.28)}
+.video iframe{width:100%;height:100%;border:0;display:block}
+.video .play{
+  width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  display:grid;place-items:center;box-shadow:0 14px 40px rgba(249,115,22,0.45);margin-bottom:18px;
+  transition:transform 0.35s cubic-bezier(0.2,0.8,0.2,1);
+}
+.video:hover .play{transform:scale(1.08)}
+.video .play::after{content:'';border-style:solid;border-width:13px 0 13px 21px;border-color:transparent transparent transparent #fff;margin-left:5px}
+.video .vtitle{color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:1.15rem;padding:0 20px;text-align:center}
+.video .vmeta{color:rgba(255,255,255,0.55);font-size:0.85rem;margin-top:5px;font-family:'JetBrains Mono',monospace}
+.chapters{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:500;
+  background:var(--bg-2); border:1px solid var(--border); color:var(--text-3);
+  border-radius:7px; padding:5px 9px; cursor:pointer; transition:all 0.2s ease;
+}
+.chip:hover{border-color:var(--orange);color:var(--orange-dark);background:var(--bg-cream)}
+.chip b{color:var(--orange-dark);font-weight:700;margin-inline-end:6px}
+.vlink{display:block;text-align:center;margin-top:10px;font-size:0.85rem;color:var(--text-3)}
+.vlink a{color:var(--orange-dark);font-weight:600;text-decoration:none}
+.vlink a:hover{text-decoration:underline}
+
+/* ---------- sections ---------- */
+.section{
+  background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius);
+  padding:26px 28px; margin-bottom:20px; box-shadow:var(--shadow-sm);
+  transition:border-color 0.4s ease,box-shadow 0.3s ease;
+}
+.section:hover{border-color:rgba(249,115,22,0.25);box-shadow:var(--shadow)}
+.section > h3{
+  font-size:1.1rem;font-weight:700;margin-bottom:14px;letter-spacing:-0.01em;
+  padding-inline-start:12px;border-inline-start:3px solid var(--orange);
+}
+.section.cream{background:linear-gradient(135deg,var(--bg-cream),var(--bg-2));border-color:rgba(249,115,22,0.25)}
+
+.blockhead{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.num{
+  flex:none;width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:1.05rem;
+  box-shadow:0 4px 14px rgba(249,115,22,0.25);
+}
+.blockhead h2{font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;line-height:1.3}
+.wheres{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.pill{
+  font-size:0.7rem;font-weight:700;letter-spacing:0.3px;padding:3px 9px;border-radius:999px;
+  background:var(--bg-soft);color:var(--text-3);border:1px solid var(--border);
+}
+.pill.cc{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+.pill.hub{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.pill.gen{background:var(--bg-cream);color:var(--orange-dark);border-color:#fed7aa}
+
+ul.list{list-style:none;margin-top:12px}
+ul.list li{padding:6px 0;padding-inline-start:20px;position:relative;color:var(--text-2);font-size:0.97rem}
+ul.list li::before{content:'';position:absolute;inset-inline-start:0;top:15px;width:6px;height:6px;border-radius:50%;background:var(--orange)}
+ul.list li b{color:var(--text);font-weight:700}
+ul.list li code{font-family:'JetBrains Mono',monospace;font-size:0.86em;background:var(--bg-soft);padding:1px 6px;border-radius:5px;color:var(--text)}
+
+.cmd{
+  background:#0f172a;border:1px solid #1e293b;border-inline-start:3px solid var(--orange);
+  border-radius:var(--radius-sm);padding:13px 16px;margin:12px 0;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  direction:ltr;text-align:left;transition:border-color 0.3s ease,box-shadow 0.3s ease;
+}
+.cmd:hover{border-inline-start-color:var(--orange-light);box-shadow:var(--shadow)}
+.cmd code{font-family:'JetBrains Mono',monospace;font-size:0.83rem;color:#86efac;flex:1;line-height:1.6;word-break:break-word}
+.copy{
+  background:rgba(255,255,255,0.1);border:none;color:#cbd5e1;padding:7px 15px;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:0.76rem;font-weight:700;cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;
+}
+.copy:hover{background:var(--orange);color:#fff;transform:scale(1.04)}
+.copy.done{background:var(--green);color:#fff}
+
+.note{
+  border-inline-start:3px solid var(--orange-light);background:var(--bg-cream);
+  border-radius:0 10px 10px 0;padding:11px 15px;margin-top:13px;font-size:0.93rem;color:var(--text-2);
+}
+.note b{color:var(--orange-dark);font-weight:800}
+.note.stop{border-inline-start-color:var(--red);background:#fef2f2}
+.note.stop b{color:var(--red)}
+.note.good{border-inline-start-color:var(--green);background:#f0fdf4}
+.note.good b{color:var(--green-dark)}
+
+.substeps{counter-reset:sub;margin-top:14px;display:flex;flex-direction:column;gap:2px}
+.substeps > li{
+  counter-increment:sub;list-style:none;position:relative;padding:9px 0 9px 34px;
+  border-bottom:1px solid var(--border);color:var(--text-2);font-size:0.97rem;
+}
+.substeps > li:last-child{border-bottom:none}
+.substeps > li::before{
+  content:counter(sub,lower-alpha);position:absolute;inset-inline-start:0;top:11px;
+  width:22px;height:22px;border-radius:7px;background:var(--orange-soft);color:var(--orange-dark);
+  font-family:'Outfit',sans-serif;font-weight:800;font-size:0.75rem;display:grid;place-items:center;
+}
+.substeps > li b{color:var(--text);font-weight:700}
+
+.check{display:flex;align-items:flex-start;gap:12px;padding:10px 8px;border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;border-radius:8px;transition:background 0.2s ease}
+.check:hover{background:var(--orange-soft)}
+.check:last-of-type{border-bottom:none}
+.box{width:21px;height:21px;border-radius:6px;border:2px solid var(--border-hi);background:var(--bg-2);
+  flex-shrink:0;margin-top:2px;display:grid;place-items:center;transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+.check.on .box{background:var(--green);border-color:var(--green);box-shadow:0 0 10px rgba(22,163,74,0.25)}
+.check.on .box::after{content:'';width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-3px}
+.check.on .lab{color:var(--dim);text-decoration:line-through}
+.lab{font-size:0.95rem;color:var(--text-2)}
+.lab b{color:var(--text);font-weight:700}
+.lab code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-soft);padding:1px 6px;border-radius:5px}
+
+table{width:100%;border-collapse:collapse;font-size:0.9rem;margin-top:6px}
+th{text-align:start;font-family:'Outfit',sans-serif;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--text-3);font-weight:700;padding:0 10px 8px 0;border-bottom:1px solid var(--border)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.n{font-family:'JetBrains Mono',monospace;color:var(--orange-dark);font-weight:600;width:26px}
+td.st{font-weight:700;color:var(--text);white-space:nowrap}
+.tag{font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;
+  background:var(--bg-soft);color:var(--text-3);border:1px solid var(--border)}
+.tag.you{background:#fff7ed;color:var(--orange-dark);border-color:#fed7aa}
+.tag.opt{background:var(--bg-soft);color:var(--text-3)}
+.tblwrap{overflow-x:auto}
+
+.faq{border-bottom:1px solid var(--border)}
+.faq:last-child{border-bottom:none}
+.faq q{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;cursor:pointer;
+  font-weight:700;color:var(--text);font-size:0.95rem;quotes:none}
+.faq q::after{content:'';width:9px;height:9px;flex-shrink:0;border-right:2px solid var(--orange);
+  border-bottom:2px solid var(--orange);transform:rotate(45deg);margin-top:-4px;transition:transform 0.35s ease}
+.faq.open q::after{transform:rotate(-135deg);margin-top:3px}
+.faq a{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1),padding 0.3s ease;
+  color:var(--text-3);font-size:0.92rem;display:block}
+.faq.open a{max-height:420px;padding-bottom:14px}
+
+footer{text-align:center;color:var(--text-3);font-size:0.85rem;padding:10px 24px 0}
+footer a{color:var(--orange-dark);font-weight:600;text-decoration:none}
+
+@media(max-width:640px){
+  .top{padding:36px 20px 22px}
+  .top h1{font-size:1.8rem}
+  .section{padding:20px 18px}
+  .stepnav{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:10px 14px}
+  .stepnav::-webkit-scrollbar{display:none}
+  .step-tab{font-size:0.76rem;padding:7px 11px;flex-shrink:0}
+  .cmd{flex-direction:column;align-items:stretch}
+  .copy{width:100%;margin-top:9px}
+  .blockhead h2{font-size:1.12rem}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="eyebrow">BRANDVISED</span>
+  <h1>Creative Pipeline: <span class="accent">how to run a product</span></h1>
+  <p class="sub">The AI does the research, the writing, the generation and the quality checks. You make seven calls. This page is all of them.</p>
+</header>
+
+<nav class="stepnav" id="stepnav">
+  <a class="step-tab" href="#video">Video</a>
+  <a class="step-tab" href="#setup">Setup</a>
+  <a class="step-tab" href="#prep">Before each product</a>
+  <a class="step-tab" href="#m1"><b>1</b>Start</a>
+  <a class="step-tab" href="#m2"><b>2</b>Brief</a>
+  <a class="step-tab" href="#m3"><b>3</b>Reference</a>
+  <a class="step-tab" href="#m4"><b>4</b>Smoke</a>
+  <a class="step-tab" href="#m5"><b>5</b>Pick</a>
+  <a class="step-tab" href="#m6"><b>6</b>A+ &amp; edits</a>
+  <a class="step-tab" href="#m7"><b>7</b>Panel</a>
+  <a class="step-tab" href="#ref">Reference</a>
+</nav>
+
+<main>
+
+<!-- ============ VIDEO ============ -->
+<section id="video">
+  <div class="video" id="player" onclick="playVideo()">
+    <div class="play"></div>
+    <div class="vtitle">The full walkthrough, one product end to end</div>
+    <div class="vmeta">34 min &middot; Vimeo</div>
+  </div>
+  <div class="chapters" id="chapters"></div>
+  <p class="vlink">Trouble playing it here? <a href="https://vimeo.com/1214072583/1969c9d104" target="_blank" rel="noopener">Open on Vimeo</a></p>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section id="setup" class="section" style="margin-top:26px">
+  <h3>Set up once</h3>
+  <p style="color:var(--text-3);font-size:0.93rem;margin-bottom:8px">First time on your machine. You never do this again.</p>
+  <label class="check"><span class="box"></span><span class="lab"><b>Get your keys.</b> Your personal hub key and access come from a manager.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Log in to Genrupt</b> with your <code>@brandvised.com</code> email, using the invite link in the Genrupt Slack channel.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Connect Genrupt to Claude.</b> Claude &rarr; Settings &rarr; Connectors &rarr; connect Genrupt (or add it as a custom connector). Then copy the skills prompt from the same page into Claude Code.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Install the Genrupt Chrome extension.</b> Download it, then <code>chrome://extensions</code> &rarr; Developer mode &rarr; Load unpacked.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Check it works.</b> New Claude Code session, ask it how many Genrupt credits are left. A real number means you are connected.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Claude Code settings.</b> Open the <code>brandvised-ops-hub</code> folder, model Opus 5, effort medium or high, permission mode Auto.</span></label>
+  <div class="note"><b>Why the folder matters:</b> the pipeline skills and the hub connection live in that folder. Open anything else and the run will not sync.</div>
+</section>
+
+<!-- ============ PREP ============ -->
+<section id="prep" class="section cream">
+  <h3>Before each product</h3>
+  <label class="check"><span class="box"></span><span class="lab"><b>Check the hub board first.</b> If someone already started this ASIN, continue their run instead of opening a second one.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Collect product photos.</b> Every angle: front, back, sides, bottom. A hand or a familiar object next to it so the size reads. Label close-ups. The packaging. Zip them.</span></label>
+  <label class="check"><span class="box"></span><span class="lab"><b>Write your team notes.</b> Whatever you would tell a colleague who is about to make these images: what must appear, what to avoid, what the product is really like.</span></label>
+  <div class="note"><b>These are reference photos, not beauty shots.</b> Nobody is judging them. They exist so the AI knows the real shape and the real size. Avoid Amazon listing renders where you can, the graphics there are often inaccurate.</div>
+  <div class="note good"><b>"I don't have it" is a real answer.</b> Say it and the run proceeds. Silence is what stalls it.</div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="m1" class="section">
+  <div class="blockhead">
+    <span class="num">1</span>
+    <div>
+      <h2>Start the run</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span></div>
+    </div>
+  </div>
+  <div class="cmd"><code>Start a new creative pipeline product for ASIN B0XXXXXXXX</code><button class="copy">Copy</button></div>
+  <div class="cmd"><code>Continue the creative pipeline product for ASIN B0XXXXXXXX</code><button class="copy">Copy</button></div>
+  <ul class="list">
+    <li>The hub fills in the niche insights, the buyer demographics and the past test conclusions on its own. Do not go looking for them.</li>
+    <li>All it needs from you: the <b>photo zip</b> and your <b>team notes</b>.</li>
+    <li>Then it reads the product, the competitors, the reviews and the images. This takes a while. Go do something else.</li>
+  </ul>
+  <div class="note"><b>Your first run is slow.</b> Claude is learning the system, the tools and the skills. From the second product on it is much faster.</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="m2" class="section">
+  <div class="blockhead">
+    <span class="num">2</span>
+    <div>
+      <h2>Approve the brief</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span><span class="pill hub">Hub</span></div>
+    </div>
+  </div>
+  <ul class="list">
+    <li>The brief is the plan for the set: what each image has to say and show.</li>
+    <li>Read it in the hub (hit <b>Refresh</b> at the top) or straight in Claude Code.</li>
+    <li><b>Never edit the document.</b> Say what you want changed and it rewrites it.</li>
+    <li>Argue with it. "Why did you put that in image 3?" Sometimes the answer is good. Sometimes it says you are right.</li>
+  </ul>
+  <div class="cmd"><code>Approve the brief</code><button class="copy">Copy</button></div>
+  <div class="note"><b>It stops here until you answer.</b> Nothing moves without your approval, in Claude Code or with the button in the hub.</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="m3" class="section">
+  <div class="blockhead">
+    <span class="num">3</span>
+    <div>
+      <h2>Approve the product reference</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span><span class="pill hub">Hub</span></div>
+    </div>
+  </div>
+  <p style="color:var(--text-2);font-size:0.97rem">The reference sheet is the product as the AI understands it. Every image later is built from it.</p>
+  <ul class="list">
+    <li><b>Expect two or three rounds.</b> Multi-part products and thin photos make the first try wrong. That is normal.</li>
+    <li>Say exactly what is off: wrong part, wrong proportion, missing angle, a colour that is not the real one.</li>
+    <li>A good sheet shows several angles, the inside or underside, and something that gives the real size.</li>
+  </ul>
+  <div class="note stop"><b>Do not wave this one through.</b> If the reference is wrong, every single image after it is wrong, and you will not be able to fix it by editing.</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="m4" class="section">
+  <div class="blockhead">
+    <span class="num">4</span>
+    <div>
+      <h2>Sign off the smoke test</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span><span class="pill hub">Hub</span></div>
+    </div>
+  </div>
+  <p style="color:var(--text-2);font-size:0.97rem">One cheap image per slot, so you can see the brief instead of reading it.</p>
+  <ul class="list">
+    <li>You are checking two things only: <b>does the product look like the product</b>, and <b>does each slot say what you wanted</b>.</li>
+    <li>Ignore the design. Not the fonts, not the colours, not the polish. That comes later.</li>
+    <li>This is your last cheap chance to change the brief: "in image 3, drop that message, show the dimensions instead".</li>
+  </ul>
+  <div class="cmd"><code>Approve the smoke test</code><button class="copy">Copy</button></div>
+  <div class="note stop"><b>This sign-off is the budget gate.</b> After it the big generation runs with no more stops. Look properly before you approve.</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="m5" class="section">
+  <div class="blockhead">
+    <span class="num">5</span>
+    <div>
+      <h2>Pick your images</h2>
+      <div class="wheres"><span class="pill gen">Genrupt app</span></div>
+    </div>
+  </div>
+  <p style="color:var(--text-2);font-size:0.97rem">The one part you do outside Claude Code, and the longest. Open Genrupt from the link in the hub.</p>
+
+  <h3 style="font-size:0.95rem;margin:20px 0 0;border:0;padding:0;color:var(--text-3);letter-spacing:0.05em;text-transform:uppercase">Main images</h3>
+  <ul class="list">
+    <li>Open them, compare a few side by side, select the ones you like.</li>
+    <li>Have a winner? Mark it <b>Final</b>. Claude reads what you selected and what you marked final.</li>
+  </ul>
+  <div class="note"><b>Genrupt's main images are the weak spot right now.</b> Treat them as ideas, and make the real main image elsewhere if you need to. Everything below is unaffected.</div>
+
+  <h3 style="font-size:0.95rem;margin:22px 0 0;border:0;padding:0;color:var(--text-3);letter-spacing:0.05em;text-transform:uppercase">Secondary images</h3>
+  <p style="color:var(--text-3);font-size:0.92rem;margin-top:4px">A grid: your slots across, ten style rows down. Up and down is the same image in a different style, left and right is a different slot.</p>
+  <ol class="substeps">
+    <li><b>Pick the style first.</b> Move up and down until a row feels right for the product, then click the small style icon on that row. Now the colours and fonts are settled.</li>
+    <li><b>Then pick the composition</b> for each slot. Stop looking at colour. Look at what is in the frame: the person, the scene, the angle. Select one per slot.</li>
+    <li><b>Restyle and send to Refine.</b> It rebuilds your chosen compositions in your chosen style.</li>
+    <li><b>Generate more if you need to.</b> Mobile-friendly <b>on</b>, quality <b>low</b>, four per slot.</li>
+    <li><b>Mark the final image per slot.</b> That is what Claude picks up.</li>
+  </ol>
+  <div class="note"><b>Mobile-friendly is not optional.</b> Bigger type, bigger icons, less text. It is the difference between an image that works on a phone and one that does not.</div>
+  <div class="note stop"><b>Lock the slots you are happy with before you generate again.</b> Otherwise Generate re-rolls every slot that is not final, and you pay for all of them.</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="m6" class="section">
+  <div class="blockhead">
+    <span class="num">6</span>
+    <div>
+      <h2>A+ and the edits</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span><span class="pill gen">Genrupt app</span><span class="pill hub">Hub</span></div>
+    </div>
+  </div>
+  <div class="cmd"><code>I selected the final images in Genrupt. Continue.</code><button class="copy">Copy</button></div>
+  <ul class="list">
+    <li>It builds the <b>A+ in the same style</b>, then checks your set against the brief and fixes what drifted, on its own.</li>
+    <li>Want something else changed? Name the image and say it: <i>"in slot 5, make the headline the dimensions"</i>.</li>
+    <li>Image edits run on the OpenAI API, not Genrupt credits. Cheap. Ask for them freely.</li>
+  </ul>
+  <ul class="list">
+    <li><b>A+ edits are better done inside Genrupt.</b> A+ Builder &rarr; your project &rarr; the edit button, then describe the change, and attach a reference screenshot if you have one.</li>
+    <li><b>Export</b> from A+ Builder &rarr; Selected &rarr; zip. It comes out already cut to Amazon's sizes, mobile and desktop.</li>
+    <li>Back in the hub, pick the final set in the cockpit (<b>Compare</b> puts two side by side), <b>Lock selection</b>, then Approve.</li>
+  </ul>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="m7" class="section">
+  <div class="blockhead">
+    <span class="num">7</span>
+    <div>
+      <h2>Read the panel, then you are done</h2>
+      <div class="wheres"><span class="pill cc">Claude Code</span><span class="pill hub">Hub</span></div>
+    </div>
+  </div>
+  <ul class="list">
+    <li>Around 80 AI personas, built from the real buyer demographics, react to your locked set before any money is spent.</li>
+    <li><b>Read the comments, ignore the numbers.</b> The scores are not accurate. The objections are useful.</li>
+    <li>Tell Claude which suggested edits to apply. Then approve.</li>
+  </ul>
+  <div class="note good"><b>That closes the run.</b> A full image set and a ready A+, delivered. Anything after this (paid survey, Amazon A/B, learning) is optional and someone turns it on deliberately.</div>
+</section>
+
+<!-- ============ REFERENCE ============ -->
+<section id="ref" class="section">
+  <h3>The ten stages</h3>
+  <p style="color:var(--text-3);font-size:0.92rem;margin-bottom:10px">What the hub is showing you. Stages 1 to 7 are the work; 8 to 10 are optional measurement.</p>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>Stage</th><th>Your moment</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td class="st">inputs</td><td>Photos and team notes <span class="tag you">you</span></td></tr>
+      <tr><td class="n">2</td><td class="st">research</td><td>Nothing</td></tr>
+      <tr><td class="n">3</td><td class="st">brief</td><td>Approve or request changes <span class="tag you">you</span></td></tr>
+      <tr><td class="n">4</td><td class="st">reference</td><td>Approve the product reference <span class="tag you">you</span></td></tr>
+      <tr><td class="n">5</td><td class="st">generate</td><td>Smoke sign-off, the budget gate <span class="tag you">you</span></td></tr>
+      <tr><td class="n">6</td><td class="st">review</td><td>Pick in Genrupt, then lock in the cockpit <span class="tag you">you</span></td></tr>
+      <tr><td class="n">7</td><td class="st">panel</td><td>Read it, decide, approve. Delivered <span class="tag you">you</span></td></tr>
+      <tr><td class="n">8</td><td class="st">survey</td><td>A manager launches the paid survey <span class="tag opt">optional</span></td></tr>
+      <tr><td class="n">9</td><td class="st">amazon A/B</td><td>Launched in Seller Central <span class="tag opt">optional</span></td></tr>
+      <tr><td class="n">10</td><td class="st">learn</td><td>The AI files what won <span class="tag opt">optional</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section">
+  <h3>Questions</h3>
+  <div class="faq"><q>Can I run the whole thing from the hub?</q><a>No. The work happens in a Claude Code session. The hub is where you see where every product stands, where you approve, and where someone else can pick up your run tomorrow.</a></div>
+  <div class="faq"><q>The reference sheet keeps coming out wrong.</q><a>Almost always the photos. More angles, the underside, and something in frame that shows the real size. Then tell it specifically what is wrong rather than "not good". Two or three rounds here is normal and it is worth every minute.</a></div>
+  <div class="faq"><q>Genrupt regenerated slots I was happy with.</q><a>Generate re-rolls every slot that is not marked final. Lock or finalise the ones you are keeping first.</a></div>
+  <div class="faq"><q>Nothing on the run seems to need me.</q><a>Then it does not. A blue banner means the AI is working. Orange means someone is waiting on you, and the hub bell pings you when that someone is you.</a></div>
+  <div class="faq"><q>Where do I get keys, Genrupt access, Prolific access?</q><a>From a manager. Do not share keys between people, every action is recorded under your name.</a></div>
+  <div class="faq"><q>Something is stuck or looks broken.</q><a>A red "blocked" pill names what is missing. Say it in the team channel. Do not use Override in the "..." menu, it permanently skips a quality gate.</a></div>
+</section>
+
+<footer>Questions or something that should work better? Send it over and it goes into the pipeline.</footer>
+
+</main>
+
+<script>
+/* ---- video ---- */
+var VIDEO = "https://player.vimeo.com/video/1214072583?h=1969c9d104";
+var CHAPTERS = [
+  ["0:00","Before you start"],
+  ["2:40","Prepare the photos"],
+  ["4:19","Start the run"],
+  ["6:09","The inputs"],
+  ["7:31","Research and brief"],
+  ["11:15","Product reference"],
+  ["14:51","Smoke test"],
+  ["16:42","Genrupt: main images"],
+  ["19:49","Pick the style"],
+  ["22:44","Restyle and generate"],
+  ["23:53","Final per slot"],
+  ["25:08","Back to Claude Code"],
+  ["27:40","A+ and export"],
+  ["29:44","Synthetic panel"],
+  ["32:27","The finished set"]
+];
+function playVideo(at){
+  var p = document.getElementById('player');
+  if (p.dataset.live !== '1'){
+    p.innerHTML = '';
+    p.style.cursor = 'default';
+    p.onclick = null;
+    p.dataset.live = '1';
+  }
+  var f = p.querySelector('iframe') || document.createElement('iframe');
+  var m = (at||'0:00').split(':');
+  f.src = VIDEO + '&autoplay=1#t=' + m[0] + 'm' + m[1] + 's';
+  f.setAttribute('allow','autoplay; fullscreen; picture-in-picture');
+  f.setAttribute('allowfullscreen','');
+  f.title = 'Creative Pipeline walkthrough';
+  if (!f.parentNode) p.appendChild(f);
+}
+(function(){
+  var box = document.getElementById('chapters');
+  CHAPTERS.forEach(function(c){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.innerHTML = '<b>' + c[0] + '</b>' + c[1];
+    b.onclick = function(){ playVideo(c[0]); document.getElementById('video').scrollIntoView({block:'start'}); };
+    box.appendChild(b);
+  });
+})();
+
+/* ---- copy buttons ---- */
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var text = btn.parentNode.querySelector('code').textContent;
+    navigator.clipboard.writeText(text).then(function(){
+      btn.textContent = 'Copied';
+      btn.classList.add('done');
+      setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600);
+    });
+  });
+});
+
+/* ---- checklists, remembered per browser ---- */
+document.querySelectorAll('.check').forEach(function(el, i){
+  var key = 'cp-sop-check-' + i;
+  if (localStorage.getItem(key) === '1') el.classList.add('on');
+  el.addEventListener('click', function(){
+    el.classList.toggle('on');
+    localStorage.setItem(key, el.classList.contains('on') ? '1' : '0');
+  });
+});
+
+/* ---- faq ---- */
+document.querySelectorAll('.faq q').forEach(function(q){
+  q.addEventListener('click', function(){ q.parentNode.classList.toggle('open'); });
+});
+
+/* ---- nav highlight ---- */
+(function(){
+  var tabs = [].slice.call(document.querySelectorAll('.stepnav a'));
+  var targets = tabs.map(function(t){ return document.querySelector(t.getAttribute('href')); });
+  function sync(){
+    var y = window.scrollY + 140, best = 0;
+    targets.forEach(function(el, i){ if (el && el.offsetTop <= y) best = i; });
+    tabs.forEach(function(t, i){ t.classList.toggle('on', i === best); });
+  }
+  window.addEventListener('scroll', sync, {passive:true});
+  sync();
+})();
+</script>
+</body>
+</html>
