@@ -492,6 +492,7 @@ footer a{color:var(--orange-dark);font-weight:600;text-decoration:none}
 
 </main>
 
+<script src="https://player.vimeo.com/api/player.js"></script>
 <script>
 /* ---- video ---- */
 var VIDEO = "https://player.vimeo.com/video/1214206075?badge=0&autopause=0&player_id=0&app_id=58479&texttrack=en";
@@ -512,21 +513,45 @@ var CHAPTERS = [
   ["27:32","Synthetic panel"],
   ["29:56","The finished set"]
 ];
+function tcode(secs){ return Math.floor(secs/60) + 'm' + (secs % 60) + 's'; }
+function toSeconds(at){
+  var m = (at || '0:00').split(':');
+  return (parseInt(m[0],10) || 0) * 60 + (parseInt(m[1],10) || 0);
+}
+/* Changing only the #fragment of a cross-origin iframe does nothing, so once the
+   player exists we seek through the Vimeo API and reload the frame only if that
+   is unavailable. */
+var vplayer = null;
 function playVideo(at){
   var p = document.getElementById('player');
+  var secs = toSeconds(at);
+
   if (p.dataset.live !== '1'){
     p.innerHTML = '';
     p.style.cursor = 'default';
     p.onclick = null;
     p.dataset.live = '1';
+    var f = document.createElement('iframe');
+    f.src = VIDEO + '&autoplay=1#t=' + tcode(secs);
+    f.setAttribute('allow','autoplay; fullscreen; picture-in-picture');
+    f.setAttribute('allowfullscreen','');
+    f.title = 'Creative Pipeline walkthrough';
+    p.appendChild(f);
+    if (window.Vimeo) { try { vplayer = new Vimeo.Player(f); } catch (e) { vplayer = null; } }
+    return;
   }
-  var f = p.querySelector('iframe') || document.createElement('iframe');
-  var m = (at||'0:00').split(':');
-  f.src = VIDEO + '&autoplay=1#t=' + m[0] + 'm' + m[1] + 's';
-  f.setAttribute('allow','autoplay; fullscreen; picture-in-picture');
-  f.setAttribute('allowfullscreen','');
-  f.title = 'Creative Pipeline walkthrough';
-  if (!f.parentNode) p.appendChild(f);
+
+  if (vplayer){
+    vplayer.setCurrentTime(secs)
+      .then(function(){ return vplayer.play(); })
+      .catch(function(){ reloadAt(p, secs); });
+  } else {
+    reloadAt(p, secs);
+  }
+}
+function reloadAt(p, secs){
+  var f = p.querySelector('iframe');
+  if (f) f.src = VIDEO + '&autoplay=1&seek=' + secs + '#t=' + tcode(secs);
 }
 (function(){
   var box = document.getElementById('chapters');
