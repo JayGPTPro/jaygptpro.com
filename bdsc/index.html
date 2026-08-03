@@ -58,7 +58,18 @@ h1 em{font-style:normal;color:var(--plum);
   transition:background-size .9s var(--ease) .55s}
 .in h1 em,.js .rv.in h1 em{background-size:100% .055em}
 h1.in em{background-size:100% .055em}
-.lede{font:400 17.5px/1.62 var(--disp);color:var(--ink2);max-width:460px;margin:0 auto;text-wrap:pretty}
+.lede{font:400 17.5px/1.62 var(--disp);color:var(--ink2);max-width:520px;margin:0 auto;text-wrap:pretty}
+/* the prerequisite. Nothing on this page works without Claude Code, and a visitor who
+   arrives from a shared link has no way of knowing that. */
+.need{font:400 14.5px/1.55 var(--disp);color:var(--ink3);max-width:430px;margin:18px auto 0;
+  padding-top:16px;border-top:1px solid var(--line)}
+.need a{color:var(--plum);font-weight:600;box-shadow:inset 0 -1px 0 rgba(138,90,43,.5)}
+
+/* the step number turns a list of links into a path */
+.stepn{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--plum);color:#fff;
+  font:700 13px var(--disp);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 14px -5px rgba(74,37,69,.6)}
+.cards.two{grid-template-columns:1fr}
 
 /* ---------- section heads ---------- */
 section{padding:30px 0}
@@ -71,11 +82,10 @@ section{padding:30px 0}
 .cards{display:grid;gap:13px}
 @media(min-width:800px){
   .wrap{max-width:860px}
-  .cards{grid-template-columns:1fr 1fr;gap:15px}
-  .cards>.card:first-child{grid-column:1 / -1}
-  .cards>.card:first-child .top{margin-bottom:11px}
-  .cards>.card:first-child h3{font-size:23px}
-  .cards>.card:first-child p{font-size:15.5px;max-width:78%}
+  /* the three steps stay stacked: their order is the point. The extras pair off. */
+  .cards.two{grid-template-columns:1fr 1fr;gap:15px}
+  .card h3{font-size:21px}
+  .cards>.card p{max-width:86%}
   .tipbox{padding:10px 30px}
   .tips{display:grid;grid-template-columns:1fr 1fr;gap:0 34px}
   .tip:nth-last-child(2){border-bottom:none}
@@ -164,6 +174,12 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
    view, not the fallback. */
 @media(max-width:560px){
   .wrap{padding:0 17px}
+  /* on a phone the badge, the icon, the title and the tag do not fit on one line, and the
+     titles were breaking after a word. The number already anchors a step card, so the icon
+     plate stands down there and the row fits. Measured, not guessed. */
+  .card .stepn ~ .ico{display:none}
+  .card .top{gap:11px}
+  .tagx{font-size:9px;padding:4px 8px}
   header{padding:52px 0 32px}
   h1{font-size:35px;letter-spacing:-.036em}
   .lede{font-size:16.5px}
@@ -186,55 +202,64 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
 <div class="wrap">
 
 <header>
-  <div class="kick rv">The Creative Employee</div>
-  <h1 class="rv">Everything from<br>today's session,<br><em>in one place</em></h1>
-  <p class="lede rv">Free skills, the setup guide, and every tip from the talk.
-  Tap any card to grab it.</p>
+  <div class="kick rv">The Creative Employee · Jay Margaliot</div>
+  <h1 class="rv">Build the creative<br>employee, <em>step by step</em></h1>
+  <p class="lede rv">Everything from the talk in one place. An AI employee is a folder on your
+  laptop that Claude Code works out of. These are the pieces, in the order you add them.</p>
+  <p class="need rv">You need <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener">Claude Code</a>
+  installed first. Everything below runs inside it.</p>
 </header>
 
 <section>
-  <div class="sechead rv"><h2>The takeaways</h2><span class="rule"></span><span>free</span></div>
+  <div class="sechead rv"><h2>Start here</h2><span class="rule"></span><span>three steps</span></div>
   <div class="cards">
 
     <a class="card rv" href="https://jaygptpro.com/character/" target="_blank" rel="noopener">
-      <div class="top"><span class="ico" data-ico="identity"></span>
-        <h3>The Character Skill</h3><span class="tagx free">Free</span></div>
-      <p>Gives your AI employee a personality through a short interview. Voice, humour, and the
-      list of things it will refuse to do. The first of the eight components.</p>
+      <div class="top"><span class="stepn">1</span><span class="ico" data-ico="identity"></span>
+        <h3>Give it a character</h3><span class="tagx free">Free skill</span></div>
+      <p>A short interview turns into your employee's voice, its humour, and the list of things
+      it will refuse to do. Start here, because the refusals are what change the output.</p>
       <span class="go">jaygptpro.com/character <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
     </a>
 
+    <a class="card rv" href="/openai/">
+      <div class="top"><span class="stepn">2</span><span class="ico" data-ico="access"></span>
+        <h3>Give it hands</h3><span class="tagx">Guide · 5 min</span></div>
+      <p>Claude is not an image model. Connect one and "make me an image" starts working.
+      Create a key, paste it into one file, done. Written for people who do not write code.</p>
+      <span class="go">jaygptpro.com/openai <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
+    </a>
+
     <a class="card rv" href="https://jaygptpro.com/the-skill-skiller/" target="_blank" rel="noopener">
-      <div class="top"><span class="ico" data-ico="skills"></span>
-        <h3>The Skill Skiller</h3><span class="tagx free">Free</span></div>
-      <p>The skill that builds skills. It interviews you about a process you already run and turns
-      it into a proper, repeatable skill for your employee.</p>
+      <div class="top"><span class="stepn">3</span><span class="ico" data-ico="skills"></span>
+        <h3>Give it standards</h3><span class="tagx free">Free skill</span></div>
+      <p>A skill is a written procedure with a name. This one interviews you about a process you
+      already run and turns it into a skill, so the same quality comes out every time.</p>
       <span class="go">jaygptpro.com/the-skill-skiller <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
+    </a>
+
+  </div>
+</section>
+
+<section>
+  <div class="sechead rv"><h2>Two more things</h2><span class="rule"></span><span>while you're here</span></div>
+  <div class="cards two">
+
+    <a class="card rv" href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">
+      <div class="top"><span class="ico" data-ico="spark"></span>
+        <h3>Genrupt · 20% off</h3><span class="tagx">From the talk</span></div>
+      <p>The production engine I use for Amazon images. It stays locked to your real product
+      instead of inventing a similar one. Discount on your first purchase.</p>
+      <span class="code">JAY20</span>
+      <span class="go">genrupt.com/l/aivault <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
     </a>
 
     <a class="card rv" href="https://jaygptpro.com/amazon-skills/" target="_blank" rel="noopener">
       <div class="top"><span class="ico" data-ico="brief"></span>
-        <h3>67 Amazon Seller Skills</h3><span class="tagx free">Open source</span></div>
-      <p>My full open-source library for Claude Code. Listings, PPC, keyword research, reimbursements,
-      account health. One line to install all of them.</p>
+        <h3>67 Amazon Seller Skills</h3><span class="tagx">Bonus</span></div>
+      <p>Not from the talk, but you may as well take it. My open-source library for Claude Code:
+      listings, PPC, keyword research, reimbursements, account health. One line installs all 67.</p>
       <span class="go">jaygptpro.com/amazon-skills <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
-    </a>
-
-    <a class="card rv" href="/openai/">
-      <div class="top"><span class="ico" data-ico="access"></span>
-        <h3>Give your employee hands</h3><span class="tagx">Guide</span></div>
-      <p>The three-step OpenAI setup from the talk. Create the key, paste it into one file in the
-      employee's folder, and "make me an image" just works. Troubleshooting included.</p>
-      <span class="go">jaygptpro.com/openai <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
-    </a>
-
-    <a class="card rv" href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">
-      <div class="top"><span class="ico" data-ico="spark"></span>
-        <h3>Genrupt · 20% off</h3><span class="tagx">Coupon</span></div>
-      <p>The production engine I use for Amazon images. It stays locked to your real product instead
-      of inventing a similar one. Discount on your first purchase.</p>
-      <span class="code">JAY20</span>
-      <span class="go">genrupt.com/l/aivault <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
     </a>
 
   </div>

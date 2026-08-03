@@ -40,7 +40,7 @@ a{color:inherit}
 
 /* ---------- hero ---------- */
 header{padding:62px 0 34px;text-align:center}
-.back{display:inline-flex;align-items:center;gap:7px;font:500 11px var(--mono);
+.back{display:flex;justify-content:center;align-items:center;gap:7px;font:500 11px var(--mono);
   letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);text-decoration:none;
   margin-bottom:26px;transition:color .3s var(--ease)}
 .back:hover{color:var(--bronze)}
@@ -68,6 +68,12 @@ h1{font:800 50px/1.05 var(--disp);letter-spacing:-.042em;margin-bottom:15px;text
 h2{font:800 29px/1.14 var(--disp);letter-spacing:-.032em;margin:8px 0 11px;
   max-width:80%;text-wrap:balance}
 p{color:var(--ink2);margin:9px 0}
+.need{font:400 15px/1.55 var(--disp);color:var(--ink3);max-width:560px;margin:22px auto 0;
+  padding-top:18px;border-top:1px solid var(--line)}
+.need a,.tip a,.warn a,li a,p a{color:var(--plum);font-weight:600;
+  box-shadow:inset 0 -1px 0 rgba(138,90,43,.5);text-decoration:none}
+.warn a{color:#7c3a3e;box-shadow:inset 0 -1px 0 rgba(156,67,72,.5)}
+.warn i,.tip i{font-style:italic;color:var(--ink2)}
 p b,li b{color:var(--ink);font-weight:600}
 ol,ul{margin:10px 0 10px 21px;color:var(--ink2)}
 li{margin:7px 0;padding-inline-start:4px}
@@ -172,14 +178,19 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   <p class="lede rv">Claude is not an image model. Connect one to your Claude Code employee and
   "make me an image" starts working. Once, three steps.</p>
   <div class="meta rv"><span><b>5</b> minutes</span><span><b>3</b> steps</span><span>no coding</span></div>
+  <p class="need rv">You need <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener">Claude Code</a>
+  installed, and a folder for your employee. If you ran
+  <a href="https://jaygptpro.com/character/" target="_blank" rel="noopener">the Character Skill</a>,
+  that folder already exists and this key goes in it.</p>
 </header>
 
 <div class="step rv" data-n="01" id="s1"><span class="num">Step 1 · Get a key</span>
   <h2>Create an API key in your OpenAI account</h2>
   <ol>
-    <li>Go to <code>platform.openai.com</code> and sign in. This is the developer platform, a
-    separate place from ChatGPT, even though the login is the same.</li>
-    <li>Open <b>Settings → API keys</b> and click <b>Create new secret key</b>.</li>
+    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
+    and sign in. This is the developer platform, a separate place from ChatGPT, even though
+    the login is the same.</li>
+    <li>Click <b>Create new secret key</b>.</li>
     <li>Name it after your employee, so you always know what it is. Mine says <code>wonka</code>.</li>
     <li>Copy the key straight away. OpenAI shows it exactly once.</li>
   </ol>
@@ -193,9 +204,12 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   </div>
   <div class="warn"><b>A key is a credit card.</b> Never paste it into a chat, an email or a
   screenshot. It goes into one file on your own machine and nowhere else.</div>
-  <div class="tip"><b>Two things to set once.</b> Under <b>Settings → Billing</b>, load $5 to $10;
-  exploration images cost cents and that lasts weeks. And image generation needs a one-time
-  <b>organization verification</b> under Settings → General. Two minutes with an ID.</div>
+  <div class="tip"><b>Two things to set once.</b> Load $5 to $10 under
+  <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener">Billing</a>;
+  exploration images cost cents, so that lasts weeks. And image generation needs a one-time
+  <a href="https://platform.openai.com/settings/organization/general" target="_blank" rel="noopener">organization verification</a>.
+  Two minutes with an ID. Do both now, or step 3 will fail and you will think you did
+  something wrong.</div>
 </div>
 
 <div class="step rv" data-n="02" id="s2"><span class="num">Step 2 · Hand it over</span>
@@ -205,6 +219,10 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   <div class="term" data-copy="OPENAI_API_KEY=sk-proj-your-key-here"><button class="cp">Copy</button><i># inside your employee's folder</i><br>OPENAI_API_KEY=<b>sk-proj-your-key-here</b></div>
   <p>That is the whole integration. No packages, no SDK, no settings screen. Claude Code reads the
   file the moment it needs the engine.</p>
+  <div class="warn"><b>The file name starts with a dot, and that is where most people get stuck.</b>
+  A Mac hides dot files: in Finder press <code>Cmd + Shift + .</code> to show them. If your editor
+  will not save a file with no name before the dot, let Claude Code do it. Open it in the folder
+  and ask: <i>create a .env file here with OPENAI_API_KEY set to the key I am about to paste</i>.</div>
   <div class="tip"><b>Why a file and not the chat?</b> Because the folder is the employee. The key
   sits beside his character, his skills and his memory, so every future session finds it on its own
   and you never paste it again.</div>
@@ -230,6 +248,8 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
     <li><b>Insufficient quota.</b> No billing credit loaded. Settings → Billing → add credit.</li>
     <li><b>Invalid API key.</b> Almost always a copy problem: a missing character or a stray space
     in <code>.env</code>. Create a fresh key and paste it again.</li>
+    <li><b>It says there is no key at all.</b> The <code>.env</code> is in the wrong folder. It has
+    to sit in the same folder Claude Code was opened in, next to the employee's character file.</li>
   </ul>
   <p>Anything else, paste the error into Claude Code and ask it to fix the connection. Debugging its
   own tools is part of the job description.</p>
