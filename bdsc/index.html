@@ -16,15 +16,29 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Loaded without blocking the parser. This is the page's only external dependency, and
+     on conference wifi behind a captive portal a render-blocking stylesheet meant 16 seconds
+     of blank screen before anything painted. media="print" makes it a low-priority fetch;
+     onload promotes it. The noscript copy keeps it working with JS off. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <script>
 /* Mark that JS is alive BEFORE first paint. Only then may the CSS hide anything.
-   Without this line the reveal styles never apply and every section stays readable. */
+   Without this line the reveal styles never apply and every section stays readable.
+
+   The deadline lives HERE, not in the script at the bottom of the page. It used to sit
+   beside the IntersectionObserver, which meant the safety net was inside the very block it
+   was meant to protect: truncate the HTML before that script, or throw anywhere in it, and
+   every section stayed at opacity 0 forever. A blank cream page for a room that just
+   scanned a QR code. Registered in the head, it fires no matter what happens later. */
 document.documentElement.className+=' js';
+setTimeout(function(){
+  var r=document.querySelectorAll('.rv'); for(var i=0;i<r.length;i++) r[i].classList.add('in');
+},2500);
 </script>
 <style>
 :root{
-  --bg:#f7f5f1; --card:#ffffff; --ink:#0a0a0c; --ink2:#5c5660; --ink3:#a09a94;
+  --bg:#f7f5f1; --card:#ffffff; --ink:#0a0a0c; --ink2:#5c5660; --ink3:#6f6862;
   --line:#e3ddd5; --plum:#4A2545; --bronze:#8A5A2B; --soft:#f0e7e0; --gold:#c98d4e;
   --wa:#25D366;
   --disp:'Bricolage Grotesque',sans-serif; --mono:'JetBrains Mono',monospace;
@@ -217,7 +231,7 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
     <a class="card rv" href="https://jaygptpro.com/the-skill-skiller/" target="_blank" rel="noopener">
       <div class="top"><span class="stepn">3</span><span class="ico" data-ico="skills"></span>
         <h3>Give it standards</h3><span class="tagx free">Free skill</span></div>
-      <p>A skill is a written procedure with a name. This one interviews you about a process you
+      <p>A skill is a text file that tells your employee how a job gets done. This one interviews you about a process you
       already run and turns it into a skill, so the same quality comes out every time.</p>
       <span class="go">jaygptpro.com/the-skill-skiller <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
     </a>
