@@ -27,20 +27,34 @@
 
 
 -- ------------------------------------------------------------
--- RUN THIS NOW . round 1 is Monday 10 August 2026 (decided 25.7)
--- WEEKDAYS ONLY: days 1-5 = Mon 10 to Fri 14 Aug, the weekend is skipped,
--- days 6-10 = Mon 17 to Fri 21 Aug. The portal code now counts weekdays.
+-- RUN THIS NOW . round 1 is Monday 17 August 2026 (moved 7.8, was 10 Aug)
+-- WEEKDAYS ONLY: days 1-5 = Mon 17 to Fri 21 Aug, the weekend is skipped,
+-- days 6-10 = Mon 24 to Fri 28 Aug. The portal code now counts weekdays.
 -- Day N unlocks at 9:00 AM New York (16:00 Israel), the same moment the
 -- landing page countdown reaches zero.
 -- ------------------------------------------------------------
+-- The 697 price forced a NEW payment link on 8.8 (Stripe prices are immutable and
+-- a link's price cannot be swapped). stripe-webhook resolves the round from the
+-- plink id first (roundFromPlink), so a stale id here silently drops every buyer
+-- to the stripe_product_id fallback. Set the new one, and do NOT touch
+-- stripe_plink_discounted until you have SEEN what is in it: if the Private Tour
+-- link was parked there, clearing it breaks that buyer's routing.
+-- ------------------------------------------------------------
+-- look before you write:
+-- select id, start_date::text, end_date::text,
+--        stripe_plink_full_price, stripe_plink_discounted, stripe_product_id
+--   from rounds where id = 'wonka_r1';
+
 update rounds
-   set start_date            = '2026-08-10',
-       end_date              = '2026-08-21',
-       welcome_dates_display = 'August 10 . 21, 2026'
+   set start_date              = '2026-08-17',
+       end_date                = '2026-08-28',
+       welcome_dates_display   = 'August 17 . 28, 2026',
+       stripe_plink_full_price = 'plink_1U1vCERqcDuiISNTjqJvj1P5'
  where id = 'wonka_r1';
 
--- check: expect one row, wonka_r1 | 2026-08-10 | 2026-08-21
-select id, start_date::text, end_date::text, status
+-- check: expect one row, wonka_r1 | 2026-08-17 | 2026-08-28
+select id, start_date::text, end_date::text, status,
+       stripe_plink_full_price, stripe_product_id
   from rounds where id = 'wonka_r1';
 
 

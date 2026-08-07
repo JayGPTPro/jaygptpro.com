@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wonka Creative Bootcamp. Build Your AI Creative Director in 10 Days</title>
+<meta name="description" content="Build Wonka, an AI Creative Director inside Claude Code who researches, designs, and tests your full Amazon listing package. Main image, secondaries, A+, variations. Every image faces a 100-taster panel. Twice. Zero coding required.">
+<meta property="og:title" content="Build Your AI Creative Director in 10 Days">
+<meta property="og:description" content="An AI employee who builds and tests your full Amazon creative package inside Claude Code. Zero coding required.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   WONKA BOOTCAMP. VERSION B. Donna formula, Wonka skin.
+   Light, bold, purple + Claude terracotta + one gold moment.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --bg: #faf9fc;
+    --bg-2: #ffffff;
+    --bg-3: #f5f3f9;
+    --bg-soft: #efecf5;
+    --border: #e7e3ee;
+    --border-hi: #d8d2e2;
+    --text: #171021;
+    --text-2: #2c2338;
+    --text-3: #5d5470;
+    --text-4: #8f87a0;
+    --purple: #7a3aa8;
+    --purple-2: #934cc4;
+    --purple-dark: #5b2385;
+    --purple-darker: #431a63;
+    --purple-light: #f1e8f9;
+    --purple-soft: rgba(122, 58, 168, 0.08);
+    --purple-glow: rgba(122, 58, 168, 0.20);
+    --claude: #d97757;
+    --claude-soft: rgba(217, 119, 87, 0.10);
+    --gold: #d4a017;
+    --gold-hi: #f5c518;
+    --gold-deep: #8c6a1d;
+    --green: #16a34a;
+    --font: 'Outfit', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --lb-h: 40px;
+    --rad: 20px;
+    --shadow-card: 0 1px 2px rgba(23, 16, 33, 0.05), 0 12px 32px rgba(23, 16, 33, 0.07);
+    --shadow-pop: 0 2px 6px rgba(23, 16, 33, 0.06), 0 22px 54px rgba(91, 35, 133, 0.14);
+}
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 110px; }
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+::selection { background: var(--purple); color: #fff; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.wrap-sm { max-width: 840px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- shared type ---------- */
+.section-tag {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--purple);
+    margin-bottom: 18px;
+}
+.section-tag::before { content: ''; width: 26px; height: 2px; background: var(--purple); border-radius: 2px; }
+h2 {
+    font-size: clamp(32px, 4.6vw, 52px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 18px;
+}
+h2 .hl { color: var(--purple); }
+h2 .hl-c { color: var(--claude); }
+.section-sub { font-size: clamp(17px, 2vw, 19.5px); color: var(--text-3); max-width: 640px; line-height: 1.6; }
+.center { text-align: center; }
+.center .section-sub { margin-left: auto; margin-right: auto; }
+section { padding: 96px 0; }
+
+/* ---------- reveal ---------- */
+.reveal { opacity: 1; transform: none; }
+html.js .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+html.js .reveal.visible { opacity: 1; transform: none; }
+html.js .reveal-d1 { transition-delay: 0.08s; } html.js .reveal-d2 { transition-delay: 0.16s; } html.js .reveal-d3 { transition-delay: 0.24s; }
+
+/* ---------- launch bar ---------- */
+.launch-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1001;
+    height: var(--lb-h);
+    background: #1c1226;
+    color: #f3edfa;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 13.5px; font-weight: 600; letter-spacing: 0.02em;
+}
+.launch-bar .lb-dot { width: 8px; height: 8px; border-radius: 50%; background: #f43f5e; animation: pulse 2s ease-in-out infinite; }
+.launch-bar b { color: var(--gold-hi); font-weight: 700; }
+.launch-bar-close { position: absolute; right: 12px; color: #b9aecb; font-size: 14px; padding: 4px 8px; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+body.lb-off .launch-bar { display: none; }
+body.lb-off { --lb-h: 0px; }
+
+/* ---------- top nav ---------- */
+.topnav {
+    position: sticky; top: var(--lb-h); z-index: 1000;
+    background: rgba(250, 249, 252, 0.86);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
+.topnav-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto; padding: 14px 24px; }
+.brand { display: inline-flex; align-items: center; font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 28px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--purple-2), var(--purple-dark));
+    color: #fff; font-weight: 700; font-size: 15.5px; letter-spacing: 0.01em;
+    box-shadow: 0 2px 6px rgba(91, 35, 133, 0.25), 0 12px 28px rgba(91, 35, 133, 0.22);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(91, 35, 133, 0.3), 0 18px 40px rgba(91, 35, 133, 0.28); }
+.btn.small { padding: 11px 22px; font-size: 14px; }
+.btn.gold {
+    background: linear-gradient(105deg, #8a6a15, #d4a017 35%, #f5c518 50%, #d4a017 65%, #8a6a15);
+    color: #241505; text-shadow: 0 1px 0 rgba(255, 246, 216, 0.4);
+    box-shadow: 0 2px 6px rgba(140, 106, 29, 0.3), 0 12px 30px rgba(212, 160, 23, 0.3);
+}
+.btn.ghost { background: transparent; color: var(--purple-dark); border: 1.5px solid var(--border-hi); box-shadow: none; }
+.btn.ghost:hover { border-color: var(--purple); background: var(--purple-soft); }
+
+/* ---------- claude star deco ---------- */
+.claude-star { position: absolute; color: var(--claude); opacity: 0.10; pointer-events: none; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; padding: 72px 0 84px; overflow: hidden; text-align: center;
+    background:
+        radial-gradient(ellipse 70% 55% at 50% -10%, rgba(122, 58, 168, 0.10), transparent 65%),
+        radial-gradient(ellipse 40% 40% at 90% 20%, rgba(217, 119, 87, 0.07), transparent 60%),
+        var(--bg);
+}
+.hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(122,58,168,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(122,58,168,0.05) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%); pointer-events: none; }
+.cs-1 { width: 300px; height: 300px; top: 60px; left: -90px; transform: rotate(12deg); }
+.cs-2 { width: 220px; height: 220px; bottom: 40px; right: -60px; transform: rotate(-18deg); opacity: 0.08; }
+.hero h1 {
+    position: relative;
+    font-size: clamp(38px, 6.6vw, 76px);
+    font-weight: 900; line-height: 1.04; letter-spacing: -0.025em;
+    max-width: 17ch; margin: 0 auto 14px;
+    animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+.hero h1 .accent { color: var(--purple); position: relative; white-space: nowrap; }
+.hero h1 .accent::after { content: ''; position: absolute; left: 2%; right: 2%; bottom: 0.02em; height: 0.09em; background: linear-gradient(90deg, var(--purple-2), var(--claude)); border-radius: 4px; opacity: 0.85; }
+.hero-date { position: relative; font-size: 14.5px; color: var(--text-3); font-weight: 600; margin-bottom: 30px; animation: fadeUp 0.7s ease 0.12s both; }
+.hero-date b { color: var(--purple-dark); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+.vsl-wrap { position: relative; max-width: 760px; margin: 0 auto 26px; animation: fadeUp 0.8s ease 0.2s both; }
+.vsl-frame {
+    position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: hidden;
+    background: #241a30 center/cover no-repeat;
+    border: 1px solid var(--border-hi);
+    box-shadow: var(--shadow-pop);
+}
+.vsl-frame img.vsl-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.92; }
+.vsl-frame .vsl-scrim { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(23,16,33,0.05), rgba(23,16,33,0.42)); }
+.vsl-play {
+    position: absolute; inset: 0; margin: auto; width: 84px; height: 84px; border-radius: 50%;
+    background: rgba(250, 249, 252, 0.96); display: grid; place-items: center;
+    box-shadow: 0 6px 24px rgba(23,16,33,0.35);
+    transition: transform 0.25s ease;
+}
+.vsl-play::after { content: ''; width: 0; height: 0; border-left: 22px solid var(--purple-dark); border-top: 13px solid transparent; border-bottom: 13px solid transparent; margin-left: 5px; }
+.vsl-frame:hover .vsl-play { transform: scale(1.06); }
+.vsl-under { font-size: 14px; color: var(--text-3); margin-top: 14px; }
+.vsl-under strong { color: var(--text-2); }
+.vsl-badge { position: absolute; top: 14px; left: 14px; font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #f3edfa; background: rgba(28, 18, 38, 0.72); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(6px); }
+
+.hero-trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; font-size: 14.5px; font-weight: 600; color: var(--text-3); margin-bottom: 28px; animation: fadeUp 0.7s ease 0.28s both; }
+.hero-trust span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-trust span::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.hero-cta-row { animation: fadeUp 0.7s ease 0.34s both; }
+.hero-cta-row .note { display: block; margin-top: 12px; font-size: 13px; color: var(--text-4); }
+
+/* ---------- solution ---------- */
+.solution { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.sol-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
+.sol-img { position: relative; border-radius: var(--rad); overflow: hidden; box-shadow: var(--shadow-pop); aspect-ratio: 1/1; background: linear-gradient(150deg, #2a1d3a, #171021); }
+.sol-img img { width: 100%; height: 100%; object-fit: cover; }
+.sol-img .img-tag { position: absolute; left: 16px; bottom: 16px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #f3edfa; background: rgba(28,18,38,0.72); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(6px); }
+.sol-points { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 26px; }
+.sol-points li { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start; font-size: 16.5px; color: var(--text-2); line-height: 1.5; }
+.sol-points .pt-ic { width: 30px; height: 30px; border-radius: 9px; background: var(--purple-light); color: var(--purple-dark); display: grid; place-items: center; font-weight: 800; font-size: 14px; margin-top: 1px; }
+.sol-points b { color: var(--text); }
+
+/* ---------- terminal ---------- */
+.term-section { background: var(--bg); }
+.term {
+    max-width: 780px; margin: 44px auto 0;
+    background: #1c1226; border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-pop);
+    border: 1px solid #34244a;
+    text-align: left;
+}
+.term-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #241832; border-bottom: 1px solid #34244a; }
+.term-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.term-bar i:nth-child(1) { background: #f45c5c; } .term-bar i:nth-child(2) { background: #f5c518; } .term-bar i:nth-child(3) { background: #34c26b; }
+.term-bar span { margin-left: 8px; font-family: var(--mono); font-size: 11.5px; color: #8f87a0; }
+.term-body { padding: 22px 24px 26px; font-family: var(--mono); font-size: 13.5px; line-height: 1.9; color: #d9d2e6; overflow-x: auto; }
+.term-body .cmd { color: #f5c518; }
+.term-body .who { color: var(--claude); font-weight: 600; }
+.term-body .ok { color: #4ade80; }
+.term-body .dim { color: #8f87a0; }
+
+/* ---------- how it works ---------- */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
+.step-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--rad); padding: 30px 26px; box-shadow: var(--shadow-card); }
+.step-num { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--purple); margin-bottom: 14px; }
+.step-card h3 { font-size: 21px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+.step-card p { font-size: 15px; color: var(--text-3); line-height: 1.6; }
+
+/* ---------- timeline: the walk through the factory ---------- */
+.tl-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; }
+.tl-container { position: relative; max-width: 1020px; margin: 40px auto 0; padding: 0 24px; }
+.tl-stage { position: relative; width: 100%; aspect-ratio: 1000 / 3080; }
+.tl-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+.tl-svg .path-bg { fill: none; stroke: rgba(23, 16, 33, 0.08); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 6 10; }
+.tl-svg .path-draw { fill: none; stroke: url(#wPathGrad); stroke-width: 6; stroke-linecap: round; filter: url(#wPathGlow); }
+.path-walker {
+    position: absolute; top: 0; left: 0;
+    width: 46px; height: 84px;
+    margin-left: -23px; margin-top: -80px;
+    pointer-events: none; z-index: 3;
+    opacity: 0;
+    transition: opacity 0.45s ease, filter 0.6s ease;
+    filter: drop-shadow(0 6px 10px rgba(91, 35, 133, 0.35));
+    transform: translate(-500px, -500px);
+}
+.path-walker.active { opacity: 1; }
+.path-walker.arrived { filter: drop-shadow(0 8px 16px rgba(91, 35, 133, 0.45)) drop-shadow(0 0 26px rgba(212, 160, 23, 0.65)); }
+.path-walker svg { width: 100%; height: 100%; overflow: visible; }
+.walker-bounce { animation: wBob 0.62s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes wBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+.w-leg-l { transform-origin: 0px -16px; animation: wStepL 0.62s ease-in-out infinite; }
+.w-leg-r { transform-origin: 0px -16px; animation: wStepR 0.62s ease-in-out infinite; }
+@keyframes wStepL { 0%,100% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } }
+@keyframes wStepR { 0%,100% { transform: rotate(-16deg); } 50% { transform: rotate(16deg); } }
+.w-cane-arm { transform-origin: 0px -34px; animation: wCane 0.62s ease-in-out infinite; }
+@keyframes wCane { 0%,100% { transform: rotate(6deg); } 50% { transform: rotate(-6deg); } }
+.w-hat { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 0px -58px; }
+.path-walker.arrived .w-hat { transform: translateY(-9px) rotate(-14deg); }
+.path-walker.arrived .walker-bounce, .path-walker.arrived .w-leg-l, .path-walker.arrived .w-leg-r, .path-walker.arrived .w-cane-arm { animation: none; }
+.path-walker.arrived .w-leg-l { transform: rotate(-6deg); } .path-walker.arrived .w-leg-r { transform: rotate(6deg); }
+.day-card {
+    position: absolute; width: 44%;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
+    padding: 26px 26px; box-shadow: var(--shadow-card); z-index: 2;
+    opacity: 0; transform: translateY(40px) scale(0.96);
+    transition: opacity 0.7s cubic-bezier(0.2,0.9,0.3,1), transform 0.7s cubic-bezier(0.2,0.9,0.3,1), border-color 0.5s ease, box-shadow 0.5s ease;
+}
+.day-card.in { opacity: 1; transform: none; border-color: rgba(122, 58, 168, 0.35); box-shadow: var(--shadow-pop); }
+.day-card .d { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); margin-bottom: 8px; }
+.day-card h4 { font-size: 18px; font-weight: 800; line-height: 1.25; margin-bottom: 6px; letter-spacing: -0.01em; }
+.day-card p { font-size: 13.5px; color: var(--text-3); line-height: 1.55; }
+.day-card.pos-d1  { top: 3.0%;  right: 0; }
+.day-card.pos-d2  { top: 12.4%; left: 0; }
+.day-card.pos-d3  { top: 21.8%; right: 0; }
+.day-card.pos-d4  { top: 31.2%; left: 0; }
+.day-card.pos-d5  { top: 40.6%; right: 0; }
+.day-card.pos-d6  { top: 50.0%; left: 0; }
+.day-card.pos-d7  { top: 59.4%; right: 0; }
+.day-card.pos-d8  { top: 68.8%; left: 0; }
+.day-card.pos-d9  { top: 78.1%; right: 0; }
+.day-card.pos-d10 { top: 87.3%; left: 28%; }
+.tl-note { text-align: center; margin-top: 34px; font-size: 14px; color: var(--text-3); }
+.tl-note b { color: var(--purple-dark); }
+@media (max-width: 900px) {
+    .tl-stage { aspect-ratio: auto; }
+    .tl-svg, .path-walker { display: none; }
+    .day-card, .day-card.pos-d10 { position: static; width: 100%; margin-bottom: 14px; opacity: 1; transform: none; left: auto; right: auto; top: auto; }
+}
+
+/* ---------- tasting feature ---------- */
+.taste-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: center; }
+.taste-img { position: relative; border-radius: var(--rad); overflow: hidden; box-shadow: var(--shadow-pop); aspect-ratio: 1/1; background: linear-gradient(150deg, #2a1d3a, #171021); }
+.taste-img img { width: 100%; height: 100%; object-fit: cover; }
+.taste-points { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 24px 0 22px; }
+.taste-points li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; font-size: 16px; color: var(--text-2); }
+.taste-points li::before { content: '\2713'; color: var(--green); font-weight: 800; }
+.honest-note {
+    border-left: 3px solid var(--claude);
+    background: var(--claude-soft);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 18px;
+    font-size: 14px; color: var(--text-3); line-height: 1.6;
+}
+.honest-note b { color: var(--text-2); }
+
+/* ---------- rounds / countdown ---------- */
+.rounds { background: linear-gradient(180deg, var(--bg-3), var(--bg)); border-top: 1px solid var(--border); text-align: center; }
+.round-card {
+    display: inline-block; margin-top: 36px;
+    background: var(--bg-2); border: 1.5px solid var(--purple); border-radius: var(--rad);
+    padding: 26px 44px; box-shadow: var(--shadow-pop);
+    transition: transform 0.25s ease;
+}
+.round-card:hover { transform: translateY(-3px); }
+.round-label { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--purple); margin-bottom: 6px; }
+.round-dates { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; }
+.round-seats { font-size: 13.5px; color: var(--text-3); margin-top: 6px; }
+.countdown-wrap { margin-top: 36px; }
+.countdown-label { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); margin-bottom: 14px; }
+.countdown { display: flex; justify-content: center; gap: 12px; }
+.cd-unit { width: 82px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 6px 11px; box-shadow: var(--shadow-card); }
+.cd-num { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.cd-lab { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); margin-top: 3px; }
+
+/* ---------- skills ---------- */
+.skills-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 46px; }
+.skill-pill {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 12px; text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.skill-pill:hover { transform: translateY(-3px); border-color: var(--purple); }
+.skill-pill code { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--purple-dark); display: block; margin-bottom: 4px; }
+.skill-pill span { font-size: 11.5px; color: var(--text-4); line-height: 1.3; display: block; }
+
+/* ---------- why-fail ---------- */
+.fail-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
+.fail-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rad); padding: 28px 26px; }
+.fail-card .fc-tag { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--claude); margin-bottom: 12px; }
+.fail-card h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+.fail-card p { font-size: 14.5px; color: var(--text-3); line-height: 1.6; }
+
+/* ---------- objections ---------- */
+.obj-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
+.obj-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--rad); padding: 30px 26px; box-shadow: var(--shadow-card); }
+.obj-card .oc-x { font-size: 14px; font-weight: 700; color: #b91c1c; background: #fee2e2; display: inline-block; padding: 4px 12px; border-radius: 999px; margin-bottom: 14px; }
+.obj-card h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+.obj-card p { font-size: 14.5px; color: var(--text-3); line-height: 1.6; }
+
+/* ---------- roi ---------- */
+.roi { text-align: center; }
+.roi-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 760px; margin: 46px auto 0; }
+.roi-box { border-radius: var(--rad); padding: 32px 28px; text-align: left; }
+.roi-box.old { background: var(--bg-2); border: 1px solid var(--border); }
+.roi-box.new { background: linear-gradient(150deg, #2a1d3a, #1c1226); color: #f3edfa; border: 1px solid #34244a; box-shadow: var(--shadow-pop); }
+.roi-box .rb-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 12px; color: var(--text-4); }
+.roi-box.new .rb-tag { color: #b9aecb; }
+.roi-box .rb-price { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.roi-box.new .rb-price { color: var(--gold-hi); }
+.roi-box p { font-size: 14.5px; line-height: 1.6; color: var(--text-3); }
+.roi-box.new p { color: #cfc6de; }
+
+/* ---------- about ---------- */
+.about { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.about-card { display: grid; grid-template-columns: 190px 1fr; gap: 40px; align-items: start; background: var(--bg); border: 1px solid var(--border); border-radius: var(--rad); padding: 44px; box-shadow: var(--shadow-card); max-width: 860px; margin: 0 auto; }
+.about-photo { width: 190px; height: 190px; border-radius: 50%; object-fit: cover; border: 3px solid var(--purple); box-shadow: 0 8px 26px rgba(91,35,133,0.22); }
+.about-card h3 { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+.about-role { font-size: 14px; font-weight: 700; color: var(--claude); margin-bottom: 16px; }
+.about-card p { font-size: 15.5px; color: var(--text-3); line-height: 1.7; margin-bottom: 14px; }
+.about-ps { border-top: 1px dashed var(--border-hi); padding-top: 14px; font-size: 13.5px; color: var(--text-4); font-style: italic; }
+.about-ps b { color: var(--claude); font-style: normal; }
+
+/* ---------- faq ---------- */
+.faq-list { max-width: 760px; margin: 44px auto 0; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; text-align: left; padding: 22px 4px; font-size: 17.5px; font-weight: 700; color: var(--text); }
+.faq-q .chev { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--purple-light); color: var(--purple-dark); display: grid; place-items: center; font-size: 15px; font-weight: 700; transition: transform 0.3s ease; }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1); }
+.faq-a-inner { padding: 0 4px 24px; font-size: 15px; color: var(--text-3); line-height: 1.7; max-width: 62ch; }
+.faq-item.open .chev { transform: rotate(45deg); }
+
+/* ---------- pricing ---------- */
+.pricing { background: linear-gradient(180deg, var(--bg-3), var(--bg)); border-top: 1px solid var(--border); }
+.price-grid { display: grid; grid-template-columns: 1fr 1.12fr 1fr; gap: 22px; align-items: start; margin-top: 52px; }
+.price-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--rad); padding: 34px 30px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; }
+.price-card.featured { position: relative; background: linear-gradient(160deg, #2e2040, #1c1226); color: #f3edfa; border: 1px solid #4b3268; box-shadow: var(--shadow-pop); }
+.pc-flag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: linear-gradient(105deg, #8a6a15, #d4a017 40%, #f5c518 55%, #d4a017 70%, #8a6a15); color: #241505; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 16px; border-radius: 999px; box-shadow: 0 4px 14px rgba(212,160,23,0.35); }
+.pc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--purple); margin-bottom: 14px; }
+.price-card.featured .pc-name { color: var(--gold-hi); }
+.pc-price { font-size: 46px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px; }
+.pc-price .pc-old { font-size: 22px; font-weight: 600; text-decoration: line-through; opacity: 0.5; margin-right: 10px; vertical-align: 6px; }
+.pc-save { display: inline-block; font-size: 12px; font-weight: 700; color: #14532d; background: #dcfce7; border-radius: 999px; padding: 3px 12px; margin-bottom: 10px; }
+.price-card.featured .pc-save { color: #f5c518; background: rgba(245, 197, 24, 0.14); }
+.pc-sub { font-size: 13px; color: var(--text-4); margin-bottom: 22px; }
+.price-card.featured .pc-sub { color: #b9aecb; }
+.pc-perks { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 28px; flex-grow: 1; }
+.pc-perks li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 14px; line-height: 1.45; color: var(--text-2); }
+.price-card.featured .pc-perks li { color: #e4dcf0; }
+.pc-perks li::before { content: '\2713'; color: var(--green); font-weight: 800; }
+.price-card.featured .pc-perks li::before { color: var(--gold-hi); }
+.price-card .btn { width: 100%; }
+.pc-note { text-align: center; font-size: 12.5px; color: var(--text-4); margin-top: 12px; }
+.price-card.featured .pc-note { color: #b9aecb; }
+.grad-note { max-width: 680px; margin: 34px auto 0; text-align: center; font-size: 14px; color: var(--text-3); background: var(--purple-light); border: 1px solid rgba(122,58,168,0.25); border-radius: 14px; padding: 16px 22px; }
+.grad-note b { color: var(--purple-dark); }
+/* two tiers side by side: a detailed hero card, and a quiet premium card that
+   deliberately carries no feature list (its job is to anchor, not to compete) */
+.price-duo { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; align-items: stretch; margin-top: 52px; text-align: left; }
+.price-duo .pc-perks, .price-duo .pc-perks li { text-align: left; }
+.price-duo .pc-name, .price-duo .pc-price, .price-duo .pc-sub, .price-duo .pc-save { text-align: left; }
+.pc-bump { margin-top: 16px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 13.5px; line-height: 1.6; color: #d9d0e8; text-align: left; }
+.pc-bump b { color: var(--gold-hi); }
+.price-card.quiet { justify-content: center; text-align: left; }
+.pb-name { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; }
+.pb-price { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 6px; }
+.pb-vs { font-size: 13px; color: var(--text-4); margin-bottom: 18px; }
+.pb-body { font-size: 15.5px; color: var(--text-3); line-height: 1.7; margin-bottom: 22px; }
+.pb-link { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--purple-dark); text-decoration: underline; text-underline-offset: 3px; }
+.pb-seats { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); margin-top: 18px; }
+/* inline glossary: hover on desktop, tap on touch */
+.gloss { border-bottom: 1px dotted currentColor; cursor: help; position: relative; outline: none; }
+.gloss::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(4px);
+    width: 262px; background: #1c1226; color: #f3edfa; font-family: var(--sans); font-size: 12.5px; font-weight: 500; line-height: 1.5;
+    letter-spacing: 0; text-transform: none; text-align: left; padding: 11px 13px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    opacity: 0; visibility: hidden; transition: opacity .16s ease, transform .16s ease; z-index: 60; pointer-events: none; }
+.gloss::before { content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: #1c1226; opacity: 0; visibility: hidden; transition: opacity .16s ease; z-index: 61; }
+.gloss:hover::after, .gloss:focus::after, .gloss.open::after,
+.gloss:hover::before, .gloss:focus::before, .gloss.open::before { opacity: 1; visibility: visible; }
+.gloss:hover::after, .gloss:focus::after, .gloss.open::after { transform: translateX(-50%) translateY(0); }
+@media (max-width: 860px) {
+    .price-duo { grid-template-columns: 1fr; max-width: 460px; margin-left: auto; margin-right: auto; }
+    .gloss::after { width: 200px; }
+}
+
+/* ---------- guarantee ---------- */
+.guarantee { text-align: center; }
+.g-card { max-width: 720px; margin: 0 auto; background: var(--bg-2); border: 1.5px solid var(--gold); border-radius: var(--rad); padding: 46px 44px; box-shadow: 0 2px 6px rgba(140,106,29,0.10), 0 20px 50px rgba(140,106,29,0.12); position: relative; }
+.g-seal { width: 74px; height: 74px; border-radius: 50%; border: 2px solid var(--gold-deep); color: var(--gold-deep); display: grid; place-items: center; font-family: var(--mono); font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; line-height: 1.3; position: absolute; top: -26px; left: 50%; transform: translateX(-50%) rotate(-8deg); background: var(--bg-2); }
+.g-card h3 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; margin: 14px 0 24px; letter-spacing: -0.015em; }
+.g-card p { font-size: 16px; color: var(--text-3); line-height: 1.7; max-width: 54ch; margin: 0 auto; }
+.g-card .g-small { font-size: 13px; color: var(--text-4); margin-top: 22px; }
+.fp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; text-align: left; margin-top: 6px; }
+.fp-item { background: var(--bg-3); border: 1px solid var(--border); border-radius: 14px; padding: 24px 24px; }
+.fp-item h4 { font-size: 17px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+.fp-item p { font-size: 14.5px; margin: 0; max-width: none; }
+@media (max-width: 760px) { .fp-grid { grid-template-columns: 1fr; } }
+
+/* ---------- final cta ---------- */
+.final-cta { position: relative; overflow: hidden; text-align: center; padding: 120px 0; background: #171021; color: #f3edfa; }
+.final-bg { position: absolute; inset: 0; opacity: 0.34; background: center/cover no-repeat; }
+.final-scrim { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 80% at 50% 100%, rgba(23,16,33,0.2), rgba(23,16,33,0.88)); }
+.final-inner { position: relative; z-index: 1; }
+.final-cta h2 { color: #fff; }
+.final-cta h2 .hl { color: var(--gold-hi); }
+.final-cta .section-sub { color: #cfc6de; margin: 0 auto 34px; }
+.final-cta .note { display: block; margin-top: 14px; font-size: 13px; color: #b9aecb; }
+
+/* ---------- footer ---------- */
+footer { padding: 44px 0 60px; text-align: center; border-top: 1px solid var(--border); background: var(--bg); }
+footer .f-brand { font-weight: 800; font-size: 17px; margin-bottom: 8px; }
+footer p { font-size: 13px; color: var(--text-4); }
+footer nav { margin-top: 14px; display: flex; justify-content: center; gap: 22px; font-size: 13.5px; color: var(--text-3); }
+footer nav a:hover { color: var(--purple-dark); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 960px) {
+    section { padding: 72px 0; }
+    .sol-grid, .taste-grid { grid-template-columns: 1fr; gap: 34px; }
+    .steps, .fail-grid, .obj-row { grid-template-columns: 1fr; }
+    .tl-grid { grid-template-columns: repeat(2, 1fr); }
+    .skills-grid { grid-template-columns: repeat(3, 1fr); }
+    .price-grid { grid-template-columns: 1fr; max-width: 430px; margin-left: auto; margin-right: auto; }
+    .price-card.featured { order: -1; }
+    .roi-compare { grid-template-columns: 1fr; }
+    .about-card { grid-template-columns: 1fr; text-align: center; padding: 34px 26px; }
+    .about-photo { margin: 0 auto; }
+    .brand { font-size: 16px; }
+}
+@media (max-width: 520px) {
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .tl-grid { grid-template-columns: 1fr; }
+    .countdown { gap: 8px; } .cd-unit { width: 72px; }
+    .launch-bar { font-size: 12px; padding: 0 34px; }
+    .topnav-inner .btn { padding: 10px 16px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html.js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+
+<!-- LAUNCH BAR -->
+<div id="launchBar" class="launch-bar">
+    <span class="lb-dot"></span>
+    <span>Round 1 starts August 17 &middot; <b id="lbTimer">&hellip;</b></span>
+    <button class="launch-bar-close" id="launchBarClose" aria-label="Dismiss">&#x2715;</button>
+</div>
+
+<!-- CLAUDE STAR SYMBOL -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="claude-star" viewBox="0 0 100 100">
+        <g fill="currentColor">
+            <path d="M50 4 L56 40 L50 50 L44 40 Z"/><path d="M50 96 L44 60 L50 50 L56 60 Z"/>
+            <path d="M4 50 L40 44 L50 50 L40 56 Z"/><path d="M96 50 L60 56 L50 50 L60 44 Z"/>
+            <path d="M18 18 L46 42 L50 50 L38 46 Z"/><path d="M82 82 L54 58 L50 50 L62 54 Z"/>
+            <path d="M82 18 L58 46 L50 50 L54 38 Z"/><path d="M18 82 L42 54 L50 50 L46 62 Z"/>
+        </g>
+    </symbol>
+</svg>
+
+<!-- TOP NAV -->
+<div class="topnav">
+    <div class="topnav-inner">
+        <a class="brand" href="#top">The Wonka Creative Bootcamp</a>
+        <a class="btn small" href="#pricing">Get My Ticket &rarr;</a>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+    <div class="hero-grid"></div>
+    <svg class="claude-star cs-1"><use href="#claude-star"/></svg>
+    <svg class="claude-star cs-2"><use href="#claude-star"/></svg>
+    <div class="wrap">
+        <h1>Build Your <span class="accent">AI Creative Director</span> in 10 Days</h1>
+        <p class="hero-date">Round 1 starts <b>August 17</b> &middot; 50 seats</p>
+
+        <div class="vsl-wrap">
+            <div class="vsl-frame">
+                <div class="vsl-scrim"></div>
+                <span class="vsl-badge">The factory, in 3 minutes</span>
+                <span class="vsl-play" aria-hidden="true"></span>
+                <!-- VSL EMBED HERE: replace this frame's contents with the Jay + Wonka video iframe -->
+            </div>
+            <p class="vsl-under">&#9654; <strong>Watch the 3-minute overview.</strong> The fastest way to see if this is right for you.</p>
+        </div>
+
+        <div class="hero-trust">
+            <span>Zero coding required</span>
+            <span>Runs on YOUR real product</span>
+            <span>Every image tested twice</span>
+        </div>
+        <div class="hero-cta-row">
+            <a class="btn" href="#pricing">Reserve My Spot &rarr;</a>
+            <span class="note">$497 launch price &middot; 48 hours to change your mind, every dollar back</span>
+        </div>
+    </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="solution" id="meet">
+    <div class="wrap">
+        <div class="sol-grid">
+            <div class="reveal">
+                <div class="sol-img">
+                    <img src="assets/factory/inventing-machine.png" alt="The inventing machine" onerror="this.parentElement.style.aspectRatio='4/3'">
+                    <span class="img-tag">The inventing room</span>
+                </div>
+            </div>
+            <div class="reveal reveal-d1">
+                <div class="section-tag">The solution</div>
+                <h2>Meet <span class="hl">Wonka</span>.<br>Your new Creative Director.</h2>
+                <p class="section-sub">An AI employee who lives inside Claude Code and runs your entire Amazon creative process. You talk to him in plain English. He does the work. You approve it.</p>
+                <ul class="sol-points">
+                    <li><span class="pt-ic">1</span><span><b>Researches your niche.</b> What buyers demand, what reviews complain about, what nobody shows yet.</span></li>
+                    <li><span class="pt-ic">2</span><span><b>Designs the full package.</b> Main image, secondary gallery, A+ content, variations. From your real product, locked as a reference.</span></li>
+                    <li><span class="pt-ic">3</span><span><b>Inspects every asset.</b> Mobile readability, compliance, material accuracy. Nothing ships un-inspected.</span></li>
+                    <li><span class="pt-ic">4</span><span><b>Tests before you spend.</b> A 100-taster panel judges every image against your live listing. Twice.</span></li>
+                    <li><span class="pt-ic">5</span><span><b>Learns your brand.</b> Every product he runs makes the next one sharper.</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TERMINAL DEMO -->
+<section class="term-section">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">Inside Claude Code</div>
+        <h2 class="reveal">You type one command.<br><span class="hl-c">He runs the room.</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">No design tools. No prompt engineering. Wonka works in plain English inside Claude Code, and every factory day hands you a new command.</p>
+        <div class="term reveal reveal-d2" aria-label="Claude Code terminal demo">
+            <div class="term-bar"><i></i><i></i><i></i><span>claude &middot; your factory</span></div>
+            <div class="term-body">
+<span class="dim">you@factory %</span> <span class="cmd">/tasting-room</span><br>
+<span class="who">Wonka:</span> Seating 100 tasters matched to your real buyers...<br>
+<span class="who">Wonka:</span> Round 1. Your four candidates vs your live main image.<br>
+<span class="who">Wonka:</span> <span class="ok">Verdict is in. CLEAR LEAD: candidate B.</span><br>
+<span class="who">Wonka:</span> Top objection: "I can't tell how big it is."<br>
+<span class="dim">you@factory %</span> <span class="cmd">/fix candidate-b "make the size obvious"</span><br>
+<span class="who">Wonka:</span> Done. Round 2 is seated. Same sitting, no waiting.<br>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">How it works</div>
+        <h2 class="reveal">Watch a little.<br><span class="hl">Build a lot.</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">Ten factory days over two weeks. Each day: a short episode, then you run that room on YOUR product with Wonka doing the heavy lifting.</p>
+        <div class="steps">
+            <div class="step-card reveal">
+                <div class="step-num">STEP 1</div>
+                <h3>Watch the episode</h3>
+                <p>Two to four short lessons open one room of the factory. One question, one skill, one artifact. No filler.</p>
+            </div>
+            <div class="step-card reveal reveal-d1">
+                <div class="step-num">STEP 2</div>
+                <h3>Run the room</h3>
+                <p>You type the day's command and Wonka executes on your real product: research, brief, images, A+, tests.</p>
+            </div>
+            <div class="step-card reveal reveal-d2">
+                <div class="step-num">STEP 3</div>
+                <h3>Approve the artifact</h3>
+                <p>Every day ends with something real on disk: a brief, a locked reference, a gallery, a Tasting Card. You approve like a boss, not a technician.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="tl-section" id="days">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">The 10 factory days</div>
+        <h2 class="reveal">From zero to a<br><span class="hl">tested creative package</span></h2>
+    </div>
+    <div class="tl-container">
+        <div class="tl-stage" id="tlStage">
+            <svg class="tl-svg" viewBox="0 0 1000 3080" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                    <linearGradient id="wPathGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#5b2385"/>
+                        <stop offset="55%" stop-color="#7a3aa8"/>
+                        <stop offset="100%" stop-color="#d4a017"/>
+                    </linearGradient>
+                    <filter id="wPathGlow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="6" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <path class="path-bg"
+                      d="M 500,60 C 500,150 820,170 820,270 C 820,410 180,430 180,560 C 180,700 820,720 820,850 C 820,990 180,1010 180,1140 C 180,1280 820,1300 820,1430 C 820,1570 180,1590 180,1720 C 180,1860 820,1880 820,2010 C 820,2150 180,2170 180,2300 C 180,2440 820,2460 820,2590 C 820,2730 500,2770 500,2900 C 500,2960 500,3000 500,3040"/>
+                <path class="path-draw"
+                      d="M 500,60 C 500,150 820,170 820,270 C 820,410 180,430 180,560 C 180,700 820,720 820,850 C 820,990 180,1010 180,1140 C 180,1280 820,1300 820,1430 C 820,1570 180,1590 180,1720 C 180,1860 820,1880 820,2010 C 820,2150 180,2170 180,2300 C 180,2440 820,2460 820,2590 C 820,2730 500,2770 500,2900 C 500,2960 500,3000 500,3040"/>
+            </svg>
+
+            <!-- Wonka walks the factory floor -->
+            <div class="path-walker" id="pathWalker" aria-hidden="true">
+                <svg viewBox="-23 -84 46 88" xmlns="http://www.w3.org/2000/svg">
+                    <g class="walker-bounce">
+                        <!-- top hat -->
+                        <g class="w-hat">
+                            <rect x="-11" y="-76" width="22" height="3.5" rx="1.5" fill="#2a1836"/>
+                            <rect x="-7.5" y="-92" width="15" height="17" rx="2" fill="#2a1836"/>
+                            <rect x="-7.5" y="-79.5" width="15" height="3.5" fill="#d4a017"/>
+                        </g>
+                        <!-- head -->
+                        <circle cx="0" cy="-66" r="7" fill="#5b2385"/>
+                        <!-- coat body -->
+                        <path d="M -6,-58 L 6,-58 L 9,-30 L 4,-30 L 3,-38 L -3,-38 L -4,-30 L -9,-30 Z" fill="#5b2385"/>
+                        <!-- bow tie dot -->
+                        <circle cx="0" cy="-55" r="2" fill="#d4a017"/>
+                        <!-- cane arm + cane -->
+                        <g class="w-cane-arm">
+                            <line x1="0" y1="-52" x2="12" y2="-38" stroke="#5b2385" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="12" y1="-38" x2="15" y2="-2" stroke="#d4a017" stroke-width="2.5" stroke-linecap="round"/>
+                            <circle cx="12" cy="-38" r="2.6" fill="#d4a017"/>
+                        </g>
+                        <!-- free arm -->
+                        <line x1="0" y1="-52" x2="-9" y2="-38" stroke="#5b2385" stroke-width="3.5" stroke-linecap="round"/>
+                        <!-- legs -->
+                        <line class="w-leg-l" x1="0" y1="-30" x2="-7" y2="-2" stroke="#3d1a5c" stroke-width="4" stroke-linecap="round"/>
+                        <line class="w-leg-r" x1="0" y1="-30" x2="7" y2="-2" stroke="#3d1a5c" stroke-width="4" stroke-linecap="round"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="day-card pos-d1"><div class="d">Day 1</div><h4>The Front Gate</h4><p>Set up the factory, meet Wonka, warm up his two machines.</p></div>
+            <div class="day-card pos-d2"><div class="d">Day 2</div><h4>Wonka, Meet My Product</h4><p>Your product enters the factory. Wonka researches the whole niche: buyers, reviews, competitors.</p></div>
+            <div class="day-card pos-d3"><div class="d">Day 3</div><h4>The Creative Brief</h4><p>Every selling point mapped to an image, on purpose. Nothing dropped silently. You approve it, then it goes into the machine.</p></div>
+            <div class="day-card pos-d4"><div class="d">Day 4</div><h4>The Reference Room</h4><p>Your real product locked as a visual mold, smoke tested, and your brand look set.</p></div>
+            <div class="day-card pos-d5"><div class="d">Day 5</div><h4>The Main Image Room</h4><p>A dozen hero candidates on your locked product, then the quality loop taught once and taught properly.</p></div>
+            <div class="day-card pos-d6"><div class="d">Day 6</div><h4>The Secondary Images Room</h4><p>Ten complete style directions across your whole gallery. Pick one, refine it, and judge the set as a team.</p></div>
+            <div class="day-card pos-d7"><div class="d">Day 7</div><h4>The A+ Room</h4><p>The one asset you hand over on purpose, judged on beauty, exported ready to upload.</p></div>
+            <div class="day-card pos-d8"><div class="d">Day 8</div><h4>The Tasting Room</h4><p>100 tasters judge your images against your live listing. Two races, verdicts in minutes.</p></div>
+            <div class="day-card pos-d9"><div class="d">Day 9</div><h4>The Variations Room</h4><p>One pilot variant done properly, then the whole family on one line. Optional if you sell a single SKU.</p></div>
+            <div class="day-card pos-d10"><div class="d">Day 10</div><h4>The Improvement Loop</h4><p>Your log gets written, so your next product costs a fraction of this one.</p></div>
+        </div>
+    </div>
+    <div class="wrap">
+        <p class="tl-note reveal">10 days, 25 short lessons, <b>30 to 60 minutes a day</b>. Miss a day? Everything is recorded and the factory waits for you.</p>
+    </div>
+</section>
+
+<!-- TASTING ROOM FEATURE -->
+<section id="tasting">
+    <div class="wrap">
+        <div class="taste-grid">
+            <div class="reveal">
+                <div class="section-tag">The differentiator</div>
+                <h2>Every image faces<br><span class="hl">100 tasters. Twice.</span></h2>
+                <p class="section-sub">Most sellers upload their best guess. Your factory has a Tasting Room: a synthetic panel of ~100 AI tasters matched to your real buyer demographics.</p>
+                <ul class="taste-points">
+                    <li>Your live Amazon image is always in the race. The champion has to beat it.</li>
+                    <li>Verdicts in minutes, for a few dollars. Not days and hundreds.</li>
+                    <li>Tasters explain their picks. Objections become fixes.</li>
+                    <li>Round 2 runs the same sitting. Refine and re-test immediately.</li>
+                </ul>
+                <div class="honest-note"><b>Honest framing:</b> the Tasting Room is AI tasters, not real shoppers. It gives a directional verdict plus objection mining. Want real shoppers on top? That is the optional Pro Move in the shipping lesson.</div>
+            </div>
+            <div class="reveal reveal-d1">
+                <div class="taste-img">
+                    <img src="assets/factory/tasting-room.png" alt="The Tasting Room" onerror="this.parentElement.style.aspectRatio='4/3'">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ROUNDS + COUNTDOWN -->
+<section class="rounds" id="rounds">
+    <div class="wrap">
+        <div class="section-tag" style="justify-content:center;">Next round</div>
+        <h2 class="reveal">Round 1 opens <span class="hl">August 17</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">Two weeks, live support, fifty seats so every factory gets attention on the floor. A new round opens every two weeks. When this one fills, it runs without you.</p>
+        <a href="#pricing" class="round-card reveal reveal-d2">
+            <div class="round-label">Round 1</div>
+            <div class="round-dates">August 17 &middot; August 28</div>
+            <div class="round-seats">50 seats &middot; The Private Tour limited to 4</div>
+        </a>
+        <div class="countdown-wrap reveal reveal-d3">
+            <div class="countdown-label">Round starts in</div>
+            <div class="countdown" aria-label="Countdown to round start">
+                <div class="cd-unit"><div class="cd-num" id="cdDays">00</div><div class="cd-lab">Days</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdHours">00</div><div class="cd-lab">Hours</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdMins">00</div><div class="cd-lab">Min</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdSecs">00</div><div class="cd-lab">Sec</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">What you keep</div>
+        <h2 class="reveal">15 skills. <span class="hl">One employee.</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">Every day of the bootcamp installs new commands into your factory. By graduation they are yours forever, for every product you ever launch.</p>
+        <div class="skills-grid reveal reveal-d2">
+            <div class="skill-pill"><code>/machines-check</code><span>warm up the tools</span></div>
+            <div class="skill-pill"><code>/meet-my-product</code><span>full niche research</span></div>
+            <div class="skill-pill"><code>/brand-kit</code><span>lock your look</span></div>
+            <div class="skill-pill"><code>/reference-sheet</code><span>mold your product</span></div>
+            <div class="skill-pill"><code>/creative-brief</code><span>the master plan</span></div>
+            <div class="skill-pill"><code>/main-image</code><span>four hero bets</span></div>
+            <div class="skill-pill"><code>/secondary-images</code><span>the gallery</span></div>
+            <div class="skill-pill"><code>/aplus</code><span>below the fold</span></div>
+            <div class="skill-pill"><code>/variations</code><span>SKUs and bundles</span></div>
+            <div class="skill-pill"><code>/inspect</code><span>quality gates</span></div>
+            <div class="skill-pill"><code>/fix</code><span>surgical edits</span></div>
+            <div class="skill-pill"><code>/tasting-room</code><span>100-taster panel</span></div>
+            <div class="skill-pill"><code>/ready-to-upload</code><span>the final pack</span></div>
+            <div class="skill-pill"><code>/improvement-loop</code><span>he gets sharper</span></div>
+            <div class="skill-pill"><code>/factory-report</code><span>status at a glance</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- WHY PEOPLE FAIL -->
+<section class="fail-section">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">The hard truth</div>
+        <h2 class="reveal">Why AI product images<br><span class="hl-c">usually scream AI</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">Anyone can generate a pretty picture. Sellers fail at the parts around the picture. The factory exists for exactly those parts.</p>
+        <div class="fail-grid">
+            <div class="fail-card reveal"><div class="fc-tag">Failure 1</div><h3>The product is wrong</h3><p>Generic AI redraws your product from imagination: wrong bottle, wrong size, wrong label. Wonka locks your REAL product as a reference and smoke-tests the lock before any batch.</p></div>
+            <div class="fail-card reveal reveal-d1"><div class="fc-tag">Failure 2</div><h3>Nobody inspects</h3><p>Tiny unreadable text, icon soup, non-compliant badges. Every factory image passes hard gates: a mobile squint test, one message per image, compliance checks.</p></div>
+            <div class="fail-card reveal reveal-d2"><div class="fc-tag">Failure 3</div><h3>Nobody tests</h3><p>Most sellers upload their favorite and hope. Your images race the live listing in the Tasting Room, twice, before a single ad dollar.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- OBJECTIONS -->
+<section>
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">Hesitations</div>
+        <h2 class="reveal">Three reasons people hesitate.<br><span class="hl">All three, answered.</span></h2>
+        <div class="obj-row">
+            <div class="obj-card reveal"><div class="oc-x">"I'm not technical"</div><h3>Neither is the bootcamp</h3><p>If you can type a WhatsApp message, you can run the factory. Every command is plain English. Zero code is written across all 10 days.</p></div>
+            <div class="obj-card reveal reveal-d1"><div class="oc-x">"I already have a designer"</div><h3>Keep them. Arm them.</h3><p>The factory does research, drafts, and testing at machine speed. Your designer polishes winners instead of guessing at concepts. Many students ARE the designer.</p></div>
+            <div class="obj-card reveal reveal-d2"><div class="oc-x">"AI images look fake"</div><h3>That is why the gates exist</h3><p>Product-locked references, quality inspection, and taster-tested winners. If an image reads fake, it does not leave the factory.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ROI -->
+<section class="roi">
+    <div class="wrap">
+        <div class="section-tag" style="justify-content:center;">The math</div>
+        <h2 class="reveal">One designer set costs more.<br><span class="hl">You keep the factory forever.</span></h2>
+        <div class="roi-compare">
+            <div class="roi-box old reveal">
+                <div class="rb-tag">The old way</div>
+                <div class="rb-price">$500 to $1,500</div>
+                <p>Per untested image set, per product. Two week turnaround, three revisions, and you still upload a guess.</p>
+            </div>
+            <div class="roi-box new reveal reveal-d1">
+                <div class="rb-tag">The factory way</div>
+                <div class="rb-price">$497. Once.</div>
+                <p>A full tested package for your product during the bootcamp, and the whole factory stays installed for every product after it.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="who">
+    <div class="wrap">
+        <div class="center" style="margin-bottom: 44px;">
+            <div class="section-tag" style="justify-content:center;">Your guide</div>
+            <h2 class="reveal">Who's <span class="hl">behind this</span></h2>
+        </div>
+        <div class="about-card reveal">
+            <img class="about-photo" src="assets/jay-photo.jpg" alt="Jay Margaliot">
+            <div>
+                <h3>Jay Margaliot</h3>
+                <div class="about-role">AI Specialist &middot; eCommerce Seller &middot; Builder</div>
+                <p>I have been an eCommerce seller for over 10 years, and I run the AI Vault, a community of 250+ sellers and business owners using AI to grow their operations. My day job is AI leadership for brands selling hundreds of products on Amazon.</p>
+                <p>This bootcamp is the concentrated version of the creative system I run in the real world: research, product-locked generation, hard quality gates, and testing before spending. Packaged into 10 days of hands-on building with Wonka.</p>
+                <p style="margin-bottom:0;">It is the follow-up to my <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" rel="noopener" style="color: var(--purple-dark); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(122,58,168,0.4); text-underline-offset: 3px;">Claude Code Challenge</a>, where over 400 builders created their first AI employee, Donna. Wonka is the second hire.</p>
+                <div class="about-ps" style="margin-top:16px;"><b>P.S.</b> Wonka helped build this page. He also thinks his tier names are hilarious. I just approve things around here.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">Questions</div>
+        <h2 class="reveal">Fair questions, <span class="hl">straight answers</span></h2>
+        <div class="faq-list reveal reveal-d1">
+            <div class="faq-item">
+                <button class="faq-q">Do I need to know how to code?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">No. You never write code in the bootcamp. Claude Code is the environment Wonka lives in, and you talk to him in plain English. If you can describe your product in a sentence, you are qualified.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">What tools do I need, and what do they cost?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">A Claude Pro or Max subscription and a live Amazon product (or real photos of it). Genrupt, the image engine Wonka drives through MCP (it locks your real product so every generated image is your product, not a look-alike), is included: a full month, 1,800 credits, about $100 of value. On average that carries a product through the bootcamp, often more, and you can top up anytime. Everything else runs inside Claude, plus $10 to $20 of OpenAI credit for the whole bootcamp: cents per image edit, a few dollars per Tasting Room race, four races in total.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">Is the Tasting Room real shoppers?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">No, and we say that plainly. It is a synthetic panel: about 100 AI tasters matched to your real buyer demographics who judge your candidates against your live image and explain their picks. Directional verdicts plus objection mining, in minutes, for a few dollars. Real shopper polls are the optional Pro Move in the shipping lesson.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">Will the images actually look like MY product?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">That is the point of the Reference Room. Your product gets locked as a visual mold from your real photos, and no batch runs before a smoke test proves the lock. If the test image is not your product, nothing else gets generated. That said, AI does not fit every product: complex textures, fine patterns, and unusual shapes can distort. If you suspect yours is a hard one, email me before registering and I will tell you honestly.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">What is the refund policy?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">Two separate things. First, you get a full 48 hours from registration to change your mind and receive every dollar back, no questions asked. Second, the guarantee: complete all 10 days and the graduation checklist, and you have a full, tested creative package ready to upload by the end of the bootcamp, or a full refund. That is a promise about the package, never about your sales. Results vary by product and niche. Outside those two, sales are final, so take a real look inside the window. Not sure your product fits? Ask before you buy: info@jaygptpro.com.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">How much time does it take, and when does it start?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">30 to 60 minutes a day for 10 factory days over two weeks. Round 1 starts August 17. Everything is recorded, so a missed day never breaks the flow. A new round opens every two weeks if this one fills.</div></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q">Which ticket should I pick?<span class="chev">+</span></button>
+                <div class="faq-a"><div class="faq-a-inner">The Golden Ticket is the bootcamp, and it is complete: nothing is held back for a higher tier. The Private Tour is for brands and agencies who want personal guidance through the whole thing and their team brought up to speed on it. Four seats per round, and the scope is set on a call.</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+    <div class="wrap center">
+        <div class="section-tag" style="justify-content:center;">Admission</div>
+        <h2 class="reveal">Pick your <span class="hl">ticket</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">One payment. The factory, the skills, and the recordings are yours for life.</p>
+        <div class="price-duo">
+            <div class="price-card featured reveal reveal-d1">
+                <div class="pc-flag">Launch price</div>
+                <div class="pc-name">Golden Ticket</div>
+                <div class="pc-price"><span class="pc-old">$697</span>$497</div>
+                <div class="pc-sub">Everything you need to run the factory</div>
+                <div class="pc-save">Launch price &middot; going up soon</div>
+                <ul class="pc-perks">
+                    <li><span>All 10 days plus the Wonka kit, <span class="gloss" tabindex="0" data-tip="Fifteen ready-made commands that run the factory: research, brief, image generation, quality gate, edits, testing, variations.">15 skills</span>, yours forever</span></li>
+                    <li><span>Your full package built and tested: main image, secondary set, A+, variations</span></li>
+                    <li><span>Two <span class="gloss" tabindex="0" data-tip="A synthetic consumer panel. About 100 AI tasters matched to your real buyer demographics judge your images against your live listing and explain why. AI tasters, not real shoppers: a directional verdict plus objection mining.">Tasting Rooms</span>, about 100 AI tasters each</span></li>
+                    <li><span>A full month of <span class="gloss" tabindex="0" data-tip="The image engine Wonka drives through MCP. It locks your real product so every generated image is your product, not a look-alike.">Genrupt</span>, 1,800 credits, about $100 of value</span></li>
+                    <li><span>WhatsApp group with the founder, plus live Zoom Q&amp;A every two weeks</span></li>
+                    <li><span>One personal call with an expert from the team</span></li>
+                </ul>
+                <a class="btn gold" href="https://buy.stripe.com/00w3cxgI9eZ4foadUybwk0g?prefilled_promo_code=WONKA200">Claim Your Golden Ticket &rarr;</a>
+                <div class="pc-note">50 seats &middot; 48 hours to change your mind, every dollar back</div>
+                <div class="pc-bump"><b>New to Claude Code?</b> Wonka is your second AI employee, so he assumes you know the basics. Add the foundations at checkout, the full Claude Code Challenge with every day unlocked immediately, for $250. Finish it before the bootcamp opens.</div>
+            </div>
+            <div class="price-card quiet reveal reveal-d2">
+                <div class="pb-name">The Private Tour</div>
+                <div class="pb-price">$2,999</div>
+                <div class="pb-vs">4 seats per round</div>
+                <p class="pb-body">Everything in the Golden Ticket, plus personal guidance through the entire bootcamp and onboarding for your team.</p>
+                <p class="pb-body">The scope depends on your catalog.</p>
+                <a class="btn" href="https://buy.stripe.com/aFabJ32Rjg38ek68Aebwk0f">Book the Private Tour &rarr;</a>
+                <a class="pb-link" href="#">or book a call to hear the details</a>
+            </div>
+        </div>
+        <div class="grad-note reveal"><b>Claude Code Challenge graduates and Vault members:</b> your private window opens before every round. You hired a Chief of Staff. Now hire a Creative Director. Check your email for your private link.</div>
+    </div>
+</section>
+
+<!-- THE FINE PRINT, SAID PLAINLY -->
+<section class="guarantee" id="fine-print">
+    <div class="wrap">
+        <div class="g-card reveal">
+            <div class="g-seal">Read<br>Before<br>You Buy</div>
+            <h3>Two things, said plainly, before you pay.</h3>
+            <div class="fp-grid">
+                <div class="fp-item">
+                    <h4>1. The guarantee, and 48 hours to change your mind.</h4>
+                    <p><b>Complete all 10 days and the graduation checklist, and you have a full, tested creative package ready to upload by the end of the bootcamp, or a full refund.</b> That is a promise about the package, never about your sales.</p>
+                    <p>Before any of that: register, step inside, meet Wonka. If it is not for you, say so within 48 hours and every dollar comes back, no questions asked. Outside those two, sales are final, so take a real look inside the window.</p>
+                </div>
+                <div class="fp-item">
+                    <h4>2. AI does not fit every product.</h4>
+                    <p>Some products distort in AI generation: complex textures, fine patterns, unusual shapes. The factory's product lock and smoke tests catch a lot, but they do not repeal physics. If your product might be one of the hard ones, ask me BEFORE you register and I will tell you honestly.</p>
+                    <a class="btn ghost" style="margin-top:14px;" href="mailto:info@jaygptpro.com?subject=Is my product a fit for the Wonka Bootcamp%3F">Ask me about your product first &rarr;</a>
+                </div>
+            </div>
+            <p class="g-small">Results vary by product and niche. No revenue promises, ever.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+    <div class="final-bg" style="background-image:url('assets/factory/factory-gates.png');"></div>
+    <div class="final-scrim"></div>
+    <div class="wrap final-inner">
+        <h2 class="reveal">Your Creative Director is<br><span class="hl">10 days away.</span></h2>
+        <p class="section-sub reveal reveal-d1">30 to 60 minutes a day. By graduation, a tested creative package ready to upload, and an employee who never leaves.</p>
+        <div class="reveal reveal-d2">
+            <a class="btn gold" href="#pricing">Get My Golden Ticket &rarr;</a>
+            <span class="note">Round 1 starts August 17 &middot; 50 seats &middot; $497 launch price, going up soon</span>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="f-brand">Wonka Creative Bootcamp</div>
+    <p>Printed in the factory. &copy; 2026 JAY GPT PRO LLC. All rights reserved.</p>
+    <nav>
+        <a href="mailto:info@jaygptpro.com">Contact</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+    </nav>
+</footer>
+
+<script>
+(function(){
+    // Launch bar
+    var lb = document.getElementById('launchBar');
+    document.getElementById('launchBarClose').addEventListener('click', function(){
+        document.body.classList.add('lb-off');
+    });
+
+    // Glossary tooltips: hover handles the mouse, this handles the tap.
+    // :focus alone is unreliable on a span on touch devices.
+    document.addEventListener('click', function (e) {
+        var g = e.target.closest ? e.target.closest('.gloss') : null;
+        var open = document.querySelectorAll('.gloss.open');
+        for (var i = 0; i < open.length; i++) { if (open[i] !== g) open[i].classList.remove('open'); }
+        if (g) { g.classList.toggle('open'); }
+    });
+
+    // Countdown to Round 1
+    var target = new Date('2026-08-17T09:00:00-04:00').getTime();
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+        var d = target - Date.now();
+        if (d < 0) d = 0;
+        var days = Math.floor(d / 86400000),
+            hrs  = Math.floor(d % 86400000 / 3600000),
+            mins = Math.floor(d % 3600000 / 60000),
+            secs = Math.floor(d % 60000 / 1000);
+        var el;
+        (el = document.getElementById('cdDays'))  && (el.textContent = pad(days));
+        (el = document.getElementById('cdHours')) && (el.textContent = pad(hrs));
+        (el = document.getElementById('cdMins'))  && (el.textContent = pad(mins));
+        (el = document.getElementById('cdSecs'))  && (el.textContent = pad(secs));
+        (el = document.getElementById('lbTimer')) && (el.textContent = days + 'd ' + hrs + 'h ' + mins + 'm');
+    }
+    tick(); setInterval(tick, 1000);
+
+    // Reveal on scroll (with a scroll-position fallback so nothing can stay hidden)
+    var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+    function show(el){ el.classList.add('visible'); }
+    var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+    function sweep(){
+        var vh = window.innerHeight;
+        revealEls.forEach(function(el){
+            if (el.classList.contains('visible')) return;
+            var r = el.getBoundingClientRect();
+            if (r.top < vh - 20 && r.bottom > 0) show(el);
+        });
+    }
+    window.addEventListener('scroll', sweep, { passive: true });
+    window.addEventListener('load', sweep);
+    sweep();
+
+    // Timeline: Wonka walks the path as you scroll
+    var tlStage = document.getElementById('tlStage');
+    var tlSvg = document.querySelector('.tl-svg');
+    var pathDraw = document.querySelector('.tl-svg .path-draw');
+    var walker = document.getElementById('pathWalker');
+    var dayCards = document.querySelectorAll('.day-card');
+    var dayThresholds = [0.05, 0.145, 0.24, 0.335, 0.43, 0.525, 0.62, 0.715, 0.81, 0.92];
+    var VB_W = 1000, VB_H = 3080, pathLength = 0;
+    function setupTimeline(){
+        if (!pathDraw) return;
+        pathLength = pathDraw.getTotalLength();
+        pathDraw.style.strokeDasharray = pathLength;
+        pathDraw.style.strokeDashoffset = pathLength;
+    }
+    function updateTimeline(){
+        if (!tlStage || !pathDraw || !pathLength) return;
+        if (window.innerWidth <= 900) {
+            dayCards.forEach(function(c){ c.classList.add('in'); });
+            return;
+        }
+        var rect = tlStage.getBoundingClientRect();
+        var wh = window.innerHeight;
+        var start = wh * 0.8;
+        var end = -rect.height + wh * 0.45;
+        var progress = Math.max(0, Math.min(1, (start - rect.top) / (start - end)));
+        pathDraw.style.strokeDashoffset = pathLength * (1 - progress);
+        if (progress > 0) {
+            walker.classList.add('active');
+            var point = pathDraw.getPointAtLength(pathLength * progress);
+            var px = (point.x / VB_W) * rect.width;
+            var py = (point.y / VB_H) * rect.height;
+            walker.style.transform = 'translate(' + px + 'px, ' + py + 'px)';
+            walker.classList.toggle('arrived', progress >= 0.97);
+        } else {
+            walker.classList.remove('active');
+            walker.classList.remove('arrived');
+        }
+        dayCards.forEach(function(card, i){
+            if (progress >= dayThresholds[i]) card.classList.add('in');
+        });
+    }
+    window.addEventListener('load', function(){ setupTimeline(); updateTimeline(); });
+    window.addEventListener('resize', function(){ setupTimeline(); updateTimeline(); });
+    window.addEventListener('scroll', updateTimeline, { passive: true });
+    setupTimeline(); updateTimeline();
+
+    // FAQ
+    document.querySelectorAll('.faq-q').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            var item = btn.closest('.faq-item'), a = item.querySelector('.faq-a');
+            var open = item.classList.toggle('open');
+            a.style.maxHeight = open ? a.scrollHeight + 'px' : '0px';
+        });
+    });
+})();
+</script>
+</body>
+</html>
