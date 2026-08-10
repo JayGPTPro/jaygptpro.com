@@ -46,13 +46,17 @@
 --   from rounds where id = 'wonka_r1';
 
 update rounds
-   set start_date              = '2026-08-17',
-       end_date                = '2026-08-28',
-       welcome_dates_display   = 'August 17 . 28, 2026',
+   set start_date              = '2026-09-01',
+       end_date                = '2026-09-17',
+       welcome_dates_display   = 'September 1 . 17, 2026',
        stripe_plink_full_price = 'plink_1U1vCERqcDuiISNTjqJvj1P5'
  where id = 'wonka_r1';
 
--- check: expect one row, wonka_r1 | 2026-08-17 | 2026-08-28
+-- NOTE: start_date and end_date only bracket the round. The daily unlocks come
+-- from CONFIG.DAY_DATES in the portal, because the schedule skips whole days
+-- (Tue-Fri, Tue-Thu, Tue-Thu). Moving these dates does NOT move the doors.
+--
+-- check: expect one row, wonka_r1 | 2026-09-01 | 2026-09-17
 select id, start_date::text, end_date::text, status,
        stripe_plink_full_price, stripe_product_id
   from rounds where id = 'wonka_r1';

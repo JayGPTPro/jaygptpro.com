@@ -2745,7 +2745,17 @@ const CONFIG = {
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
   UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the door opening are the same moment
   TOTAL_DAYS: 10,
-  FALLBACK_START_DATE: '2026-08-17', // Mon 17 Aug 2026. Weekdays only: day 10 opens Fri 28 Aug. Must match the rounds table row.
+  FALLBACK_START_DATE: '2026-09-01', // Tue 1 Sep 2026. Must match the rounds table row.
+  // The ten factory days, explicitly. The schedule is NOT consecutive weekdays:
+  // Jay is away 7-9 Sep and Rosh Hashana falls 11-13 Sep, so the round runs
+  // Tue-Fri, then Tue-Thu, then Tue-Thu. When DAY_DATES is set it wins over
+  // both start_date and the weekday walk, which would otherwise open day 10 on
+  // Mon 14 Sep instead of Thu 17 Sep. Set it to null to fall back to that walk.
+  DAY_DATES: [
+    '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04',
+    '2026-09-08', '2026-09-09', '2026-09-10',
+    '2026-09-15', '2026-09-16', '2026-09-17',
+  ],
   MAP3D: true,                       // 3D isometric factory map. false = instant rollback to the 2D map
 };
 </script>
@@ -3257,6 +3267,13 @@ function nyOffsetMinutes(dateUtc) {
   } catch (e) { return -300; }
 }
 function dayUnlockTime(dayNum) {
+  // An explicit calendar wins over any computation: the round skips whole days.
+  const fixed = (CONFIG.DAY_DATES || [])[dayNum - 1];
+  if (fixed) {
+    const [fy, fmo, fd] = fixed.split('-').map(Number);
+    const fGuess = new Date(Date.UTC(fy, fmo - 1, fd, CONFIG.UNLOCK_HOUR_NY, CONFIG.UNLOCK_BUFFER_MIN, 0));
+    return new Date(fGuess.getTime() - nyOffsetMinutes(fGuess) * 60000);
+  }
   // Day N unlocks at UNLOCK_HOUR_NY New York time on the Nth WEEKDAY from start_date
   // (Sat/Sun are skipped: a Mon 10 Aug start puts day 6 on Mon 17 Aug, day 10 on Fri 21 Aug).
   // start_date itself is expected to be a weekday; if it ever lands on a weekend it
@@ -5968,9 +5985,12 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 1. SUPABASE: rounds table . DONE 20.7, the wonka_r1 row exists.
    The table has several NOT NULL columns beyond id/start_date (name, end_date,
    language, status, ...), so use the full INSERT in SUPABASE-SETUP.sql rather
-   than a two-column one. Round 1 = 2026-08-17 to 2026-08-28 (weekdays only), matching
+   than a two-column one. The round = 2026-09-01 to 2026-09-17, matching
    FALLBACK_START_DATE; the constant is only a fallback for when the rounds
    lookup fails, so the row is what actually governs.
+   EXCEPT for the daily unlocks: the schedule skips whole days, so CONFIG.DAY_DATES
+   holds all ten dates and overrides both the row and the weekday walk.
+   Change the schedule there, not by moving start_date.
 
 2. SUPABASE: allowed_emails
    Each paying member gets a row with round = 'wonka_r1'
@@ -5989,7 +6009,7 @@ DEPLOYMENT CHECKLIST (Jay: complete these before launch)
 
 5. CONFIG TODOs in this file:
    - WHATSAPP_LINK: DONE 26.7
-   - FALLBACK_START_DATE: DONE, 2026-08-17 (weekdays only, day 10 = Fri 28 Aug)
+   - FALLBACK_START_DATE: DONE, 2026-09-01. DAY_DATES holds the real calendar (day 10 = Thu 17 Sep)
    - Every VIMEO_ID_Dx_Ly in the DAYS data: real Vimeo video ids . STILL OPEN, the last blocker
    - Candy-bar resource tiles are display-only strings today; to make one downloadable, change that DAYS resources entry to a {name, url} object and update the render (there is no href to fill)
      (wonka-starter-kit.zip, PDFs, one-pagers)
