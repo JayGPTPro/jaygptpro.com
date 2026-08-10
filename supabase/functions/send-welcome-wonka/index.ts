@@ -22,10 +22,16 @@ const sharedSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
 const FROM_EMAIL = 'Jay Margaliot <info@jaygptpro.com>';
 const REPLY_TO = 'info@jaygptpro.com';
 const DEFAULT_PORTAL = 'https://jaygptpro.com/wonka-bootcamp/';
-// NO kit link in this email (Jay, 10.8): the starter kit is handed out inside
-// the portal on Day 1, and it is still being built until then. NO refund or
-// guarantee talk either; EMAIL-SEQUENCE.md line 10 is the rule, and a purchase
-// confirmation is not the place to reopen the money conversation.
+// What this email deliberately does NOT contain (Jay, 10.8, on his own read):
+//   * a kit link. The starter kit is handed out inside the portal on Day 1, and
+//     it is still being built until then.
+//   * refund or guarantee talk. A purchase confirmation is not the place to
+//     reopen the money conversation.
+//   * a "what is in your ticket" recap. They just read it on the sales page and
+//     paid; selling it back to them after the sale is noise.
+//   * the Claude Code Challenge add-on P.S.
+// Keep it to: what they bought in one line, the dates, the portal, WhatsApp,
+// the Google login warning, and the one thing worth starting early.
 
 function corsHeaders() {
   return {
@@ -112,15 +118,6 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
     <p style="${S.p}">Your <span style="${S.strong}">OpenAI organization verification</span>. It is a one time check, it can take a while to clear, and until it clears your key can talk but it cannot draw. Day 1 shows you exactly where the button lives. Starting early costs you nothing and saves the one delay that actually stings.</p>
   </td></tr>
 
-  <tr><td style="padding:12px 40px 0">
-    <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">What is in your ticket</p>
-    <p style="${S.li}">All 10 days, plus the kit and its 15 skills, yours forever</p>
-    <p style="${S.li}">Your full package built and tested: main, secondaries, A+, variations</p>
-    <p style="${S.li}">The Tasting Room, about 100 tasters per race</p>
-    <p style="${S.li}">A full month of Genrupt, 1,800 credits, about $100 of value</p>
-    <p style="${S.li}">The WhatsApp group and a live Q&amp;A</p>
-  </td></tr>
-
   <tr><td align="center" style="padding:28px 40px 8px">
     <a href="${meta.portal}" target="_blank" style="${S.btn}">Open the portal</a>
   </td></tr>
@@ -129,7 +126,6 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
     <div style="height:2px;background:linear-gradient(90deg,transparent,#B87333,transparent);margin-bottom:20px"></div>
     <p style="${S.p}">Questions? Reply to this email. I read everything.</p>
     <p style="margin:0;font-size:15px;color:#F3E9D2">Jay</p>
-    <p style="margin:18px 0 0;font-size:13px;color:#9C8E9E;line-height:1.7"><strong style="color:#D9CDBA">P.S.</strong> Added the foundations at checkout? Your Claude Code Challenge access arrives in a separate email with every day already unlocked, so you can finish it before this bootcamp opens.</p>
   </td></tr>
 
 </table>
