@@ -1,13 +1,18 @@
 # Wonka Bootcamp . what Jay has to do
 
-Round 1 opens **Monday 10 August 2026**, weekdays only: days 1-5 run Mon 10
-to Fri 14 Aug, the weekend is skipped, and day 10 opens **Friday 21 August**.
+> **STALE, kept for its explanations only. Written 20-25 July, and the dates in
+> it are wrong.** The round is **1 to 17 September 2026** in three bands
+> (1-4, 8-10, 15-17), not August. The unlock calendar that actually runs is
+> `CONFIG.DAY_DATES` in `index.html`; the round row in Supabase is already set.
+> The WhatsApp link is in, the gitignore is in, the DB gate is open. Before
+> acting on any step below, check it against the live state. Current launch
+> truth lives in `wonka/bootcamp/docs/` and in the project memory.
+
 Everything below is the part a machine cannot do: it needs your accounts, your
 decisions, or your money.
 
-Everything else is done and verified. The portal, the map, the day pages, the
-locked-day state, the completion flow and mobile have all been tested end to
-end, twice, most recently against the August date.
+The portal, the map, the day pages, the locked-day state, the completion flow
+and mobile have all been tested end to end, twice.
 
 ---
 
@@ -40,8 +45,10 @@ email lands on a blank page.
 **c. Test the gate both ways.** Private window on
 https://jaygptpro.com/wonka-bootcamp/ :
 sign in with an address that is **not** on the list (must refuse), then with
-`jmargaliot@gmail.com` (must let you in, with all ten days open since you are
-an admin). A gate that has never said no has not been tested.
+one that is (must let you in). A gate that has never said no has not been
+tested. Note since 10.8: `jmargaliot@gmail.com` is no longer an admin, he is
+buyer #1 and sees locked doors like everyone else. `info@jaygptpro.com` is the
+only address that opens every day.
 
 Adding buyers later is two lines of SQL; send me the addresses and I will hand
 you the exact block. If a buyer is also a Donna member, flag them . that case

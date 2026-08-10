@@ -27,9 +27,9 @@
 
 
 -- ------------------------------------------------------------
--- RUN THIS NOW . round 1 is Monday 17 August 2026 (moved 7.8, was 10 Aug)
--- WEEKDAYS ONLY: days 1-5 = Mon 17 to Fri 21 Aug, the weekend is skipped,
--- days 6-10 = Mon 24 to Fri 28 Aug. The portal code now counts weekdays.
+-- ALREADY RUN (8.8). Round 1 is 1 to 17 September 2026, in three bands:
+-- 1-4 Sept, 8-10 Sept, 15-17 Sept. The header used to say August; the August
+-- dates are dead and only the September ones below are real.
 -- Day N unlocks at 9:00 AM New York (16:00 Israel), the same moment the
 -- landing page countdown reaches zero.
 -- ------------------------------------------------------------
