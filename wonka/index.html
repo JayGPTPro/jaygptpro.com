@@ -309,16 +309,70 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 /* ---------- real output showcase ---------- */
 .show-section { padding: 90px 0; background:
     radial-gradient(ellipse 55% 45% at 50% 0%, rgba(74, 37, 69, 0.06), transparent 65%), var(--bg); }
-.show-wrap { display: flex; flex-direction: column; gap: 34px; margin-top: 46px; }
-.show-card { margin: 0; }
-.show-card img { width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: var(--shadow-card); }
-.show-card.show-sq { max-width: 640px; margin: 0 auto; width: 100%; }
-/* A+ is one tall module, so it gets a narrow column instead of the full width */
-.show-card.show-tall { max-width: 430px; margin: 0 auto; width: 100%; }
-.show-tag { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.show-tag code { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--purple);
+/* ---------- output filmstrip ----------
+   One row instead of three stacked sheets, which made this section the longest
+   scroll on the page. Every card is the SAME HEIGHT with its own natural width,
+   so a square main, a wide infographic and a tall A+ module sit on one line
+   undistorted. Adding a second product later means adding <figure>s and
+   nothing else. */
+.show-strip-wrap { position: relative; margin-top: 40px; }
+/* No scroll-snap and no CSS smooth here on purpose: both fight the 1px drift
+   ticks, snap by yanking the row back and smooth by animating every tick. The
+   arrows ask for smooth explicitly instead. */
+.show-strip {
+    display: flex; gap: 16px; overflow-x: auto; padding: 6px 24px 18px;
+    scrollbar-width: none; -ms-overflow-style: none;
+}
+.show-strip::-webkit-scrollbar { display: none; }
+.show-strip figure {
+    margin: 0; flex: none; position: relative;
+    height: 430px; border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--border); box-shadow: var(--shadow-card); background: #fff;
+}
+.show-strip img { display: block; height: 100%; width: auto; max-width: none; }
+/* An A+ page is roughly 1:3, so height-matching it like the others would leave a
+   150px sliver nobody can read. These cards fix the WIDTH instead and show the
+   top of the page, with a fade at the bottom to say the page keeps going. */
+.show-strip figure.tall { width: 290px; }
+.show-strip figure.tall img { width: 100%; height: auto; }
+.show-strip figure.tall::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 90px;
+    background: linear-gradient(transparent, rgba(255,255,255,0.92));
+    pointer-events: none;
+}
+.show-strip figcaption {
+    position: absolute; left: 10px; bottom: 10px;
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #f3edfa;
+    background: rgba(28, 18, 38, 0.74); padding: 5px 10px; border-radius: 999px;
+    backdrop-filter: blur(6px);
+}
+.strip-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255, 253, 250, 0.97); border: 1px solid var(--border-hi);
+    box-shadow: var(--shadow-card); display: grid; place-items: center;
+    font-size: 18px; color: var(--purple);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.strip-nav:hover { transform: translateY(-50%) scale(1.08); }
+.strip-nav[disabled] { opacity: 0; pointer-events: none; }
+.strip-nav.prev { left: 6px; } .strip-nav.next { right: 6px; }
+/* the row fades at both edges so it reads as "there is more this way" */
+.show-strip-wrap::before, .show-strip-wrap::after {
+    content: ''; position: absolute; top: 0; bottom: 18px; width: 64px; z-index: 2; pointer-events: none;
+}
+.show-strip-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
+.show-strip-wrap::after { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
+.strip-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 10px; margin-top: 2px; }
+.strip-legend code { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--purple);
     background: rgba(74, 37, 69, 0.08); border: 1px solid rgba(74, 37, 69, 0.22); padding: 3px 10px; border-radius: 7px; }
-.show-tag span { font-size: 14px; color: var(--text-3); }
+@media (max-width: 640px) {
+    .show-strip figure { height: 300px; }
+    .show-strip { gap: 12px; padding: 6px 16px 16px; }
+    .strip-nav { display: none; }
+    .show-strip-wrap::before, .show-strip-wrap::after { width: 26px; }
+}
 .show-note { max-width: 720px; margin: 14px auto 0; text-align: center; font-size: 15.5px; color: var(--text-3); line-height: 1.7; }
 .show-cta { text-align: center; margin-top: 26px; }
 .show-cta .note { display: block; margin-top: 12px; }
@@ -774,21 +828,40 @@ footer nav a:hover { color: var(--purple-dark); }
     <div class="wrap center">
         <div class="section-tag" style="justify-content:center;">Real output, untouched</div>
         <h2 class="reveal">You hand him an ASIN.<br><span class="hl">He hands you the package.</span></h2>
-        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">A ten pack of extendable roasting sticks, run through the factory: research, brief, locked product, then the line. Main image, gallery, and A+, exactly as they came off it.</p>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">One product end to end, a ten pack of extendable roasting sticks: main image, gallery, A+. Then A+ pages from six more products, six different niches, off the same line.</p>
     </div>
-    <div class="wrap show-wrap">
-        <figure class="show-card show-sq reveal">
-            <figcaption class="show-tag"><code>/main-image</code><span>Four hero candidates, ranked and raced</span></figcaption>
-            <img src="assets/showcase/main-set.jpg" loading="lazy" alt="Four main image candidates generated by Wonka on the locked product">
-        </figure>
-        <figure class="show-card reveal reveal-d1">
-            <figcaption class="show-tag"><code>/secondary-images</code><span>The gallery that answers every objection</span></figcaption>
-            <img src="assets/showcase/gallery-set.jpg" loading="lazy" alt="Seven secondary gallery images with infographics, generated by Wonka">
-        </figure>
-        <figure class="show-card show-tall reveal reveal-d2">
-            <figcaption class="show-tag"><code>/aplus</code><span>The story below the fold, export ready</span></figcaption>
-            <img src="assets/showcase/aplus-set.jpg" loading="lazy" alt="A plus content module generated by Wonka" width="820" height="1640">
-        </figure>
+    <!-- The strip drifts on its own until you touch it, then it is yours.
+         TO ADD ANOTHER PRODUCT: drop more <figure>s in, in run order. No JS,
+         no CSS. The arrows and the drift read the DOM. -->
+    <div class="show-strip-wrap reveal reveal-d2" id="showStrip">
+        <button class="strip-nav prev" type="button" aria-label="Previous images" disabled>&#8249;</button>
+        <div class="show-strip" tabindex="0" role="group" aria-label="Assets Wonka produced for this product">
+            <figure><img src="assets/showcase/strip/main-1.jpg" width="520" height="520" alt="Main image candidate: ten roasting sticks fanned out behind a finished smore"><figcaption>Main image</figcaption></figure>
+            <figure><img src="assets/showcase/strip/main-2.jpg" width="520" height="520" alt="Main image candidate: the full set laid over its carry bag"><figcaption>Main image</figcaption></figure>
+            <figure><img src="assets/showcase/strip/main-3.jpg" width="520" height="520" alt="Main image candidate: a hand holding one stick over a smore"><figcaption>Main image</figcaption></figure>
+            <figure><img src="assets/showcase/strip/main-4.jpg" width="520" height="520" alt="Main image candidate: the sticks arranged in a circle beside the bag"><figcaption>Main image</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-1.jpg" width="540" height="540" alt="Gallery image: more than marshmallows, four foods on the sticks"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-2.jpg" width="540" height="540" alt="Gallery image: colour-coded handles so everyone knows which is theirs"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-3.jpg" width="540" height="540" alt="Gallery image: roasting at a safe distance around a fire pit"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-4.jpg" width="540" height="540" alt="Gallery image: wiping the shaft clean, before and after"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-5.jpg" width="540" height="540" alt="Gallery image: ten sticks, nobody waits"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-6.jpg" width="540" height="540" alt="Gallery image: blunt tips, not sharp points"><figcaption>Gallery</figcaption></figure>
+            <figure><img src="assets/showcase/strip/sec-7.jpg" width="540" height="540" alt="Gallery image: packs to 12 inches, reaches 32 inches"><figcaption>Gallery</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus.jpg" width="580" height="860" alt="A plus page for the roasting sticks: roast safely, and the complete set"><figcaption>A+ content</figcaption></figure>
+            <!-- Six more products, A+ only. Different niches, different brand
+                 systems, same factory. This is what makes the row proof rather
+                 than a portfolio of one lucky product. -->
+            <figure class="tall"><img src="assets/showcase/strip/aplus-swim-headphones.jpg" width="580" height="860" loading="lazy" alt="A plus page for bone conduction swimming headphones"><figcaption>A+ &middot; another product</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus-retro-speaker.jpg" width="580" height="860" loading="lazy" alt="A plus page for a retro bluetooth speaker"><figcaption>A+ &middot; another product</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus-tongue-drum.jpg" width="580" height="860" loading="lazy" alt="A plus page for a steel tongue drum"><figcaption>A+ &middot; another product</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus-dog-frisbee.jpg" width="580" height="860" loading="lazy" alt="A plus page for a floating dog frisbee"><figcaption>A+ &middot; another product</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus-hydration-pack.jpg" width="580" height="860" loading="lazy" alt="A plus page for a hydration backpack"><figcaption>A+ &middot; another product</figcaption></figure>
+            <figure class="tall"><img src="assets/showcase/strip/aplus-karaoke.jpg" width="580" height="860" loading="lazy" alt="A plus page for a karaoke speaker with two microphones"><figcaption>A+ &middot; another product</figcaption></figure>
+        </div>
+        <button class="strip-nav next" type="button" aria-label="More images">&#8250;</button>
+    </div>
+    <div class="wrap center">
+        <div class="strip-legend reveal"><code>/main-image</code><code>/secondary-images</code><code>/aplus</code></div>
         <p class="show-note reveal">A set like this once took eight jobs, weeks, and thousands of dollars. This one came off the line in an afternoon, on the locked real product, tested against the live listing before anything ships.</p>
         <div class="show-cta reveal">
             <a class="btn" href="#pricing">Build this for my product &rarr;</a>
@@ -1279,6 +1352,63 @@ footer nav a:hover { color: var(--purple-dark); }
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); }
         });
     });
+
+    // Output filmstrip: drifts by itself, hands over the moment you touch it.
+    // Auto-drift is a nudge that the row is scrollable, not a carousel that
+    // fights the reader, so any real interaction stops it for good.
+    var stripWrap = document.getElementById('showStrip');
+    if (stripWrap) {
+        var strip = stripWrap.querySelector('.show-strip');
+        var prev = stripWrap.querySelector('.strip-nav.prev');
+        var next = stripWrap.querySelector('.strip-nav.next');
+        var drift = null, userTook = false;
+
+        function maxScroll(){ return strip.scrollWidth - strip.clientWidth; }
+        function syncArrows(){
+            prev.disabled = strip.scrollLeft < 8;
+            next.disabled = strip.scrollLeft > maxScroll() - 8;
+        }
+        function page(dir){
+            var card = strip.querySelector('figure');
+            var step = card ? card.getBoundingClientRect().width + 16 : 320;
+            strip.scrollBy({ left: dir * step * 2, behavior: 'smooth' });
+        }
+        function stopDrift(){
+            userTook = true;
+            if (drift) { clearInterval(drift); drift = null; }
+        }
+
+        prev.addEventListener('click', function(){ stopDrift(); page(-1); });
+        next.addEventListener('click', function(){ stopDrift(); page(1); });
+        strip.addEventListener('scroll', syncArrows, { passive: true });
+        ['pointerdown','wheel','touchstart','keydown'].forEach(function(ev){
+            strip.addEventListener(ev, stopDrift, { passive: true });
+        });
+        strip.addEventListener('focusin', stopDrift);
+        window.addEventListener('resize', syncArrows);
+        syncArrows();
+
+        var reducedStrip = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reducedStrip && 'IntersectionObserver' in window) {
+            var driftIo = new IntersectionObserver(function(entries){
+                entries.forEach(function(e){
+                    if (e.isIntersecting && !userTook && !drift) {
+                        // ~80px a second: a card every few seconds, slow enough
+                        // to read, fast enough that 18 cards are not a 2 minute tour
+                        drift = setInterval(function(){
+                            if (strip.matches(':hover')) return;
+                            // at the end, glide back to the start rather than dead-stop
+                            if (strip.scrollLeft > maxScroll() - 8) strip.scrollTo({ left: 0, behavior: 'smooth' });
+                            else strip.scrollBy({ left: 2, behavior: 'auto' });
+                        }, 24);
+                    } else if (!e.isIntersecting && drift) {
+                        clearInterval(drift); drift = null;
+                    }
+                });
+            }, { threshold: 0.2 });
+            driftIo.observe(stripWrap);
+        }
+    }
 
     // Reveal on scroll (with a scroll-position fallback so nothing can stay hidden)
     var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
