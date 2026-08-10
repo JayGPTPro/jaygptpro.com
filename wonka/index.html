@@ -19,6 +19,7 @@
 <meta name="twitter:description" content="An AI employee who builds and tests your full Amazon creative package inside Claude Code. Zero coding required.">
 <meta name="twitter:image" content="https://jaygptpro.com/wonka/assets/og-wonka.jpg">
 <link rel="canonical" href="https://jaygptpro.com/wonka/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#127913;</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -287,6 +288,12 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 @media (prefers-reduced-motion: reduce) {
     .msg, .typing-row { transition: none; }
     .chat-imgs img { opacity: 1; transform: none; animation: none; }
+}
+/* "AI Creative Director" is one unbreakable nowrap chunk: 344px at the 38px
+   clamp floor. That clears a 375px iPhone by 7px but clips on 360px Androids
+   and 320px SEs, so small screens scale the headline with the viewport. */
+@media (max-width: 400px) {
+    .hero h1 { font-size: clamp(28px, 9.2vw, 38px); }
 }
 @media (max-width: 640px) {
     .chat-window { border-radius: 16px; }
@@ -605,7 +612,10 @@ footer nav a:hover { color: var(--purple-dark); }
     .tl-grid { grid-template-columns: 1fr; }
     .countdown { gap: 8px; } .cd-unit { width: 72px; }
     .launch-bar { font-size: 12px; padding: 0 34px; }
-    .topnav-inner .btn { padding: 10px 16px; font-size: 13px; }
+    /* keep the nav on one line: the arrow breaking onto its own line reads broken */
+    .topnav-inner { gap: 10px; }
+    .topnav-inner .btn { padding: 10px 16px; font-size: 13px; white-space: nowrap; flex: none; }
+    .brand { font-size: 14.5px; line-height: 1.25; }
 }
 @media (prefers-reduced-motion: reduce) {
     html.js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
@@ -644,18 +654,21 @@ footer nav a:hover { color: var(--purple-dark); }
     <svg class="claude-star cs-1"><use href="#claude-star"/></svg>
     <svg class="claude-star cs-2"><use href="#claude-star"/></svg>
     <div class="wrap">
-        <h1>Build Your <span class="accent">AI Creative Director</span> in 10 Days</h1>
+        <h1>Build Your <span class="accent">AI Creative Director</span> <span style="white-space:nowrap;">in 10 Days</span></h1>
         <p class="hero-date">The gates open <b>September 1</b> &middot; 50 golden tickets</p>
 
+        <!-- VSL GOES HERE when it exists. Restore this block and put the video
+             iframe inside the frame:
         <div class="vsl-wrap">
             <div class="vsl-frame">
                 <div class="vsl-scrim"></div>
                 <span class="vsl-badge">Watch the factory run</span>
                 <span class="vsl-play" aria-hidden="true"></span>
-                <!-- VSL EMBED HERE: replace this frame's contents with the Jay + Wonka video iframe -->
             </div>
             <p class="vsl-under">&#9654; <strong>Watch the full walkthrough.</strong> The fastest way to see if this is right for you.</p>
         </div>
+        A dead player with a play button that does nothing reads as a broken page,
+        so until the video exists the hero goes straight to the proof chips. -->
 
         <div class="hero-trust">
             <span>Zero coding required</span>
@@ -1164,8 +1177,10 @@ footer nav a:hover { color: var(--purple-dark); }
     </div>
 </section>
 
-<!-- WONKA FILM. PLACEHOLDER: replace this frame's contents with the real Wonka video embed when it exists. -->
-<section class="film-section">
+<!-- WONKA FILM. Hidden until the real video exists: remove the `hidden`
+     attribute and put the video iframe inside the frame. A dead play button
+     reads as a broken page. -->
+<section class="film-section" hidden>
     <div class="wrap center">
         <div class="section-tag" style="justify-content:center;">One last thing</div>
         <h2 class="reveal">A word from<br><span class="hl">the man himself</span></h2>
@@ -1236,7 +1251,9 @@ footer nav a:hover { color: var(--purple-dark); }
         (el = document.getElementById('cdHours')) && (el.textContent = pad(hrs));
         (el = document.getElementById('cdMins'))  && (el.textContent = pad(mins));
         (el = document.getElementById('cdSecs'))  && (el.textContent = pad(secs));
-        (el = document.getElementById('lbTimer')) && (el.textContent = days + 'd ' + hrs + 'h ' + mins + 'm');
+        // once the gates open, "0d 0h 0m" forever reads as a bug; say it plainly
+        (el = document.getElementById('lbTimer')) && (el.textContent =
+            d === 0 ? 'the factory is open' : days + 'd ' + hrs + 'h ' + mins + 'm');
     }
     tick(); setInterval(tick, 1000);
 
