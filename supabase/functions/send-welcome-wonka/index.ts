@@ -22,6 +22,8 @@ const sharedSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
 const FROM_EMAIL = 'Jay Margaliot <info@jaygptpro.com>';
 const REPLY_TO = 'info@jaygptpro.com';
 const DEFAULT_PORTAL = 'https://jaygptpro.com/wonka-bootcamp/';
+const INSTALL_URL = 'https://jaygptpro.com/claude-code-install-en.html';
+const CHALLENGE_URL = 'https://jaygptpro.com/claude-code-challenge-launch/';
 // What this email deliberately does NOT contain (Jay, 10.8, on his own read):
 //   * a kit link. The starter kit is handed out inside the portal on Day 1, and
 //     it is still being built until then.
@@ -114,8 +116,9 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
   </td></tr>
 
   <tr><td style="padding:26px 40px 0">
-    <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">Worth starting today</p>
-    <p style="${S.p}">Your <span style="${S.strong}">OpenAI organization verification</span>. It is a one time check, it can take a while to clear, and until it clears your key can talk but it cannot draw. Day 1 shows you exactly where the button lives. Starting early costs you nothing and saves the one delay that actually stings.</p>
+    <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">Worth doing before Day 1</p>
+    <p style="${S.p}">Install <span style="${S.strong}">Claude Code</span> and play with it for an hour. Ask it questions, let it read a folder on your computer, get used to talking to it in plain English. Nothing to prepare, nothing to build. Walking in with that hour behind you makes Day 1 feel easy instead of new. Here is the install guide: <a href="${INSTALL_URL}" style="${S.gold}">how to install Claude Code</a>.</p>
+    <p style="${S.p}">Never used Claude Code at all? Start with my <a href="${CHALLENGE_URL}" style="${S.gold}">Claude Code Challenge</a>. It is where you build your first AI employee, and it is the shortest path from zero to comfortable. Wonka is your second hire.</p>
   </td></tr>
 
   <tr><td align="center" style="padding:28px 40px 8px">
