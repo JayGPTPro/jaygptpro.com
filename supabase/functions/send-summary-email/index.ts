@@ -117,7 +117,9 @@ Deno.serve(async (req: Request) => {
 
   // Match the daily-emails filter: include 'upcoming' so legacy rounds that were never advanced
   // past 'upcoming' (e.g. round5) still get their day-6 summary, same as their daily emails.
-  const { data: rounds } = await supabase.from('rounds').select('id, start_date, status, language').in('status', ['upcoming', 'active', 'completed', 'full']).eq('language', 'en');
+  // Wonka rounds are language='en' but a different product; this Donna wrap-up must skip them.
+  const { data: allRounds } = await supabase.from('rounds').select('id, start_date, status, language').in('status', ['upcoming', 'active', 'completed', 'full']).eq('language', 'en');
+  const rounds = (allRounds || []).filter(r => !r.id.startsWith('wonka'));
   if (!rounds || rounds.length === 0) {
     return new Response(JSON.stringify({ ok: true, action: 'no_open_rounds', ny_date: todayNY }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
   }

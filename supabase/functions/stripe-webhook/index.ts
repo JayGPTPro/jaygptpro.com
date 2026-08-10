@@ -29,10 +29,12 @@ const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
 
 // Fallback for when STRIPE_SECRET_KEY is absent and line items cannot be read.
 // Every USD total that can only be reached by adding the $250 Donna cross-sell:
-//   Golden 699 + 250, Golden 499 (WONKA200) + 250, Private Tour 2999 + 250.
-// Amount matching is brittle by nature, so it is used ONLY as a fallback and it
-// announces itself in the logs. Set the key and this stops being consulted.
-const DONNA_ADDON_TOTALS_USD = new Set([94900, 74900, 324900]);
+//   Golden 697 + 250, Golden 497 (WONKA200) + 250, Private Tour 2999 + 250.
+// The 94900/74900 pair is kept from when the price read 699/499, harmless if
+// unreachable. Amount matching is brittle by nature, so it is used ONLY as a
+// fallback and it announces itself in the logs. Set the key and this stops
+// being consulted.
+const DONNA_ADDON_TOTALS_USD = new Set([94700, 74700, 94900, 74900, 324900]);
 
 const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1TRshDRqcDuiISNTcGBCP4yl': 'bina_r1',

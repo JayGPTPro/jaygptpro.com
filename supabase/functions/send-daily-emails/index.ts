@@ -186,7 +186,11 @@ Deno.serve(async (req: Request) => {
   const armed = settingsRow && settingsRow.value && settingsRow.value.armed === true;
 
   // Only English rounds. Bina has its own send-bina-daily.
-  const { data: rounds } = await supabase.from('rounds').select('id, start_date, status, language, whatsapp_link').in('status', ['upcoming', 'active', 'full']).eq('language', 'en');
+  // Wonka rounds are language='en' too but are a DIFFERENT product: this content
+  // is Donna's ("Meet Donna"), so wonka_* must never receive it (caught 10.8,
+  // before it could fire on Wonka's Sept 1 start).
+  const { data: allRounds } = await supabase.from('rounds').select('id, start_date, status, language, whatsapp_link').in('status', ['upcoming', 'active', 'full']).eq('language', 'en');
+  const rounds = (allRounds || []).filter(r => !r.id.startsWith('wonka'));
   if (!rounds || rounds.length === 0) {
     return new Response(JSON.stringify({ ok: true, action: 'no_open_rounds', ny_date: todayNY }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
   }

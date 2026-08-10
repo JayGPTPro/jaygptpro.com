@@ -22,7 +22,10 @@ const sharedSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
 const FROM_EMAIL = 'Jay Margaliot <info@jaygptpro.com>';
 const REPLY_TO = 'info@jaygptpro.com';
 const DEFAULT_PORTAL = 'https://jaygptpro.com/wonka-bootcamp/';
-const KIT_URL = 'https://jaygptpro.com/wonka-bootcamp/wonka-starter-kit.zip';
+// NO kit link in this email (Jay, 10.8): the starter kit is handed out inside
+// the portal on Day 1, and it is still being built until then. NO refund or
+// guarantee talk either; EMAIL-SEQUENCE.md line 10 is the rule, and a purchase
+// confirmation is not the place to reopen the money conversation.
 
 function corsHeaders() {
   return {
@@ -91,9 +94,8 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
   </td></tr>
 
   <tr><td style="padding:12px 40px 0">
-    <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">Two things now, five minutes total</p>
-    <p style="${S.li}">1. Download your starter kit: <a href="${KIT_URL}" style="${S.gold}">wonka-starter-kit.zip</a></p>
-    <p style="${S.li}">2. Bookmark the portal: <a href="${meta.portal}" style="${S.gold}">${meta.portal}</a></p>
+    <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">One thing now, one minute</p>
+    <p style="${S.li}">Bookmark the portal: <a href="${meta.portal}" style="${S.gold}">${meta.portal}</a>. That is where everything happens, starting Day 1. Your starter kit is waiting for you there on Day 1 too.</p>
   </td></tr>
 
   <tr><td style="padding:22px 40px 0">${waBlock}</td></tr>
@@ -117,14 +119,6 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
     <p style="${S.li}">The Tasting Room, about 100 tasters per race</p>
     <p style="${S.li}">A full month of Genrupt, 1,800 credits, about $100 of value</p>
     <p style="${S.li}">The WhatsApp group and a live Q&amp;A</p>
-  </td></tr>
-
-  <tr><td style="padding:26px 40px 0">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="${S.note}">
-      <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#E4B46C">Two things about your money, both good</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#D9CDBA;line-height:1.7">You have <strong style="${S.strong}">48 hours from registration</strong> to change your mind and get every dollar back, no questions asked. Use them: open the kit, meet Wonka, decide with your eyes open.</p>
-      <p style="margin:0;font-size:14px;color:#D9CDBA;line-height:1.7">And the guarantee, word for word: complete all 10 days and the graduation checklist and you have a full, tested creative package ready to upload by the end of the bootcamp, or a full refund. It is a promise about the package, never about your sales. Results vary by product and niche.</p>
-    </td></tr></table>
   </td></tr>
 
   <tr><td align="center" style="padding:28px 40px 8px">
