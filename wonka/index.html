@@ -203,6 +203,8 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
     transition: transform 0.25s ease;
 }
 .vsl-play::after { content: ''; width: 0; height: 0; border-left: 22px solid var(--purple-dark); border-top: 13px solid transparent; border-bottom: 13px solid transparent; margin-left: 5px; }
+.vsl-frame[role="button"] { cursor: pointer; }
+.vsl-frame:focus-visible { outline: 3px solid var(--purple-2); outline-offset: 3px; }
 .vsl-frame:hover .vsl-play { transform: scale(1.06); }
 .vsl-under { font-size: 14px; color: var(--text-3); margin-top: 14px; }
 .vsl-under strong { color: var(--text-2); }
@@ -657,18 +659,18 @@ footer nav a:hover { color: var(--purple-dark); }
         <h1>Build Your <span class="accent">AI Creative Director</span> <span style="white-space:nowrap;">in 10 Days</span></h1>
         <p class="hero-date">The gates open <b>September 1</b> &middot; 50 golden tickets</p>
 
-        <!-- VSL GOES HERE when it exists. Restore this block and put the video
-             iframe inside the frame:
+        <!-- The VSL. Vimeo 1216967079, domain-locked to jaygptpro.com, so it will
+             not play from localhost or file://. Click-to-play facade: the iframe
+             only loads after the tap, which keeps the hero light. -->
         <div class="vsl-wrap">
-            <div class="vsl-frame">
+            <div class="vsl-frame" id="vslFrame" role="button" tabindex="0" aria-label="Play the walkthrough video">
+                <img class="vsl-poster" src="assets/vsl-poster.jpg" alt="" width="1520" height="855" fetchpriority="high">
                 <div class="vsl-scrim"></div>
                 <span class="vsl-badge">Watch the factory run</span>
                 <span class="vsl-play" aria-hidden="true"></span>
             </div>
             <p class="vsl-under">&#9654; <strong>Watch the full walkthrough.</strong> The fastest way to see if this is right for you.</p>
         </div>
-        A dead player with a play button that does nothing reads as a broken page,
-        so until the video exists the hero goes straight to the proof chips. -->
 
         <div class="hero-trust">
             <span>Zero coding required</span>
@@ -1256,6 +1258,21 @@ footer nav a:hover { color: var(--purple-dark); }
             d === 0 ? 'the factory is open' : days + 'd ' + hrs + 'h ' + mins + 'm');
     }
     tick(); setInterval(tick, 1000);
+
+    // VSL: the iframe loads only on the tap, so the hero stays light
+    var vsl = document.getElementById('vslFrame');
+    if (vsl) {
+        var playVsl = function(){
+            if (vsl.classList.contains('playing')) return;
+            vsl.classList.add('playing');
+            vsl.innerHTML = '<iframe src="https://player.vimeo.com/video/1216967079?autoplay=1&title=0&byline=0&portrait=0" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen title="The Wonka Creative Bootcamp walkthrough"></iframe>';
+            vsl.removeAttribute('role'); vsl.removeAttribute('tabindex'); vsl.removeAttribute('aria-label');
+        };
+        vsl.addEventListener('click', playVsl);
+        vsl.addEventListener('keydown', function(e){
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playVsl(); }
+        });
+    }
 
     // Reveal on scroll (with a scroll-position fallback so nothing can stay hidden)
     var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
