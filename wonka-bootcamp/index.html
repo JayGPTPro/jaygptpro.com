@@ -1886,6 +1886,14 @@ body:has(#app.viewing-day) #film-grain{display:none}
   color:var(--room-faint);margin-top:4px;
 }
 .dv2-res.is-prop{opacity:.75}
+/* a resource that has a real file behind it: solid border, reads as clickable */
+.dv2-res.is-live{
+  text-decoration:none;border-style:solid;border-color:var(--room-gold,#C9A227);
+  cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+}
+.dv2-res.is-live:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.dv2-res.is-live:focus-visible{outline:2px solid var(--room-gold,#C9A227);outline-offset:2px}
+.dv2-res.is-live .dv2-ressub{color:var(--room-ink2)}
 
 /* ---------- glowing bulb-string divider (the map's lamp posts) ---------- */
 .dv3-bulbs{display:flex;justify-content:center;gap:20px;margin:4px 0 26px}
@@ -2305,7 +2313,7 @@ html.map-booting #map3d-stage::after{
 <div id="loading-screen">
   <div class="leader-slate">WCB Pictures . Reel One</div>
   <div class="lolli"></div>
-  <p>Warming up the machines...</p>
+  <p id="loading-msg">Warming up the machines...</p>
 </div>
 
 <!-- ================= LOGIN: THE FACTORY GATES ================= -->
@@ -2743,6 +2751,7 @@ const CONFIG = {
   // was removed on 10.8: he is buyer #1 for real (paid, round=wonka_r1, addon_donna for
   // his Donna access) and Jay wants to see exactly what a customer sees, locked doors
   // included. info@ remains the admin key to the whole factory.
+  // This file is the SOURCE. bootcamp/portal/index.html mirrors it automatically.
   ADMIN_EMAILS: ['info@jaygptpro.com'],
   // One group for every round, forever (Jay 10.8). Not per round, and not a
   // separate one for Kevin's cohort. This link does not change between rounds.
@@ -2806,7 +2815,9 @@ const DAYS = [
           'Post KEYS READY in your support channel',
         ],
         resources: [
-          'wonka-starter-kit.zip',
+          // hashed filename: the zip sits in a public folder, so a guessable name let
+          // anyone download the paid kit without buying
+          { name: 'wonka-starter-kit.zip', url: 'wonka-starter-kit-c22e3b838d.zip' },
           'The OpenAI key and verification walkthrough',
           'Genrupt account setup',
           'The product photo shot list',
@@ -3209,6 +3220,11 @@ const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matche
       when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
         : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
     }
+    /* Remember that this browser JUST paid, before the query is stripped. Signing in
+       with Google navigates away and comes back without ?purchase=success, so without
+       this the gate has no idea a payment is in flight and shows a paying customer the
+       dead-end "no ticket found" screen while the webhook is still landing. */
+    try { sessionStorage.setItem('wonka-just-paid', String(Date.now())); } catch(e){}
     /* strip the query so a refresh or a shared URL does not re-show this */
     history.replaceState(null,'',location.pathname);
   }catch(e){}
@@ -3251,9 +3267,13 @@ function hideLoading() { $('loading-screen').classList.add('hidden'); }
 function track(event, dayNum) {
   if (!sb || !userEmail || isAdmin()) return;
   try {
+    // The column is day_number, not day_num. It was day_num here, which PostgREST
+    // rejects with a 400 that the empty error handler below swallows, so every Wonka
+    // event since launch was silently discarded: 37,918 rows in the table, zero for
+    // wonka_r1. The Donna portal has always used day_number.
     sb.from('user_events').insert({
       user_email: userEmail, round: CONFIG.ROUND_ID, event_type: event,
-      day_num: dayNum || null, created_at: new Date().toISOString(),
+      day_number: dayNum || null, created_at: new Date().toISOString(),
     }).then(() => {}, () => {});
   } catch (e) {}
 }
@@ -3396,6 +3416,19 @@ async function checkAllowed(email, isRequery) {
   }
 
   if (!data) {
+    /* They may have paid seconds ago and the webhook has not landed yet. Telling a
+       customer their ticket does not exist, thirty seconds after they paid, on a screen
+       with no retry button, is the worst thing this portal can do. Poll quietly for a
+       few minutes first. */
+    var paidAt = 0;
+    try { paidAt = Number(sessionStorage.getItem('wonka-just-paid') || 0); } catch (e) {}
+    if (paidAt && Date.now() - paidAt < 6 * 60 * 1000) {
+      // the loading screen is what is on screen here, so put the message there
+      var g = $('loading-msg');
+      if (g) g.textContent = 'Your ticket is still being registered. This takes a few seconds...';
+      setTimeout(function () { checkAllowed(email, isRequery); }, 3000);
+      return;
+    }
     // definitive not-found: clear the degraded-mode cache
     [P + '-email', P + '-round', P + '-round-check'].forEach(LS.del);
     hideLoading();
@@ -4421,6 +4454,19 @@ function updateProgressUI() {
 function updateHeroLine() {
   const hl = $('hero-line');
   if (!hl) return;
+  /* Before the bootcamp starts, nothing is unlocked and this falls back to Day 1's line,
+     "Your golden ticket has been punched. The gates are open." A buyer who pays in August
+     reads that in front of ten padlocked doors, for three weeks. Tell them the date
+     instead, derived from DAY_DATES so it cannot drift from the real schedule. */
+  if (!isDayUnlocked(1)) {
+    const t = dayUnlockTime(1);
+    if (t && !isNaN(t)) {
+      hl.textContent = 'Your golden ticket is safe. The factory opens '
+        + t.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/New_York' })
+        + ', 9:00 AM New York.';
+      return;
+    }
+  }
   const cur = firstUnlockedIncompleteDay();
   const d = DAYS[(cur || 1) - 1] || DAYS[0];
   if (d && d.wonkaLine) hl.textContent = d.wonkaLine;
@@ -4603,9 +4649,15 @@ function renderDay(dayNum) {
     if (ep.resources && ep.resources.length) {
       html += '<div class="dv2-restag">Resources . take a candy bar on your way out</div><div class="dv2-resgrid">';
       ep.resources.forEach((r) => {
-        // TODO: point each tile at the real download URL. Until then it renders
-        // as an honest disabled "prop" tile (no fake interactivity).
-        html += '<span class="dv2-res is-prop"><span class="dv2-resname">' + escapeHtml(r) + '</span><span class="dv2-ressub">In the prop room. Delivered with this episode.</span></span>';
+        // A resource is either a bare string (still a prop, no download exists yet) or
+        // { name, url } once it has a real file. Day 1's starter kit is the one that
+        // must work: without a link the buyer cannot start, and the mission text has
+        // always told them to download it.
+        if (r && typeof r === 'object' && r.url) {
+          html += '<a class="dv2-res is-live" href="' + escapeHtml(r.url) + '" download><span class="dv2-resname">' + escapeHtml(r.name) + '</span><span class="dv2-ressub">Click to download.</span></a>';
+        } else {
+          html += '<span class="dv2-res is-prop"><span class="dv2-resname">' + escapeHtml(r) + '</span><span class="dv2-ressub">In the prop room. Delivered with this episode.</span></span>';
+        }
       });
       html += '</div>';
     }
