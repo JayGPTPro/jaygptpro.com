@@ -145,5 +145,60 @@ row = DB.allowed_emails.find(r => r.email === 'unk@buyer.com');
 check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
 check('addon_donna stays false', row?.addon_donna !== true, JSON.stringify(row));
 
+
+// ---------------------------------------------------------------
+// THE PRIVATE TOUR, $2,999. Jay asked for this to be proven without a real
+// purchase (11.8). Its plink is parked in stripe_plink_discounted, which is the
+// column a discount link would normally own, so it is worth testing every route
+// in on its own rather than assuming the Golden Ticket cases cover it.
+const PRIVATE = 'prod_UxhOUOpgTAGC7q';
+const PLINK_PRIVATE = 'plink_1TxmiPRqcDuiISNTKsKrn7Lz';
+const tourSession = (email: string) => {
+  const s: any = session(email, 299900);
+  s.data.object.payment_link = PLINK_PRIVATE;
+  return s;
+};
+
+console.log('\n7a. Private Tour, brand new buyer');
+reset();
+sendState.stripeLineItems = [PRIVATE];
+res = await post(tourSession('tour@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'tour@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('round = wonka_r1 (via the discounted column)', row?.round === 'wonka_r1', JSON.stringify(row));
+check('marked paid', row?.customer_type === 'paid' || row?.stripe_payment_id, JSON.stringify(row));
+check('Wonka welcome sent, not a Donna one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
+check('payment recorded at $2,999', DB.stripe_customers.some(c => c.email === 'tour@buyer.com' && c.amount_paid === 299900 && c.round === 'wonka_r1'), JSON.stringify(DB.stripe_customers));
+check('not labelled TEST (that would revoke access)', !DB.stripe_customers.some(c => c.email === 'tour@buyer.com' && String(c.coupon_used).toUpperCase() === 'TEST'));
+check('access not revoked', (row?.access_revoked_at ?? null) === null, JSON.stringify(row));
+
+console.log('\n7b. Private Tour when the Stripe line-items call fails (plink must carry it)');
+reset();
+sendState.stripeLineItems = [];
+res = await post(tourSession('tour2@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'tour2@buyer.com');
+check('still resolves to wonka_r1', row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
+check('never dropped into a Donna wk_ cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
+
+console.log('\n7c. Private Tour bought by a RETURNING Donna member');
+reset();
+sendState.stripeLineItems = [PRIVATE];
+DB.allowed_emails.push({ email: 'tour3@alum.com', round: 'round1', addon_donna: false,
+  welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old_donna' });
+res = await post(tourSession('tour3@alum.com'));
+row = DB.allowed_emails.find(r => r.email === 'tour3@alum.com');
+check('moved to wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('keeps Donna via addon_donna', row?.addon_donna === true, JSON.stringify(row));
+check('welcome actually sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
+
+console.log('\n7d. Private Tour with the rounds row stale (product route must rescue)');
+reset();
+sendState.stripeLineItems = [PRIVATE];
+DB.rounds = [{ id: 'wonka_r1', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: null, stripe_plink_discounted: null, stripe_product_id: null, start_date: '2026-09-01' }];
+res = await post(tourSession('tour4@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'tour4@buyer.com');
+check('rescued by FALLBACK_PRODUCT_TO_ROUND', row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
+check('never dropped into a Donna wk_ cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
