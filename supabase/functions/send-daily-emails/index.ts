@@ -234,10 +234,18 @@ Deno.serve(async (req: Request) => {
     }
 
     const waLink = r.whatsapp_link || FALLBACK_WA[roundId] || '#';
+    // Written BEFORE the sends, which means a crash half way through marks the whole
+    // day delivered and the rest of the cohort never receives that lesson. Skip anyone
+    // already recorded in daily_email_recipients so a later run finishes the job.
+    const { data: alreadyRows } = await supabase.from('daily_email_recipients')
+      .select('recipient_email').eq('round', roundId).eq('day_num', dayNum);
+    const already = new Set((alreadyRows || []).map((r: any) => String(r.recipient_email || '').toLowerCase()));
+    const pending = list.filter(p => !already.has(String(p.email || '').toLowerCase()));
+    if (already.size && pending.length) console.log(`resuming day ${dayNum} of ${roundId}: ${already.size} already sent, ${pending.length} still owed`);
     await supabase.from('challenge_daily_emails').upsert({ round: roundId, day_num: dayNum, sent_at: new Date().toISOString(), recipient_count: 0, error_count: 0 });
 
     let ok = 0; let errors = 0; let lastErr: string | null = null;
-    for (const p of list) {
+    for (const p of pending) {
       const send = await sendOne(p.email, dayNum, waLink);
       if (send.ok) {
         ok++;

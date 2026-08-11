@@ -132,11 +132,11 @@ Deno.serve(async (req: Request) => {
       results.push({ round: r.id, day: dayNum, action: 'not_day_6' });
       continue;
     }
-    const { data: existing } = await supabase.from('email_sends').select('id').eq('campaign', `summary-${r.id}`).limit(1);
-    if (existing && existing.length > 0) {
-      results.push({ round: r.id, action: 'already_sent_for_round' });
-      continue;
-    }
+    // Was: any row at all for this campaign meant "done". A run that died half way
+    // through therefore locked the rest out for ever. Compare against who is still
+    // owed it instead, further down, and let a later run finish the job.
+    const { data: existing } = await supabase.from('email_sends').select('id, email').eq('campaign', `summary-${r.id}`);
+    const alreadySent = new Set((existing || []).map((e: any) => String(e.email || '').toLowerCase()));
     const isEvergreen = r.id.startsWith('wk_');
     // Same trap as send-daily-emails: 'both' matches every weekly cohort forever, and
     // the per-round guard cannot see it. Four people have received this wrap-up eleven
@@ -148,7 +148,14 @@ Deno.serve(async (req: Request) => {
       .select('email, customer_type, primary_email')
       .in('round', audience)
       .is('access_revoked_at', null);
-    const list = (participants || []).filter(p => !p.primary_email && (p.customer_type === 'paid' || p.customer_type === 'family' || p.customer_type === 'admin' || !p.customer_type));
+    const list = (participants || [])
+      .filter(p => !p.primary_email && (p.customer_type === 'paid' || p.customer_type === 'family' || p.customer_type === 'admin' || !p.customer_type))
+      .filter(p => !alreadySent.has(String(p.email || '').toLowerCase()));
+
+    if (list.length === 0) {
+      results.push({ round: r.id, action: 'already_sent_for_round', recipients: alreadySent.size });
+      continue;
+    }
 
     if (!armed) {
       results.push({ round: r.id, day: dayNum, action: 'dry_run_not_armed', would_send_to: list.length, variant: isEvergreen ? 'evergreen' : 'legacy' });
@@ -156,7 +163,11 @@ Deno.serve(async (req: Request) => {
     }
     let ok = 0, errors = 0, lastErr: string | null = null;
     for (const p of list) {
-      const send = await sendOne(p.email, isEvergreen);
+      // sendOne had no try/catch here, so one network throw ended the run mid-list and
+      // the guard row already written for the earlier names made it permanent.
+      let send: { ok: boolean; id?: string; error?: string };
+      try { send = await sendOne(p.email, isEvergreen); }
+      catch (e) { send = { ok: false, error: String(e) }; }
       if (send.ok) {
         ok++;
         await supabase.from('email_sends').insert({ email: p.email, campaign: `summary-${r.id}`, resend_id: send.id || null });

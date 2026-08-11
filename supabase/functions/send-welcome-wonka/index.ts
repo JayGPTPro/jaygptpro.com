@@ -55,10 +55,16 @@ const PRIVATE_TOUR_MIN_CENTS = 200000;
 async function boughtPrivateTour(supabase: any, email: string): Promise<boolean> {
   if (!email) return false;
   try {
+    // Scoped to Wonka payments made in the last day. It used to scan EVERY payment
+    // ever made by this address, so an unrelated $3,267 invoice from June would have
+    // promised a Golden Ticket buyer a $2,999 private tour and a personal call.
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabase
       .from('stripe_customers')
-      .select('amount_paid, currency, refunded')
-      .ilike('email', email.toLowerCase());
+      .select('amount_paid, currency, refunded, round, payment_date')
+      .eq('email', email.toLowerCase())
+      .eq('round', 'wonka_r1')
+      .gte('payment_date', since);
     if (error) { console.error('boughtPrivateTour lookup error:', error); return false; }
     // Refunded payments do not count, and USD only: the Bina side prices in ILS,
     // where 200000 agorot is an ordinary Donna purchase, not a Private Tour.
@@ -125,7 +131,10 @@ function buildEmail(meta: Meta, privateTour = false): { subject: string; html: s
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:6px 0 18px"><a href="${meta.wa}" target="_blank" style="${S.btnWa}">Join the WhatsApp group</a></td></tr></table>`
     : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="${S.note}"><p style="margin:0;font-size:14px;color:#D9CDBA;line-height:1.7">The WhatsApp group invite goes out in a separate email a few days before Day 1. Nothing for you to do.</p></td></tr></table><div style="height:18px"></div>`;
 
-  const html = `<!DOCTYPE html><html><body style="${S.wrap}">
+  // Without a viewport meta, iOS Mail and mobile Gmail render this fixed 620px table
+  // at desktop width and the reader has to pinch-zoom. Every other email in the repo
+  // has the head block; this one, the only mail a $697 or $2,999 buyer receives, did not.
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="${S.wrap}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#160A1C"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="620" cellpadding="0" cellspacing="0" style="${S.card}">
 
