@@ -514,9 +514,37 @@ Deno.serve(async (req: Request) => {
           if (wasDuplicate && isWonkaRound(allowedEmailsRound)) {
             const { data: existing } = await supabase
               .from('allowed_emails')
-              .select('round, addon_donna, stripe_payment_id, welcome_email_sent_at')
+              .select('round, addon_donna, stripe_payment_id, welcome_email_sent_at, primary_email')
               .ilike('email', lowerEmail)
               .maybeSingle();
+            // An ALIAS row: both portals follow primary_email and read the target row instead,
+            // so upgrading this one grants nothing. Two buyers paid $497 on launch day and were
+            // refused at the gate for exactly this (11.8): the money landed on the alias while
+            // the gate kept reading a Donna round on the target. Repair the row the gate will
+            // actually read. The alias keeps pointing at it, so both addresses work.
+            const aliasTarget = existing?.primary_email && String(existing.primary_email).toLowerCase() !== lowerEmail
+              ? String(existing.primary_email).toLowerCase() : '';
+            if (aliasTarget) {
+              const { data: tgt } = await supabase
+                .from('allowed_emails')
+                .select('round, addon_donna, stripe_payment_id')
+                .ilike('email', aliasTarget)
+                .maybeSingle();
+              if (!tgt) {
+                console.error('alias points at a missing row:', { lowerEmail, aliasTarget });
+                return new Response(JSON.stringify({ error: 'alias target missing' }), { status: 500 });
+              }
+              const tgtPrior = String(tgt.round || '');
+              const tgtHadDonna = !!tgtPrior && !isWonkaRound(tgtPrior) && tgtPrior !== 'unknown';
+              const tgtPatch: Record<string, unknown> = { round: allowedEmailsRound, stripe_payment_id: paymentId };
+              if (tgtHadDonna || tgt.addon_donna || tookDonnaAddon) tgtPatch.addon_donna = true;
+              const { error: aliasErr } = await supabase.from('allowed_emails').update(tgtPatch).ilike('email', aliasTarget);
+              if (aliasErr) {
+                console.error('alias target repair failed:', aliasErr);
+                return new Response(JSON.stringify({ error: 'alias target repair failed' }), { status: 500 });
+              }
+              console.log('Alias buyer: access written to the row the gate reads', { paid: lowerEmail, target: aliasTarget, tgtPrior, tgtHadDonna });
+            }
             const priorRound = String(existing?.round || '');
             // Only a real Donna round needs preserving. 'unknown' grants nothing, so do not
             // hand out Donna access that was never bought.

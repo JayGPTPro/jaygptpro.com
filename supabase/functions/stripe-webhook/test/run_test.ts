@@ -212,5 +212,41 @@ check('still round = wonka_r1, the add-on never decides the round', row?.round =
 check('Donna add-on granted', row?.addon_donna === true, JSON.stringify(row));
 check('Wonka welcome, not a Donna one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
 
+
+// ---------------------------------------------------------------
+// ALIAS BUYERS. Two real customers paid $497 on launch day and were refused at
+// the gate (11.8): their paying address is an alias row whose primary_email points
+// at another row, and BOTH portals follow that pointer. The money upgraded the
+// alias; the gate kept reading a Donna round on the target.
+console.log('\n8a. Buyer whose paying address is an alias for another row');
+reset();
+DB.allowed_emails.push({ email: 'alias@buyer.com', round: 'round2', addon_donna: false,
+  primary_email: 'primary@buyer.com', welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old' });
+DB.allowed_emails.push({ email: 'primary@buyer.com', round: 'wk_2026_06_29', addon_donna: false,
+  welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old2' });
+res = await post(session('alias@buyer.com'));
+const aliasRow = DB.allowed_emails.find(r => r.email === 'alias@buyer.com');
+const primaryRow = DB.allowed_emails.find(r => r.email === 'primary@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('the row the GATE reads is on wonka_r1', primaryRow?.round === 'wonka_r1', JSON.stringify(primaryRow));
+check('its Donna access is preserved', primaryRow?.addon_donna === true, JSON.stringify(primaryRow));
+check('the alias row is upgraded too', aliasRow?.round === 'wonka_r1', JSON.stringify(aliasRow));
+check('alias still points at the primary', aliasRow?.primary_email === 'primary@buyer.com', JSON.stringify(aliasRow));
+check('welcome sent once', sendState.calls.length === 1, JSON.stringify(sendState.calls));
+
+console.log('\n8b. A dangling alias must fail loudly, not silently');
+reset();
+DB.allowed_emails.push({ email: 'orphanalias@buyer.com', round: 'round2', addon_donna: false,
+  primary_email: 'nobody@nowhere.com', welcome_email_sent_at: null, stripe_payment_id: null });
+res = await post(session('orphanalias@buyer.com'));
+check('http 500 so Stripe retries and the dashboard shows red', res.status === 500, `got ${res.status}`);
+
+console.log('\n8c. A normal buyer with no alias is untouched');
+reset();
+res = await post(session('plain@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'plain@buyer.com');
+check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('no stray addon_donna', row?.addon_donna !== true, JSON.stringify(row));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
