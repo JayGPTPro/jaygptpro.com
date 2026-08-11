@@ -277,6 +277,21 @@ body::before{
 .purchase-hi .ph-wa svg{width:19px;height:19px;flex:none}
 .purchase-hi .ph-when{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.06em;
   opacity:.7;margin-top:18px}
+/* Buyer who was ALREADY signed in when they paid. Without this the session check
+   walks them straight past the welcome into the factory and they never read any of
+   it (Jay hit exactly that on the 11.8 test). The card is shown with an explicit
+   way in instead of the Google button they do not need. */
+.purchase-hi .ph-enter{display:none}
+.ticket-card.signed-in .purchase-hi .ph-enter{display:inline-flex;align-items:center;justify-content:center;
+  gap:9px;background:var(--gold,#E4B46C);color:#2A1409;font-weight:700;text-decoration:none;border:0;
+  cursor:pointer;padding:13px 26px;border-radius:10px;font-size:.95rem;margin-top:18px;
+  font-family:inherit;letter-spacing:.02em}
+.ticket-card.signed-in .purchase-hi .ph-enter:hover{filter:brightness(1.06)}
+.ticket-card.signed-in .booth,
+.ticket-card.signed-in .booth-line{display:none}
+/* the not-a-Google-account warning is dead weight here: they are signed in, and
+   rewritten step 1 already tells them what to do if the addresses differ */
+.ticket-card.signed-in .purchase-hi .ph-warn{display:none}
 .gate-msg{position:relative;z-index:2;min-height:20px;margin-top:14px;font-size:.9rem;color:#FFE1B0;font-family:var(--font-mono);letter-spacing:.02em}
 
 /* --- generic status screens: the GATE OFFICE window --- */
@@ -2424,7 +2439,7 @@ html.map-booting #map3d-stage::after{
         <h2>You are in.</h2>
         <p class="ph-lead">Your ticket is being registered right now. Three things, and then you are done until the gates open.</p>
         <ol>
-          <li><b>Sign in below with the same email you just paid with.</b> That is the address on your ticket, and it is the only one the gate knows.</li>
+          <li id="ph-step-signin"><b>Sign in below with the same email you just paid with.</b> That is the address on your ticket, and it is the only one the gate knows.</li>
           <li><b>Check your inbox for the receipt, and check spam.</b> First emails from a new sender land there more often than you would think, and everything from here comes from the same address.</li>
           <li><b>Join the WhatsApp group.</b> That is where the daily unlocks, the questions and everybody else's work live.</li>
         </ol>
@@ -2434,6 +2449,7 @@ html.map-booting #map3d-stage::after{
           Join the WhatsApp group
         </a>
         <div class="ph-when" id="ph-when"></div>
+        <button type="button" class="ph-enter" id="ph-enter">Enter the factory &rarr;</button>
       </div>
 
       <div class="booth">
@@ -3204,22 +3220,27 @@ const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matche
 /* Post-purchase welcome. Stripe redirects here with ?purchase=success after checkout.
    The redirect is cosmetic: access is granted by the webhook, not by landing on this page.
    Someone who closes the tab before the redirect is still a paying member. */
+/* Fills the card. Split out of purchaseWelcome because the signed-in path below
+   paints the same card on a later load, when ?purchase=success is long gone. */
+function paintPurchaseCard(){
+  var card = document.querySelector('.ticket-card');
+  if (card) card.classList.add('bought');
+  var wa = document.getElementById('ph-wa');
+  if (wa) {
+    if (CONFIG.WHATSAPP_LINK && /^https?:/.test(CONFIG.WHATSAPP_LINK)) wa.href = CONFIG.WHATSAPP_LINK;
+    else wa.style.display = 'none';   // no link yet: hide it rather than ship a dead button
+  }
+  var when = document.getElementById('ph-when');
+  if (when) {
+    var d = new Date((CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
+    when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
+      : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
+  }
+}
 (function purchaseWelcome(){
   try{
     if (!/[?&]purchase=success\b/.test(location.search)) return;
-    var card = document.querySelector('.ticket-card');
-    if (card) card.classList.add('bought');
-    var wa = document.getElementById('ph-wa');
-    if (wa) {
-      if (CONFIG.WHATSAPP_LINK && /^https?:/.test(CONFIG.WHATSAPP_LINK)) wa.href = CONFIG.WHATSAPP_LINK;
-      else wa.style.display = 'none';   // no link yet: hide it rather than ship a dead button
-    }
-    var when = document.getElementById('ph-when');
-    if (when) {
-      var d = new Date((CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
-      when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
-        : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
-    }
+    paintPurchaseCard();
     /* Remember that this browser JUST paid, before the query is stripped. Signing in
        with Google navigates away and comes back without ?purchase=success, so without
        this the gate has no idea a payment is in flight and shows a paying customer the
@@ -5930,6 +5951,46 @@ async function boot() {
     const { data } = await sb.auth.getSession();
     if (data && data.session && data.session.user) {
       if (!portalRendered && !checking) {
+        /* Just paid in this browser? Show the welcome and let them press the way in.
+           A signed-in buyer would otherwise be teleported into the factory the instant
+           Stripe redirects, never seeing the WhatsApp link, the inbox note, or the
+           Day 1 date. The flag is set by purchaseWelcome and expires after 30 minutes
+           so it can never strand a returning member behind a stale card. */
+        let justPaid = false;
+        try {
+          const t = Number(sessionStorage.getItem('wonka-just-paid') || 0);
+          justPaid = t > 0 && (Date.now() - t) < 30 * 60 * 1000;
+        } catch (e) {}
+        if (justPaid) {
+          try { sessionStorage.removeItem('wonka-just-paid'); } catch (e) {}
+          const email = data.session.user.email;
+          paintPurchaseCard();
+          const card = document.querySelector('.ticket-card');
+          if (card) card.classList.add('signed-in');
+          /* step 1 tells them to sign in, which they already are. */
+          const step1 = document.getElementById('ph-step-signin');
+          if (step1) {
+            step1.innerHTML = '<b>You are signed in as ' +
+              String(email).replace(/[<>&]/g, '') +
+              '.</b> If that is not the address you paid with, email ' +
+              '<a href="mailto:info@jaygptpro.com" style="color:#F5B841">info@jaygptpro.com</a> ' +
+              'and Jay connects the two.';
+          }
+          hideLoading();
+          showScreen('gate-screen');
+          const go = $('ph-enter');
+          if (go) {
+            go.addEventListener('click', async () => {
+              go.disabled = true;
+              /* there is no showLoading() in this file, only hideLoading() */
+              try { $('loading-screen').classList.remove('hidden'); } catch (e) {}
+              checking = true;
+              await checkAllowed(email, false);
+            }, { once: true });
+            return;
+          }
+          /* button missing: never trap a paying customer on the gate */
+        }
         checking = true;
         await checkAllowed(data.session.user.email, false);
       }
