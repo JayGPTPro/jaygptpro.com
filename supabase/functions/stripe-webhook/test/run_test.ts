@@ -234,12 +234,22 @@ check('the alias row is upgraded too', aliasRow?.round === 'wonka_r1', JSON.stri
 check('alias still points at the primary', aliasRow?.primary_email === 'primary@buyer.com', JSON.stringify(aliasRow));
 check('welcome sent once', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
-console.log('\n8b. A dangling alias must fail loudly, not silently');
+// EXPECTATION CHANGED with the cluster invariant, deliberately. It used to demand a
+// 500 here, because back then the TARGET row decided access and a missing target
+// meant the buyer was lost. Now the buyer's OWN row is made valid, and the portal
+// falls back to it when the pointer leads nowhere, so a dangling pointer costs the
+// customer nothing. Keeping the old 500 would make Stripe retry forever and light up
+// the dashboard for somebody who is already inside.
+console.log('\n8b. A dangling alias must not block the buyer');
 reset();
 DB.allowed_emails.push({ email: 'orphanalias@buyer.com', round: 'round2', addon_donna: false,
   primary_email: 'nobody@nowhere.com', welcome_email_sent_at: null, stripe_payment_id: null });
 res = await post(session('orphanalias@buyer.com'));
-check('http 500 so Stripe retries and the dashboard shows red', res.status === 500, `got ${res.status}`);
+row = DB.allowed_emails.find(r => r.email === 'orphanalias@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('their own row is valid, which is all the gate reads', row?.round === 'wonka_r1', JSON.stringify(row));
+check('Donna access preserved', row?.addon_donna === true, JSON.stringify(row));
+check('welcome sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
 console.log('\n8c. A normal buyer with no alias is untouched');
 reset();
@@ -247,6 +257,55 @@ res = await post(session('plain@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'plain@buyer.com');
 check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
 check('no stray addon_donna', row?.addon_donna !== true, JSON.stringify(row));
+
+
+// ---------------------------------------------------------------
+// THE CLUSTER INVARIANT. RLS ("Users can check their own email") means a portal
+// reads exactly ONE row: the signed-in address. So every address a human can sign
+// in with must be independently valid. Upgrading only the row that paid is what
+// locked two real customers out on launch night.
+console.log('\n9a. Buyer paid on the TARGET; the alias they sign in with must work too');
+reset();
+DB.allowed_emails.push({ email: 'payer@buyer.com', round: 'round2', addon_donna: false,
+  welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old' });
+DB.allowed_emails.push({ email: 'signin@gmail.com', round: 'round2', addon_donna: false,
+  primary_email: 'payer@buyer.com', welcome_email_sent_at: null, stripe_payment_id: null });
+res = await post(session('payer@buyer.com'));
+let payerRow = DB.allowed_emails.find(r => r.email === 'payer@buyer.com');
+let signinRow = DB.allowed_emails.find(r => r.email === 'signin@gmail.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('the row that paid is on wonka_r1', payerRow?.round === 'wonka_r1', JSON.stringify(payerRow));
+check('the row they SIGN IN with is on wonka_r1', signinRow?.round === 'wonka_r1', JSON.stringify(signinRow));
+check('the linked row keeps its Donna access', signinRow?.addon_donna === true, JSON.stringify(signinRow));
+check('the linked row keeps its pointer', signinRow?.primary_email === 'payer@buyer.com', JSON.stringify(signinRow));
+check('no welcome claim stolen from the linked row', (signinRow?.welcome_email_sent_at ?? null) === null, JSON.stringify(signinRow));
+
+console.log('\n9b. Two aliases on one human: BOTH must open the door');
+reset();
+DB.allowed_emails.push({ email: 'hub@buyer.com', round: 'round1', addon_donna: false, welcome_email_sent_at: 'x', stripe_payment_id: 'pi_old' });
+DB.allowed_emails.push({ email: 'a1@gmail.com', round: 'round1', addon_donna: false, primary_email: 'hub@buyer.com', welcome_email_sent_at: null });
+DB.allowed_emails.push({ email: 'a2@gmail.com', round: 'round1', addon_donna: false, primary_email: 'hub@buyer.com', welcome_email_sent_at: null });
+res = await post(session('a1@gmail.com'));
+for (const e of ['hub@buyer.com', 'a1@gmail.com', 'a2@gmail.com']) {
+  const r = DB.allowed_emails.find(x => x.email === e);
+  check(`${e} enters`, r?.round === 'wonka_r1', JSON.stringify(r));
+  check(`${e} keeps Donna`, r?.addon_donna === true, JSON.stringify(r));
+}
+
+console.log('\n9c. A brand new buyer who happens to be somebody\'s alias target');
+reset();
+DB.allowed_emails.push({ email: 'ghost@gmail.com', round: 'round2', addon_donna: false, primary_email: 'fresh@buyer.com', welcome_email_sent_at: null });
+res = await post(session('fresh@buyer.com'));
+check('the new buyer is in', DB.allowed_emails.find(r => r.email === 'fresh@buyer.com')?.round === 'wonka_r1');
+check('and so is the row pointing at them', DB.allowed_emails.find(r => r.email === 'ghost@gmail.com')?.round === 'wonka_r1');
+
+console.log('\n9d. A lone buyer with no links is untouched by any of this');
+reset();
+res = await post(session('lonely@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'lonely@buyer.com');
+check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('no stray Donna access', row?.addon_donna !== true, JSON.stringify(row));
+check('exactly one row written', DB.allowed_emails.length === 1, JSON.stringify(DB.allowed_emails));
 
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

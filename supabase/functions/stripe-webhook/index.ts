@@ -215,6 +215,69 @@ async function roundFromProduct(supabase: SupabaseClient, productId: string): Pr
   return FALLBACK_PRODUCT_TO_ROUND[productId] || null;
 }
 
+// ===========================================================================
+// THE INVARIANT, and why every access bug so far has been the same bug.
+//
+// There are two disagreeing models of "who is this customer":
+//   WRITE side (this webhook, service key): the customer is the address that paid,
+//     and it can read and write any row in the table.
+//   READ side (both portals, the user's own JWT): RLS policy is
+//     "Users can check their own email" -> auth.jwt() ->> 'email' = email.
+//     The customer can ONLY ever read the single row matching the Google address
+//     they signed in with. It cannot read a second row. Ever.
+//
+// So the invariant is: EVERY ADDRESS A CUSTOMER MIGHT SIGN IN WITH MUST HAVE A ROW
+// THAT IS INDEPENDENTLY VALID. Any design that needs a second row at gate time is
+// already broken, it just fails silently, and it fails as "no ticket found", which
+// is the worst sentence this system can show a person who just paid.
+//
+// `primary_email` links rows into one human. Granting access to only the paying row
+// leaves the other addresses of that same human on their old product. That is what
+// locked Steve Chu and Kim out on launch night with correct-looking data everywhere.
+// So a purchase upgrades the WHOLE cluster, not just the row that paid.
+// ===========================================================================
+async function identityCluster(supabase: SupabaseClient, email: string): Promise<string[]> {
+  const lower = email.toLowerCase();
+  const set = new Set<string>([lower]);
+  try {
+    // the row this address points at, if it is an alias
+    const { data: mine } = await supabase
+      .from('allowed_emails').select('primary_email').ilike('email', lower).maybeSingle();
+    if (mine?.primary_email) set.add(String(mine.primary_email).toLowerCase());
+    // every row pointing at anything already in the set. The table is small and this
+    // runs once per purchase, so a scan of the alias rows is the cheap, exact option:
+    // an .in() filter would miss a primary_email stored with different casing.
+    const { data: pointers } = await supabase
+      .from('allowed_emails').select('email, primary_email').not('primary_email', 'is', null);
+    for (const r of pointers || []) {
+      const target = String(r.primary_email || '').toLowerCase();
+      if (set.has(target)) set.add(String(r.email).toLowerCase());
+    }
+  } catch (e) { console.error('identityCluster exception, falling back to the paying row alone:', e); }
+  return [...set];
+}
+
+// Move one row of the cluster onto the Wonka round without taking away what it
+// already had. Never touches welcome_email_sent_at: that column is the atomic
+// welcome claim and belongs to the paying row alone.
+async function claimRowForRound(
+  supabase: SupabaseClient, email: string, round: string, alsoGrantDonna: boolean,
+): Promise<{ ok: boolean; before?: string }> {
+  const lower = email.toLowerCase();
+  const { data: existing, error: readErr } = await supabase
+    .from('allowed_emails').select('round, addon_donna').ilike('email', lower).maybeSingle();
+  if (readErr) { console.error('cluster read failed:', lower, readErr); return { ok: false }; }
+  if (!existing) return { ok: true };            // nothing to repair
+  if (existing.round === round && (!alsoGrantDonna || existing.addon_donna)) return { ok: true, before: existing.round };
+  const prior = String(existing.round || '');
+  const hadDonna = !!prior && !isWonkaRound(prior) && prior !== 'unknown';
+  const patch: Record<string, unknown> = { round };
+  if (hadDonna || alsoGrantDonna || existing.addon_donna) patch.addon_donna = true;
+  const { error } = await supabase.from('allowed_emails').update(patch).ilike('email', lower);
+  if (error) { console.error('cluster write failed:', lower, error); return { ok: false }; }
+  return { ok: true, before: prior };
+}
+
 async function reconcileAccessFor(supabase: SupabaseClient, email: string) {
   if (!email) return;
   const lower = email.toLowerCase();
@@ -522,29 +585,6 @@ Deno.serve(async (req: Request) => {
             // refused at the gate for exactly this (11.8): the money landed on the alias while
             // the gate kept reading a Donna round on the target. Repair the row the gate will
             // actually read. The alias keeps pointing at it, so both addresses work.
-            const aliasTarget = existing?.primary_email && String(existing.primary_email).toLowerCase() !== lowerEmail
-              ? String(existing.primary_email).toLowerCase() : '';
-            if (aliasTarget) {
-              const { data: tgt } = await supabase
-                .from('allowed_emails')
-                .select('round, addon_donna, stripe_payment_id')
-                .ilike('email', aliasTarget)
-                .maybeSingle();
-              if (!tgt) {
-                console.error('alias points at a missing row:', { lowerEmail, aliasTarget });
-                return new Response(JSON.stringify({ error: 'alias target missing' }), { status: 500 });
-              }
-              const tgtPrior = String(tgt.round || '');
-              const tgtHadDonna = !!tgtPrior && !isWonkaRound(tgtPrior) && tgtPrior !== 'unknown';
-              const tgtPatch: Record<string, unknown> = { round: allowedEmailsRound, stripe_payment_id: paymentId };
-              if (tgtHadDonna || tgt.addon_donna || tookDonnaAddon) tgtPatch.addon_donna = true;
-              const { error: aliasErr } = await supabase.from('allowed_emails').update(tgtPatch).ilike('email', aliasTarget);
-              if (aliasErr) {
-                console.error('alias target repair failed:', aliasErr);
-                return new Response(JSON.stringify({ error: 'alias target repair failed' }), { status: 500 });
-              }
-              console.log('Alias buyer: access written to the row the gate reads', { paid: lowerEmail, target: aliasTarget, tgtPrior, tgtHadDonna });
-            }
             const priorRound = String(existing?.round || '');
             // Only a real Donna round needs preserving. 'unknown' grants nothing, so do not
             // hand out Donna access that was never bought.
@@ -561,6 +601,27 @@ Deno.serve(async (req: Request) => {
               return new Response(JSON.stringify({ error: 'allowed_emails repair failed' }), { status: 500 });
             }
             console.log('Returning buyer moved to Wonka:', { email: lowerEmail, priorRound, hadDonna, isRetry });
+          }
+
+          // THE INVARIANT (see identityCluster above): every address this human can
+          // sign in with needs a row that stands on its own, because RLS lets the
+          // portal read exactly one row and never a second. Runs for a brand new
+          // buyer too: they may already appear as somebody's alias.
+          if (isWonkaRound(allowedEmailsRound)) {
+            const cluster = await identityCluster(supabase, lowerEmail);
+            const others = cluster.filter(e => e !== lowerEmail);
+            for (const other of others) {
+              const res = await claimRowForRound(supabase, other, allowedEmailsRound, tookDonnaAddon);
+              if (!res.ok) {
+                // 500 so Stripe retries. Every write here is idempotent, and a half
+                // repaired cluster is exactly the silent lockout this block exists to stop.
+                console.error('cluster repair failed, asking Stripe to retry:', { paid: lowerEmail, other });
+                return new Response(JSON.stringify({ error: 'cluster repair failed' }), { status: 500 });
+              }
+              if (res.before && res.before !== allowedEmailsRound) {
+                console.log('Cluster row moved to Wonka:', { paid: lowerEmail, linked: other, before: res.before });
+              }
+            }
           }
           // The insert above is a no-op for somebody already in the table (email is UNIQUE),
           // so the add-on has to be granted separately or a returning buyer never gets it.
