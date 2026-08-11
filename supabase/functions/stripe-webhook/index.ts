@@ -242,7 +242,7 @@ async function identityCluster(supabase: SupabaseClient, email: string): Promise
   try {
     // the row this address points at, if it is an alias
     const { data: mine } = await supabase
-      .from('allowed_emails').select('primary_email').ilike('email', lower).maybeSingle();
+      .from('allowed_emails').select('primary_email').eq('email', lower).maybeSingle();
     if (mine?.primary_email) set.add(String(mine.primary_email).toLowerCase());
     // every row pointing at anything already in the set. The table is small and this
     // runs once per purchase, so a scan of the alias rows is the cheap, exact option:
@@ -265,7 +265,7 @@ async function claimRowForRound(
 ): Promise<{ ok: boolean; before?: string }> {
   const lower = email.toLowerCase();
   const { data: existing, error: readErr } = await supabase
-    .from('allowed_emails').select('round, addon_donna').ilike('email', lower).maybeSingle();
+    .from('allowed_emails').select('round, addon_donna').eq('email', lower).maybeSingle();
   if (readErr) { console.error('cluster read failed:', lower, readErr); return { ok: false }; }
   if (!existing) return { ok: true };            // nothing to repair
   if (existing.round === round && (!alsoGrantDonna || existing.addon_donna)) return { ok: true, before: existing.round };
@@ -273,7 +273,7 @@ async function claimRowForRound(
   const hadDonna = !!prior && !isWonkaRound(prior) && prior !== 'unknown';
   const patch: Record<string, unknown> = { round };
   if (hadDonna || alsoGrantDonna || existing.addon_donna) patch.addon_donna = true;
-  const { error } = await supabase.from('allowed_emails').update(patch).ilike('email', lower);
+  const { error } = await supabase.from('allowed_emails').update(patch).eq('email', lower);
   if (error) { console.error('cluster write failed:', lower, error); return { ok: false }; }
   return { ok: true, before: prior };
 }
@@ -284,21 +284,29 @@ async function reconcileAccessFor(supabase: SupabaseClient, email: string) {
   const { data: payments } = await supabase
     .from('stripe_customers')
     .select('id, amount_paid, refunded, coupon_used')
-    .ilike('email', lower);
+    .eq('email', lower);
   const hasActive = (payments || []).some(p => !p.refunded && (p.coupon_used || '').toUpperCase() !== 'TEST');
   if (hasActive) {
-    await supabase.from('allowed_emails').update({ access_revoked_at: null, access_revoked_reason: null }).ilike('email', lower).not('access_revoked_at', 'is', null);
+    await supabase.from('allowed_emails').update({ access_revoked_at: null, access_revoked_reason: null }).eq('email', lower).not('access_revoked_at', 'is', null);
   } else {
-    await supabase.from('allowed_emails').update({ access_revoked_at: new Date().toISOString(), access_revoked_reason: 'Stripe refund (auto)' }).ilike('email', lower).is('access_revoked_at', null);
+    await supabase.from('allowed_emails').update({ access_revoked_at: new Date().toISOString(), access_revoked_reason: 'Stripe refund (auto)' }).eq('email', lower).is('access_revoked_at', null);
   }
 }
 
 async function upgradeAllowedEmailRound(supabase: SupabaseClient, email: string, round: string) {
   if (!email || !round || round === 'unknown') return;
   const lower = email.toLowerCase();
-  await supabase.from('allowed_emails').update({ round }).ilike('email', lower).or('round.is.null,round.eq.unknown');
+  await supabase.from('allowed_emails').update({ round }).eq('email', lower).or('round.is.null,round.eq.unknown');
 }
 
+// Identity lookups in this file use .eq on a lowercased address, never .ilike. In
+// PostgREST, ilike treats `_` and `%` in the VALUE as wildcards, so a customer whose
+// address contains an underscore matches every address differing by one character at
+// that spot. These are UPDATEs: a collision would move a stranger's row to another
+// product, steal their welcome claim, or revoke their access. Six addresses in the
+// table contain an underscore today. Every write path stores lowercase, so .eq is
+// exact and strictly safer. The portal has escaped this since day one.
+//
 // CRITICAL DEDUP: claim the welcome by atomically setting welcome_email_sent_at IF still NULL.
 // Returns true if THIS caller may proceed to send. Returns false if another caller already claimed.
 // Used to prevent duplicate welcome emails when both payment_intent.succeeded AND
@@ -309,35 +317,37 @@ async function claimWelcome(supabase: SupabaseClient, email: string): Promise<bo
   const { data } = await supabase
     .from('allowed_emails')
     .update({ welcome_email_sent_at: new Date().toISOString() })
-    .ilike('email', lower)
+    .eq('email', lower)
     .is('welcome_email_sent_at', null)
     .select('email');
   return Array.isArray(data) && data.length > 0;
 }
 
-async function sendWelcomeEmailAsync(email: string) {
-  if (!email || !formSecret) return;
+// These three used to return void and swallow everything, so a Resend 502 on a Donna
+// purchase looked identical to a success: the claim stayed stamped, the handler
+// returned 200, Stripe never retried, and the buyer simply never heard from us. Only
+// the Wonka path checked its result. They now report, and every caller releases the
+// claim and answers 500 so Stripe retries and the failure shows red on the dashboard.
+async function postWelcome(url: string, label: string, body: Record<string, unknown>): Promise<boolean> {
+  if (!formSecret) { console.error(`${label}: FORM_SYNC_SECRET missing, cannot send`); return false; }
   try {
-    const res = await fetch(SEND_WELCOME_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify({ email }) });
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify(body) });
     const detail = await res.json().catch(() => ({}));
-    console.log('send-welcome-email status:', res.status, JSON.stringify(detail));
-  } catch (e) { console.error('send-welcome-email call failed:', e); }
+    console.log(`${label} status:`, res.status, JSON.stringify(detail));
+    return res.ok;
+  } catch (e) { console.error(`${label} call failed:`, e); return false; }
 }
-async function sendWelcomeBinaAsync(email: string, round: string) {
-  if (!email || !formSecret) return;
-  try {
-    const res = await fetch(SEND_WELCOME_BINA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify({ email, round }) });
-    const detail = await res.json().catch(() => ({}));
-    console.log('send-welcome-bina status:', res.status, JSON.stringify(detail));
-  } catch (e) { console.error('send-welcome-bina call failed:', e); }
+async function sendWelcomeEmailAsync(email: string): Promise<boolean> {
+  if (!email) return false;
+  return await postWelcome(SEND_WELCOME_URL, 'send-welcome-email', { email });
 }
-async function sendWelcomeEnglishAsync(email: string, round: string) {
-  if (!email || !formSecret) return;
-  try {
-    const res = await fetch(SEND_WELCOME_ENGLISH_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify({ email, round }) });
-    const detail = await res.json().catch(() => ({}));
-    console.log('send-welcome-english status:', res.status, JSON.stringify(detail));
-  } catch (e) { console.error('send-welcome-english call failed:', e); }
+async function sendWelcomeBinaAsync(email: string, round: string): Promise<boolean> {
+  if (!email) return false;
+  return await postWelcome(SEND_WELCOME_BINA_URL, 'send-welcome-bina', { email, round });
+}
+async function sendWelcomeEnglishAsync(email: string, round: string): Promise<boolean> {
+  if (!email) return false;
+  return await postWelcome(SEND_WELCOME_ENGLISH_URL, 'send-welcome-english', { email, round });
 }
 
 // A round row may name its own welcome function in `welcome_email_fn_slug`.
@@ -376,7 +386,7 @@ async function sendWelcomeBySlugAsync(slug: string, email: string, round: string
 // Undo a welcome claim so a retry can send it. Used when the send did not happen.
 async function releaseWelcomeClaim(supabase: SupabaseClient, email: string) {
   if (!email) return;
-  await supabase.from('allowed_emails').update({ welcome_email_sent_at: null }).ilike('email', email.toLowerCase());
+  await supabase.from('allowed_emails').update({ welcome_email_sent_at: null }).eq('email', email.toLowerCase());
 }
 
 Deno.serve(async (req: Request) => {
@@ -534,7 +544,14 @@ Deno.serve(async (req: Request) => {
           if (couponUsed !== 'TEST') {
             // Atomic claim: only send if welcome_email_sent_at IS NULL.
             const may = await claimWelcome(supabase, customerEmail);
-            if (may) await sendWelcomeBinaAsync(customerEmail, shortRound);
+            if (may) {
+              const sentOk = await sendWelcomeBinaAsync(customerEmail, shortRound);
+              if (!sentOk) {
+                await releaseWelcomeClaim(supabase, customerEmail);
+                console.error('Bina welcome send failed, claim released, asking Stripe to retry:', { email: customerEmail.toLowerCase(), round: shortRound });
+                return new Response(JSON.stringify({ error: 'welcome send failed' }), { status: 500 });
+              }
+            }
           }
         }
       } else {
@@ -578,7 +595,7 @@ Deno.serve(async (req: Request) => {
             const { data: existing } = await supabase
               .from('allowed_emails')
               .select('round, addon_donna, stripe_payment_id, welcome_email_sent_at, primary_email')
-              .ilike('email', lowerEmail)
+              .eq('email', lowerEmail)
               .maybeSingle();
             // An ALIAS row: both portals follow primary_email and read the target row instead,
             // so upgrading this one grants nothing. Two buyers paid $497 on launch day and were
@@ -595,7 +612,7 @@ Deno.serve(async (req: Request) => {
             const patch: Record<string, unknown> = { round: allowedEmailsRound, stripe_payment_id: paymentId };
             if (hadDonna || tookDonnaAddon) patch.addon_donna = true;
             if (!isRetry) patch.welcome_email_sent_at = null; // re-arm claimWelcome for this purchase
-            const { error: repairErr } = await supabase.from('allowed_emails').update(patch).ilike('email', lowerEmail);
+            const { error: repairErr } = await supabase.from('allowed_emails').update(patch).eq('email', lowerEmail);
             if (repairErr) {
               console.error('returning-buyer repair failed:', repairErr);
               return new Response(JSON.stringify({ error: 'allowed_emails repair failed' }), { status: 500 });
@@ -627,7 +644,7 @@ Deno.serve(async (req: Request) => {
           // so the add-on has to be granted separately or a returning buyer never gets it.
           // Only ever turns the flag ON: a later purchase without the add-on must not revoke it.
           if (tookDonnaAddon) {
-            const { error: addonErr } = await supabase.from('allowed_emails').update({ addon_donna: true }).ilike('email', customerEmail.toLowerCase()).eq('addon_donna', false);
+            const { error: addonErr } = await supabase.from('allowed_emails').update({ addon_donna: true }).eq('email', customerEmail.toLowerCase()).eq('addon_donna', false);
             if (addonErr) console.error('addon_donna grant error:', addonErr);
           }
           if (canonicalRound) await upgradeAllowedEmailRound(supabase, customerEmail, allowedEmailsRound);
@@ -643,11 +660,12 @@ Deno.serve(async (req: Request) => {
             // Atomic claim before sending. Prevents duplicates if event is replayed.
             const may = await claimWelcome(supabase, customerEmail);
             if (may) {
+              let sentOk = true;
               if (isEvergreen) {
                 // Evergreen weekly cohort: send-welcome-english resolves dates/WhatsApp from the wk_ round row.
-                await sendWelcomeEnglishAsync(customerEmail, englishRound);
+                sentOk = await sendWelcomeEnglishAsync(customerEmail, englishRound);
               } else if (shortRound === 'r4' || shortRound === 'r5') {
-                await sendWelcomeEnglishAsync(customerEmail, shortRound);
+                sentOk = await sendWelcomeEnglishAsync(customerEmail, shortRound);
               } else if (customSlug && customSlug !== 'send-welcome-email') {
                 // A non-Donna product naming its own welcome function (Wonka, and whatever follows).
                 // Excludes 'send-welcome-email' so round1/round2 keep the exact legacy call below
@@ -663,7 +681,16 @@ Deno.serve(async (req: Request) => {
                 }
               } else {
                 // Round 1/2/unknown: legacy generic welcome (rare path, only if product/plink lookup failed)
-                await sendWelcomeEmailAsync(customerEmail);
+                sentOk = await sendWelcomeEmailAsync(customerEmail);
+              }
+              // Same contract as the Wonka path above, now for every Donna path too. A
+              // swallowed failure here meant a paying customer heard nothing, with the
+              // claim stamped so no replay could ever fix it, and a green 200 on the
+              // dashboard hiding it.
+              if (!sentOk) {
+                await releaseWelcomeClaim(supabase, customerEmail);
+                console.error('Welcome send failed, claim released, asking Stripe to retry:', { email: customerEmail.toLowerCase(), round: englishRound });
+                return new Response(JSON.stringify({ error: 'welcome send failed' }), { status: 500 });
               }
             }
           }

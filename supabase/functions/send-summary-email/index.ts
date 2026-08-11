@@ -138,10 +138,15 @@ Deno.serve(async (req: Request) => {
       continue;
     }
     const isEvergreen = r.id.startsWith('wk_');
+    // Same trap as send-daily-emails: 'both' matches every weekly cohort forever, and
+    // the per-round guard cannot see it. Four people have received this wrap-up eleven
+    // times, and it says their graduate window closes tonight. 'both' now only applies
+    // to round1 and round2, the rounds it was invented for (fixed 12.8.2026).
+    const audience = (r.id === 'round1' || r.id === 'round2') ? [r.id, 'both'] : [r.id];
     const { data: participants } = await supabase
       .from('allowed_emails')
       .select('email, customer_type, primary_email')
-      .in('round', [r.id, 'both'])
+      .in('round', audience)
       .is('access_revoked_at', null);
     const list = (participants || []).filter(p => !p.primary_email && (p.customer_type === 'paid' || p.customer_type === 'family' || p.customer_type === 'admin' || !p.customer_type));
 
