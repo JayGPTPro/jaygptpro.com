@@ -3233,8 +3233,20 @@ function paintPurchaseCard(){
   var when = document.getElementById('ph-when');
   if (when) {
     var d = new Date((CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
-    when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
-      : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
+    /* Print the real unlock moment in NEW YORK, the only timezone this schedule is
+       defined in. It used to render in the VIEWER's timezone, so the New Zealand
+       customer on this list was told Day 1 opens on 2 September. It also read
+       FALLBACK_START_DATE rather than the actual calendar, so a schedule change made
+       the documented way (edit DAY_DATES, not start_date) left this line lying. */
+    try {
+      var t1 = dayUnlockTime(1);
+      when.textContent = 'Day 1 opens ' + t1.toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/New_York'
+      }) + ' at 9:00 AM New York time.';
+    } catch (e) {
+      when.textContent = isNaN(d) ? 'Day 1 opens on the round start date.'
+        : 'Day 1 opens ' + d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + '.';
+    }
   }
 }
 (function purchaseWelcome(){
@@ -3311,7 +3323,18 @@ function nyOffsetMinutes(dateUtc) {
     if (!m) return -300;
     const sign = m[1] === '-' ? -1 : 1;
     return sign * (parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0));
-  } catch (e) { return -300; }
+  } catch (e) {
+    /* Was a flat -300 (EST). Every Wonka day falls in September, which is EDT, so an
+       older browser (Safari < 15.4, Chrome < 95) opened every door an hour late. Use
+       the US rule: DST runs second Sunday in March to first Sunday in November. */
+    const yy = d.getUTCFullYear();
+    const mar = new Date(Date.UTC(yy, 2, 1));
+    const dstStart = Date.UTC(yy, 2, 1 + ((7 - mar.getUTCDay()) % 7) + 7, 7);
+    const nov = new Date(Date.UTC(yy, 10, 1));
+    const dstEnd = Date.UTC(yy, 10, 1 + ((7 - nov.getUTCDay()) % 7), 6);
+    const tt = d.getTime();
+    return (tt >= dstStart && tt < dstEnd) ? -240 : -300;
+  }
 }
 function dayUnlockTime(dayNum) {
   // An explicit calendar wins over any computation: the round skips whole days.
@@ -3462,8 +3485,14 @@ async function checkAllowed(email, isRequery) {
   try {
     const res = await sb.from('allowed_emails')
       .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
-      .ilike('email', safeEmail).maybeSingle();
-    data = res.data; error = res.error;
+      .ilike('email', safeEmail).limit(1);
+    /* .limit(1), not .maybeSingle(): maybeSingle turns "more than one row" into an
+       error, and the branch below reads every error as a transport failure, so a
+       duplicate row parks the customer on "the gate mechanism jammed" whose only
+       button reloads into the same error, for ever. RLS returns at most the caller's
+       own rows, so taking the first is right and a duplicate becomes survivable. */
+    data = Array.isArray(res.data) ? (res.data[0] || null) : res.data;
+    error = res.error;
   } catch (e) { error = e; }
 
   if (error) {
@@ -3523,8 +3552,9 @@ async function checkAllowed(email, isRequery) {
       const safePrimary = data.primary_email.replace(/([%_\\])/g, '\\$1');
       const hop = await sb.from('allowed_emails')
         .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
-        .ilike('email', safePrimary).maybeSingle();
-      if (!hop.error && hop.data) data = hop.data;
+        .ilike('email', safePrimary).limit(1);
+      const hopRow = Array.isArray(hop.data) ? (hop.data[0] || null) : hop.data;
+      if (!hop.error && hopRow) data = hopRow;
       else console.warn('primary_email hop returned nothing (RLS); staying on this row.');
     } catch (e) {
       console.warn('primary_email hop failed; staying on this row.', e);
