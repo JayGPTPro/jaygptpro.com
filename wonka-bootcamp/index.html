@@ -3408,6 +3408,53 @@ async function signOut() {
   location.reload();
 }
 
+function justPaidRecently() {
+  try {
+    const t = Number(sessionStorage.getItem('wonka-just-paid') || 0);
+    return t > 0 && (Date.now() - t) < 30 * 60 * 1000;
+  } catch (e) { return false; }
+}
+
+/* The single door for a signed-in customer, used by BOTH entry paths.
+   It used to live inside the getSession branch alone, which was wrong twice over:
+   supabase-js fires SIGNED_IN whenever it recovers a stored session, so the
+   listener won the race and the welcome card never appeared for the ordinary
+   buyer; and on the token-refresh path, where the branch did run, it cleared the
+   just-paid flag BEFORE checkAllowed could read it, which switched off the
+   webhook-lag poll and showed "no ticket found" to somebody who had paid two
+   seconds earlier. The flag is now cleared only once they are actually inside. */
+async function beginForSignedInUser(email) {
+  if (portalRendered || checking) return;
+  if (justPaidRecently()) {
+    paintPurchaseCard();
+    const card = document.querySelector('.ticket-card');
+    if (card) card.classList.add('signed-in');
+    const step1 = document.getElementById('ph-step-signin');
+    if (step1) {
+      step1.innerHTML = '<b>You are signed in as ' +
+        String(email).replace(/[<>&]/g, '') +
+        '.</b> If that is not the address you paid with, email ' +
+        '<a href="mailto:info@jaygptpro.com" style="color:#F5B841">info@jaygptpro.com</a> ' +
+        'and Jay connects the two.';
+    }
+    hideLoading();
+    showScreen('gate-screen');
+    const go = $('ph-enter');
+    if (go) {
+      go.addEventListener('click', async () => {
+        go.disabled = true;
+        try { $('loading-screen').classList.remove('hidden'); } catch (e) {}
+        checking = true;
+        await checkAllowed(email, false);
+      }, { once: true });
+      return;
+    }
+    /* button missing: never trap a paying customer on the gate */
+  }
+  checking = true;
+  await checkAllowed(email, false);
+}
+
 async function checkAllowed(email, isRequery) {
   let data, error;
   // escape LIKE wildcards so emails with _ or % match literally
@@ -3485,6 +3532,10 @@ async function checkAllowed(email, isRequery) {
   }
 
   if (data.access_revoked_at) {
+    /* Wipe the degraded-mode cache. It used to survive a refusal, so a refunded
+       customer only had to block one request to be let straight back in on the
+       cached round. */
+    [P + '-email', P + '-round', P + '-round-check'].forEach(LS.del);
     hideLoading();
     $('rv-email').textContent = email;
     $('rv-mailto').href = 'mailto:' + CONFIG.SUPPORT_EMAIL + '?subject=Wonka%20Bootcamp%20access%20revoked&body=My%20email:%20' + encodeURIComponent(email);
@@ -3499,6 +3550,8 @@ async function checkAllowed(email, isRequery) {
      so Wonka accepts only its own values: this round's id, 'wonka_all' (the
      Wonka-specific all-access), or an admin address. */
   if (round !== CONFIG.ROUND_ID && round !== 'wonka_all' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
+    // same reason as the revoked branch: a refusal must not leave a usable offline pass
+    [P + '-email', P + '-round', P + '-round-check'].forEach(LS.del);
     hideLoading();
     $('na-email').textContent = email;
     $('na-reason').textContent = 'Your ticket is real, but it opens a different factory. This portal belongs to another round or program. Write to us and we will point you at the right gate.';
@@ -5741,6 +5794,11 @@ function armRevealFailsafe() {
 async function enterFactory() {
   if (portalRendered) return;
   portalRendered = true;
+  /* They are inside, so the just-paid flag has done both of its jobs: showing the
+     welcome card and keeping the webhook-lag poll alive. Clearing it here rather
+     than at the start means a reload during a slow webhook still polls instead of
+     refusing, and a reload afterwards does not re-show the card. */
+  try { sessionStorage.removeItem('wonka-just-paid'); } catch (e) {}
 
   loadProgress();
   await fetchRound();
@@ -5961,8 +6019,7 @@ async function boot() {
     }
     if (portalRendered || checking) return;
     if (session && session.user && session.user.email) {
-      checking = true;
-      checkAllowed(session.user.email, false);
+      beginForSignedInUser(session.user.email);
     }
   });
 
@@ -5971,48 +6028,7 @@ async function boot() {
     const { data } = await sb.auth.getSession();
     if (data && data.session && data.session.user) {
       if (!portalRendered && !checking) {
-        /* Just paid in this browser? Show the welcome and let them press the way in.
-           A signed-in buyer would otherwise be teleported into the factory the instant
-           Stripe redirects, never seeing the WhatsApp link, the inbox note, or the
-           Day 1 date. The flag is set by purchaseWelcome and expires after 30 minutes
-           so it can never strand a returning member behind a stale card. */
-        let justPaid = false;
-        try {
-          const t = Number(sessionStorage.getItem('wonka-just-paid') || 0);
-          justPaid = t > 0 && (Date.now() - t) < 30 * 60 * 1000;
-        } catch (e) {}
-        if (justPaid) {
-          try { sessionStorage.removeItem('wonka-just-paid'); } catch (e) {}
-          const email = data.session.user.email;
-          paintPurchaseCard();
-          const card = document.querySelector('.ticket-card');
-          if (card) card.classList.add('signed-in');
-          /* step 1 tells them to sign in, which they already are. */
-          const step1 = document.getElementById('ph-step-signin');
-          if (step1) {
-            step1.innerHTML = '<b>You are signed in as ' +
-              String(email).replace(/[<>&]/g, '') +
-              '.</b> If that is not the address you paid with, email ' +
-              '<a href="mailto:info@jaygptpro.com" style="color:#F5B841">info@jaygptpro.com</a> ' +
-              'and Jay connects the two.';
-          }
-          hideLoading();
-          showScreen('gate-screen');
-          const go = $('ph-enter');
-          if (go) {
-            go.addEventListener('click', async () => {
-              go.disabled = true;
-              /* there is no showLoading() in this file, only hideLoading() */
-              try { $('loading-screen').classList.remove('hidden'); } catch (e) {}
-              checking = true;
-              await checkAllowed(email, false);
-            }, { once: true });
-            return;
-          }
-          /* button missing: never trap a paying customer on the gate */
-        }
-        checking = true;
-        await checkAllowed(data.session.user.email, false);
+        await beginForSignedInUser(data.session.user.email);
       }
       return;
     }
