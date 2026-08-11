@@ -307,5 +307,129 @@ check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
 check('no stray Donna access', row?.addon_donna !== true, JSON.stringify(row));
 check('exactly one row written', DB.allowed_emails.length === 1, JSON.stringify(DB.allowed_emails));
 
+
+// ---------------------------------------------------------------
+// THE MONEY PATHS. Everything below was found by the 12.8 audit sweep.
+const evergreenSession = (email: string, amount = 9700) => ({
+  type: 'checkout.session.completed',
+  data: { object: { id: 'cs_ever_1', payment_intent: 'pi_ever_1', amount_total: amount, currency: 'usd',
+    payment_status: 'paid', customer_email: email,
+    customer_details: { name: 'Repeat Buyer', email, phone: null, address: { country: 'US' } },
+    customer: 'cus_ever', payment_link: 'plink_1TevFWRqcDuiISNTHnwIfuLq' } },
+});
+
+console.log('\n10a. A repeat customer buying a DONNA product gets a welcome and the right round');
+reset();
+DB.allowed_emails.push({ email: 'alum@buyer.com', round: 'round1', addon_donna: false,
+  welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old' });
+res = await post(evergreenSession('alum@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'alum@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('moved onto the cohort they just bought', String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
+check('welcome actually sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
+
+console.log('\n10b. A WONKA ticket holder buying Donna keeps the bootcamp');
+reset();
+DB.allowed_emails.push({ email: 'wonkabuyer@x.com', round: 'wonka_r1', addon_donna: false,
+  welcome_email_sent_at: '2026-08-11T00:00:00Z', stripe_payment_id: 'pi_wonka' });
+res = await post(evergreenSession('wonkabuyer@x.com'));
+row = DB.allowed_emails.find(r => r.email === 'wonkabuyer@x.com');
+check('still holds wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('gains Donna via addon_donna', row?.addon_donna === true, JSON.stringify(row));
+check('welcome sent for the new purchase', sendState.calls.length === 1, JSON.stringify(sendState.calls));
+
+console.log('\n10c. An unpaid checkout session grants nothing');
+reset();
+let unpaid: any = session('pending@buyer.com');
+unpaid.data.object.payment_status = 'unpaid';
+res = await post(unpaid);
+check('http 200 but skipped', res.status === 200, `got ${res.status}`);
+check('no access row written', !DB.allowed_emails.find(r => r.email === 'pending@buyer.com'), JSON.stringify(DB.allowed_emails));
+check('no welcome sent', sendState.calls.length === 0);
+
+console.log('\n10d. A thin payment_intent event must not blank the good row');
+reset();
+await post(session('thin@buyer.com'));
+const before = DB.stripe_customers.find(r => r.id === 'pi_test_1');
+res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_test_1', amount: 69700, currency: 'usd', customer: 'cus_test' } } });
+const after = DB.stripe_customers.find(r => r.id === 'pi_test_1');
+check('email survives', after?.email === 'thin@buyer.com', JSON.stringify(after));
+check('round survives', after?.round === 'wonka_r1', JSON.stringify(after));
+
+console.log('\n10e. Refunding Wonka revokes Wonka even when an old Donna payment exists');
+reset();
+DB.allowed_emails.push({ email: 'two@buyer.com', round: 'wonka_r1', addon_donna: true, welcome_email_sent_at: 'x', stripe_payment_id: 'pi_w' });
+DB.stripe_customers.push({ id: 'pi_donna_old', email: 'two@buyer.com', amount_paid: 9700, refunded: false, coupon_used: 'FULL_PRICE', round: 'wk_2026_06_01' });
+DB.stripe_customers.push({ id: 'pi_w', email: 'two@buyer.com', amount_paid: 69700, refunded: false, coupon_used: 'FULL_PRICE', round: 'wonka_r1' });
+res = await post({ type: 'charge.refunded', data: { object: { id: 'ch_w', payment_intent: 'pi_w', amount: 69700, amount_refunded: 69700, refunded: true, currency: 'usd', created: 1786000000, billing_details: { email: 'two@buyer.com' }, refunds: { data: [{ created: 1786000000, reason: 'requested_by_customer' }] } } } });
+row = DB.allowed_emails.find(r => r.email === 'two@buyer.com');
+check('access revoked despite the live Donna payment', !!row?.access_revoked_at, JSON.stringify(row));
+
+console.log('\n10f. Partial refunds accumulate instead of double counting');
+reset();
+DB.stripe_customers.push({ id: 'pi_p', email: 'part@buyer.com', amount_paid: 69700, refunded: false, refund_amount: 0, coupon_used: 'FULL_PRICE', round: 'wonka_r1' });
+DB.allowed_emails.push({ email: 'part@buyer.com', round: 'wonka_r1', addon_donna: false, welcome_email_sent_at: 'x' });
+const partial = (amt: number) => ({ type: 'refund.created', data: { object: { id: 'rf', payment_intent: 'pi_p', amount: amt, status: 'succeeded', created: 1786000000, reason: null } } });
+await post(partial(23234)); await post(partial(23233));
+let pay = DB.stripe_customers.find(r => r.id === 'pi_p');
+check('two partials accumulate', pay?.refund_amount === 46467, JSON.stringify(pay));
+check('not marked fully refunded yet', pay?.refunded === false, JSON.stringify(pay));
+check('access still intact', !DB.allowed_emails.find(r => r.email === 'part@buyer.com')?.access_revoked_at);
+await post(partial(23233));
+pay = DB.stripe_customers.find(r => r.id === 'pi_p');
+check('the third partial completes the refund', pay?.refunded === true, JSON.stringify(pay));
+check('and now access goes', !!DB.allowed_emails.find(r => r.email === 'part@buyer.com')?.access_revoked_at);
+
+console.log('\n10g. A chargeback pulls access when the funds are actually withdrawn');
+reset();
+DB.stripe_customers.push({ id: 'pi_cb', email: 'cb@buyer.com', amount_paid: 69700, refunded: false, coupon_used: 'FULL_PRICE', round: 'wonka_r1' });
+DB.allowed_emails.push({ email: 'cb@buyer.com', round: 'wonka_r1', addon_donna: false, welcome_email_sent_at: 'x' });
+await post({ type: 'charge.dispute.created', data: { object: { charge: 'pi_cb', payment_intent: 'pi_cb', status: 'needs_response', amount: 69700 } } });
+check('an opened dispute alone does not revoke', !DB.allowed_emails.find(r => r.email === 'cb@buyer.com')?.access_revoked_at);
+await post({ type: 'charge.dispute.funds_withdrawn', data: { object: { charge: 'pi_cb', payment_intent: 'pi_cb', status: 'lost', amount: 69700 } } });
+check('losing the dispute revokes', !!DB.allowed_emails.find(r => r.email === 'cb@buyer.com')?.access_revoked_at);
+await post({ type: 'charge.dispute.funds_reinstated', data: { object: { charge: 'pi_cb', payment_intent: 'pi_cb', status: 'won', amount: 69700 } } });
+check('winning it back restores access', !DB.allowed_emails.find(r => r.email === 'cb@buyer.com')?.access_revoked_at);
+
+console.log('\n10h. A refund never lands on the wrong payment');
+reset();
+DB.stripe_customers.push({ id: 'pi_first', email: 'multi@buyer.com', amount_paid: 9700, refunded: false, coupon_used: 'FULL_PRICE', round: 'round1', stripe_customer_id: 'cus_same' });
+DB.stripe_customers.push({ id: 'pi_second', email: 'multi@buyer.com', amount_paid: 69700, refunded: false, coupon_used: 'FULL_PRICE', round: 'wonka_r1', stripe_customer_id: 'cus_same' });
+DB.allowed_emails.push({ email: 'multi@buyer.com', round: 'wonka_r1', addon_donna: true, welcome_email_sent_at: 'x' });
+await post({ type: 'charge.refunded', data: { object: { id: 'ch_2', payment_intent: 'pi_second', amount: 69700, amount_refunded: 69700, refunded: true, currency: 'usd', created: 1786000000, customer: 'cus_same', billing_details: { email: 'multi@buyer.com' }, refunds: { data: [{ created: 1786000000, reason: null }] } } } });
+check('the refunded payment is the one flagged', DB.stripe_customers.find(r => r.id === 'pi_second')?.refunded === true);
+check('the older payment is untouched', DB.stripe_customers.find(r => r.id === 'pi_first')?.refunded === false);
+
+console.log('\n10i. A manual revocation is not undone by a later webhook');
+reset();
+DB.allowed_emails.push({ email: 'banned@buyer.com', round: 'round1', addon_donna: false, welcome_email_sent_at: 'x',
+  access_revoked_at: '2026-05-01T00:00:00Z', access_revoked_reason: 'Chargeback abuse, revoked by Jay' });
+DB.stripe_customers.push({ id: 'pi_b', email: 'banned@buyer.com', amount_paid: 9700, refunded: false, coupon_used: 'FULL_PRICE', round: 'round1' });
+await post({ type: 'refund.created', data: { object: { id: 'rf2', payment_intent: 'pi_b', amount: 1, status: 'succeeded', created: 1786000000 } } });
+row = DB.allowed_emails.find(r => r.email === 'banned@buyer.com');
+check('hand-written revocation survives', !!row?.access_revoked_at, JSON.stringify(row));
+check('and keeps its reason', String(row?.access_revoked_reason || '').includes('Jay'), JSON.stringify(row));
+
+
+console.log('\n10j. A delayed payment grants access only when it clears');
+reset();
+let pend: any = session('slow@buyer.com');
+pend.data.object.payment_status = 'unpaid';
+await post(pend);
+check('nothing granted while unpaid', !DB.allowed_emails.find(r => r.email === 'slow@buyer.com'));
+let cleared: any = session('slow@buyer.com');
+cleared.type = 'checkout.session.async_payment_succeeded';
+cleared.data.object.payment_status = 'paid';
+res = await post(cleared);
+row = DB.allowed_emails.find(r => r.email === 'slow@buyer.com');
+check('granted once it clears', row?.round === 'wonka_r1', JSON.stringify(row));
+check('and the welcome goes out', sendState.calls.length === 1, JSON.stringify(sendState.calls));
+
+console.log('\n10k. A failed delayed payment grants nothing and says so');
+reset();
+res = await post({ type: 'checkout.session.async_payment_failed', data: { object: { id: 'cs_failed' } } });
+check('http 200', res.status === 200, `got ${res.status}`);
+check('no row', DB.allowed_emails.length === 0, JSON.stringify(DB.allowed_emails));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

@@ -278,17 +278,51 @@ async function claimRowForRound(
   return { ok: true, before: prior };
 }
 
-async function reconcileAccessFor(supabase: SupabaseClient, email: string) {
+// Refunds decide access PER PRODUCT, not per person.
+//
+// This used to ask "does this human have any non-refunded payment at all", which is
+// the wrong question when one address buys two products. A Donna alum who bought the
+// $697 Golden Ticket and refunded it inside the 48 hour window still had their old
+// $97 Donna payment on file, so the "restore" branch ran and they kept their Wonka
+// row: fully refunded, walks into the bootcamp on 1 September for free. The reverse
+// held too, so a Wonka refund could revoke somebody's Donna access.
+//
+// `roundHint` is the round of the payment that just changed. When it is known, only
+// payments for that same product are counted. Without it the old whole-person
+// behaviour stands, which is right for a plain single-product customer.
+function sameProduct(a: string | null | undefined, b: string | null | undefined): boolean {
+  const x = String(a || ''), y = String(b || '');
+  if (!x || !y) return false;
+  if (isWonkaRound(x) && isWonkaRound(y)) return true;
+  if (isWonkaRound(x) !== isWonkaRound(y)) return false;
+  return true;   // both Donna: any Donna payment keeps Donna access alive
+}
+
+async function reconcileAccessFor(supabase: SupabaseClient, email: string, roundHint?: string | null) {
   if (!email) return;
   const lower = email.toLowerCase();
-  const { data: payments } = await supabase
+  const { data: allPayments } = await supabase
     .from('stripe_customers')
-    .select('id, amount_paid, refunded, coupon_used')
+    .select('id, amount_paid, refunded, coupon_used, round')
     .eq('email', lower);
-  const hasActive = (payments || []).some(p => !p.refunded && (p.coupon_used || '').toUpperCase() !== 'TEST');
+  const payments = (allPayments || []);
+  const scoped = roundHint ? payments.filter(p => sameProduct(p.round, roundHint)) : payments;
+  // A refunded Wonka ticket with no other Wonka payment revokes; a still-live Donna
+  // payment must not rescue it. If the hint matched nothing, fall back to the whole
+  // person rather than revoking on an empty set.
+  const pool = scoped.length ? scoped : payments;
+  // 'TEST' is an amount label, not a statement about the customer, so it cannot on its
+  // own prove somebody has not paid. It stays excluded, but see the note at
+  // couponFromAmount: a genuine near-free comp is no longer auto-revoked.
+  const hasActive = pool.some(p => !p.refunded && (p.coupon_used || '').toUpperCase() !== 'TEST');
   if (hasActive) {
-    await supabase.from('allowed_emails').update({ access_revoked_at: null, access_revoked_reason: null }).eq('email', lower).not('access_revoked_at', 'is', null);
-  } else {
+    // Only ever clears an AUTOMATIC revocation. A revocation written by hand carries a
+    // human reason, and a later webhook must not quietly undo it.
+    await supabase.from('allowed_emails')
+      .update({ access_revoked_at: null, access_revoked_reason: null })
+      .eq('email', lower).not('access_revoked_at', 'is', null)
+      .eq('access_revoked_reason', 'Stripe refund (auto)');
+  } else if (pool.length) {
     await supabase.from('allowed_emails').update({ access_revoked_at: new Date().toISOString(), access_revoked_reason: 'Stripe refund (auto)' }).eq('email', lower).is('access_revoked_at', null);
   }
 }
@@ -354,6 +388,7 @@ async function sendWelcomeEnglishAsync(email: string, round: string): Promise<bo
 // This is how a NON-Donna product (Wonka, and whatever comes after it) gets the
 // right welcome without another hardcoded branch in here. Returns '' when the
 // round has no slug, which keeps every existing round on its current path.
+const UNKNOWN_SLUG = '__lookup_failed__';
 async function welcomeFnSlugFor(supabase: SupabaseClient, canonical: string): Promise<string> {
   if (!canonical || canonical === 'unknown') return '';
   try {
@@ -363,7 +398,19 @@ async function welcomeFnSlugFor(supabase: SupabaseClient, canonical: string): Pr
       .eq('id', canonical)
       .maybeSingle();
     if (!error && data?.welcome_email_fn_slug) return String(data.welcome_email_fn_slug);
-  } catch (e) { console.error('welcomeFnSlugFor exception:', e); }
+    if (error) {
+      // A transient read failure used to return '' here, and '' routes to the legacy
+      // Donna welcome. That would send Donna copy, Donna dates and the Donna WhatsApp
+      // group to a $697 or $2,999 Wonka buyer, with the claim already stamped so the
+      // correct mail could never follow. Say "unknown" instead, and let the caller
+      // refuse rather than guess.
+      console.error('welcomeFnSlugFor read failed for round', canonical, error);
+      return UNKNOWN_SLUG;
+    }
+  } catch (e) {
+    console.error('welcomeFnSlugFor exception:', e);
+    return UNKNOWN_SLUG;
+  }
   return '';
 }
 
@@ -420,11 +467,17 @@ Deno.serve(async (req: Request) => {
       const refundedAt = charge.refunds?.data?.[0]?.created ? new Date(charge.refunds.data[0].created * 1000).toISOString() : new Date().toISOString();
       const email = (charge.billing_details?.email || charge.receipt_email || '').toLowerCase();
       const currency = (charge.currency || '').toLowerCase();
-      const { data: existing } = await supabase.from('stripe_customers').select('id, amount_paid, email').or(`id.eq.${paymentId},stripe_customer_id.eq.${charge.customer || 'NONE'}`).limit(1);
+      // Match on the PAYMENT, never on the customer. The old query also accepted
+      // `stripe_customer_id.eq.<cus_...>` with limit(1) and no ordering, so a repeat
+      // buyer's refund could be stamped onto whichever of their payments PostgREST
+      // happened to return: the refunded purchase kept reading refunded:false, access
+      // was never revoked, and the revenue numbers were wrong in both directions.
+      const { data: existing } = await supabase.from('stripe_customers')
+        .select('id, amount_paid, email, round').eq('id', paymentId).limit(1);
       if (existing && existing.length > 0) {
         const row = existing[0];
         await supabase.from('stripe_customers').update({ refunded: fullyRefunded, refund_amount: refundedAmount, refunded_at: refundedAt, refund_reason: reason }).eq('id', row.id);
-        await reconcileAccessFor(supabase, row.email || email);
+        await reconcileAccessFor(supabase, row.email || email, row.round);
       } else {
         await supabase.from('stripe_customers').upsert({ id: paymentId, email, name: charge.billing_details?.name || '', country: charge.billing_details?.address?.country || '', phone: charge.billing_details?.phone || null, amount_paid: charge.amount || 0, currency: charge.currency || 'usd', coupon_used: couponFromAmount(charge.amount || 0), payment_date: new Date(charge.created * 1000).toISOString(), stripe_customer_id: charge.customer || '', refunded: fullyRefunded, refund_amount: refundedAmount, refunded_at: refundedAt, refund_reason: reason }, { onConflict: 'id' });
         await reconcileAccessFor(supabase, email);
@@ -432,21 +485,60 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ received: true, type: 'refund' }), { headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Chargebacks. These used to fall through to {received:true, skipped}, so a
+    // customer who disputed a charge kept full access for ever and a dispute Jay won
+    // restored nothing. Access is pulled when the money actually leaves the account,
+    // not when the dispute opens: an open dispute is an accusation, and plenty are
+    // withdrawn or won.
+    if (event.type === 'charge.dispute.created' || event.type === 'charge.dispute.closed' || event.type === 'charge.dispute.funds_withdrawn' || event.type === 'charge.dispute.funds_reinstated') {
+      const dispute = event.data.object;
+      const paymentId = dispute.payment_intent || dispute.charge;
+      const status = String(dispute.status || '');
+      const lost = event.type === 'charge.dispute.funds_withdrawn' || status === 'lost';
+      const won = event.type === 'charge.dispute.funds_reinstated' || status === 'won' || status === 'warning_closed';
+      if (paymentId) {
+        const { data: row } = await supabase.from('stripe_customers')
+          .select('email, round, amount_paid').eq('id', paymentId).maybeSingle();
+        if (lost) {
+          await supabase.from('stripe_customers').update({ refunded: true, refund_amount: row?.amount_paid ?? (dispute.amount || 0), refunded_at: new Date().toISOString(), refund_reason: `chargeback (${status || event.type})` }).eq('id', paymentId);
+        } else if (won) {
+          await supabase.from('stripe_customers').update({ refunded: false, refund_amount: 0, refunded_at: null, refund_reason: `chargeback won (${status})` }).eq('id', paymentId);
+        }
+        if ((lost || won) && row?.email) await reconcileAccessFor(supabase, row.email, row.round);
+      }
+      console.log('dispute event:', { type: event.type, status, paymentId, lost, won });
+      return new Response(JSON.stringify({ received: true, type: 'dispute', lost, won }), { headers: { 'Content-Type': 'application/json' } });
+    }
+
     if (event.type === 'charge.refund.updated' || event.type === 'refund.created' || event.type === 'refund.updated') {
       const refund = event.data.object;
       const paymentId = refund.payment_intent || refund.charge;
       const status = refund.status;
       if (status === 'succeeded' && paymentId) {
-        const { data: existing } = await supabase.from('stripe_customers').select('amount_paid, email, refund_amount, currency').eq('id', paymentId).maybeSingle();
-        const totalRefunded = (existing?.refund_amount || 0) + (refund.amount || 0);
-        const isFullyRefunded = existing && existing.amount_paid > 0 && totalRefunded >= existing.amount_paid;
-        const { data: row } = await supabase.from('stripe_customers').update({ refunded: isFullyRefunded, refund_amount: refund.amount, refunded_at: refund.created ? new Date(refund.created * 1000).toISOString() : new Date().toISOString(), refund_reason: refund.reason || null }).eq('id', paymentId).select('email, currency').maybeSingle();
-        if (row?.email) await reconcileAccessFor(supabase, row.email);
+        const { data: existing } = await supabase.from('stripe_customers').select('amount_paid, email, refund_amount, currency, round').eq('id', paymentId).maybeSingle();
+        // `refund.amount` is THIS refund; the column holds the running total. Writing
+        // the single amount into it broke both directions: charge.refunded and
+        // refund.created both fire for one refund, so a 50% goodwill refund added
+        // itself twice and revoked everything; and three genuine partials never
+        // accumulated, so a fully refunded customer kept access forever.
+        const totalRefunded = Math.max(Number(existing?.refund_amount || 0), 0) + Number(refund.amount || 0);
+        const capped = existing?.amount_paid ? Math.min(totalRefunded, existing.amount_paid) : totalRefunded;
+        const isFullyRefunded = !!existing && existing.amount_paid > 0 && capped >= existing.amount_paid;
+        const { data: row } = await supabase.from('stripe_customers').update({ refunded: isFullyRefunded, refund_amount: capped, refunded_at: refund.created ? new Date(refund.created * 1000).toISOString() : new Date().toISOString(), refund_reason: refund.reason || null }).eq('id', paymentId).select('email, currency, round').maybeSingle();
+        if (row?.email) await reconcileAccessFor(supabase, row.email, row.round);
       }
       return new Response(JSON.stringify({ received: true, type: 'refund_event' }), { headers: { 'Content-Type': 'application/json' } });
     }
 
-    if (event.type !== 'payment_intent.succeeded' && event.type !== 'checkout.session.completed') {
+    // checkout.session.async_payment_succeeded is the same session, arriving when a
+    // delayed method (bank transfer, Klarna) finally clears. It has to walk the exact
+    // same path, or refusing the 'unpaid' session earlier would strand those buyers.
+    const isSessionEvent = event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded';
+    if (event.type === 'checkout.session.async_payment_failed') {
+      console.warn('Delayed payment failed, nothing was ever granted:', { session: event.data?.object?.id });
+      return new Response(JSON.stringify({ received: true, type: 'async_payment_failed' }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    if (event.type !== 'payment_intent.succeeded' && !isSessionEvent) {
       return new Response(JSON.stringify({ received: true, skipped: event.type }), { headers: { 'Content-Type': 'application/json' } });
     }
 
@@ -467,8 +559,17 @@ Deno.serve(async (req: Request) => {
         country = charge.billing_details?.address?.country || '';
       }
       if (!customerEmail) customerEmail = pi.receipt_email || pi.metadata?.email || '';
-    } else if (event.type === 'checkout.session.completed') {
+    } else if (isSessionEvent) {
       const session = event.data.object;
+      // Delayed methods (bank transfer, Klarna, Cash App) complete the session while
+      // the money is still in flight, with payment_status 'unpaid'. Granting there
+      // hands out a $697 ticket on a promise, and there is no handler to take it back
+      // when checkout.session.async_payment_failed arrives.
+      const payStatus = String(session.payment_status || 'paid');
+      if (payStatus !== 'paid' && payStatus !== 'no_payment_required') {
+        console.warn('checkout.session.completed with payment_status', payStatus, '. Not granting access yet.', { session: session.id });
+        return new Response(JSON.stringify({ received: true, skipped: `payment_status=${payStatus}` }), { headers: { 'Content-Type': 'application/json' } });
+      }
       sessionId = session.id;
       paymentId = session.payment_intent || session.id;
       amountPaid = session.amount_total;
@@ -518,9 +619,29 @@ Deno.serve(async (req: Request) => {
     const isBina = canonicalRound ? isBinaRound(canonicalRound) : (currencyLower === 'ils');
     const couponUsed = isBina ? 'BINA300' : couponUsedFromAmount;
 
-    const { error: insertError } = await supabase.from('stripe_customers').upsert({
-      id: paymentId, name: customerName, email: customerEmail, phone: customerPhone || null, country: country, amount_paid: amountPaid, currency: currency, coupon_used: couponUsed, payment_date: new Date().toISOString(), stripe_customer_id: customerId, round: canonicalRound,
-    }, { onConflict: 'id' });
+    // `payment_intent.succeeded` carries no payment_link and, on current Stripe API
+    // versions, no `charges` array either (it is `latest_charge`), and a Checkout PI
+    // has receipt_email null. So that event resolves an EMPTY email and a null round.
+    // Stripe does not guarantee it arrives before checkout.session.completed, and any
+    // retry lands after it, so the upsert used to blank out the good row. A refund
+    // then found `email: ''` and skipped reconcileAccessFor entirely: fully refunded,
+    // access never revoked, and nothing anywhere showing it.
+    // Never overwrite a populated field with an empty one.
+    const record: Record<string, unknown> = {
+      id: paymentId, amount_paid: amountPaid, currency: currency, coupon_used: couponUsed,
+      payment_date: new Date().toISOString(),
+    };
+    if (customerEmail) record.email = customerEmail;
+    if (customerName) record.name = customerName;
+    if (customerPhone) record.phone = customerPhone;
+    if (country) record.country = country;
+    if (customerId) record.stripe_customer_id = customerId;
+    if (canonicalRound) record.round = canonicalRound;
+    if (!customerEmail || !canonicalRound) {
+      const { data: prior } = await supabase.from('stripe_customers').select('email, round').eq('id', paymentId).maybeSingle();
+      if (prior) console.log('Thin event over an existing payment row, keeping what is already there:', { paymentId, eventType: event.type, keptEmail: !customerEmail && !!prior.email, keptRound: !canonicalRound && !!prior.round });
+    }
+    const { error: insertError } = await supabase.from('stripe_customers').upsert(record, { onConflict: 'id' });
     if (insertError) { console.error('Insert error:', insertError); return new Response(JSON.stringify({ error: insertError.message }), { status: 500 }); }
 
     // ============================================================
@@ -530,7 +651,7 @@ Deno.serve(async (req: Request) => {
     // checkout.session.completed fires ~5s later with the payment_link, so we send the correct welcome from there.
     // Defensive secondary dedup via claimWelcome (atomic UPDATE...WHERE welcome_email_sent_at IS NULL).
     // ============================================================
-    if (event.type === 'checkout.session.completed') {
+    if (isSessionEvent) {
       if (isBina) {
         if (customerEmail && canonicalRound) {
           const shortRound = canonicalToShort(canonicalRound) || 'r1';
@@ -591,6 +712,36 @@ Deno.serve(async (req: Request) => {
           // the Wonka gate then tells a paying buyer "this ticket opens a different factory".
           // Most of the launch list is in this table already, so this is the common case,
           // not the edge case. Claim the row for Wonka and keep their Donna access.
+          // Was gated on Wonka only, so a repeat customer buying anything else fell
+          // through every repair: the insert no-opped, upgradeAllowedEmailRound only
+          // fills blanks, claimWelcome had already been used years ago, and the handler
+          // returned 200. They paid, got no welcome, stayed parked on a finished round,
+          // and were therefore excluded from the new cohort's daily emails too. 261 of
+          // 503 rows already carry a welcome timestamp, so this is the common case, and
+          // the Wonka welcome itself points buyers at the Challenge.
+          if (wasDuplicate && !isWonkaRound(allowedEmailsRound)) {
+            const { data: prior } = await supabase
+              .from('allowed_emails')
+              .select('round, addon_donna, stripe_payment_id, welcome_email_sent_at')
+              .eq('email', lowerEmail)
+              .maybeSingle();
+            const priorRound = String(prior?.round || '');
+            const isRetry = !!prior?.stripe_payment_id && prior.stripe_payment_id === paymentId;
+            const patch: Record<string, unknown> = { stripe_payment_id: paymentId };
+            // Move them onto the cohort they just bought, unless they hold a Wonka
+            // ticket: that would take the bootcamp away to give them a Donna round.
+            // addon_donna is exactly the flag that grants Donna beside Wonka.
+            if (isWonkaRound(priorRound)) patch.addon_donna = true;
+            else patch.round = allowedEmailsRound;
+            if (!isRetry) patch.welcome_email_sent_at = null;   // re-arm the claim for THIS purchase
+            const { error: repErr } = await supabase.from('allowed_emails').update(patch).eq('email', lowerEmail);
+            if (repErr) {
+              console.error('returning Donna buyer repair failed:', repErr);
+              return new Response(JSON.stringify({ error: 'allowed_emails repair failed' }), { status: 500 });
+            }
+            console.log('Returning buyer bought a Donna product:', { email: lowerEmail, priorRound, movedTo: patch.round ?? '(kept Wonka, granted addon_donna)', isRetry });
+          }
+
           if (wasDuplicate && isWonkaRound(allowedEmailsRound)) {
             const { data: existing } = await supabase
               .from('allowed_emails')
@@ -657,6 +808,11 @@ Deno.serve(async (req: Request) => {
             // Deliberately consulted LAST, below, so every path that already works keeps working
             // byte for byte. This only replaces the legacy generic fallback.
             const customSlug = await welcomeFnSlugFor(supabase, englishRound);
+            if (customSlug === UNKNOWN_SLUG) {
+              // Do not guess which product's welcome to send. Stripe retries.
+              console.error('Cannot resolve the welcome function, refusing to send the wrong one:', { round: englishRound, email: customerEmail.toLowerCase() });
+              return new Response(JSON.stringify({ error: 'welcome slug lookup failed' }), { status: 500 });
+            }
             // Atomic claim before sending. Prevents duplicates if event is replayed.
             const may = await claimWelcome(supabase, customerEmail);
             if (may) {
