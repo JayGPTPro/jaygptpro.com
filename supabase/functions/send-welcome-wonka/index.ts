@@ -45,6 +45,30 @@ function corsHeaders() {
 
 type Meta = { wa: string; dates: string; portal: string };
 
+// The Private Tour ($2,999) and the Golden Ticket ($497/$697) share round wonka_r1,
+// so the round alone cannot tell them apart and a buyer paying six times as much was
+// getting a mail that never mentioned the personal guidance he paid for (Jay, 11.8).
+// The signal is the amount: the widest gap available, since the dearest Golden Ticket
+// route is $697 plus the $250 add-on, well under $2,000.
+const PRIVATE_TOUR_MIN_CENTS = 200000;
+
+async function boughtPrivateTour(supabase: any, email: string): Promise<boolean> {
+  if (!email) return false;
+  try {
+    const { data, error } = await supabase
+      .from('stripe_customers')
+      .select('amount_paid, currency, refunded')
+      .ilike('email', email.toLowerCase());
+    if (error) { console.error('boughtPrivateTour lookup error:', error); return false; }
+    // Refunded payments do not count, and USD only: the Bina side prices in ILS,
+    // where 200000 agorot is an ordinary Donna purchase, not a Private Tour.
+    return (data || []).some((p: any) =>
+      !p.refunded &&
+      String(p.currency || 'usd').toLowerCase() === 'usd' &&
+      Number(p.amount_paid || 0) >= PRIVATE_TOUR_MIN_CENTS);
+  } catch (e) { console.error('boughtPrivateTour exception:', e); return false; }
+}
+
 async function loadRoundMeta(supabase: any, round: string): Promise<Meta> {
   // If the rounds read fails, this is what a paying customer is told. It said
   // "August 10 to 21, 2026", a dead date from an earlier schedule, which would have
@@ -82,8 +106,19 @@ const S = {
   li: "margin:0 0 9px;font-size:15px;line-height:1.7;color:#D9CDBA",
 };
 
-function buildEmail(meta: Meta): { subject: string; html: string } {
+function buildEmail(meta: Meta, privateTour = false): { subject: string; html: string } {
   const subject = `You're in. Here are your factory keys.`;
+
+  // Deliberately vague about the scheduling itself: there is no booking link yet, and a
+  // promise this email cannot keep is worse than none. Jay writes the personal mail.
+  const tourBlock = privateTour
+    ? `<tr><td style="padding:22px 40px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="${S.note}">
+      <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#E4B46C">You booked the Private Tour</p>
+      <p style="margin:0;font-size:14px;color:#D9CDBA;line-height:1.7">Everything below is yours, and so is the part that is not written down: personal guidance through the bootcamp, and onboarding for your team. <span style="${S.strong}">I will email you personally within 24 hours</span> to set that up around your catalog and your calendar. Nothing for you to do until then.</p>
+    </td></tr></table>
+  </td></tr>`
+    : '';
 
   // Only rendered when the link actually exists.
   const waBlock = meta.wa
@@ -104,6 +139,7 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
     <p style="${S.p}">Built by an AI employee named <span style="${S.gold}">Wonka</span> that you hire on Day 1.</p>
     <p style="${S.p}"><span style="${S.strong}">The Grand Opening runs ${meta.dates}.</span></p>
   </td></tr>
+${tourBlock}
 
   <tr><td style="padding:12px 40px 0">
     <p style="margin:0 0 12px;font-size:15px;color:#F3E9D2;font-weight:700">One thing now, one minute</p>
@@ -169,7 +205,12 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const meta = await loadRoundMeta(supabase, round);
-    const { subject, html } = buildEmail(meta);
+    // stripe_customers is written by the webhook BEFORE it calls this function, so the
+    // payment is already on record by the time we look. ?tier=private forces the block
+    // for previews; it cannot be reached without the shared secret.
+    const forceTour = url.searchParams.get('tier') === 'private';
+    const privateTour = forceTour || await boughtPrivateTour(supabase, email);
+    const { subject, html } = buildEmail(meta, privateTour);
 
     const to = isPreview && previewTo ? previewTo : email;
     const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: FROM_EMAIL, to: [to], reply_to: REPLY_TO, subject, html }) });
@@ -180,7 +221,7 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: 'Resend send failed', detail: resendData }), { status: 502, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
     }
     if (!isPreview) await recordResult(supabase, email, true);
-    return new Response(JSON.stringify({ ok: true, preview: isPreview, email: to, round, resendId: resendData.id, dates: meta.dates, waIncluded: !!meta.wa }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ ok: true, preview: isPreview, email: to, round, resendId: resendData.id, dates: meta.dates, waIncluded: !!meta.wa, privateTour }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error('send-welcome-wonka error:', err);
     return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
