@@ -200,5 +200,17 @@ row = DB.allowed_emails.find(r => r.email === 'tour4@buyer.com');
 check('rescued by FALLBACK_PRODUCT_TO_ROUND', row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
 check('never dropped into a Donna wk_ cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
+
+console.log('\n7e. Private Tour PLUS the $250 Donna cross-sell (both checkouts offer it)');
+reset();
+sendState.stripeLineItems = [PRIVATE, 'prod_UxhPy8Tfpeiwv6'];
+const bundle: any = tourSession('tour5@buyer.com');
+bundle.data.object.amount_total = 324900;             // 2999 + 250
+res = await post(bundle);
+row = DB.allowed_emails.find(r => r.email === 'tour5@buyer.com');
+check('still round = wonka_r1, the add-on never decides the round', row?.round === 'wonka_r1', JSON.stringify(row));
+check('Donna add-on granted', row?.addon_donna === true, JSON.stringify(row));
+check('Wonka welcome, not a Donna one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
