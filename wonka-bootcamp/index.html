@@ -3460,8 +3460,28 @@ async function checkAllowed(email, isRequery) {
     return;
   }
 
+  /* An alias row points at another row via primary_email. Following it USED to mean
+     re-running this whole check on the target address, and refusing when that came
+     back empty. It always comes back empty. The RLS policy on allowed_emails is
+     "Users can check their own email": auth.jwt() ->> 'email' = email, so a signed-in
+     customer can only ever read THEIR OWN row. The hop asks for somebody else's row,
+     gets nothing, and the old code called that a definitive "no ticket found" and
+     showed a refusal screen naming an address the customer barely recognised.
+     Steve Chu hit this on launch night with correct data in every row (11.8.2026).
+     So: try the hop, and use it only if it actually returned something. Otherwise
+     keep the row we already hold, which is the customer's own and is authoritative
+     enough. This mirrors what the Donna portal has always done. */
   if (data.primary_email && !isRequery && data.primary_email.toLowerCase() !== email.toLowerCase()) {
-    return checkAllowed(data.primary_email, true);
+    try {
+      const safePrimary = data.primary_email.replace(/([%_\\])/g, '\\$1');
+      const hop = await sb.from('allowed_emails')
+        .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
+        .ilike('email', safePrimary).maybeSingle();
+      if (!hop.error && hop.data) data = hop.data;
+      else console.warn('primary_email hop returned nothing (RLS); staying on this row.');
+    } catch (e) {
+      console.warn('primary_email hop failed; staying on this row.', e);
+    }
   }
 
   if (data.access_revoked_at) {
