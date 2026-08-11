@@ -46,7 +46,11 @@ function corsHeaders() {
 type Meta = { wa: string; dates: string; portal: string };
 
 async function loadRoundMeta(supabase: any, round: string): Promise<Meta> {
-  const fallback: Meta = { wa: '', dates: 'August 10 to 21, 2026', portal: DEFAULT_PORTAL };
+  // If the rounds read fails, this is what a paying customer is told. It said
+  // "August 10 to 21, 2026", a dead date from an earlier schedule, which would have
+  // told a buyer the bootcamp already happened. Keep it in step with
+  // rounds.wonka_r1.welcome_dates_display.
+  const fallback: Meta = { wa: '', dates: 'September 1 to 4, 8 to 10, and 15 to 17, 2026', portal: DEFAULT_PORTAL };
   try {
     const { data, error } = await supabase
       .from('rounds')
@@ -98,7 +102,7 @@ function buildEmail(meta: Meta): { subject: string; html: string } {
   <tr><td style="padding:22px 40px 0">
     <p style="${S.p}">Here is what you just bought, in one sentence: complete the 10 days and your product has a full creative package. A new main image, a full secondary set, A+ content, and variation images. Quality checked, tested in the Tasting Room, and ready to upload to Amazon or start an A/B test.</p>
     <p style="${S.p}">Built by an AI employee named <span style="${S.gold}">Wonka</span> that you hire on Day 1.</p>
-    <p style="${S.p}"><span style="${S.strong}">Your round runs ${meta.dates}.</span></p>
+    <p style="${S.p}"><span style="${S.strong}">The Grand Opening runs ${meta.dates}.</span></p>
   </td></tr>
 
   <tr><td style="padding:12px 40px 0">

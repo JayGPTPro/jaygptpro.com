@@ -1,10 +1,22 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@17?target=deno";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
+const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
 const formSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
+
+// Signature verification. This endpoint is public and unauthenticated, so without it
+// anyone who knows the URL can POST a forged checkout.session.completed and grant
+// themselves a paid row. Enforced only when STRIPE_WEBHOOK_SECRET is set, so that a
+// missing secret degrades to today's behaviour (loudly) instead of rejecting every
+// real purchase across all three products. SET THE SECRET.
+const stripeForSig = stripeKey
+  ? new Stripe(stripeKey, { apiVersion: '2025-12-15.clover', httpClient: Stripe.createFetchHttpClient() })
+  : null;
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
 const SEND_WELCOME_URL = `${supabaseUrl}/functions/v1/send-welcome-email`;
 const SEND_WELCOME_BINA_URL = `${supabaseUrl}/functions/v1/send-welcome-bina`;
 const SEND_WELCOME_ENGLISH_URL = `${supabaseUrl}/functions/v1/send-welcome-english`;
@@ -50,7 +62,28 @@ const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
   'prod_URZEKiFdSoJTO6': 'round5',
   'prod_UQk3t4u4M4ktwO': 'bina_r1',
   'prod_UQk4gu2czKqQ6y': 'bina_r2',
+  // Wonka. The Golden Ticket also resolves via the plink on the wonka_r1 row, but the
+  // Private Tour had NO second route: its plink is parked in stripe_plink_discounted,
+  // and issuing a real discount link would overwrite it and drop those buyers.
+  'prod_UxhJATVn8CEfCT': 'wonka_r1', // Golden Ticket, $697 / $497 with WONKA200
+  'prod_UxhOUOpgTAGC7q': 'wonka_r1', // The Private Tour, $2,999
 };
+
+// A Wonka purchase must never be silently reassigned to a Donna cohort. Used to
+// suppress the evergreen fallthrough below.
+// Both a product AND a plink route, deliberately: product ids come from the Stripe
+// line-items call, which needs STRIPE_SECRET_KEY and returns [] on any non-2xx. If the
+// guard leaned on that alone it would go blind in exactly the failure it exists to catch
+// (proven in the harness: with no Stripe key the buyer still landed in a wk_ cohort).
+// The plink arrives on the webhook payload itself and needs no API call.
+const WONKA_PRODUCTS = new Set(['prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q']);
+const WONKA_PLINKS = new Set([
+  'plink_1U1vCERqcDuiISNTjqJvj1P5', // Golden Ticket
+  'plink_1TxmiPRqcDuiISNTKsKrn7Lz', // The Private Tour
+]);
+function isWonkaRound(round: string): boolean {
+  return !!round && round.startsWith('wonka');
+}
 
 function isBinaRound(canonical: string): boolean {
   return canonical.startsWith('bina_');
@@ -261,22 +294,48 @@ async function welcomeFnSlugFor(supabase: SupabaseClient, canonical: string): Pr
   return '';
 }
 
-async function sendWelcomeBySlugAsync(slug: string, email: string, round: string) {
-  if (!email || !formSecret || !slug) return;
+// Returns true only when the welcome actually went out. The caller uses this to decide
+// whether to release the welcome claim and fail the webhook so Stripe retries. Every
+// early return here is a path where the buyer gets NO email, so each must report false.
+async function sendWelcomeBySlugAsync(slug: string, email: string, round: string): Promise<boolean> {
+  if (!email || !slug) return false;
+  if (!formSecret) { console.error('FORM_SYNC_SECRET is not set: cannot call the welcome function.'); return false; }
   // Guard the slug: it becomes a URL path segment.
-  if (!/^[a-z0-9-]{1,60}$/.test(slug)) { console.error('Refusing suspicious welcome slug:', slug); return; }
+  if (!/^[a-z0-9-]{1,60}$/.test(slug)) { console.error('Refusing suspicious welcome slug:', slug); return false; }
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/${slug}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify({ email, round }) });
     const detail = await res.json().catch(() => ({}));
     console.log(`${slug} status:`, res.status, JSON.stringify(detail));
-  } catch (e) { console.error(`${slug} call failed:`, e); }
+    return res.ok;
+  } catch (e) { console.error(`${slug} call failed:`, e); return false; }
+}
+
+// Undo a welcome claim so a retry can send it. Used when the send did not happen.
+async function releaseWelcomeClaim(supabase: SupabaseClient, email: string) {
+  if (!email) return;
+  await supabase.from('allowed_emails').update({ welcome_email_sent_at: null }).ilike('email', email.toLowerCase());
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   try {
-    const body = await req.json();
-    const event = body;
+    // Read the body as TEXT: the signature is computed over the raw bytes, so parsing first
+    // would make verification impossible.
+    const raw = await req.text();
+    let event: any;
+    if (webhookSecret && stripeForSig) {
+      const sig = req.headers.get('stripe-signature');
+      if (!sig) return new Response(JSON.stringify({ error: 'missing stripe-signature' }), { status: 400 });
+      try {
+        event = await stripeForSig.webhooks.constructEventAsync(raw, sig, webhookSecret, undefined, cryptoProvider);
+      } catch (e) {
+        console.error('Stripe signature verification FAILED:', String(e));
+        return new Response(JSON.stringify({ error: 'bad signature' }), { status: 400 });
+      }
+    } else {
+      console.warn('STRIPE_WEBHOOK_SECRET is not set: accepting this webhook UNVERIFIED. Anyone who knows this URL can forge a purchase. Set the secret.');
+      event = JSON.parse(raw);
+    }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     if (event.type === 'charge.refunded') {
@@ -422,11 +481,59 @@ Deno.serve(async (req: Request) => {
           // April dates when round2 is still 'upcoming'). If the link/product didn't resolve to a
           // round, default to the upcoming Monday evergreen cohort (always correct current dates),
           // so the buyer lands on a real round and gets the proper send-welcome-english.
+          // ...but NEVER for a Wonka purchase. Dropping a $697 Wonka buyer into a Donna
+          // weekly cohort gives them the Donna welcome, the Donna portal url, and a round
+          // the Wonka gate rejects. If a Wonka product was bought and the round still did
+          // not resolve, refuse loudly: 500 makes Stripe retry and shows red on the
+          // dashboard, which is the alert that does not otherwise exist.
+          const boughtWonka = sessionProductIds.some(id => WONKA_PRODUCTS.has(id))
+            || (!!paymentLinkId && WONKA_PLINKS.has(paymentLinkId));
+          if (!canonicalRound && boughtWonka) {
+            console.error('Wonka purchase with unresolved round. Refusing to assign a Donna cohort.', { paymentLinkId, sessionProductIds, paymentId });
+            return new Response(JSON.stringify({ error: 'wonka round unresolved' }), { status: 500 });
+          }
           if (!canonicalRound) canonicalRound = await ensureEvergreenRound(supabase);
           const englishRound = canonicalRound || 'unknown';
           const allowedEmailsRound = canonicalToAllowedEmailsRound(englishRound);
-          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: customerEmail.toLowerCase(), name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, addon_donna: tookDonnaAddon, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound}${tookDonnaAddon ? ', +donna addon' : ''})` });
-          if (insertEmailErr && !String(insertEmailErr.message).includes('duplicate')) console.error('allowed_emails insert error:', insertEmailErr);
+          const lowerEmail = customerEmail.toLowerCase();
+          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: lowerEmail, name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, addon_donna: tookDonnaAddon, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound}${tookDonnaAddon ? ', +donna addon' : ''})` });
+          const wasDuplicate = !!insertEmailErr && String(insertEmailErr.message).includes('duplicate');
+          if (insertEmailErr && !wasDuplicate) {
+            // Do NOT swallow this. A 200 here means Stripe never retries and the buyer is
+            // lost with no trace. 500 makes Stripe retry, and every write in this handler
+            // is replay-safe (upsert on id, duplicate-tolerant insert, atomic welcome claim).
+            console.error('allowed_emails insert error:', insertEmailErr);
+            return new Response(JSON.stringify({ error: 'allowed_emails insert failed' }), { status: 500 });
+          }
+
+          // A returning customer already has a row, so the insert above did nothing: their
+          // round stays on the Donna value, upgradeAllowedEmailRound only fills blanks, and
+          // the Wonka gate then tells a paying buyer "this ticket opens a different factory".
+          // Most of the launch list is in this table already, so this is the common case,
+          // not the edge case. Claim the row for Wonka and keep their Donna access.
+          if (wasDuplicate && isWonkaRound(allowedEmailsRound)) {
+            const { data: existing } = await supabase
+              .from('allowed_emails')
+              .select('round, addon_donna, stripe_payment_id, welcome_email_sent_at')
+              .ilike('email', lowerEmail)
+              .maybeSingle();
+            const priorRound = String(existing?.round || '');
+            // Only a real Donna round needs preserving. 'unknown' grants nothing, so do not
+            // hand out Donna access that was never bought.
+            const hadDonna = !!priorRound && !isWonkaRound(priorRound) && priorRound !== 'unknown';
+            // Same payment id means this is a Stripe retry of an event already handled, so
+            // leave the welcome claim alone rather than sending a second welcome.
+            const isRetry = !!existing?.stripe_payment_id && existing.stripe_payment_id === paymentId;
+            const patch: Record<string, unknown> = { round: allowedEmailsRound, stripe_payment_id: paymentId };
+            if (hadDonna || tookDonnaAddon) patch.addon_donna = true;
+            if (!isRetry) patch.welcome_email_sent_at = null; // re-arm claimWelcome for this purchase
+            const { error: repairErr } = await supabase.from('allowed_emails').update(patch).ilike('email', lowerEmail);
+            if (repairErr) {
+              console.error('returning-buyer repair failed:', repairErr);
+              return new Response(JSON.stringify({ error: 'allowed_emails repair failed' }), { status: 500 });
+            }
+            console.log('Returning buyer moved to Wonka:', { email: lowerEmail, priorRound, hadDonna, isRetry });
+          }
           // The insert above is a no-op for somebody already in the table (email is UNIQUE),
           // so the add-on has to be granted separately or a returning buyer never gets it.
           // Only ever turns the flag ON: a later purchase without the add-on must not revoke it.
@@ -456,7 +563,15 @@ Deno.serve(async (req: Request) => {
                 // A non-Donna product naming its own welcome function (Wonka, and whatever follows).
                 // Excludes 'send-welcome-email' so round1/round2 keep the exact legacy call below
                 // rather than gaining a round argument they have never been sent.
-                await sendWelcomeBySlugAsync(customSlug, customerEmail, englishRound);
+                const sent = await sendWelcomeBySlugAsync(customSlug, customerEmail, englishRound);
+                if (!sent) {
+                  // The claim was already taken, so leaving it set means nobody ever sends this
+                  // welcome and nothing anywhere records that. Release it and fail the webhook:
+                  // Stripe retries with backoff for three days and shows the failure in red.
+                  await releaseWelcomeClaim(supabase, customerEmail);
+                  console.error('Welcome send failed, claim released, asking Stripe to retry:', { slug: customSlug, email: customerEmail.toLowerCase(), round: englishRound });
+                  return new Response(JSON.stringify({ error: 'welcome send failed' }), { status: 500 });
+                }
               } else {
                 // Round 1/2/unknown: legacy generic welcome (rare path, only if product/plink lookup failed)
                 await sendWelcomeEmailAsync(customerEmail);
