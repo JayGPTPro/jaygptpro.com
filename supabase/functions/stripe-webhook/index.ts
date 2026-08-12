@@ -20,6 +20,7 @@ const cryptoProvider = Stripe.createSubtleCryptoProvider();
 const SEND_WELCOME_URL = `${supabaseUrl}/functions/v1/send-welcome-email`;
 const SEND_WELCOME_BINA_URL = `${supabaseUrl}/functions/v1/send-welcome-bina`;
 const SEND_WELCOME_ENGLISH_URL = `${supabaseUrl}/functions/v1/send-welcome-english`;
+const SEND_DONNA_ADDON_URL = `${supabaseUrl}/functions/v1/send-welcome-donna-addon`;
 
 // Evergreen: one product, always-open, weekly Monday cohorts. Buyers are assigned to the upcoming Monday's wk_ round.
 const EVERGREEN_PRODUCT = 'prod_UdyoNBZgnpQwan';
@@ -382,6 +383,12 @@ async function sendWelcomeBinaAsync(email: string, round: string): Promise<boole
 async function sendWelcomeEnglishAsync(email: string, round: string): Promise<boolean> {
   if (!email) return false;
   return await postWelcome(SEND_WELCOME_ENGLISH_URL, 'send-welcome-english', { email, round });
+}
+// The $250 cross-sell. The session id is passed so the callee can prove the purchase
+// against Stripe's own line items rather than trusting a flag or trusting us.
+async function sendDonnaAddonAsync(email: string, sessionId: string): Promise<boolean> {
+  if (!email || !sessionId) return false;
+  return await postWelcome(SEND_DONNA_ADDON_URL, 'send-welcome-donna-addon', { email, sessionId });
 }
 
 // A round row may name its own welcome function in `welcome_email_fn_slug`.
@@ -851,6 +858,19 @@ Deno.serve(async (req: Request) => {
             }
           }
         }
+      }
+    }
+
+    // The $250 Claude Code Challenge add-on gets its own email, and deliberately its
+    // own claim (email_sends, campaign 'donna-addon') rather than riding on the Wonka
+    // welcome's claim. If it rode along, a Stripe retry would skip it for ever the
+    // moment the Wonka welcome had already been sent, and the buyer would pay $250 and
+    // hear nothing. Which is exactly what happened to Chris Haupt on 11.8.
+    if (isSessionEvent && tookDonnaAddon && customerEmail && couponUsed !== 'TEST') {
+      const addonOk = await sendDonnaAddonAsync(customerEmail, sessionId);
+      if (!addonOk) {
+        console.error('Donna add-on welcome failed, asking Stripe to retry:', { email: customerEmail.toLowerCase(), sessionId });
+        return new Response(JSON.stringify({ error: 'donna addon welcome failed' }), { status: 500 });
       }
     }
 

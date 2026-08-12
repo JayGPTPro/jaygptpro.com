@@ -30,6 +30,10 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const resendKey = Deno.env.get('RESEND_API_KEY')!;
 const sharedSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
+const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
+
+const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6';   // "Donna Challenge. Full Access", $250
+const CAMPAIGN = 'donna-addon';                      // the claim key in email_sends
 
 const FROM_EMAIL = 'Jay Margaliot <info@jaygptpro.com>';
 const REPLY_TO = 'info@jaygptpro.com';
@@ -143,10 +147,11 @@ Deno.serve(async (req: Request) => {
   if (!sharedSecret || provided !== sharedSecret) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
   if (!resendKey) return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
 
-  let email = '';
+  let email = ''; let sessionId = '';
   try {
     const body = await req.json();
     email = String(body.email || '').trim();
+    sessionId = String(body.sessionId || '').trim();
     if (!email) return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
 
     const url = new URL(req.url);
@@ -154,22 +159,68 @@ Deno.serve(async (req: Request) => {
     const previewTo = url.searchParams.get('to') || '';
     const to = isPreview && previewTo ? previewTo : email;
 
-    // Refuse to tell somebody their Challenge is open when it is not. The whole
-    // mail is a lie without this flag, because addon_donna IS the access.
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // ---------------------------------------------------------------------
+    // PROOF OF PURCHASE.
+    //
+    // The first version checked `allowed_emails.addon_donna`, which was wrong and
+    // would have been expensive: that flag ALSO gets set on any returning Donna
+    // customer who buys Wonka, purely to preserve access they already had. On 12.8
+    // twelve rows carried it and exactly ONE of those people had paid the $250.
+    // Wiring the send to that flag would have told eleven customers "because you
+    // bought this alongside your Wonka ticket", about a course they never bought.
+    //
+    // The only acceptable evidence is Stripe's own line items for the checkout
+    // session that triggered this. Nothing else is a purchase.
+    // ---------------------------------------------------------------------
     if (!isPreview) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase
-        .from('allowed_emails')
-        .select('addon_donna, access_revoked_at')
-        .ilike('email', email.toLowerCase())
-        .maybeSingle();
-      if (error) {
-        console.error('addon lookup failed:', error);
-        return new Response(JSON.stringify({ error: 'addon lookup failed' }), { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+      if (!sessionId) {
+        console.warn('refusing: no checkout session to verify against', { email });
+        return new Response(JSON.stringify({ error: 'no session id, cannot prove purchase', sent: false }), { status: 409, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
       }
-      if (!data?.addon_donna || data.access_revoked_at) {
-        console.warn('refusing to send: no Donna add-on on this row', { email, row: data });
-        return new Response(JSON.stringify({ error: 'no donna addon for this email', sent: false }), { status: 409, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+      if (!stripeKey) {
+        console.error('refusing: STRIPE_SECRET_KEY missing, cannot verify the purchase');
+        return new Response(JSON.stringify({ error: 'cannot verify purchase' }), { status: 502, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+      }
+      const productIds: string[] = [];
+      try {
+        const url = `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}/line_items?limit=20&expand[]=data.price.product`;
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${stripeKey}` } });
+        if (!res.ok) {
+          console.error('Stripe line-items lookup failed:', res.status, await res.text());
+          // Refuse rather than guess. A missed email is a support ticket; a wrong one
+          // tells a customer they bought something they did not.
+          return new Response(JSON.stringify({ error: 'stripe verification failed' }), { status: 502, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+        }
+        const json = await res.json();
+        for (const item of (json?.data || [])) {
+          const prod = item?.price?.product;
+          if (typeof prod === 'string') productIds.push(prod);
+          else if (prod && typeof prod === 'object' && prod.id) productIds.push(prod.id);
+        }
+      } catch (e) {
+        console.error('Stripe verification threw:', e);
+        return new Response(JSON.stringify({ error: 'stripe verification failed' }), { status: 502, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+      }
+      if (!productIds.includes(DONNA_ADDON_PRODUCT)) {
+        console.warn('refusing: this checkout did not include the add-on', { email, sessionId, productIds });
+        return new Response(JSON.stringify({ error: 'add-on not in this purchase', sent: false, productIds }), { status: 409, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+      }
+
+      // CLAIM. email_sends has a unique index on (lower(email), campaign), so this
+      // insert IS the atomic claim: whoever lands it sends, everyone else is a replay.
+      // Stripe retries a failed webhook for three days, so without this the buyer
+      // receives the same mail once per retry.
+      const { error: claimErr } = await supabase.from('email_sends')
+        .insert({ email: email.toLowerCase(), campaign: CAMPAIGN, sent_at: new Date().toISOString() });
+      if (claimErr) {
+        if (String(claimErr.message || '').toLowerCase().includes('duplicate')) {
+          console.log('add-on welcome already sent, nothing to do:', email);
+          return new Response(JSON.stringify({ ok: true, alreadySent: true, email }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+        }
+        console.error('claim insert failed:', claimErr);
+        return new Response(JSON.stringify({ error: 'claim failed' }), { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
       }
     }
 
@@ -181,8 +232,14 @@ Deno.serve(async (req: Request) => {
     });
     const resendData = await resendRes.json();
     if (!resendRes.ok) {
-      console.error('Resend error:', resendData);
+      // Hand the claim back or nobody ever sends this mail again.
+      if (!isPreview) await supabase.from('email_sends').delete().eq('email', email.toLowerCase()).eq('campaign', CAMPAIGN);
+      console.error('Resend error, claim released:', resendData);
       return new Response(JSON.stringify({ error: 'Resend send failed', detail: resendData }), { status: 502, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
+    }
+    if (!isPreview) {
+      await supabase.from('email_sends').update({ resend_id: resendData.id || null })
+        .eq('email', email.toLowerCase()).eq('campaign', CAMPAIGN);
     }
     return new Response(JSON.stringify({ ok: true, preview: isPreview, email: to, resendId: resendData.id }), { headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
   } catch (err) {

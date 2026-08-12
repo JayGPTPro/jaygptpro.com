@@ -15,13 +15,14 @@ let handler: (r: Request) => Promise<Response>;
 // welcome function call: succeed unless the test says otherwise.
 // stripeLineItems: what the Stripe line-items lookup returns ([] simulates a missing key
 // or a failed call, which is the blind spot the guard has to survive).
-export const sendState = { ok: true, calls: [] as any[], stripeLineItems: ['prod_UxhJATVn8CEfCT'] };
+export const sendState = { ok: true, addonOk: true, calls: [] as any[], stripeLineItems: ['prod_UxhJATVn8CEfCT'] };
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: any, init?: any) => {
   const url = String(input);
   if (url.includes('/functions/v1/')) {
     sendState.calls.push({ url, body: JSON.parse(init?.body || '{}') });
-    return new Response(JSON.stringify({ ok: sendState.ok }), { status: sendState.ok ? 200 : 502 });
+    const okForThis = url.includes('donna-addon') ? sendState.addonOk : sendState.ok;
+    return new Response(JSON.stringify({ ok: okForThis }), { status: okForThis ? 200 : 502 });
   }
   if (url.includes('api.stripe.com')) {
     return new Response(JSON.stringify({ data: sendState.stripeLineItems.map(p => ({ price: { product: p } })) }), { status: 200 });
@@ -40,7 +41,7 @@ function reset() {
     { id: 'wonka_r1', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: PLINK_GOLDEN, stripe_plink_discounted: 'plink_1TxmiPRqcDuiISNTKsKrn7Lz', stripe_product_id: GOLDEN, start_date: '2026-09-01' },
     { id: 'round1', welcome_email_fn_slug: null, start_date: '2026-04-01' },
   ];
-  LOG.length = 0; sendState.calls = []; sendState.ok = true;
+  LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true;
   sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT'];
 }
 
@@ -210,7 +211,9 @@ res = await post(bundle);
 row = DB.allowed_emails.find(r => r.email === 'tour5@buyer.com');
 check('still round = wonka_r1, the add-on never decides the round', row?.round === 'wonka_r1', JSON.stringify(row));
 check('Donna add-on granted', row?.addon_donna === true, JSON.stringify(row));
-check('Wonka welcome, not a Donna one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
+check('Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')) && !sendState.calls.some(c => c.url.includes('send-welcome-english')), JSON.stringify(sendState.calls.map(c => c.url)));
+// this buyer DID pay for the cross-sell, so the second email is correct, not a leak
+check('and the add-on email they paid for', sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
 
 
 // ---------------------------------------------------------------
@@ -430,6 +433,48 @@ reset();
 res = await post({ type: 'checkout.session.async_payment_failed', data: { object: { id: 'cs_failed' } } });
 check('http 200', res.status === 200, `got ${res.status}`);
 check('no row', DB.allowed_emails.length === 0, JSON.stringify(DB.allowed_emails));
+
+
+// ---------------------------------------------------------------
+// THE $250 CROSS-SELL. Its email must reach exactly the people who paid for it.
+const ADDON = 'prod_UxhPy8Tfpeiwv6';
+console.log('\n11a. A buyer who took the add-on gets BOTH emails');
+reset();
+sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT', ADDON];
+const withAddon: any = session('addon@buyer.com', 74700);
+res = await post(withAddon);
+row = DB.allowed_emails.find(r => r.email === 'addon@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('addon_donna granted', row?.addon_donna === true, JSON.stringify(row));
+check('the Wonka welcome went', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
+check('the add-on welcome went too', sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
+check('and it carries the session id, so the callee can verify it', sendState.calls.find(c => c.url.includes('donna-addon'))?.body?.sessionId === 'cs_test_1', JSON.stringify(sendState.calls));
+
+console.log('\n11b. A plain Golden Ticket buyer gets NOTHING about the Challenge');
+reset();
+sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT'];
+await post(session('plain2@buyer.com'));
+check('no add-on email', !sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+console.log('\n11c. A returning Donna member who buys Wonka gets addon_donna but NOT the email');
+reset();
+sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT'];
+DB.allowed_emails.push({ email: 'returning@buyer.com', round: 'round1', addon_donna: false, welcome_email_sent_at: 'x', stripe_payment_id: 'pi_old' });
+await post(session('returning@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'returning@buyer.com');
+check('addon_donna set to preserve their Donna access', row?.addon_donna === true, JSON.stringify(row));
+check('but no add-on email, they never paid the $250', !sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+console.log('\n11d. A failed add-on send makes Stripe retry');
+reset();
+sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT', ADDON];
+sendState.addonOk = false;
+res = await post(session('addonfail@buyer.com', 74700));
+check('http 500', res.status === 500, `got ${res.status}`);
+sendState.addonOk = true;
+res = await post(session('addonfail@buyer.com', 74700));
+check('the retry delivers it', sendState.calls.filter(c => c.url.includes('donna-addon')).length === 2, JSON.stringify(sendState.calls.map(c => c.url)));
+check('and does not send a second Wonka welcome', sendState.calls.filter(c => c.url.includes('send-welcome-wonka')).length === 1, JSON.stringify(sendState.calls.map(c => c.url)));
 
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
