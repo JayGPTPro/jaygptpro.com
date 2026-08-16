@@ -62,7 +62,9 @@
     --shadow-pop: 0 2px 6px rgba(10, 10, 12, 0.06), 0 22px 54px rgba(58, 29, 55, 0.14);
 }
 html { scroll-behavior: smooth; }
-section[id] { scroll-margin-top: 110px; }
+/* launch bar (40) + nav (74) + a little air, so a nav jump never tucks the
+   section heading under the sticky bars */
+section[id] { scroll-margin-top: 128px; }
 body {
     font-family: var(--font);
     background: var(--bg);
@@ -132,6 +134,14 @@ body.lb-off { --lb-h: 0px; }
 body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 .topnav-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto; padding: 14px 24px; }
 .brand { display: inline-flex; align-items: center; font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+/* section jump links. hidden below 1040px so the bar stays one line on tablet
+   and phone, where the float CTA and the launch bar already carry the job */
+.topnav-links { display: flex; align-items: center; gap: 24px; }
+.topnav-links a { position: relative; padding: 5px 0; font-size: 14.5px; font-weight: 600; color: var(--text-3); white-space: nowrap; transition: color 0.2s ease; }
+.topnav-links a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; background: var(--purple-2); transform: scaleX(0); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
+.topnav-links a:hover, .topnav-links a.active { color: var(--purple-dark); }
+.topnav-links a:hover::after, .topnav-links a.active::after { transform: scaleX(1); }
+@media (max-width: 1040px) { .topnav-links { display: none; } }
 .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 14px 28px; border-radius: 999px;
@@ -599,6 +609,18 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 .pb-body { font-size: 15.5px; color: var(--text-3); line-height: 1.7; margin-bottom: 22px; }
 .pb-link { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--purple-dark); text-decoration: underline; text-underline-offset: 3px; }
 .pb-seats { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); margin-top: 18px; }
+/* seats taken. edit data-taken on the .seats div, the script rewrites the label
+   and the bar width from it. the HTML text is the no-JS fallback, so keep it
+   in sync when you change the number. */
+.seats { margin: 0 0 18px; text-align: left; }
+.seats-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 8px; }
+.seats-txt { min-width: 0; font-size: 14px; font-weight: 700; color: var(--text-2); }
+.seats-left { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b42318; white-space: nowrap; }
+.seats-bar { height: 7px; border-radius: 999px; background: rgba(58, 29, 55, 0.10); overflow: hidden; }
+.seats-bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+.price-card.featured .seats-txt { color: #f3edfa; }
+.price-card.featured .seats-left { color: #ffb3a7; }
+.price-card.featured .seats-bar { background: rgba(255, 255, 255, 0.13); }
 /* inline glossary: hover on desktop, tap on touch */
 .gloss { border-bottom: 1px dotted currentColor; cursor: help; position: relative; outline: none; }
 .gloss::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(4px);
@@ -718,6 +740,14 @@ footer nav a:hover { color: var(--purple-dark); }
 <div class="topnav">
     <div class="topnav-inner">
         <a class="brand" href="#top">The Wonka Creative Bootcamp</a>
+        <nav class="topnav-links" aria-label="Sections">
+            <a href="#how">How It Works</a>
+            <a href="#days">The 10 Days</a>
+            <a href="#tasting">The Tasting Room</a>
+            <a href="#skills">What You Keep</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+        </nav>
         <a class="btn small" href="#pricing">Get My Ticket &rarr;</a>
     </div>
 </div>
@@ -729,7 +759,7 @@ footer nav a:hover { color: var(--purple-dark); }
     <svg class="claude-star cs-2"><use href="#claude-star"/></svg>
     <div class="wrap">
         <h1>Build Your <span class="accent">AI Creative Director</span> <span style="white-space:nowrap;">in 10 Days</span></h1>
-        <p class="hero-date">The gates open <b>September 1</b> &middot; 50 golden tickets</p>
+        <p class="hero-date">The gates open <b>September 1</b> &middot; <span class="js-tickets-left">50 golden tickets</span></p>
 
         <!-- The VSL. Vimeo 1216967079, domain-locked to jaygptpro.com, so it will
              not play from localhost or file://. Click-to-play facade: the iframe
@@ -1254,16 +1284,33 @@ footer nav a:hover { color: var(--purple-dark); }
                     <li><span>A WhatsApp group for bootcamp members, to learn and help each other</span></li>
                     <li><span>One personal 1-on-1 call with an expert during the bootcamp, because every product has its own challenges</span></li>
                 </ul>
+                <!-- SEATS: change data-taken, and keep the two numbers in the
+                     text below it in sync (that text is the no-JS fallback). -->
+                <div class="seats" data-taken="21" data-total="50" data-noun="golden tickets">
+                    <div class="seats-row">
+                        <span class="seats-txt">21 of 50 golden tickets claimed</span>
+                        <span class="seats-left">29 left</span>
+                    </div>
+                    <div class="seats-bar"><span style="width:42%"></span></div>
+                </div>
                 <a class="btn gold" href="https://buy.stripe.com/00w3cxgI9eZ4foadUybwk0g?prefilled_promo_code=WONKA200">Claim Your Golden Ticket &rarr;</a>
-                <div class="pc-note">50 golden tickets &middot; One payment, yours for life</div>
+                <div class="pc-note">One payment, yours for life</div>
                 <div class="pc-bump"><b>Never touched Claude Code?</b> Start with the <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" rel="noopener" style="color: #f3edfa; font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Claude Code Challenge</a>, my full course where you build your first AI employee. You can add it at checkout for $250, every day unlocked immediately, and do it before the gates open.</div>
             </div>
             <div class="price-card quiet reveal reveal-d2">
                 <div class="pb-name">The Private Tour</div>
                 <div class="pb-price">$2,999</div>
-                <div class="pb-vs">4 seats only</div>
+                <div class="pb-vs">One-on-one, all 10 days</div>
                 <p class="pb-body">Everything in the Golden Ticket, plus personal guidance through the entire bootcamp and onboarding for your team.</p>
                 <p class="pb-body">The scope depends on your catalog.</p>
+                <!-- SEATS: change data-taken, keep the fallback text in sync. -->
+                <div class="seats" data-taken="1" data-total="4" data-noun="seats">
+                    <div class="seats-row">
+                        <span class="seats-txt">1 of 4 seats taken</span>
+                        <span class="seats-left">3 left</span>
+                    </div>
+                    <div class="seats-bar"><span style="width:25%"></span></div>
+                </div>
                 <a class="btn" href="https://buy.stripe.com/aFabJ32Rjg38ek68Aebwk0f">Book the Private Tour &rarr;</a>
                 <a class="pb-link" href="mailto:info@jaygptpro.com?subject=The%20Private%20Tour.%20A%20question">or email info@jaygptpro.com with any question</a>
             </div>
@@ -1318,7 +1365,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1">About 30 minutes a day. By graduation, a tested creative package ready to upload, and a creative employee who can do it for you again and again.</p>
         <div class="reveal reveal-d2">
             <a class="btn gold" href="#pricing">Get My Golden Ticket &rarr;</a>
-            <span class="note">The gates open September 1 &middot; 50 golden tickets &middot; $497 launch price, going up soon</span>
+            <span class="note">The gates open September 1 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; $497 launch price, going up soon</span>
         </div>
     </div>
 </section>
@@ -1345,6 +1392,65 @@ footer nav a:hover { color: var(--purple-dark); }
     document.getElementById('launchBarClose').addEventListener('click', function(){
         document.body.classList.add('lb-off');
     });
+
+    // Seats taken. Single source of truth is data-taken / data-total on the
+    // .seats div, so changing one number keeps label, "left" and bar in step.
+    // The bar animates from 0 the first time it scrolls into view.
+    var seatBlocks = document.querySelectorAll('.seats');
+    for (var s = 0; s < seatBlocks.length; s++) {
+        (function (box) {
+            var taken = parseInt(box.getAttribute('data-taken'), 10),
+                total = parseInt(box.getAttribute('data-total'), 10),
+                noun  = box.getAttribute('data-noun') || 'seats',
+                fill  = box.querySelector('.seats-bar span'),
+                verb  = noun === 'golden tickets' ? 'claimed' : 'taken';
+            if (isNaN(taken) || isNaN(total) || total <= 0 || !fill) return;
+            var pct = Math.max(0, Math.min(100, Math.round(taken / total * 100)));
+            box.querySelector('.seats-txt').textContent = taken + ' of ' + total + ' ' + noun + ' ' + verb;
+            box.querySelector('.seats-left').textContent = (total - taken) + ' left';
+            if (!('IntersectionObserver' in window)) { fill.style.width = pct + '%'; return; }
+            fill.style.width = '0%';
+            var io = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting) { fill.style.width = pct + '%'; io.disconnect(); }
+            }, { threshold: 0.4 });
+            io.observe(box);
+            // the hero line and the final CTA note read their count from the
+            // golden ticket block, so there is only ever one number to edit
+            if (noun === 'golden tickets') {
+                var echo = document.querySelectorAll('.js-tickets-left');
+                for (var e = 0; e < echo.length; e++) {
+                    echo[e].textContent = (total - taken) + ' of ' + total + ' golden tickets left';
+                }
+            }
+        })(seatBlocks[s]);
+    }
+
+    // Nav: underline the section you are currently reading
+    var navLinks = document.querySelectorAll('.topnav-links a'), navPairs = [];
+    for (var n = 0; n < navLinks.length; n++) {
+        var sec = document.querySelector(navLinks[n].getAttribute('href'));
+        if (sec) navPairs.push({ link: navLinks[n], sec: sec });
+    }
+    if (navPairs.length) {
+        var navQueued = false;
+        var markNav = function () {
+            navQueued = false;
+            // nav order is not document order (FAQ sits above Pricing on the
+            // page), so walk them top-down or the wrong link lights up
+            var order = navPairs.slice().sort(function (a, b) { return a.sec.offsetTop - b.sec.offsetTop; });
+            var line = window.scrollY + 130, current = null;
+            for (var i = 0; i < order.length; i++) {
+                if (order[i].sec.offsetTop <= line) current = order[i];
+            }
+            for (var j = 0; j < navPairs.length; j++) {
+                navPairs[j].link.classList.toggle('active', navPairs[j] === current);
+            }
+        };
+        window.addEventListener('scroll', function () {
+            if (!navQueued) { navQueued = true; requestAnimationFrame(markNav); }
+        }, { passive: true });
+        markNav();
+    }
 
     // Glossary tooltips: hover handles the mouse, this handles the tap.
     // :focus alone is unreliable on a span on touch devices.
