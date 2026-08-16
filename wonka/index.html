@@ -134,14 +134,16 @@ body.lb-off { --lb-h: 0px; }
 body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 .topnav-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto; padding: 14px 24px; }
 .brand { display: inline-flex; align-items: center; font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
-/* section jump links. hidden below 1040px so the bar stays one line on tablet
-   and phone, where the float CTA and the launch bar already carry the job */
+/* section jump links. hidden below 1100px so the bar stays one line on tablet
+   and phone, where the float CTA and the launch bar already carry the job.
+   Measured: brand 283 + links 555 + button 151 = 989, so 1100 leaves ~60px of
+   slack and the brand never wraps. Adding a seventh link overflows at 1280. */
 .topnav-links { display: flex; align-items: center; gap: 24px; }
 .topnav-links a { position: relative; padding: 5px 0; font-size: 14.5px; font-weight: 600; color: var(--text-3); white-space: nowrap; transition: color 0.2s ease; }
 .topnav-links a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; background: var(--purple-2); transform: scaleX(0); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
 .topnav-links a:hover, .topnav-links a.active { color: var(--purple-dark); }
 .topnav-links a:hover::after, .topnav-links a.active::after { transform: scaleX(1); }
-@media (max-width: 1040px) { .topnav-links { display: none; } }
+@media (max-width: 1100px) { .topnav-links { display: none; } }
 .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 14px 28px; border-radius: 999px;
@@ -542,6 +544,25 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 .obj-card p { font-size: 15.5px; color: var(--text-3); line-height: 1.6; }
 
 /* ---------- roi ---------- */
+/* ---------- who it is for. two lists, the short one is the one that sells ---------- */
+.fit-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fit-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; margin-top: 48px; text-align: left; align-items: start; }
+.fit-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rad); padding: 30px 28px; box-shadow: var(--shadow-card); }
+.fit-card.yes { border-color: rgba(22, 163, 74, 0.3); }
+.fit-card.no { background: var(--bg-3); }
+.fit-head { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 22px; }
+.fit-mark { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 50%; font-size: 14px; font-weight: 800; flex: none; }
+.fit-card.yes .fit-mark { background: #dcfce7; color: #14532d; }
+.fit-card.no .fit-mark { background: #fee2e2; color: #b91c1c; }
+.fit-list { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+.fit-list li { display: grid; grid-template-columns: 18px 1fr; gap: 12px; font-size: 15.5px; line-height: 1.6; color: var(--text-3); }
+.fit-list li::before { font-weight: 800; }
+.fit-card.yes .fit-list li::before { content: '\2713'; color: var(--green); }
+.fit-card.no .fit-list li::before { content: '\2715'; color: #b91c1c; }
+.fit-list b { font-weight: 700; color: var(--text-2); }
+.fit-foot { margin-top: 30px; font-size: 15.5px; color: var(--text-3); }
+.fit-foot a { color: var(--purple-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 960px) { .fit-grid { grid-template-columns: 1fr; } }
 .roi { text-align: center; }
 .roi-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 760px; margin: 46px auto 0; }
 .roi-box { border-radius: var(--rad); padding: 32px 28px; text-align: left; }
@@ -744,7 +765,7 @@ footer nav a:hover { color: var(--purple-dark); }
             <a href="#how">How It Works</a>
             <a href="#days">The 10 Days</a>
             <a href="#tasting">The Tasting Room</a>
-            <a href="#skills">What You Keep</a>
+            <a href="#who">Who It's For</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
         </nav>
@@ -1155,6 +1176,42 @@ footer nav a:hover { color: var(--purple-dark); }
     </div>
 </section>
 
+<!-- WHO IT IS FOR. Sits after the hesitations and before the price, so the
+     "is this me" question is settled before the number appears. Deliberately
+     does NOT repeat the objections above (not technical, has a designer) or the
+     hard-product warning in the fine print. -->
+<section class="fit-section" id="who">
+    <div class="wrap">
+        <div class="center" style="margin-bottom: 6px;">
+            <div class="section-tag" style="justify-content:center;">Who it's for</div>
+            <h2 class="reveal">Who this is for,<br><span class="hl">and who it is not.</span></h2>
+            <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">Two lists. If you land on the wrong one, keep your money. Email me and I will tell you honestly.</p>
+        </div>
+        <div class="fit-grid">
+            <div class="fit-card yes reveal">
+                <div class="fit-head"><span class="fit-mark">&#10003;</span>This is for you if</div>
+                <ul class="fit-list">
+                    <li><span>You <b>sell on Amazon</b> and your main image was made once, a long time ago, and has never been tested against anything.</span></li>
+                    <li><span>You pay <b>$500 to $5,000 a set</b>, wait two weeks, and still upload a guess.</span></li>
+                    <li><span>You have <b>one real product</b> live, or real photos of it, to build the whole bootcamp around.</span></li>
+                    <li><span>You already tried AI images and <b>got back something that was not your product</b>.</span></li>
+                    <li><span>You have about <b>30 minutes a day</b> across three weeks in September.</span></li>
+                    <li><span>You would rather <b>approve the work than make it</b>, and you want the system to stay after the bootcamp ends.</span></li>
+                </ul>
+            </div>
+            <div class="fit-card no reveal reveal-d1">
+                <div class="fit-head"><span class="fit-mark">&#10005;</span>This is not for you if</div>
+                <ul class="fit-list">
+                    <li><span><b>You want it done for you.</b> Wonka does the work, but you drive: you pick the product, answer his questions, approve every artifact. Nobody builds your package while you watch.</span></li>
+                    <li><span><b>You have no product yet.</b> Nothing to research, no photos to lock as the mold, and nothing to race in the Tasting Room. Come back when you have one.</span></li>
+                    <li><span><b>You just want one set of images.</b> Hire a designer, it will be faster. The factory pays off because it stays installed for every product after this one.</span></li>
+                </ul>
+            </div>
+        </div>
+        <p class="fit-foot center reveal reveal-d2">Not sure which list you are on? <a href="mailto:info@jaygptpro.com?subject=Am%20I%20a%20fit%20for%20the%20Wonka%20Bootcamp%3F">Ask me before you buy: info@jaygptpro.com</a></p>
+    </div>
+</section>
+
 <!-- ROI -->
 <section class="roi">
     <div class="wrap">
@@ -1176,7 +1233,7 @@ footer nav a:hover { color: var(--purple-dark); }
 </section>
 
 <!-- ABOUT -->
-<section class="about" id="who">
+<section class="about" id="guide">
     <div class="wrap">
         <div class="center" style="margin-bottom: 44px;">
             <div class="section-tag" style="justify-content:center;">Your guide</div>
