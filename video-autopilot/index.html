@@ -63,7 +63,8 @@
   }
   .promobar .pb-txt { font-size:14.5px; font-weight:500; color:rgba(243,237,250,.9); }
   .promobar .pb-txt b { color:#fff; font-weight:700; }
-  .pb-clock { display:flex; align-items:center; gap:5px; font-family:var(--mono); }
+  /* hidden until the script fills it, so a blocked script never shows "--d --h --m" */
+  .pb-clock { display:none; align-items:center; gap:5px; font-family:var(--mono); }
   .pb-clock span {
     background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16);
     border-radius:7px; padding:3px 7px; font-size:13px; font-weight:600;
@@ -106,7 +107,7 @@
     color:rgba(243,237,250,.82); max-width:560px; margin:0 auto; font-size:16.5px;
   }
   .bootcamp .bridge b { color:#fff; font-weight:600; }
-  .clock { display:flex; justify-content:center; gap:12px; margin:30px 0 28px; }
+  .clock { display:none; justify-content:center; gap:12px; margin:30px 0 28px; }
   .clock div {
     background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
     border-radius:14px; padding:14px 8px; min-width:86px;
@@ -390,6 +391,11 @@
     max-width:580px; margin:14px auto 0; font-size:12.5px; line-height:1.6; color:var(--text-4);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior:auto; }
+    * { animation:none !important; transition:none !important; }
+  }
+
   @media (max-width:860px) {
     body { font-size:16px; }
     section { padding:54px 0; }
@@ -481,8 +487,9 @@
     <section id="setup">
       <div class="sec-eyebrow">Setup, one time</div>
       <h2>Six steps, then you are set for good</h2>
-      <p class="sec-sub">Twenty minutes at most, and you never do it again. Every command
-      here is copy and paste.</p>
+      <p class="sec-sub">You do this once and never again. Every command here is copy and
+      paste. Steps one, two, four and five are quick; step three takes as long as your machine
+      needs to download whatever it is missing.</p>
 
       <div class="steps">
 
@@ -568,8 +575,8 @@
           <pre><button class="copy">COPY</button>/asin-to-video-autopilot B0XXXXXXXXX</pre>
           <p>The first run asks one question, once: the spending limit you want per video.
           After that it works on its own and reports each expense as it happens, and stops
-          before it can cross your limit. Come back to a finished film, three audio mixes to
-          choose from, and a report of every decision it made.</p>
+          before it can cross your limit. Come back to a finished film, alternate audio
+          mixes to choose from, and a report of every decision it made.</p>
         </div>
 
       </div>
@@ -629,9 +636,9 @@
 
       <details class="faq">
         <summary>What comes out at the end? <span class="tog" aria-hidden="true">+</span></summary>
-        <div class="body">A 30 second film at 1280 by 720, three audio mixes to choose
-        between, a style card, and an HTML report of every decision it made and every
-        measurement it took. Version one is Amazon listing videos in 16:9 with English
+        <div class="body">About 30 seconds of film at 1280 by 720, alternate audio mixes
+        to choose between, a style card, and an HTML report of every decision it made and
+        every measurement it took. Version one is Amazon listing videos in 16:9 with English
         voiceover.</div>
       </details>
 
@@ -671,7 +678,7 @@
 
   <section id="bootcamp" style="padding-top:0;">
     <div class="bootcamp">
-      <span class="flag">Starts September 1</span>
+      <span class="flag" id="bcflag">Starts September 1</span>
       <h2>Now build the employee that makes <em>your listing images</em></h2>
       <p class="bridge">This skill hands you the video. <b>The Wonka Creative Bootcamp is the
       other half:</b> ten days in which you build your own AI employee for listing images,
@@ -719,6 +726,7 @@
       if (pbclock) { pbclock.style.display = 'none'; }
       if (clock) { clock.style.display = 'none'; }
       if (floattimer) { floattimer.textContent = 'Now running'; }
+      if (el('bcflag')) { el('bcflag').textContent = 'Now running'; }
       clearInterval(timer);
       return;
     }
@@ -726,11 +734,13 @@
     var d = Math.floor(sec / 86400), hh = Math.floor(sec / 3600) % 24,
         mm = Math.floor(sec / 60) % 60, ss = sec % 60;
     if (pbclock) {
+      pbclock.style.display = 'flex';
       el('pbd').textContent = d + 'd';
       el('pbh').textContent = pad(hh) + 'h';
       el('pbm').textContent = pad(mm) + 'm';
     }
     if (clock) {
+      clock.style.display = 'flex';
       el('cd').textContent = d;
       el('ch').textContent = pad(hh);
       el('cm').textContent = pad(mm);
