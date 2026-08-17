@@ -315,6 +315,9 @@
   .coupon-row button:hover { background:var(--gold); color:#fff; border-color:var(--gold); }
   .coupon-row button.done { background:var(--gold-hi); color:var(--purple-darker); border-color:var(--gold-hi); }
 
+  .dl-line { font-size:14.5px; color:var(--text-3); }
+  .dl-line a { color:var(--purple); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+
   /* two routes inside a step */
   .routes { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
   .route {
@@ -488,8 +491,8 @@
       <div class="sec-eyebrow">Setup, one time</div>
       <h2>Six steps, then you are set for good</h2>
       <p class="sec-sub">You do this once and never again. Every command here is copy and
-      paste. Steps one, two, four and five are quick; step three takes as long as your machine
-      needs to download whatever it is missing.</p>
+      paste. Most of it is quick; step three takes as long as your machine needs to download
+      whatever it is missing.</p>
 
       <div class="steps">
 
@@ -553,13 +556,36 @@
 
         <div class="step">
           <h3>Install the skill</h3>
-          <p>The skill lives in a private repository.
-          <a href="mailto:info@jaygptpro.com?subject=Video%20Autopilot%20access&body=My%20GitHub%20username%20is%3A%20">Email me your GitHub username</a>,
-          accept the invite that arrives by email, then run this in your terminal:</p>
-          <pre><button class="copy">COPY</button>npx skills add JayGPTPro/asin-to-video-autopilot -g</pre>
-          <p>If it asks you to sign in to GitHub, say yes. Run the same command again any
-          time to pull the latest version. Then quit and reopen Claude Code so it loads the
-          new skill.</p>
+          <p>The skill is a folder of files that goes in Claude Code's skills directory.
+          Pick either route, they do the same thing.</p>
+
+          <div class="routes">
+            <div class="route">
+              <div class="rlabel">Let Claude install it</div>
+              <ol>
+                <li>Paste this into Claude Code and approve the commands it asks to run.</li>
+                <li>Works on <b>Mac and Windows</b>, because Claude knows where its own
+                skills folder lives.</li>
+              </ol>
+              <pre><button class="copy">COPY</button>Download https://jaygptpro.com/video-autopilot/asin-to-video-autopilot.zip and unzip it into my Claude Code user skills folder, so that a folder called asin-to-video-autopilot with a SKILL.md inside it ends up there. Then tell me what you installed.</pre>
+            </div>
+            <div class="route">
+              <div class="rlabel">Terminal (Mac and Linux)</div>
+              <ol>
+                <li>One line. It downloads, unpacks into <b>~/.claude/skills</b>, and cleans
+                up after itself.</li>
+                <li>Run the same line again whenever there is a new version. It replaces the
+                skill in place and leaves your own <b>config.json</b> untouched.</li>
+              </ol>
+              <pre><button class="copy">COPY</button>curl -L https://jaygptpro.com/video-autopilot/asin-to-video-autopilot.zip -o avp.zip && unzip -o avp.zip -d ~/.claude/skills && rm avp.zip</pre>
+            </div>
+          </div>
+
+          <p style="margin-top:18px;"><strong>Then quit and reopen Claude Code.</strong>
+          Skills are only picked up on a fresh start, so this step is not optional.</p>
+          <p class="dl-line">Prefer the file itself?
+          <a href="asin-to-video-autopilot.zip" download>Download asin-to-video-autopilot.zip</a>
+          and unzip it into your <span class="kbd">~/.claude/skills</span> folder by hand.</p>
         </div>
 
         <div class="step">
