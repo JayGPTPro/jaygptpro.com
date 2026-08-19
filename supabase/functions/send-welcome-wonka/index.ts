@@ -112,6 +112,41 @@ const S = {
   li: "margin:0 0 9px;font-size:15px;line-height:1.7;color:#D9CDBA",
 };
 
+
+// ---------------------------------------------------------------------------
+// The comped-seat email. Deliberately NOT the branded card above (Jay, 12.8):
+// "too designed, too marketing HTML, I want each of them to think I wrote to them
+// personally". So this is what a person actually sends: default font, black text
+// on white, no cards, no buttons, links as plain links. It is HTML only because
+// the links have to be clickable.
+// ---------------------------------------------------------------------------
+function buildGiftEmail(meta: Meta, firstName: string): { subject: string; html: string } {
+  const subject = `A free ticket to the Wonka bootcamp`;
+  const hi = firstName ? `Hi ${firstName},` : 'Hi,';
+  const a = (href: string, text: string) =>
+    `<a href="${href}" style="color:#1155cc">${text}</a>`;
+  const wa = meta.wa
+    ? `<p>2. The WhatsApp group, already open: ${a(meta.wa, 'join here')}</p>`
+    : `<p>2. The WhatsApp group invite goes out a few days before Day 1.</p>`;
+
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#ffffff">
+<div style="max-width:600px;margin:0;padding:16px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;color:#202124">
+<p>${hi}</p>
+<p>I decided to give you a free ticket to the Wonka Creative Bootcamp. It is yours, nothing to pay.</p>
+<p>Ten days. You build an AI creative director called Wonka inside Claude Code, and he runs your Amazon listing images end to end: research, brief, a new main image, a full secondary set, A+ content and variations. The Grand Opening runs ${meta.dates}.</p>
+<p>Two things when you have a minute:</p>
+<p>1. The portal: ${a(meta.portal, meta.portal)}</p>
+${wa}
+<p>One heads-up: the portal signs in with Google. If this address is not a Google account it will not recognise you. Reply to me with a Google address and I will connect it to your ticket.</p>
+<p>Worth doing before Day 1: install Claude Code and play with it for an hour, so Day 1 feels easy instead of new. ${a(INSTALL_URL, 'Install guide')}.</p>
+<p>See you inside the factory on 1 September.</p>
+<p>Jay</p>
+</div>
+</body></html>`;
+  return { subject, html };
+}
+
 // `gift` is a comped seat: somebody Jay hands a ticket to rather than sells one.
 // Everything practical is identical (same portal, same WhatsApp group, same Google
 // warning, same pre-work) so there is one place to keep those correct. Only the
@@ -230,7 +265,16 @@ Deno.serve(async (req: Request) => {
     const forceTour = url.searchParams.get('tier') === 'private';
     const privateTour = forceTour || await boughtPrivateTour(supabase, email);
     const gift = url.searchParams.get('variant') === 'gift';
-    const { subject, html } = buildEmail(meta, gift ? false : privateTour, gift);
+    let firstName = '';
+    if (gift) {
+      const { data: who } = await supabase.from('allowed_emails').select('name').eq('email', email.toLowerCase()).maybeSingle();
+      firstName = String(who?.name || '').trim().split(/\s+/)[0] || '';
+      // A stored name like "Jay (Test)" or an address fragment would read worse than none.
+      if (!/^[A-Za-z][A-Za-z'.-]{1,20}$/.test(firstName)) firstName = '';
+    }
+    const { subject, html } = gift
+      ? buildGiftEmail(meta, firstName)
+      : buildEmail(meta, privateTour, false);
 
     const to = isPreview && previewTo ? previewTo : email;
     const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: FROM_EMAIL, to: [to], reply_to: REPLY_TO, subject, html }) });
