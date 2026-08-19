@@ -120,7 +120,7 @@ const S = {
 // on white, no cards, no buttons, links as plain links. It is HTML only because
 // the links have to be clickable.
 // ---------------------------------------------------------------------------
-function buildGiftEmail(meta: Meta, firstName: string): { subject: string; html: string } {
+function buildGiftEmail(meta: Meta, firstName: string, loginNote: boolean): { subject: string; html: string } {
   const subject = `A free ticket to the Wonka bootcamp`;
   const hi = firstName ? `Hi ${firstName},` : 'Hi,';
   const a = (href: string, text: string) =>
@@ -138,8 +138,7 @@ function buildGiftEmail(meta: Meta, firstName: string): { subject: string; html:
 <p>Two things when you have a minute:</p>
 <p>1. The portal: ${a(meta.portal, meta.portal)}</p>
 ${wa}
-<p>One heads-up: the portal signs in with Google. If this address is not a Google account it will not recognise you. Reply to me with a Google address and I will connect it to your ticket.</p>
-<p>Worth doing before Day 1: install Claude Code and play with it for an hour, so Day 1 feels easy instead of new. ${a(INSTALL_URL, 'Install guide')}.</p>
+${loginNote ? `<p>One heads-up: the portal signs in with Google. If this address is not a Google account it will not recognise you. Reply to me with a Google address and I will connect it to your ticket.</p>` : ''}
 <p>See you inside the factory on 1 September.</p>
 <p>Jay</p>
 </div>
@@ -273,7 +272,7 @@ Deno.serve(async (req: Request) => {
       if (!/^[A-Za-z][A-Za-z'.-]{1,20}$/.test(firstName)) firstName = '';
     }
     const { subject, html } = gift
-      ? buildGiftEmail(meta, firstName)
+      ? buildGiftEmail(meta, firstName, url.searchParams.get('loginnote') === '1')
       : buildEmail(meta, privateTour, false);
 
     const to = isPreview && previewTo ? previewTo : email;
