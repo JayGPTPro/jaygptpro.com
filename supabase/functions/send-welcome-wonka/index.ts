@@ -113,6 +113,33 @@ const S = {
 };
 
 
+
+// ---------------------------------------------------------------------------
+// "I think you cannot sign in" . sent BEFORE the customer hits the wall.
+// The portal is Google-only, and roughly a quarter of the buyers so far pay from
+// an address that cannot pass Google OAuth. Waiting for them to discover that on
+// 1 September means a bad first minute in a product they paid for. Same plain
+// personal shape as the gift note: this is a message from a person, not a system.
+// It also offers the way out if the MX guess was wrong, because a Google account
+// CAN be created on any address.
+// ---------------------------------------------------------------------------
+function buildLoginHelpEmail(firstName: string, theirAddress: string): { subject: string; html: string } {
+  const subject = `One small thing before September`;
+  const hi = firstName ? `Hi ${firstName},` : 'Hi,';
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#ffffff">
+<div style="max-width:600px;margin:0;padding:16px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;color:#202124">
+<p>${hi}</p>
+<p>Something on my side, not yours, and I would rather fix it now than have you find it on Day 1.</p>
+<p>The bootcamp portal signs in with Google, and ${theirAddress} does not look like a Google account. If that is right, the gate will not recognise you.</p>
+<p>Just reply with a Google address you use and I will connect it to your ticket today. If ${theirAddress} <em>is</em> a Google account, tell me that instead and I will leave everything as it is.</p>
+<p>Nothing else to do. Day 1 opens 1 September.</p>
+<p>Jay</p>
+</div>
+</body></html>`;
+  return { subject, html };
+}
+
 // ---------------------------------------------------------------------------
 // The comped-seat email. Deliberately NOT the branded card above (Jay, 12.8):
 // "too designed, too marketing HTML, I want each of them to think I wrote to them
@@ -271,9 +298,17 @@ Deno.serve(async (req: Request) => {
       // A stored name like "Jay (Test)" or an address fragment would read worse than none.
       if (!/^[A-Za-z][A-Za-z'.-]{1,20}$/.test(firstName)) firstName = '';
     }
-    const { subject, html } = gift
-      ? buildGiftEmail(meta, firstName, url.searchParams.get('loginnote') === '1')
-      : buildEmail(meta, privateTour, false);
+    const loginHelp = url.searchParams.get('variant') === 'loginhelp';
+    if (loginHelp && !firstName) {
+      const { data: who } = await supabase.from('allowed_emails').select('name').eq('email', email.toLowerCase()).maybeSingle();
+      firstName = String(who?.name || '').trim().split(/\s+/)[0] || '';
+      if (!/^[A-Za-z][A-Za-z'.-]{1,20}$/.test(firstName)) firstName = '';
+    }
+    const { subject, html } = loginHelp
+      ? buildLoginHelpEmail(firstName, email)
+      : gift
+        ? buildGiftEmail(meta, firstName, url.searchParams.get('loginnote') === '1')
+        : buildEmail(meta, privateTour, false);
 
     const to = isPreview && previewTo ? previewTo : email;
     const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: FROM_EMAIL, to: [to], reply_to: REPLY_TO, subject, html }) });
