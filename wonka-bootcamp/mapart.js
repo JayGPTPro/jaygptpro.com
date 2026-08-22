@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final-v5.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-c';
+export const BUILD = 'art-2026-08-23-d';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -46,12 +46,35 @@ const DOORS = {
   2: [0.2526, 0.7035],
   3: [0.2209, 0.4851],
   4: [0.2610, 0.2639],
-  5: [0.3799, 0.2378],
+  5: [0.3500, 0.2400],
   6: [0.6465, 0.3505],
   7: [0.7161, 0.3868],
   8: [0.7023, 0.5286],
   9: [0.6684, 0.6685],
   10: [0.6889, 0.8354],
+};
+
+/* How Wonka walks the last stretch, from the road to the room's own door.
+   Before this he cut a straight line from the road to the middle of the
+   building, which for half the rooms meant walking through a flowerbed, a
+   fence or the side of the building itself (Jay, 23.8: "the route should be
+   where a real person would walk, toward the room's door").
+
+   Each list starts where DOORS leaves him on the road and ends AT the door.
+   Waypoints were read off a 0.02 grid rendered over the master, following the
+   painted side paths, terraces and steps. A day with no entry here falls back
+   to the old straight step, so nothing breaks if a room is added. */
+const APPROACH = {
+  1:  [[0.2450, 0.8980], [0.1920, 0.8830], [0.1620, 0.8760]],
+  2:  [[0.2050, 0.6900], [0.1660, 0.6680], [0.1430, 0.6520]],
+  3:  [[0.1860, 0.4640], [0.1500, 0.4530], [0.1200, 0.4470]],
+  4:  [[0.2180, 0.2590], [0.1750, 0.2560], [0.1450, 0.2540]],
+  5:  [[0.3400, 0.2270], [0.3300, 0.2150]],
+  6:  [[0.6390, 0.3330], [0.6240, 0.3060], [0.6450, 0.2770]],
+  7:  [[0.7480, 0.3760], [0.7900, 0.3660], [0.8250, 0.3560]],
+  8:  [[0.7330, 0.5320], [0.7700, 0.5290], [0.7950, 0.5240]],
+  9:  [[0.7050, 0.6780], [0.7600, 0.6840], [0.8050, 0.6800]],
+  10: [[0.7180, 0.8380], [0.7580, 0.8420], [0.7900, 0.8450]],
 };
 
 const PATH = [
@@ -320,11 +343,11 @@ export async function mount(container, api, opts) {
      a box that copies the painting's transform, so a percentage child lands on the
      same pixels at every zoom and pan, and layout() never has to touch it. */
   const SCREENS = [
-    { rect: [0.362305, 0.090332, 0.057292, 0.086426], first: 0,
+    { rect: [0.361654, 0.089355, 0.058594, 0.088379], first: 0,
       imgs: ['main-1.jpg', 'main-2.jpg', 'main-3.jpg', 'main-4.jpg'] },
-    { rect: [0.807943, 0.230469, 0.031250, 0.131836], first: 0,
+    { rect: [0.807292, 0.229004, 0.032552, 0.137207], first: 0,
       imgs: ['aplus-1.jpg', 'aplus-3.jpg', 'aplus-5.jpg'] },
-    { rect: [0.848958, 0.230957, 0.031576, 0.139160], first: 0,
+    { rect: [0.848307, 0.22998, 0.032878, 0.144043], first: 0,
       imgs: ['aplus-2.jpg', 'aplus-4.jpg', 'aplus-6.jpg'] },
   ];
   const SCREEN_HOLD = 5200, SCREEN_FADE = 900;
@@ -391,7 +414,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=8';
+    img.src = MAP_IMG + '?v=9';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
   /* Distances ALONG THE PATH are measured in the authoring reference frame, never
@@ -958,23 +981,42 @@ export async function mount(container, api, opts) {
      the building's own door, then slips inside. `approach` overrides his
      position while it runs, so everything downstream (camera, yaw, sprite)
      follows him off-road without special-casing. */
-  let approach = null;   // { fx, fy, tx, ty, t, dur, day }
+  let approach = null;   // { pts, segs, total, t, dur, day }
   function charPos() {
     if (!approach) return posAt(charT);
     const k = Math.min(1, approach.t / approach.dur);
     const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    return [approach.fx + (approach.tx - approach.fx) * e,
-            approach.fy + (approach.ty - approach.fy) * e];
+    let want = e * approach.total;
+    for (let i = 0; i < approach.segs.length; i++) {
+      if (want <= approach.segs[i] || i === approach.segs.length - 1) {
+        const f = approach.segs[i] > 0 ? Math.min(1, want / approach.segs[i]) : 1;
+        return [approach.pts[i][0] + (approach.pts[i + 1][0] - approach.pts[i][0]) * f,
+                approach.pts[i][1] + (approach.pts[i + 1][1] - approach.pts[i][1]) * f];
+      }
+      want -= approach.segs[i];
+    }
+    return approach.pts[approach.pts.length - 1];
   }
   function startApproach(day) {
     const [px, py] = posAt(doorT[day]);
-    const h = HOTSPOTS[day];
-    const dx = h[0] - px, dy = h[1] - py;
-    const len = Math.hypot(dx * ART_W, dy * ART_H) || 1;
-    // stop just inside the building's face, where its door would be
-    const k = Math.max(0, len - h[2] * ART_W * 0.45) / len;
-    approach = { fx: px, fy: py, tx: px + dx * k, ty: py + dy * k, t: 0,
-                 dur: Math.max(0.3, Math.min(0.72, len / WALK.approach)), day };
+    let route = APPROACH[day];
+    if (!route || !route.length) {
+      // fallback for a room with no authored route: one step toward the building
+      const h = HOTSPOTS[day];
+      const dx = h[0] - px, dy = h[1] - py;
+      const len = Math.hypot(dx * ART_W, dy * ART_H) || 1;
+      const k = Math.max(0, len - h[2] * ART_W * 0.45) / len;
+      route = [[px + dx * k, py + dy * k]];
+    }
+    const pts = [[px, py]].concat(route);
+    const segs = [];
+    let total = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const l = Math.hypot((pts[i][0] - pts[i - 1][0]) * ART_W, (pts[i][1] - pts[i - 1][1]) * ART_H);
+      segs.push(l); total += l;
+    }
+    approach = { pts, segs, total, t: 0, day,
+                 dur: Math.max(0.35, Math.min(1.6, total / WALK.approach)) };
     plates[day - 1].el.classList.add('on');
     wonka.classList.add('walking');
     wonka.classList.remove('idle');
@@ -1213,8 +1255,13 @@ export async function mount(container, api, opts) {
     try {
       let moving = false;
       if (approach && !approach.done) {
+        const before = charPos()[0];
         approach.t += dt;
         moving = true;
+        const after = charPos()[0];
+        // the route turns, so he has to turn with it
+        if (after < before - 1e-6) facingLeft = true;
+        else if (after > before + 1e-6) facingLeft = false;
         if (approach.t >= approach.dur) {
           approach.t = approach.dur;
           approach.done = true;   // stay AT the door; resetZoom clears it later
