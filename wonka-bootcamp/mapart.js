@@ -9,10 +9,10 @@
    ============================================================ */
 
 /* ---------- the painted world ---------- */
-const MAP_IMG = 'map-art/map-final-v3.webp';
+const MAP_IMG = 'map-art/map-final-v4.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-a';
+export const BUILD = 'art-2026-08-23-b';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -136,6 +136,14 @@ const CSS = `
   filter:saturate(1.02);opacity:0;transition:opacity 1.1s ease}
 .ma-img.m3d-in{opacity:1}
 .ma-layer{position:absolute;left:0;top:0;transform-origin:0 0;transition:opacity 620ms ease}
+/* the live listing screens: real main images and real A+ pages, cycling in the
+   frames the map art leaves blank. The box rides the painting's own transform, so
+   its children can be positioned in PERCENT and never need repositioning. */
+.ma-screens{position:absolute;left:0;top:0;pointer-events:none}
+.ma-screen{position:absolute;overflow:hidden}
+.ma-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity 900ms ease}
+.ma-screen img.on{opacity:1}
 .ma-hot{position:absolute;transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;pointer-events:auto}
 .ma-hot .ring{position:absolute;inset:8%;border-radius:50%;border:3px solid rgba(245,184,65,0);
   box-shadow:0 0 0 0 rgba(245,184,65,0);transition:border-color .25s ease, box-shadow .25s ease}
@@ -304,6 +312,60 @@ export async function mount(container, api, opts) {
       if (!document.hidden && vid && vidLive && vid.paused) vid.play().catch(() => {});
     });
   }
+  /* ---------- live listing screens (23.8) ----------
+     Days 5 and 7 are the rooms about main images and A+ pages, so their buildings
+     hold real ones from the Wonka landing page rather than painted approximations,
+     and they cycle. The rects are the blank white panels measured off the master in
+     `screens-rects.json`, expressed as fractions of the art. Everything sits inside
+     a box that copies the painting's transform, so a percentage child lands on the
+     same pixels at every zoom and pan, and layout() never has to touch it. */
+  const SCREENS = [
+    { rect: [0.362305, 0.090332, 0.057292, 0.086426], first: 0,
+      imgs: ['main-1.jpg', 'main-2.jpg', 'main-3.jpg', 'main-4.jpg'] },
+    { rect: [0.807943, 0.230469, 0.031250, 0.131836], first: 0,
+      imgs: ['aplus-1.jpg', 'aplus-3.jpg', 'aplus-5.jpg'] },
+    { rect: [0.848958, 0.230957, 0.031576, 0.139160], first: 0,
+      imgs: ['aplus-2.jpg', 'aplus-4.jpg', 'aplus-6.jpg'] },
+  ];
+  const SCREEN_HOLD = 5200, SCREEN_FADE = 900;
+  const screensBox = document.createElement('div');
+  screensBox.className = 'ma-screens';
+  const screenSets = SCREENS.map((sc) => {
+    const el = document.createElement('div');
+    el.className = 'ma-screen';
+    el.style.left = (sc.rect[0] * 100) + '%';
+    el.style.top = (sc.rect[1] * 100) + '%';
+    el.style.width = (sc.rect[2] * 100) + '%';
+    el.style.height = (sc.rect[3] * 100) + '%';
+    const frames = sc.imgs.map((name, i) => {
+      const im = document.createElement('img');
+      im.alt = ''; im.setAttribute('aria-hidden', 'true');
+      im.src = 'map-art/screens/' + name;
+      if (i === sc.first) im.classList.add('on');
+      el.appendChild(im);
+      return im;
+    });
+    screensBox.appendChild(el);
+    return { frames, at: sc.first };
+  });
+  zoomWrap.appendChild(screensBox);
+  /* The map art already has the first frame of each screen painted in, so a cycle
+     that never starts still looks right: no motion for reduced-motion users, and
+     nothing to fix if the images fail to load. */
+  if (!REDUCED) {
+    // No document.hidden guard: browsers already throttle timers in a background
+    // tab, and the guard made the cycle look broken in every embedded viewer that
+    // reports the page hidden while the user is plainly looking at it.
+    setInterval(() => {
+      screenSets.forEach((set) => {
+        if (set.frames.length < 2) return;
+        set.frames[set.at].classList.remove('on');
+        set.at = (set.at + 1) % set.frames.length;
+        set.frames[set.at].classList.add('on');
+      });
+    }, SCREEN_HOLD + SCREEN_FADE);
+  }
+
   // life layers: fxFar = star twinkles (sky), fxNear = smoke/shimmer/ripples/lanterns.
   // m3d-in matters: the host page ships `#map3d-stage canvas{opacity:0}` (a fade-in
   // hook for the 3D engine) which otherwise hides EVERY canvas in the stage forever.
@@ -329,7 +391,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=6';
+    img.src = MAP_IMG + '?v=7';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
   /* Distances ALONG THE PATH are measured in the authoring reference frame, never
@@ -359,6 +421,7 @@ export async function mount(container, api, opts) {
     // otherwise draw-but-never-display the canvases (seen on Jay's machine)
     img.style.transform = 'translate(' + (disp.x + parX * PAR_IMG) + 'px,' + (disp.y + parY * PAR_IMG) + 'px) translateZ(0)';
     if (vid) vid.style.transform = img.style.transform;   // the film rides the painting exactly
+    screensBox.style.transform = img.style.transform;  // and so do the live screens
     fxNear.style.transform = 'translate(' + (parX * PAR_IMG) + 'px,' + (parY * PAR_IMG) + 'px) translateZ(0)';
     fxFar.style.transform = 'translate(' + (parX * PAR_FAR) + 'px,' + (parY * PAR_FAR) + 'px) translateZ(0)';
     layer.style.transform = 'translate(' + (parX * PAR_LAYER) + 'px,' + (parY * PAR_LAYER) + 'px) translateZ(0)';
@@ -394,6 +457,8 @@ export async function mount(container, api, opts) {
     img.style.width = disp.w + 'px';
     img.style.height = disp.h + 'px';
     if (vid) { vid.style.width = disp.w + 'px'; vid.style.height = disp.h + 'px'; }
+    screensBox.style.width = disp.w + 'px';
+    screensBox.style.height = disp.h + 'px';
     applyParallax();
     placeAll();
   }
