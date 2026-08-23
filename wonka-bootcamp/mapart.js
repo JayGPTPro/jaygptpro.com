@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final-v8.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-j';
+export const BUILD = 'art-2026-08-23-k';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -171,6 +171,10 @@ const CSS = `
 .ma-hot .ring{position:absolute;inset:8%;border-radius:50%;border:3px solid rgba(245,184,65,0);
   box-shadow:0 0 0 0 rgba(245,184,65,0);transition:border-color .25s ease, box-shadow .25s ease}
 .ma-hot:hover .ring{border-color:rgba(245,184,65,.9);box-shadow:0 0 22px 4px rgba(245,184,65,.35)}
+.ma-hot:focus{outline:none}
+/* keyboard focus reads exactly like hover, plus a hard ring so it is unmissable */
+.ma-hot:focus-visible .ring{border-color:rgba(245,184,65,1);
+  box-shadow:0 0 0 3px rgba(21,10,28,.9),0 0 0 6px rgba(245,184,65,.95),0 0 26px 6px rgba(245,184,65,.45)}
 /* the current room is called out by the "You are here" pin instead . the old
    pulsing gold ring shouted over the painting (Jay) */
 .ma-hot.current .ring{border-color:rgba(245,184,65,.28)}
@@ -668,10 +672,24 @@ export async function mount(container, api, opts) {
   /* ---------- hotspots + badges + plates ---------- */
   const hots = [], badges = [], plates = [];
   days.forEach((d, i) => {
+    // A div with a click handler is invisible to a keyboard and to a screen reader,
+    // and these ten ARE the map. 23.8: 10 hotspots, 0 focusable, so the centrepiece of
+    // the portal could only be used with a mouse.
     const h = document.createElement('div');
     h.className = 'ma-hot';
+    h.setAttribute('role', 'button');
+    h.tabIndex = 0;
+    h.setAttribute('aria-label', 'Day ' + d.day + ': ' + d.room);
     h.innerHTML = '<div class="ring"></div>';
     h.addEventListener('click', () => activateRoom(d.day));
+    h.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        activateRoom(d.day);
+      }
+    });
+    h.addEventListener('focus', () => setHover(i));
+    h.addEventListener('blur', () => setHover(-1));
     h.addEventListener('pointerenter', () => setHover(i));
     h.addEventListener('pointerleave', () => setHover(-1));
     layer.appendChild(h);
