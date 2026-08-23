@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final-v5.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-e';
+export const BUILD = 'art-2026-08-23-f';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -311,7 +311,7 @@ export async function mount(container, api, opts) {
      look wrong on the current art). Reduced-motion users always get the still.
      The canvas fx (stars/smoke/lanterns) are suspended while the video plays .
      the film already contains that life, and doubling smoke reads as haze. */
-  const DEFAULT_LOOP = '13';
+  const DEFAULT_LOOP = '14';
   const vidPick = /[?&]still\b/.test(location.search) ? null
     : ((/[?&]vid=([1-9][0-9]?)\b/.exec(location.search) || [])[1] || DEFAULT_LOOP);
   let vid = null, vidLive = false;
