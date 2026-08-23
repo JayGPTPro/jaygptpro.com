@@ -5053,19 +5053,25 @@ function ensureEnterChar() {
    the side Wonka should approach from, and how the camera pushes in after he
    steps inside . deliberately different per room. */
 const ROOM_ENTRY = {
-  // Approach sides come from Jay's own arrows drawn on the portraits (19.7): he
-  // has to walk in off the paving that is actually visible in each painting, not
-  // from whichever side the code felt like. Door = the threshold his feet reach.
+  // Approach sides come from Jay's own arrows drawn on the portraits. Door = the
+  // threshold his feet reach; he has to walk in off the paving that is actually
+  // visible in each painting, not from whichever side the code felt like.
+  //
+  // 1, 2, 3 and 9 are the original 19.7 numbers and Jay left them alone. 4, 5, 6,
+  // 7, 8 and 10 were re-marked on 23.8, because their portraits were repainted
+  // (5, 6 and 7 that same day, 4 and 8 on 17.8) and nobody moved the doors with
+  // them: Day 7's door had ended up in the middle of an A+ lightbox, Day 4's on a
+  // copper vat. A coordinate pinned to a picture is part of that picture.
   1:  { door: [0.570, 0.865], from: [0.78, 0.955], push: 2.9, dur: 1500, ease: 'cubic-bezier(.5,0,.85,.4)' },
   2:  { door: [0.545, 0.860], from: [0.80, 0.950], push: 3.4, dur: 1650, ease: 'cubic-bezier(.45,0,.9,.35)' },
   3:  { door: [0.580, 0.840], from: [0.84, 0.950], push: 2.6, dur: 1400, ease: 'cubic-bezier(.55,0,.8,.45)' },
-  4:  { door: [0.600, 0.870], from: [0.78, 0.950], push: 3.8, dur: 1750, ease: 'cubic-bezier(.4,0,.9,.3)' },
-  5:  { door: [0.468, 0.780], from: [0.84, 0.920], push: 2.4, dur: 1350, ease: 'cubic-bezier(.6,0,.75,.5)' },
-  6:  { door: [0.545, 0.870], from: [0.80, 0.950], push: 4.2, dur: 1850, ease: 'cubic-bezier(.35,0,.9,.28)' },
-  7:  { door: [0.545, 0.775], from: [0.14, 0.930], push: 3.0, dur: 1550, ease: 'cubic-bezier(.5,0,.85,.4)' },
-  8:  { door: [0.388, 0.712], from: [0.84, 0.925], push: 2.7, dur: 1450, ease: 'cubic-bezier(.52,0,.82,.42)' },
+  4:  { door: [0.351, 0.802], from: [0.181, 0.997], push: 3.8, dur: 1750, ease: 'cubic-bezier(.4,0,.9,.3)' },
+  5:  { door: [0.5, 0.774], from: [0.497, 0.997], push: 2.4, dur: 1350, ease: 'cubic-bezier(.6,0,.75,.5)' },
+  6:  { door: [0.503, 0.808], from: [0.452, 0.991], push: 4.2, dur: 1850, ease: 'cubic-bezier(.35,0,.9,.28)' },
+  7:  { door: [0.438, 0.842], from: [0.486, 0.999], push: 3.0, dur: 1550, ease: 'cubic-bezier(.5,0,.85,.4)' },
+  8:  { door: [0.337, 0.886], from: [0.041, 0.998], push: 2.7, dur: 1450, ease: 'cubic-bezier(.52,0,.82,.42)' },
   9:  { door: [0.410, 0.790], from: [0.06, 0.935], push: 3.2, dur: 1600, ease: 'cubic-bezier(.45,0,.88,.35)' },
-  10: { door: [0.535, 0.820], from: [0.14, 0.940], push: 3.6, dur: 1700, ease: 'cubic-bezier(.42,0,.9,.32)' },
+  10: { door: [0.556, 0.838], from: [0.656, 0.999], push: 3.6, dur: 1700, ease: 'cubic-bezier(.42,0,.9,.32)' },
 };
 let roomEnterBusy = false;
 let roomEnterRun = 0;      // run token: stale timers from a cancelled entry must not tear down the new one
@@ -5897,7 +5903,7 @@ function fallbackTo2D() {
 }
 
 // Cache key for the map engine module. Must equal `BUILD` in mapart.js.
-const MAP_ENGINE_V = 'art-2026-08-23-f';
+const MAP_ENGINE_V = 'art-2026-08-23-g';
 
 async function initMapEngine() {
   if (!MAP3D_WANTED) return;
