@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final-v5.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-d';
+export const BUILD = 'art-2026-08-23-e';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -305,11 +305,15 @@ export async function mount(container, api, opts) {
      Each candidate was composited back onto the still in post (the model
      zooms ~2.6% and repaints textures), so the video frame equals MAP_IMG's
      framing exactly: path audit 0/178 off-road on the moving frames, and the
-     interactive layer needs no recalibration. Preview-only for now: ?vid=1/2/3
-     picks a candidate, no param = the still image; Jay locks one later. The
-     canvas fx (stars/smoke/lanterns) are suspended while the video plays .
+     interactive layer needs no recalibration. LIVE BY DEFAULT since 23.8: the
+     map breathes unless you ask it not to. `?still` forces the painting, `?vid=N`
+     picks another cut (1-9 are July films of the pre-retheme painting and will
+     look wrong on the current art). Reduced-motion users always get the still.
+     The canvas fx (stars/smoke/lanterns) are suspended while the video plays .
      the film already contains that life, and doubling smoke reads as haze. */
-  const vidPick = (/[?&]vid=([1-9][0-9]?)\b/.exec(location.search) || [])[1];
+  const DEFAULT_LOOP = '13';
+  const vidPick = /[?&]still\b/.test(location.search) ? null
+    : ((/[?&]vid=([1-9][0-9]?)\b/.exec(location.search) || [])[1] || DEFAULT_LOOP);
   let vid = null, vidLive = false;
   if (vidPick && !REDUCED) {
     vid = document.createElement('video');

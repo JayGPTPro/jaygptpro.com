@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>The Wonka Factory Map . still or breathing?</title>
+<style>
+  :root{
+    --ink:#150A1C; --ink2:#1E0F28; --cream:#F5E9D6; --gold:#F5B841;
+    --bronze:#8A5424; --plum:#3A2347; --muted:#C9A96A; --green:#8FD694;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--cream);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  header{padding:34px 20px 10px;text-align:center}
+  h1{margin:0 0 6px;font:600 30px/1.2 Georgia,serif;color:var(--gold)}
+  .sub{margin:0;color:var(--muted);font-size:15px}
+  .ask{max-width:640px;margin:16px auto 0;padding:12px 18px;border:1px solid var(--plum);
+       border-radius:10px;background:var(--ink2);font-size:15px}
+  .wrap{max-width:1560px;margin:26px auto 0;padding:0 16px}
+
+  .modes{display:flex;gap:8px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
+  .modes button{appearance:none;cursor:pointer;font:600 14px/1 inherit;letter-spacing:.04em;
+       padding:11px 18px;border-radius:999px;border:1px solid var(--bronze);
+       background:transparent;color:var(--cream);transition:.18s}
+  .modes button:hover{border-color:var(--gold);color:var(--gold)}
+  .modes button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#2A1508}
+
+  .stage{display:grid;gap:20px}
+  .stage.side{grid-template-columns:1fr 1fr}
+  .stage.stack{grid-template-columns:1fr}
+  .stage.solo .pane.b{display:none}
+  .stage.solo-b .pane.a{display:none}
+
+  .pane{margin:0}
+  .frame{position:relative;border:3px solid var(--bronze);border-radius:12px;overflow:hidden;
+         background:#000;aspect-ratio:3/2}
+  .frame img,.frame video{width:100%;height:100%;display:block;object-fit:cover}
+  .tag{position:absolute;top:12px;left:12px;z-index:2;padding:5px 12px;border-radius:999px;
+       font:600 12px/1 inherit;letter-spacing:.10em;text-transform:uppercase;
+       background:rgba(21,10,28,.82);border:1px solid var(--bronze);color:var(--gold);
+       backdrop-filter:blur(4px)}
+  figcaption{padding-top:10px;font-size:14.5px;color:var(--muted);text-align:center}
+  figcaption b{color:var(--cream);font-weight:600}
+
+  .links{max-width:1560px;margin:34px auto 0;padding:0 16px 70px;text-align:center;font-size:14.5px}
+  .links a{display:inline-block;margin:6px 8px;padding:11px 20px;border-radius:999px;
+       border:1px solid var(--bronze);color:var(--gold);text-decoration:none;transition:.18s}
+  .links a:hover{border-color:var(--gold);background:rgba(245,184,65,.08)}
+  .note{max-width:680px;margin:22px auto 0;color:#8f7a5d;font-size:13.5px;line-height:1.7}
+
+  @media (max-width:900px){
+    .stage.side{grid-template-columns:1fr}
+    h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The factory map: still, or breathing?</h1>
+  <p class="sub">Same painting, same framing. One of them moves.</p>
+  <p class="ask">Both are finished and both are live. I am picking one as the default the
+     students land on. Which one feels more like a place you want to walk into?</p>
+</header>
+
+<div class="wrap">
+  <div class="modes" role="group" aria-label="How to compare">
+    <button data-mode="side" aria-pressed="true">Side by side</button>
+    <button data-mode="stack" aria-pressed="false">One above the other</button>
+    <button data-mode="solo" aria-pressed="false">Still only</button>
+    <button data-mode="solo-b" aria-pressed="false">Breathing only</button>
+  </div>
+
+  <div class="stage side" id="stage">
+    <figure class="pane a">
+      <div class="frame">
+        <span class="tag">A . still</span>
+        <img src="map-art/map-final-v5.webp?v=9" alt="The Wonka factory map, still painting">
+      </div>
+      <figcaption><b>A. The painting.</b> Every detail exactly as it was painted. Nothing moves.</figcaption>
+    </figure>
+
+    <figure class="pane b">
+      <div class="frame">
+        <span class="tag">B . breathing</span>
+        <video src="map-art/video/loop13.mp4" autoplay muted loop playsinline
+               poster="map-art/map-final-v5.webp?v=9"></video>
+      </div>
+      <figcaption><b>B. The same painting, breathing.</b> The chocolate waterfall pours, the
+        fountains bubble, smoke drifts, the Oompa crews row. 4.5 seconds, looping.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<div class="links">
+  <a href="./?still">Open the real portal on A</a>
+  <a href="./">Open the real portal on B</a>
+  <p class="note">The portal itself needs a login. These two links are for me. The comparison
+    above needs nothing and works on a phone.</p>
+</div>
+
+<script>
+  // Mode buttons just swap a class on the stage; the CSS does the rest, so the
+  // video element is never re-created and never restarts mid-comparison.
+  var stage = document.getElementById('stage');
+  var buttons = document.querySelectorAll('.modes button');
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      buttons.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      stage.className = 'stage ' + b.dataset.mode;
+    });
+  });
+  // Some mobile browsers refuse the initial autoplay; nudge it once on first touch.
+  document.addEventListener('touchstart', function once() {
+    var v = document.querySelector('video');
+    if (v && v.paused) { v.play().catch(function () {}); }
+    document.removeEventListener('touchstart', once);
+  }, { passive: true });
+</script>
+
+</body>
+</html>
