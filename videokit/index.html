@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Kit · everything from the talk · Jay Margaliot</title>
+<meta name="description" content="Everything from the product video talk in one place: connect the video engine to Claude Code, install the free autopilot skill, and make your first film.">
+<meta name="theme-color" content="#f7f5f1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234A2545'/%3E%3Cpath d='M9 22V10h3.4l3.6 7.4L19.6 10H23v12h-2.8v-7.3L17.1 21h-2.2l-3.1-6.3V22z' fill='%23E2A85C'/%3E%3C/svg%3E">
+<link rel="canonical" href="https://jaygptpro.com/videokit/">
+<meta property="og:url" content="https://jaygptpro.com/videokit/">
+<meta property="og:image" content="https://jaygptpro.com/video-autopilot/assets/poster-promo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Video Kit · everything from the talk">
+<meta property="og:description" content="Three commands and you are making product videos out of an ASIN. Free.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Loaded without blocking the parser. This is the page's only external dependency, and
+     on conference wifi behind a captive portal a render-blocking stylesheet meant 16 seconds
+     of blank screen before anything painted. media="print" makes it a low-priority fetch;
+     onload promotes it. The noscript copy keeps it working with JS off. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<script>
+/* Mark that JS is alive BEFORE first paint. Only then may the CSS hide anything.
+   Without this line the reveal styles never apply and every section stays readable.
+
+   The deadline lives HERE, not in the script at the bottom of the page. It used to sit
+   beside the IntersectionObserver, which meant the safety net was inside the very block it
+   was meant to protect: truncate the HTML before that script, or throw anywhere in it, and
+   every section stayed at opacity 0 forever. A blank cream page for a room that just
+   scanned a QR code. Registered in the head, it fires no matter what happens later. */
+document.documentElement.className+=' js';
+setTimeout(function(){
+  var r=document.querySelectorAll('.rv'); for(var i=0;i<r.length;i++) r[i].classList.add('in');
+},2500);
+</script>
+<style>
+:root{
+  --bg:#f7f5f1; --card:#ffffff; --ink:#0a0a0c; --ink2:#5c5660; --ink3:#6f6862;
+  --line:#e3ddd5; --plum:#4A2545; --bronze:#8A5A2B; --soft:#f0e7e0; --gold:#c98d4e;
+  --wa:#25D366;
+  --disp:'Bricolage Grotesque',sans-serif; --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--disp);line-height:1.6;
+  font-optical-sizing:auto;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
+/* Same depth language as the talk they just watched: a warm bloom near the top and a
+   fine grain over everything, so the page feels like the next slide rather than a website. */
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(120% 60% at 50% 0%,#fffdfa 0%,#f8f6f2 42%,#efe8de 100%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.6'/></svg>")}
+a{text-decoration:none;color:inherit}
+/* the same bronze thread the talk uses for progress, so the page feels like its last slide */
+#prog{position:fixed;top:0;left:0;right:0;height:2px;background:transparent;z-index:20}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bronze),var(--gold))}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px}
+
+/* ---------- hero ---------- */
+header{padding:66px 0 26px;text-align:center;position:relative}
+.kick{display:inline-flex;align-items:center;gap:13px;font:500 11px var(--mono);
+  letter-spacing:.24em;text-transform:uppercase;color:var(--bronze);margin-bottom:20px}
+.kick::before,.kick::after{content:"";height:1px;width:26px;background:currentColor;opacity:.45}
+h1{font:800 46px/1.06 var(--disp);letter-spacing:-.04em;margin-bottom:16px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--plum);
+  background-image:linear-gradient(var(--bronze),var(--bronze));background-repeat:no-repeat;
+  background-position:0 97%;background-size:0 .055em;
+  transition:background-size .9s var(--ease) .55s}
+.in h1 em,.js .rv.in h1 em{background-size:100% .055em}
+h1.in em{background-size:100% .055em}
+.lede{font:400 17.5px/1.62 var(--disp);color:var(--ink2);max-width:520px;margin:0 auto;text-wrap:pretty}
+/* the prerequisite. Nothing on this page works without Claude Code, and a visitor who
+   arrives from a shared link has no way of knowing that. */
+.need{font:400 14.5px/1.55 var(--disp);color:var(--ink3);max-width:430px;margin:18px auto 0;
+  padding-top:16px;border-top:1px solid var(--line)}
+.need a{color:var(--plum);font-weight:600;box-shadow:inset 0 -1px 0 rgba(138,90,43,.5)}
+
+/* the step number turns a list of links into a path */
+.stepn{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--plum);color:#fff;
+  font:700 13px var(--disp);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 14px -5px rgba(74,37,69,.6)}
+.cards.two{grid-template-columns:1fr}
+
+/* ---------- section heads ---------- */
+section{padding:30px 0}
+.sechead{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+.sechead h2{font:700 23px var(--disp);letter-spacing:-.028em}
+.sechead span{font:500 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.sechead .rule{flex:1;height:1px;background:var(--line)}
+
+/* ---------- cards ---------- */
+.cards{display:grid;gap:13px}
+@media(min-width:800px){
+  .wrap{max-width:860px}
+  /* the three steps stay stacked: their order is the point. The extras pair off. */
+  .cards.two{grid-template-columns:1fr 1fr;gap:15px}
+  .card h3{font-size:21px}
+  .cards>.card p{max-width:86%}
+}
+.card{display:block;background:linear-gradient(180deg,#fff 0%,#fffdfa 100%);
+  border:1px solid var(--line);border-radius:18px;padding:23px 23px 21px;position:relative;
+  overflow:hidden;box-shadow:0 14px 34px -26px rgba(74,37,69,.28);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+/* a bronze light bar wipes across the top edge on hover, the same move the talk's
+   takeaway cards make when they land */
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;transform:scaleX(0);
+  transform-origin:left;transition:transform .5s var(--ease);
+  background:linear-gradient(90deg,transparent,var(--bronze) 22%,var(--gold) 50%,var(--bronze) 78%,transparent)}
+.card:hover::before,.card:active::before{transform:scaleX(1)}
+.card:hover,.card:active{transform:translateY(-3px);border-color:rgba(138,90,43,.45);
+  box-shadow:0 20px 44px -22px rgba(74,37,69,.3)}
+.card .top{display:flex;align-items:center;gap:13px;margin-bottom:9px}
+.card .ico{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:#fff;
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s var(--ease),box-shadow .3s var(--ease)}
+.card:hover .ico{border-color:rgba(138,90,43,.5);box-shadow:0 8px 20px -8px rgba(74,37,69,.3)}
+.card h3{font:700 19.5px/1.25 var(--disp);letter-spacing:-.024em;flex:1}
+.tagx{font:600 9.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  border-radius:99px;padding:4px 10px;background:var(--soft);color:var(--bronze);white-space:nowrap}
+.tagx.free{background:#e6f4ec;color:#1f7a4d}
+.card p{font:400 14.8px/1.55 var(--disp);color:var(--ink2)}
+.card .go{display:flex;align-items:center;gap:7px;margin-top:14px;
+  font:500 12px var(--mono);letter-spacing:.04em;color:var(--plum)}
+.card .go svg{transition:transform .3s var(--ease)}
+.card:hover .go svg{transform:translateX(4px)}
+/* ---- command blocks ----
+   A room reads these off a phone with one hand. They wrap instead of scrolling sideways,
+   because a horizontally scrolling command hides its own tail, which is exactly the part
+   people get wrong. Tapping anywhere on the block copies it: retyping a URL from a phone
+   is how a setup step turns into a support message. */
+.cmd{display:block;width:100%;text-align:left;border:0;cursor:pointer;
+  font:500 12.5px/1.62 var(--mono);background:#171419;color:#f4efe9;
+  padding:13px 15px;border-radius:11px;margin-top:13px;
+  word-break:break-all;overflow-wrap:anywhere;position:relative;
+  transition:background .18s var(--ease)}
+.cmd:hover{background:#221d24}
+.cmd::after{content:"TAP TO COPY";position:absolute;top:9px;right:12px;
+  font:600 8.5px var(--mono);letter-spacing:.14em;color:#8f8579}
+.cmd.done::after{content:"COPIED";color:var(--gold)}
+.cmd b{display:block;font:600 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;
+  color:#8f8579;margin-bottom:7px}
+.note{font:400 14px/1.55 var(--disp);color:var(--ink3);margin-top:11px}
+.note a{color:var(--plum);font-weight:600;box-shadow:inset 0 -1px 0 rgba(138,90,43,.5)}
+@media(max-width:560px){.cmd{font-size:11.5px;padding:12px 13px}
+  .cmd::after{position:static;display:block;margin-top:9px;opacity:.75}}
+.code{display:inline-block;font:500 13px var(--mono);background:var(--plum);color:#fff;
+  padding:6px 13px;border-radius:8px;margin-top:12px;letter-spacing:.06em;
+  box-shadow:0 8px 18px -8px rgba(74,37,69,.55)}
+
+/* ---------- whatsapp ---------- */
+.wa{border-radius:20px;padding:32px 26px;text-align:center;color:#fff;position:relative;
+  overflow:hidden;background:radial-gradient(120% 130% at 50% 0%,#5d3157 0%,#3a1c35 55%,#241220 100%)}
+.wa::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.08;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.6'/></svg>")}
+.wa h3{font:700 23px var(--disp);letter-spacing:-.028em;margin-bottom:9px;position:relative}
+.wa p{font:400 14.8px/1.58 var(--disp);color:rgba(255,255,255,.76);max-width:350px;
+  margin:0 auto 20px;position:relative}
+.wa a{position:relative;display:inline-flex;align-items:center;gap:9px;background:var(--wa);
+  color:#06301a;font:700 15px var(--disp);padding:14px 28px;border-radius:99px;
+  box-shadow:0 14px 30px -12px rgba(37,211,102,.6);transition:transform .3s var(--ease)}
+.wa a:hover{transform:translateY(-2px)}
+
+/* ---------- footer ---------- */
+footer{padding:42px 0 64px;text-align:center;border-top:1px solid var(--line);margin-top:24px}
+footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+
+/* ---------- reveal ----------
+   Content is visible by default. It only starts hidden when JS is confirmed running
+   (html.js) AND motion is allowed. If JS breaks, IntersectionObserver never fires, or
+   the visitor prefers reduced motion, the page still reads.
+   Transition, not keyframes, on purpose: a frozen keyframe animation holds its first
+   frame and outranks a plain declaration, which can leave content invisible. */
+.js .rv{opacity:0;transform:translateY(16px);
+  transition:opacity .65s var(--ease),transform .65s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .js .rv{opacity:1;transform:none;transition:none}
+  .card,.card::before,h1 em{transition:none}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- icons ---------- */
+.ico svg{display:block}
+.ico .st{fill:none;stroke:var(--plum);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ico .st2{fill:none;stroke:var(--bronze);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ico .fillac{fill:var(--bronze)}
+
+/* ---------- phone ----------
+   This page is reached by scanning a code from a seat, so the phone view is the real
+   view, not the fallback. */
+@media(max-width:560px){
+  .wrap{padding:0 17px}
+  /* on a phone the badge, the icon, the title and the tag do not fit on one line, and the
+     titles were breaking after a word. The number already anchors a step card, so the icon
+     plate stands down there and the row fits. Measured, not guessed. */
+  .card .stepn ~ .ico{display:none}
+  .card .top{gap:11px}
+  .tagx{font-size:9px;padding:4px 8px}
+  header{padding:52px 0 32px}
+  h1{font-size:35px;letter-spacing:-.036em}
+  .lede{font-size:16.5px}
+  section{padding:26px 0}
+  .card{padding:20px 19px 18px;border-radius:16px}
+  .card h3{font-size:18px}
+  .card .ico{width:42px;height:42px}
+  .card p{font-size:14.5px}
+  .sechead h2{font-size:21px}
+  .wa{padding:28px 21px}
+}
+</style>
+</head>
+<body>
+
+<div id="prog"><i></i></div>
+
+<div class="wrap">
+
+<header>
+  <div class="kick rv">Create Stunning Product Videos with Claude Code</div>
+  <h1 class="rv">Everything from the talk,<br><em>in one place</em></h1>
+  <p class="lede rv">Three commands and an ASIN. That is the whole setup you just watched.
+  Do them in this order and your first film is about forty minutes away.</p>
+  <p class="need rv">You need <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener">Claude Code</a>
+  installed first, and a <a href="https://genrupt.com/" target="_blank" rel="noopener">Genrupt account</a> with credits on it.
+  Everything below runs inside Claude Code.</p>
+</header>
+
+<section>
+  <div class="sechead rv"><h2>Start here</h2><span class="rule"></span><span>three commands</span></div>
+  <div class="cards">
+
+    <div class="card rv">
+      <div class="top"><span class="stepn">1</span><span class="ico" data-ico="access"></span>
+        <h3>Connect the engine</h3><span class="tagx">Once, forever</span></div>
+      <p>This is the line from the talk. It gives Claude Code hands: from here it can read a
+      listing, pull the gallery, scrape the reviews, price a render and generate video.</p>
+      <button class="cmd" data-copy="claude mcp add --transport http --scope user genrupt https://genrupt.com/api/agent/mcp"><b>In your terminal</b>claude mcp add --transport http --scope user genrupt https://genrupt.com/api/agent/mcp</button>
+      <p class="note">Then quit and reopen Claude Code, and ask it for your credit balance. If it
+      answers with a number, you are connected.</p>
+    </div>
+
+    <div class="card rv">
+      <div class="top"><span class="stepn">2</span><span class="ico" data-ico="skills"></span>
+        <h3>Install the autopilot</h3><span class="tagx free">Free skill</span></div>
+      <p>The whole process from the talk, written down once: research, brief, references, probe,
+      render, analysis, repairs, music, text and voice. Yours, no strings.</p>
+      <button class="cmd" data-copy="npx skills add https://jaygptpro.com/video-autopilot/asin-to-video-autopilot.zip -g -a claude-code"><b>In your terminal</b>npx skills add https://jaygptpro.com/video-autopilot/asin-to-video-autopilot.zip -g -a claude-code</button>
+      <p class="note">One green line means it worked. Quit and reopen Claude Code again, because
+      skills are only picked up on a fresh start.</p>
+    </div>
+
+    <div class="card rv">
+      <div class="top"><span class="stepn">3</span><span class="ico" data-ico="spark"></span>
+        <h3>Make your first video</h3><span class="tagx">40 min, unattended</span></div>
+      <p>Pick the product you know best. You will catch what is wrong faster than any checklist,
+      and that is the whole point of the first run.</p>
+      <button class="cmd" data-copy="/asin-to-video-autopilot B0XXXXXXXXX"><b>In Claude Code</b>/asin-to-video-autopilot B0XXXXXXXXX</button>
+      <p class="note">It asks one question, once: your spending limit per video. After that it
+      works alone, reports every expense as it happens, and stops before it can cross the limit.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sechead rv"><h2>If something does not run</h2><span class="rule"></span><span>the long version</span></div>
+  <div class="cards">
+
+    <a class="card rv" href="/video-autopilot/">
+      <div class="top"><span class="ico" data-ico="brief"></span>
+        <h3>The full walk-through</h3><span class="tagx">Six steps</span></div>
+      <p>The same setup with every screen, what to do when npx will not run, how to let Claude
+      install the missing pieces on your machine, and straight answers to what it costs.</p>
+      <span class="go">jaygptpro.com/video-autopilot <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
+    </a>
+
+  </div>
+</section>
+
+<section>
+  <div class="sechead rv"><h2>Want the whole creative team?</h2><span class="rule"></span><span>the bootcamp</span></div>
+  <div class="cards">
+
+    <a class="card rv" href="/wonka/">
+      <div class="top"><span class="ico" data-ico="quality"></span>
+        <h3>The Wonka Creative Bootcamp</h3></div>
+      <p>Ten days. We build your creative employee together, on your own product: images,
+      A plus content and video. The machine is yours to keep.</p>
+      <span class="go">jaygptpro.com/wonka <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></span>
+    </a>
+
+  </div>
+</section>
+
+<footer><p>Jay Margaliot</p></footer>
+
+</div>
+
+<script>
+const ICONS={
+identity:`<circle class="st" cx="24" cy="17" r="7.5"/><path class="st" d="M10.5 38c0-6.9 6-11.5 13.5-11.5S37.5 31.1 37.5 38"/><circle class="fillac" cx="36" cy="12" r="2.6"/>`,
+skills:`<path class="st" d="M12 14h10v10H12zM26 14h10v10H26zM12 28h10v10H12z"/><path class="st2" d="M26 28h10v10H26z"/>`,
+brief:`<path class="st" d="M14 9h14l8 8v22H14z"/><path class="st2" d="M20 22h11M20 28h11M20 34h7"/>`,
+access:`<circle class="st" cx="17" cy="24" r="7"/><path class="st" d="M24 24h15M34 24v6M39 24v4"/>`,
+spark:`<path class="st" d="M24 8l3.5 9.5L37 21l-9.5 3.5L24 34l-3.5-9.5L11 21l9.5-3.5z"/><circle class="fillac" cx="36" cy="36" r="2.4"/>`,
+quality:`<path class="st" d="M24 9l13 5v10c0 8-5.6 13.5-13 16-7.4-2.5-13-8-13-16V14z"/><path class="st2" d="M18 24l4.5 4.5L31 20"/>`};
+document.querySelectorAll('.ico[data-ico]').forEach(e=>{
+  e.innerHTML=`<svg width="26" height="26" viewBox="0 0 48 48">${ICONS[e.dataset.ico]||''}</svg>`});
+
+/* Reveal on scroll, with three ways out so content can never get stuck hidden:
+   1. no IntersectionObserver support  2. reduced motion  3. a hard 2.5s deadline */
+const rv=[...document.querySelectorAll('.rv')];
+const showAll=()=>rv.forEach(e=>e.classList.add('in'));
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if(!('IntersectionObserver' in window)||reduce){
+  showAll();
+}else{
+  const io=new IntersectionObserver(es=>es.forEach((e,n)=>{
+    if(e.isIntersecting){e.target.style.transitionDelay=(n*70)+'ms';e.target.classList.add('in');io.unobserve(e.target)}
+  }),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+  rv.forEach(e=>io.observe(e));
+  /* safety net: whatever happens, nothing stays invisible past 2.5 seconds */
+  setTimeout(showAll,2500);
+}
+
+const bar=document.querySelector('#prog i');
+const onScroll=()=>{const d=document.documentElement;
+  const max=d.scrollHeight-innerHeight;
+  bar.style.width=(max>0?(d.scrollTop/max)*100:0)+'%'};
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* tap a command to copy it. Something you have to retype from a phone is something you
+   get wrong, and every one of these is a URL or a flag. */
+document.querySelectorAll('.cmd').forEach(el=>{
+  el.addEventListener('click',ev=>{ev.preventDefault();
+    navigator.clipboard?.writeText(el.dataset.copy||'').then(()=>{
+      el.classList.add('done');setTimeout(()=>el.classList.remove('done'),1500)}).catch(()=>{});
+  });
+});
+
+/* tap the coupon to copy it. A code you have to retype from a phone is a code you lose. */
+document.querySelectorAll('.code').forEach(el=>{
+  el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();
+    const t=el.textContent;
+    navigator.clipboard?.writeText(t).then(()=>{el.textContent='Copied';
+      setTimeout(()=>el.textContent=t,1400)}).catch(()=>{});
+  });
+});
+</script>
+</body>
+</html>
