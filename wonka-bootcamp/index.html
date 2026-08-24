@@ -371,6 +371,11 @@ header.portal-header::after{
 .btn-signout{background:transparent;border:1px solid rgba(243,233,210,.24);color:var(--cream-dim);border-radius:8px;padding:7px 14px;font-size:.8rem;font-family:var(--font-body)}
 .btn-signout:hover{color:var(--cream);border-color:rgba(243,233,210,.5)}
 .btn-signout:active{transform:translateY(1px)}
+/* On desktop the wrapper is invisible to layout: its two children stay direct flex
+   items of the header, exactly as before. The account button is mobile-only. */
+.header-acct{display:contents}
+.acct-btn{display:none}
+:root{--acct-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5c0-3-4-5.5-9-5.5Z'/%3E%3C/svg%3E")}
 
 /* --- sticky day navigation strip (slate chips + ticket punch) --- */
 #day-strip{
@@ -1588,13 +1593,42 @@ html.js.reveal-all .reveal{opacity:1 !important;transform:none !important}
 @media(max-width:760px){
   html{scroll-padding-top:118px}
   header.portal-header{gap:4px 8px;padding:8px 14px 6px}
+  /* AUDIT 7: identity folds into one 36px button; progress gets the whole row. */
+  .acct-btn{
+    display:flex;align-items:center;justify-content:center;margin-left:auto;
+    width:36px;height:36px;border-radius:50%;flex:0 0 auto;
+    background:var(--gold-grad);background-size:200% 200%;
+    border:1px solid rgba(228,180,108,.6);
+  }
+  .acct-btn::after{
+    content:"";width:15px;height:15px;
+    background:#3A2312;-webkit-mask:var(--acct-icon) center/contain no-repeat;
+            mask:var(--acct-icon) center/contain no-repeat;
+  }
+  .acct-btn[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(245,184,65,.3)}
+  .header-acct{
+    display:none;position:absolute;top:100%;right:12px;z-index:10;
+    flex-direction:column;align-items:stretch;gap:8px;
+    padding:10px;border-radius:12px;
+    background:rgba(18,8,24,.97);backdrop-filter:blur(10px);
+    border:1px solid rgba(184,115,51,.55);box-shadow:0 12px 30px rgba(0,0,0,.55);
+  }
+  .header-acct.open{display:flex}
   .ticket-chip{margin-left:0}
-  .ticket-chip-inner{max-width:150px}
-  .header-progress .rooms-lit{display:none}
-  .header-progress .bar{width:78px}
+  .ticket-chip-inner{max-width:210px}
+  .btn-signout{min-height:44px}
+  .header-progress{flex:1 1 100%;gap:8px}
+  .header-progress .bar{flex:1;width:auto}
   #day-strip{gap:5px}
   /* no map on a phone, so no doors into it */
   #day-strip .map-btn,#nav-map{display:none}
+  /* AUDIT 10: the "?" sat on top of the day card. It now tucks away while the
+     reader is scrolling down and comes back the moment they stop or scroll up. */
+  #support-fab{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));
+    transition:transform .22s ease,opacity .22s ease}
+  #support-fab.fab-tucked{transform:translateY(92px);opacity:0;pointer-events:none}
+  #fab-btn{width:48px;height:48px}
+  #fab-btn::after{font-size:1.3rem}
   #path-under{stroke-width:20}
   #path-cobble{stroke-width:9}
   #path-bricks{stroke-width:6;stroke-dasharray:9 7}
@@ -1796,7 +1830,13 @@ body:has(#app.viewing-day) #film-grain{display:none}
   font-family:var(--font-display);font-weight:700;font-variation-settings:'opsz' 70;
   font-size:clamp(1.5rem,3.4vw,1.95rem);line-height:1.12;color:var(--room-ink);margin:0 0 12px;
 }
-.dv2-promise{font-size:.99rem;line-height:1.68;color:var(--room-ink2);margin:0 0 26px}
+/* AUDIT 6: this paragraph runs to 170 words on Day 1 and it is the first thing
+   read after the room portrait. promiseHtml() breaks it into a lead line plus
+   two-sentence paragraphs. No word of Jay's copy changes, only where it breathes. */
+.dv2-promise-block{margin:0 0 26px}
+.dv2-promise{font-size:.99rem;line-height:1.68;color:var(--room-ink2);margin:0 0 13px}
+.dv2-promise:last-child{margin-bottom:0}
+.dv2-promise.lead{font-size:1.08rem;color:var(--room-ink);font-weight:500;margin-bottom:15px}
 
 /* ---------- lessons ---------- */
 .dv2-lesson{margin-bottom:26px}
@@ -1991,8 +2031,13 @@ body:has(#app.viewing-day) #film-grain{display:none}
 @media (max-width:640px){
   #app.viewing-day #day-view{padding:34px 16px 90px}
   .dv2-head{margin-bottom:26px}
-  .dv2-line{gap:8px}
-  .dv2-line i{width:8px}
+  /* AUDIT 9: this used to wrap and leave PROVE alone on a second row. One line,
+     always: no wrapping, and a clamp so the type shrinks instead of breaking. */
+  .dv2-line{
+    gap:6px;flex-wrap:nowrap;
+    font-size:clamp(.44rem,2.05vw,.62rem);letter-spacing:.12em;
+  }
+  .dv2-line i{width:7px}
   .dv3-hero{min-height:280px;border-radius:16px}
   .dv3-hero-in{padding:90px 18px 20px;gap:9px}
   .dv2-ep{padding:30px 20px 22px;border-radius:16px}
@@ -2514,13 +2559,20 @@ html.map-booting #map3d-stage::after{
 <div id="app">
   <header class="portal-header">
     <div class="header-brand">The <span>Wonka</span> Creative Bootcamp</div>
-    <div class="ticket-chip"><div class="ticket-chip-inner" id="chip-email">ticket holder</div></div>
+    <!-- AUDIT 7: on a phone the email and Sign out took two whole rows and the
+         progress bar got a sliver. .header-acct is display:contents on desktop, so
+         the layout there is unchanged; under 760px it becomes a small popover behind
+         the account button and progress takes the row it frees. -->
+    <button class="acct-btn" id="acct-btn" aria-label="Your account" aria-expanded="false" aria-controls="header-acct"></button>
+    <div class="header-acct" id="header-acct">
+      <div class="ticket-chip"><div class="ticket-chip-inner" id="chip-email">ticket holder</div></div>
+      <button class="btn-signout" id="btn-signout">Sign out</button>
+    </div>
     <div class="header-progress">
       <span class="rooms-lit">Rooms Lit</span>
       <div class="bar"><i id="progress-bar"></i></div>
       <em id="progress-label" class="mono">0 / 10</em>
     </div>
-    <button class="btn-signout" id="btn-signout">Sign out</button>
     <!-- sticky day navigation: buttons rendered by renderDayStrip() -->
     <nav id="day-strip" aria-label="Day navigation"></nav>
   </header>
@@ -2845,7 +2897,7 @@ const DAYS = [
         resources: [
           // hashed filename: the zip sits in a public folder, so a guessable name let
           // anyone download the paid kit without buying
-          { name: 'wonka-starter-kit.zip', url: 'wonka-starter-kit-816c7e1caa.zip' },
+          { name: 'wonka-starter-kit.zip', url: 'wonka-starter-kit-971bc1d1fc.zip' },
           'The OpenAI key and verification walkthrough',
           'Genrupt account setup',
           'The product photo shot list',
@@ -4759,7 +4811,7 @@ function renderDay(dayNum) {
     html += '<article class="dv2-ep reveal">';
     html += '<div class="dv2-eptag">Episode ' + ep.num + '</div>';
     html += '<h2 class="dv2-eptitle">' + escapeHtml(ep.title) + '</h2>';
-    html += '<p class="dv2-promise">' + escapeHtml(ep.promise) + '</p>';
+    html += promiseHtml(ep.promise);
 
     ep.lessons.forEach((ls, li) => {
       const gaugeKey = 'ep' + ep.num + '-l' + li;
@@ -5291,6 +5343,33 @@ function firstUnlockedIncompleteDay() {
   return d ? d.day : (progress.currentDay || 1);
 }
 
+/* ---------- AUDIT 6: the day's opening paragraph, broken into readable pieces ----------
+   One sentence as a lead, then two sentences per paragraph. Sentence splitting is done
+   with a plain match, not a lookbehind, so older Safari is not a question. If the text is
+   short enough not to be a wall, it is left exactly as it was. */
+function promiseHtml(text) {
+  const raw = String(text || '').trim();
+  const parts = (raw.match(/[^.!?]+[.!?]+["'\u201d\u2019)]*\s*/g) || []).map((p) => p.trim()).filter(Boolean);
+  const joined = parts.join(' ');
+  if (parts.length < 4 || joined.length < raw.length - 2) {
+    return '<div class="dv2-promise-block"><p class="dv2-promise">' + escapeHtml(raw) + '</p></div>';
+  }
+  // Fixed pairs left one 77-word paragraph behind, because the sentences are uneven.
+  // Group on a word budget instead: keep adding sentences while the paragraph stays
+  // under 55 words. A single sentence longer than that is left alone; shortening it
+  // would mean rewriting Jay's copy, which this is not allowed to do.
+  const words = (t) => t.split(/\s+/).length;
+  const groups = [];
+  for (let i = 1; i < parts.length; i++) {
+    const last = groups[groups.length - 1];
+    if (last && words(last + ' ' + parts[i]) <= 55) groups[groups.length - 1] = last + ' ' + parts[i];
+    else groups.push(parts[i]);
+  }
+  let html = '<div class="dv2-promise-block"><p class="dv2-promise lead">' + escapeHtml(parts[0]) + '</p>';
+  groups.forEach((g) => { html += '<p class="dv2-promise">' + escapeHtml(g) + '</p>'; });
+  return html + '</div>';
+}
+
 /* ---------- floating support button (honest disabled WhatsApp state) ---------- */
 function wireSupportFab() {
   const fab = $('support-fab'), btn = $('fab-btn'), menu = $('fab-menu');
@@ -5315,6 +5394,38 @@ function wireSupportFab() {
   document.addEventListener('click', (e) => {
     if (!fab.contains(e.target)) { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
   });
+
+  /* AUDIT 10: on a phone this button overlapped the day card. Tuck it away while the
+     reader scrolls DOWN, bring it back on any upward scroll or once they stop. Never
+     tuck it while its own menu is open. */
+  let lastY = window.scrollY, tuckTimer = 0;
+  const isPhone = () => window.matchMedia('(max-width:760px)').matches;
+  window.addEventListener('scroll', () => {
+    if (!isPhone() || menu.classList.contains('open')) { fab.classList.remove('fab-tucked'); return; }
+    const y = window.scrollY;
+    if (y > lastY + 6 && y > 140) fab.classList.add('fab-tucked');
+    else if (y < lastY - 6) fab.classList.remove('fab-tucked');
+    lastY = y;
+    clearTimeout(tuckTimer);
+    tuckTimer = setTimeout(() => fab.classList.remove('fab-tucked'), 850);
+  }, { passive: true });
+}
+
+/* ---------- AUDIT 7: the header's account popover (phone only) ---------- */
+function wireAccountMenu() {
+  const btn = $('acct-btn'), box = $('header-acct');
+  if (!btn || !box || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  const close = () => { box.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = box.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', (e) => {
+    if (!box.contains(e.target) && e.target !== btn) close();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 }
 
 /* ---------- watermark rotation (top-right <-> bottom-right every 18s) ---------- */
@@ -5984,6 +6095,7 @@ function finishEnter() {
   $('app').classList.add('active');
   startWatermarkRotation();
   wireSupportFab();
+  wireAccountMenu();
 
   // one-time hero key-light sweep on the marquee title
   if (!REDUCED) {
