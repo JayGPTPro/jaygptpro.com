@@ -295,6 +295,37 @@ for (const e of ['hub@buyer.com', 'a1@gmail.com', 'a2@gmail.com']) {
   check(`${e} keeps Donna`, r?.addon_donna === true, JSON.stringify(r));
 }
 
+console.log('\n9b2. An alias parked on \'unknown\' still keeps the human\'s Donna access');
+// Izzy Benoliel, 24.8.2026. He bought Donna in April on an Outlook address and had
+// his Gmail linked so he could sign in. The Gmail row sat on 'unknown'. When he
+// bought Wonka, the cluster repair moved that row to wonka_r1 and dropped Donna,
+// because it asked whether THIS ROW had a Donna round and 'unknown' is excluded on
+// purpose. But the entitlement belongs to the human, not the row, and 'unknown' is
+// what an unrepaired row looks like. He lost Donna on the only address he can sign
+// in with, on the day he paid us again.
+reset();
+DB.allowed_emails.push({ email: 'payer2@buyer.com', round: 'round1', addon_donna: false,
+  welcome_email_sent_at: 'x', stripe_payment_id: 'pi_old' });
+DB.allowed_emails.push({ email: 'signin2@gmail.com', round: 'unknown', addon_donna: false,
+  primary_email: 'payer2@buyer.com', welcome_email_sent_at: null });
+res = await post(session('payer2@buyer.com'));
+let unknownAlias = DB.allowed_emails.find(r => r.email === 'signin2@gmail.com');
+check('the alias enters Wonka', unknownAlias?.round === 'wonka_r1', JSON.stringify(unknownAlias));
+check('and keeps the Donna the paying row has', unknownAlias?.addon_donna === true, JSON.stringify(unknownAlias));
+
+console.log('\n9b3. Donna is NOT invented for a cluster that never bought it');
+reset();
+DB.allowed_emails.push({ email: 'nodonna@buyer.com', round: 'unknown', addon_donna: false,
+  welcome_email_sent_at: 'x', stripe_payment_id: 'pi_old' });
+DB.allowed_emails.push({ email: 'nodonna2@gmail.com', round: 'unknown', addon_donna: false,
+  primary_email: 'nodonna@buyer.com', welcome_email_sent_at: null });
+res = await post(session('nodonna@buyer.com'));
+for (const e of ['nodonna@buyer.com', 'nodonna2@gmail.com']) {
+  const r = DB.allowed_emails.find(x => x.email === e);
+  check(`${e} enters Wonka`, r?.round === 'wonka_r1', JSON.stringify(r));
+  check(`${e} gets no free Donna`, r?.addon_donna !== true, JSON.stringify(r));
+}
+
 console.log('\n9c. A brand new buyer who happens to be somebody\'s alias target');
 reset();
 DB.allowed_emails.push({ email: 'ghost@gmail.com', round: 'round2', addon_donna: false, primary_email: 'fresh@buyer.com', welcome_email_sent_at: null });

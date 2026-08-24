@@ -279,6 +279,34 @@ async function claimRowForRound(
   return { ok: true, before: prior };
 }
 
+// Does this HUMAN have Donna, anywhere in their cluster?
+//
+// The entitlement belongs to the person, not to one row. claimRowForRound can only
+// see the row in front of it, and a row parked on 'unknown' looks identical to a row
+// that never bought anything, so it dropped Donna from the very address the customer
+// signs in with. Izzy Benoliel hit this on 24.8.2026: he bought Donna in April on an
+// Outlook address, had his Gmail linked so he could sign in at all, and the Gmail row
+// sat on 'unknown'. Buying Wonka moved that row to wonka_r1 and took his Donna away.
+//
+// This still never invents access. It needs a real Donna round or an addon_donna
+// already set somewhere in the cluster; a cluster that is all 'unknown' answers no.
+//
+// Reads one row at a time rather than an .in() filter, reusing the exact query shape
+// claimRowForRound already runs in production. Clusters hold one to three addresses
+// and this runs once per purchase.
+async function clusterHasDonna(supabase: SupabaseClient, cluster: string[]): Promise<boolean> {
+  for (const addr of cluster) {
+    const { data, error } = await supabase
+      .from('allowed_emails').select('round, addon_donna').eq('email', addr.toLowerCase()).maybeSingle();
+    if (error) { console.error('cluster donna read failed:', addr, error); continue; }
+    if (!data) continue;
+    if (data.addon_donna) return true;
+    const round = String(data.round || '');
+    if (round && !isWonkaRound(round) && round !== 'unknown') return true;
+  }
+  return false;
+}
+
 // Refunds decide access PER PRODUCT, not per person.
 //
 // This used to ask "does this human have any non-refunded payment at all", which is
@@ -784,9 +812,13 @@ Deno.serve(async (req: Request) => {
           // buyer too: they may already appear as somebody's alias.
           if (isWonkaRound(allowedEmailsRound)) {
             const cluster = await identityCluster(supabase, lowerEmail);
+            // Ask the whole cluster about Donna, not each row on its own. See
+            // clusterHasDonna: the paying row has already been repaired by here, so
+            // a returning Donna member's entitlement is visible to every alias.
+            const donnaForCluster = tookDonnaAddon || await clusterHasDonna(supabase, cluster);
             const others = cluster.filter(e => e !== lowerEmail);
             for (const other of others) {
-              const res = await claimRowForRound(supabase, other, allowedEmailsRound, tookDonnaAddon);
+              const res = await claimRowForRound(supabase, other, allowedEmailsRound, donnaForCluster);
               if (!res.ok) {
                 // 500 so Stripe retries. Every write here is idempotent, and a half
                 // repaired cluster is exactly the silent lockout this block exists to stop.
