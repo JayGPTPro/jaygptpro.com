@@ -9,10 +9,10 @@
    ============================================================ */
 
 /* ---------- the painted world ---------- */
-const MAP_IMG = 'map-art/map-final-v8.webp';
+const MAP_IMG = 'map-art/map-final-v9.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-23-k';
+export const BUILD = 'art-2026-08-25-a';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -422,7 +422,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=12';
+    img.src = MAP_IMG + '?v=13';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
   /* Distances ALONG THE PATH are measured in the authoring reference frame, never
