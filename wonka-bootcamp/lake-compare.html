@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>The chocolate lake . three ways</title>
+<style>
+  :root{--ink:#150A1C;--ink2:#1E0F28;--cream:#F5E9D6;--gold:#F5B841;
+        --bronze:#8A5424;--plum:#3A2347;--muted:#C9A96A}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--cream);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  header{padding:30px 20px 6px;text-align:center}
+  h1{margin:0 0 6px;font:600 28px/1.2 Georgia,serif;color:var(--gold)}
+  .sub{margin:0;color:var(--muted);font-size:15px}
+  .wrap{max-width:1500px;margin:22px auto 0;padding:0 16px}
+  .modes{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+  .modes button{appearance:none;cursor:pointer;font:600 14px/1 inherit;letter-spacing:.03em;
+       padding:11px 18px;border-radius:999px;border:1px solid var(--bronze);
+       background:transparent;color:var(--cream);transition:.18s}
+  .modes button:hover{border-color:var(--gold);color:var(--gold)}
+  .modes button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#2A1508}
+  .zoomrow{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
+  .zoomrow button{appearance:none;cursor:pointer;font:600 12px/1 inherit;letter-spacing:.12em;
+       text-transform:uppercase;padding:9px 15px;border-radius:999px;
+       border:1px solid rgba(138,84,36,.6);background:transparent;color:var(--muted)}
+  .zoomrow button[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
+  .frame{position:relative;border:3px solid var(--bronze);border-radius:12px;overflow:hidden;
+         background:#000;aspect-ratio:3/2}
+  .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+             transform-origin:53% 55%;transition:transform .35s ease;opacity:0}
+  .frame img.on{opacity:1}
+  .frame.zoom img{transform:scale(2.15)}
+  .tag{position:absolute;top:12px;left:12px;z-index:2;padding:6px 13px;border-radius:999px;
+       font:600 12px/1 inherit;letter-spacing:.10em;text-transform:uppercase;
+       background:rgba(21,10,28,.85);border:1px solid var(--bronze);color:var(--gold)}
+  .note{max-width:760px;margin:18px auto 0;color:var(--muted);font-size:15px;text-align:center}
+  .note b{color:var(--cream)}
+  .foot{max-width:760px;margin:26px auto 70px;color:#8f7a5d;font-size:13.5px;
+        line-height:1.7;text-align:center}
+  @media(max-width:700px){h1{font-size:22px}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The chocolate lake, three ways</h1>
+  <p class="sub">Same island, same light. Only the lake changes.</p>
+</header>
+
+<div class="wrap">
+  <div class="modes" role="group" aria-label="Which lake">
+    <button data-k="v9" aria-pressed="true">1 . boats and Oompas (live now)</button>
+    <button data-k="v10a" aria-pressed="false">2 . no boats, spouts stay</button>
+    <button data-k="v10b" aria-pressed="false">3 . clean lake</button>
+  </div>
+  <div class="zoomrow" role="group" aria-label="How close">
+    <button data-z="0" aria-pressed="true">Whole island</button>
+    <button data-z="1" aria-pressed="false">In on the lake</button>
+  </div>
+
+  <div class="frame" id="frame">
+    <span class="tag" id="tag">1 . boats and Oompas</span>
+    <img id="i-v9"   class="on" src="map-art/map-final-v9.webp?v=13"   alt="The lake with the boats and Oompa crews">
+    <img id="i-v10a"          src="map-art/map-final-v10a.webp?v=1"  alt="The lake with no boats, chocolate spouts kept">
+    <img id="i-v10b"          src="map-art/map-final-v10b.webp?v=1"  alt="The lake clean, nothing on it">
+  </div>
+
+  <p class="note" id="note"><b>Live now.</b> Two brass boats with Oompa crews, two chocolate
+    spouts. The crews were repainted this morning, and they are still the only thing on the
+    island that has to be looked at twice.</p>
+</div>
+
+<p class="foot">Whichever you pick, the ambient loop gets re-rendered from that painting, so
+  the waterfall and the smoke keep moving. The map itself is unchanged everywhere else.</p>
+
+<script>
+  var NOTES = {
+    v9:   '<b>Live now.</b> Two brass boats with Oompa crews, two chocolate spouts. The crews were repainted this morning, and they are still the only thing on the island that has to be looked at twice.',
+    v10a: '<b>No boats, no Oompas.</b> The two chocolate spouts stay, so the lake still reads as poured chocolate rather than a flat brown shape. Nothing small enough to go blurry when it moves.',
+    v10b: '<b>Nothing on it at all.</b> One unbroken surface. Calmest of the three, and the emptiest: past the waterfall, that whole middle of the island is now one colour.'
+  };
+  var TAGS = { v9:'1 . boats and Oompas', v10a:'2 . no boats, spouts stay', v10b:'3 . clean lake' };
+  var frame = document.getElementById('frame'), tag = document.getElementById('tag'), note = document.getElementById('note');
+  var mbtn = document.querySelectorAll('.modes button'), zbtn = document.querySelectorAll('.zoomrow button');
+
+  // Cross-fading three stacked <img> beats swapping one src: the browser never shows a
+  // blank frame mid-swap, so the three are actually comparable.
+  mbtn.forEach(function (b) {
+    b.addEventListener('click', function () {
+      mbtn.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      ['v9', 'v10a', 'v10b'].forEach(function (k) {
+        document.getElementById('i-' + k).classList.toggle('on', k === b.dataset.k);
+      });
+      tag.textContent = TAGS[b.dataset.k];
+      note.innerHTML = NOTES[b.dataset.k];
+    });
+  });
+  zbtn.forEach(function (b) {
+    b.addEventListener('click', function () {
+      zbtn.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      frame.classList.toggle('zoom', b.dataset.z === '1');
+    });
+  });
+</script>
+
+</body>
+</html>
