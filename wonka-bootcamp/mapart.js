@@ -9,10 +9,10 @@
    ============================================================ */
 
 /* ---------- the painted world ---------- */
-const MAP_IMG = 'map-art/map-final-v9.webp';
+const MAP_IMG = 'map-art/map-final-v10b.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-25-b';
+export const BUILD = 'art-2026-08-26-a';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -259,19 +259,21 @@ const LANTERNS = [
   [0.396, 0.715], [0.601, 0.712], [0.408, 0.852], [0.592, 0.845],
   [0.455, 0.318], [0.600, 0.315], [0.205, 0.905], [0.777, 0.688],
 ];
-/* spots where the chocolate visibly churns: waterfall base + the mid-river fountain */
+/* the one spot where the chocolate visibly churns: the waterfall base. The second
+   entry was the mid-lake fountain, which no longer exists. */
 const RIPPLES = [
-  [0.530, 0.300], [0.440, 0.435],
+  [0.530, 0.300],
 ];
 /* the churn pool under the waterfall . the ONLY area where the chocolate itself
    is warped (Jay: the sign and the boats must never wobble) */
 const FLOW = [
   [0.532, 0.238, 0.042], [0.529, 0.272, 0.056], [0.523, 0.306, 0.064],
 ];
-/* painted features that drifting glints must never cross (boats + gate sign) */
+/* painted features that drifting glints must never cross.
+   Was three boxes: two boats and the gate sign. Jay took the boats off the lake on
+   26.8, so the two that fenced them off are gone with them . a coordinate pinned to a
+   picture leaves when the picture does. The sign stays: it is lettering. */
 const KEEPOUT = [
-  [0.350, 0.390, 0.525, 0.570],
-  [0.415, 0.510, 0.605, 0.680],
   [0.390, 0.670, 0.640, 0.810],
 ];
 
@@ -315,7 +317,7 @@ export async function mount(container, api, opts) {
      look wrong on the current art). Reduced-motion users always get the still.
      The canvas fx (stars/smoke/lanterns) are suspended while the video plays .
      the film already contains that life, and doubling smoke reads as haze. */
-  const DEFAULT_LOOP = '18';
+  const DEFAULT_LOOP = '19';
   const vidPick = /[?&]still\b/.test(location.search) ? null
     : ((/[?&]vid=([1-9][0-9]?)\b/.exec(location.search) || [])[1] || DEFAULT_LOOP);
   let vid = null, vidLive = false;
@@ -422,7 +424,7 @@ export async function mount(container, api, opts) {
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = () => reject(new Error('map art failed to load'));
-    img.src = MAP_IMG + '?v=13';
+    img.src = MAP_IMG + '?v=14';
   });
   const NAT_W = img.naturalWidth, NAT_H = img.naturalHeight;
   /* Distances ALONG THE PATH are measured in the authoring reference frame, never
