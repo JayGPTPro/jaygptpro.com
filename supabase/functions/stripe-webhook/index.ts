@@ -79,8 +79,15 @@ const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
 // The plink arrives on the webhook payload itself and needs no API call.
 const WONKA_PRODUCTS = new Set(['prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q']);
 const WONKA_PLINKS = new Set([
-  'plink_1U1vCERqcDuiISNTjqJvj1P5', // Golden Ticket
+  'plink_1U1vCERqcDuiISNTjqJvj1P5', // Golden Ticket, $697 less WONKA200
   'plink_1TxmiPRqcDuiISNTKsKrn7Lz', // The Private Tour
+  // Golden Ticket at $497 flat, no coupon. WONKA200 is a fixed $200 USD discount and
+  // Stripe cannot express that in a buyer's local currency, so under Adaptive Pricing
+  // it silently fails to apply and they are left looking at $697. This link carries
+  // the discount in the price instead. Same product, so it resolves either way; it is
+  // listed here because the product route goes blind when the Stripe line-items call
+  // fails, and that is exactly when a Wonka buyer gets filed into a Donna cohort.
+  'plink_1U8laoRqcDuiISNT1xwjgIAy',
 ]);
 function isWonkaRound(round: string): boolean {
   return !!round && round.startsWith('wonka');

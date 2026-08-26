@@ -524,5 +524,34 @@ check('lands on wonka_r1 from the product alone', row?.round === 'wonka_r1', JSO
 check('gets the Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 check('and no Donna welcome', !sendState.calls.some(c => c.url.includes('send-welcome-donna') && !c.url.includes('addon')), JSON.stringify(sendState.calls.map(c => c.url)));
 
+console.log('\n13. The flat $497 link is never filed into a Donna cohort');
+// The product route is the normal one, but it needs the Stripe line-items API. With
+// no STRIPE_SECRET_KEY, or a 5xx from Stripe, it returns [] and goes blind. The plink
+// guard is what stops a Wonka buyer being swept into whichever Donna cohort is open
+// that week, so every Wonka link has to be listed in it, this one included.
+//
+// Note what "correct" means here. The guard cannot know WHICH Wonka round from a
+// plink alone, so it refuses with a 500 and lets Stripe retry, rather than guessing.
+// Against the code before this link was registered, the same purchase landed in
+// wk_2026_08_31 with a Donna welcome already sent, which is the failure worth having
+// a test for.
+reset();
+sendState.stripeLineItems = []; // blind product lookup
+const flat = session('flat497@buyer.com', 49700);
+(flat.data.object as any).payment_link = 'plink_1U8laoRqcDuiISNT1xwjgIAy';
+res = await post(flat);
+row = DB.allowed_emails.find(r => r.email === 'flat497@buyer.com');
+check('refuses so Stripe retries', res.status === 500, `got ${res.status}`);
+check('is NOT filed into a Donna cohort', !row || String(row.round || '').startsWith('wonka'), JSON.stringify(row));
+check('and no welcome was sent on a guess', sendState.calls.length === 0, JSON.stringify(sendState.calls.map(c => c.url)));
+
+// and once the line-items call works again, the retry resolves it properly
+sendState.stripeLineItems = [GOLDEN];
+res = await post(flat);
+row = DB.allowed_emails.find(r => r.email === 'flat497@buyer.com');
+check('the retry lands them on wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('with the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
