@@ -507,5 +507,22 @@ res = await post(session('addonfail@buyer.com', 74700));
 check('the retry delivers it', sendState.calls.filter(c => c.url.includes('donna-addon')).length === 2, JSON.stringify(sendState.calls.map(c => c.url)));
 check('and does not send a second Wonka welcome', sendState.calls.filter(c => c.url.includes('send-welcome-wonka')).length === 1, JSON.stringify(sendState.calls.map(c => c.url)));
 
+console.log('\n12. A Checkout Session created through the API carries NO payment_link');
+// The Golden Ticket link runs Stripe Adaptive Pricing, and a USD amount-off coupon
+// cannot be expressed in the buyer's local currency, so WONKA200 fails to apply for
+// anyone outside the US who is offered their own currency. The workaround is a
+// one-off session built through the API with adaptive pricing off. Those sessions
+// have no payment_link at all, so the round has to resolve from the PRODUCT.
+reset();
+sendState.stripeLineItems = [GOLDEN];
+const noLink = session('nolink@buyer.com', 49700);
+delete (noLink.data.object as any).payment_link;
+res = await post(noLink);
+row = DB.allowed_emails.find(r => r.email === 'nolink@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('lands on wonka_r1 from the product alone', row?.round === 'wonka_r1', JSON.stringify(row));
+check('gets the Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
+check('and no Donna welcome', !sendState.calls.some(c => c.url.includes('send-welcome-donna') && !c.url.includes('addon')), JSON.stringify(sendState.calls.map(c => c.url)));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
