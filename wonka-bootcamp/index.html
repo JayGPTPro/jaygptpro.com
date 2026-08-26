@@ -1880,6 +1880,45 @@ body:has(#app.viewing-day) #film-grain{display:none}
 }
 .dv2-poster small{font-family:var(--font-mono);font-size:.6rem;color:rgba(243,233,210,.42);letter-spacing:.05em}
 
+/* ---------- the written walkthrough that sits under every lesson film ---------- */
+/* The video and this panel are two independent paths through the same day: the film
+   owns judgment (what good looks like, why he refuses), this panel owns the strings
+   you cannot copy out of a video. Either one alone has to get a student through. */
+.dv2-sop{margin:14px 0 4px;border:1px solid var(--hair);border-radius:12px;background:linear-gradient(170deg,rgba(243,233,210,.05),rgba(31,14,43,.35));overflow:hidden}
+.dv2-sop>summary{list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;color:var(--brass-light);transition:background .2s}
+.dv2-sop>summary::-webkit-details-marker{display:none}
+.dv2-sop>summary:hover{background:rgba(184,115,51,.08)}
+.dv2-sop>summary .sop-chev{transition:transform .25s;font-size:.9rem;color:var(--brass)}
+.dv2-sop[open]>summary .sop-chev{transform:rotate(90deg)}
+.dv2-sop>summary .sop-hint{margin-left:auto;color:var(--cream-dim);opacity:.62;letter-spacing:.06em;text-transform:none;font-size:.66rem}
+.sop-body{padding:2px 18px 20px;border-top:1px solid rgba(184,115,51,.18)}
+.sop-intro{color:var(--cream-dim);font-size:.92rem;line-height:1.65;margin:14px 0 6px;opacity:.85}
+.sop-step{margin-top:20px}
+.sop-step h5{font-family:var(--font-display);font-weight:600;font-size:1rem;color:var(--cream);margin-bottom:8px;display:flex;gap:10px;align-items:baseline}
+.sop-step h5 .sop-num{font-family:var(--font-mono);font-size:.7rem;color:var(--acc,var(--gold));opacity:.9;flex:none;font-variant-numeric:tabular-nums}
+.sop-step p{color:var(--cream-dim);font-size:.93rem;line-height:1.72;margin:8px 0}
+.sop-step ul,.sop-step ol{margin:8px 0 8px 2px;padding-inline-start:20px}
+.sop-step li{color:var(--cream-dim);font-size:.93rem;line-height:1.7;margin:5px 0}
+.sop-step b,.sop-step strong{color:var(--cream);font-weight:600}
+.sop-step code{font-family:var(--font-mono);font-size:.84em;background:rgba(0,0,0,.34);border:1px solid rgba(184,115,51,.22);border-radius:5px;padding:1px 6px;color:var(--gold)}
+.sop-cmd{display:flex;align-items:flex-start;gap:10px;background:rgba(0,0,0,.42);border:1px solid rgba(184,115,51,.3);border-radius:9px;padding:12px 13px;margin:10px 0}
+.sop-cmd code{background:none;border:0;padding:0;color:var(--gold);white-space:pre-wrap;word-break:break-word;flex:1;font-size:.84rem;line-height:1.6}
+.sop-copy{flex:none;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--brass-light);background:rgba(184,115,51,.12);border:1px solid rgba(184,115,51,.4);border-radius:6px;padding:6px 11px;cursor:pointer;transition:all .18s}
+.sop-copy:hover{background:var(--brass);color:#1a0f22;border-color:var(--brass)}
+.sop-copy.done{background:var(--mint);border-color:var(--mint);color:#0d2b22}
+.sop-note{border-radius:9px;padding:12px 14px;margin:11px 0;font-size:.9rem;line-height:1.68}
+.sop-note.warn{background:rgba(224,53,107,.09);border:1px solid rgba(224,53,107,.32);color:var(--cream-dim)}
+.sop-note.ok{background:rgba(62,207,163,.08);border:1px solid rgba(62,207,163,.3);color:var(--cream-dim)}
+.sop-note b,.sop-note strong{color:var(--cream)}
+.sop-link{display:inline-block;margin:9px 0 2px;font-size:.87rem;color:var(--gold);border-bottom:1px solid rgba(245,184,65,.4);padding-bottom:1px;text-decoration:none}
+.sop-link:hover{border-bottom-color:var(--gold)}
+.sop-tablewrap{overflow-x:auto;margin:11px 0;-webkit-overflow-scrolling:touch}
+.sop-table{border-collapse:collapse;width:100%;min-width:420px;font-size:.87rem}
+.sop-table th,.sop-table td{border:1px solid rgba(184,115,51,.22);padding:8px 11px;text-align:left;vertical-align:top;color:var(--cream-dim);line-height:1.6}
+.sop-table th{background:rgba(184,115,51,.12);color:var(--cream);font-weight:600;font-size:.82rem}
+.dv2-sop.is-day{margin:26px 0 8px}
+@media(max-width:760px){.sop-body{padding:2px 13px 16px}.dv2-sop>summary{font-size:.62rem;padding:12px 13px}}
+
 /* ---------- missions: the punch card, clean ---------- */
 .dv2 .punch-card{
   position:relative;background:var(--room-hi);border:1px solid var(--room-line);
@@ -4783,6 +4822,94 @@ function lightGradBulbs() {
    ============================================================ */
 function projLensSvg() { return ''; }
 
+/* ============================================================
+   SOP: the written walkthrough under each lesson film.
+   Source of truth is wonka-starter-kit/guides/episodeN-guide.md . this is that
+   guide rendered into the room, so a student who cannot use the video (noisy
+   office, weak audio, wants to copy a prompt) still has a complete path.
+   RULE: the film owns judgment, this panel owns every string you must type.
+   ============================================================ */
+const SOP = {"d1l1": {"intro": "Nothing to install in this lesson. Watch it, then keep these two ideas.","steps": [{"t": "Your employee is a folder","b": ["Not a metaphor. It is a folder on your Desktop. Inside it sits a character file that says who he is, a set of skills that are things he knows how to do, and a `factory/` of folders where his work lives.","**The folder you open in Claude is the employee you are talking to.** Open the Wonka folder, you are talking to Wonka. That is the whole trick.","No app to log into. No dashboard, no website, no seat to buy. Copy the folder and you copy your Creative Director."]},{"t": "What he does alone, and what stops for you","b": [{"table": [["He does this on his own","He stops and waits for you"],["Research and analysis","Anything that spends money, with the cost shown first"],["Generating from an approved brief","Approving the brief itself"],["Quality checks on everything he makes","Choosing which candidates go to testing"],["Fixing small defects","Picking the final winner"],["The paperwork and the provenance","Anything that touches your live listing"]]},"You talk to him the way you talk to your photographer and your graphic designer. **He does the work. You approve it.**"]},{"t": "The five things that make him an employee","b": [{"ul": ["**Identity.** A character, a voice, and standards he will not drop. That is a file.","**Skills.** Sixteen of them. Each one is a single command that replaces a paragraph of instructions.","**Quality control.** He checks his own work before you see it.","**Learning.** Two notebooks: what wins in the market, and how he himself works better.","**Access.** Two machines he operates himself. You wire them in Lesson 5."]}]}]},"d1l2": {"intro": "Orientation only. Nothing to do here except know where the week goes.","steps": [{"t": "Ten rooms, one per day","b": ["Underneath the ten rooms sit five stations, and they are the actual method: **Research, Brief, Invent, Inspect, Prove.**",{"table": [["Day","Room","What comes out"],["1","The Front Gate","A live factory, both machines warm"],["2","The Research Room","What your buyers actually complain about"],["3","The Creative Brief","Your whole product page, planned"],["4","The Reference Room","The machines know YOUR product, proved by a test"],["5","The Main Image Room","A tray of candidates, your pick, and the quality loop"],["6","The Secondary Images Room","The gallery, built as a team"],["7","The A Plus Room","The second page under your bullets"],["8","The Tasting Room","A hundred tasters vote"],["9","The Variations Room","One winner becomes a shelf"],["10","The Improvement Loop","Ship, and the factory gets smarter"]]}]},{"t": "The two loops that repeat","b": ["**The quality loop.** Every asset is inspected before you see it, scored, squint tested at the size a phone actually shows it, and fixed if it fails. Learned properly on Day 5, then it just runs.","**The learning loop.** Every result is written into two notebooks. It is why your second product costs a fraction of your first.","Nothing ships uninspected, and nothing is learned twice."]}]},"d1l3": {"intro": "Five minutes of theory so nothing in the setup feels like jargon. Nothing to install.","steps": [{"t": "Socket one: the connector","b": ["Genrupt plugs in as a **connector**, on the Connectors screen inside Claude. You add it once, approve it, and from that moment Wonka operates the machine himself. You never visit Genrupt to make an image.","The technical name for this kind of plug is **MCP**. Every time a guide says MCP it means exactly this: a connector on the Connectors screen. That is the whole mystery."]},{"t": "Socket two: the API key","b": ["ChatGPT is a chat for PEOPLE. An API key is a door for SOFTWARE: it lets a program, Wonka in our case, use the same machines directly, with no chat window.",{"ul": ["**It has its own balance**, separate from any ChatGPT subscription, loaded in dollars and spent in cents. Paying for ChatGPT gives the key nothing.","**It is a password.** Anyone holding it can spend your balance, which is why it lives in a file and never gets printed back at you.","**It is made once and shown once**, at platform.openai.com. You copy it into the kit and forget it."]}]},{"t": "The two, side by side","b": [{"table": [["","Connector (Genrupt)","API key (OpenAI)"],["Where it lives","The Connectors screen in Claude","A `.env` file inside the kit"],["How often you touch it","Once, then never","Once, then never"],["What it feels like","Plugging in an appliance","Handing over a spare key"],["What Wonka does with it","Drives the image factory","Runs edits and the Tasting Room"]]}]}]},"d1l4": {"intro": "About 45 minutes, and most of it is waiting for downloads and taking photos. One item punishes you days later if you skip it, and it is flagged twice below.","steps": [{"t": "Key 1. Claude Pro or Max, plus the app","b": ["The room your employee lives in. The free plan does not give you what this bootcamp needs, so upgrade before going further. Install Claude Desktop.","Claude Code in the terminal works identically if you prefer it."]},{"t": "Key 2. The kit, on your Desktop","b": [{"ol": ["Download `wonka-starter-kit.zip` from the button at the top of this room","Unzip it to your **Desktop**, not Downloads","Open Claude Desktop, go to the **Code** tab, and open the `Wonka` folder","**Do not chat yet.** That is Lesson 5"]},"Have a look inside while you are there. `.claude/` holds his character and his sixteen skills. `factory/` is where all his work will live. `guides/` is the written version of every day. That folder is the employee."]},{"t": "Key 3. Your Genrupt account (signup only today)","b": ["Genrupt is the image machine, and the reason it gets a dedicated machine instead of any generic image AI is one thing: **it locks your real product.** Generic models will happily draw something that resembles your item. On Amazon that is worthless.","Use the bootcamp link from your welcome email, because that is what attaches your included access. Confirm your email, sign in once, and leave. You connect it in Lesson 5.",{"link": {"href": "kit-pages-e7c41b/genrupt-setup.html","label": "Genrupt account setup, click by click"}}]},{"t": "Key 4. Your OpenAI API key, and the verification that bites later","b": ["One key, four rooms: the Main Image Room, where his blast runs beside Genrupt's on Day 5; the Variations Room's edit path on Day 9; the Fixing Room where edits cost cents; and the Tasting Room where about a hundred tasters cost a few dollars.",{"ol": ["Go to **platform.openai.com** and sign in. This is a different thing from a ChatGPT subscription","**API keys**, then **Create new secret key**. Copy it immediately, it is shown once","Save it somewhere safe. Never paste it into a chat, a screenshot, or a screen recording","**Start organization verification NOW.** Settings, Organization, Verify. ID and a selfie check","Load **$10 to $20** of credit"]},{"warn": "Read this twice. Until verification clears, your key works perfectly for text and silently refuses to make images. Everything looks fine. People skip it, then discover it on Day 5 with a main image batch stopped. Start it today, in this session, before you close the tab."},{"link": {"href": "kit-pages-e7c41b/openai-key.html","label": "The OpenAI key and verification walkthrough, with an error table"}}]},{"t": "Key 5. Your pilot product, and real photos of it","b": ["Pick **one** product. Not your catalogue. One you actually care about moving. Then photograph it: your phone, plain background, daylight, about twenty minutes.",{"ol": ["**Front**","**Back.** Do not skip it. Skip it and the model invents one","**Left side**","**Right side**","**Top down.** This is what fixes proportions","**Your hand holding it.** Scale is the single thing AI gets most wrong about products"]},"Plus two that pay for themselves: a **label close up** and a **texture close up**.",{"link": {"href": "kit-pages-e7c41b/shot-list.html","label": "The product photo shot list, one page"}}]},{"t": "And your packaging, which most people forget","b": ["Photograph the box, pouch, sleeve or tin the same way: **front, back, and the label panel.** Name the files so they read as packaging: `box-front.jpg`, `box-back.jpg`, `label-panel.jpg`.","This is not an optional extra and it is not the same as the product shots. Packaging travels its own separate channel inside the machine, and it drives one of the ways your hero image can be built. A hero showing the real retail box is a legitimate, often high-converting strategy, and it is simply unavailable to you if the box is not in the folder.","If your product genuinely has no packaging a buyer would ever see, skip it on purpose rather than by forgetting.",{"ok": "One rule explains all of them: whatever your photos do not show, the model will invent. Not maybe. Always."}]},{"t": "If the product is not in your hands","b": ["Use your listing gallery images plus photos customers posted inside their reviews, and tell Wonka plainly that is what they are. He records it as a real limitation instead of pretending the reference is complete, and the smoke test on Day 4 becomes non negotiable.","Jay is in exactly this position with the demo product all week, and shows you what it costs him rather than editing around it."]}]},"d1l5": {"intro": "About 20 minutes for the machines, then 30 to 40 for the basket. Every command below is here to be copied.","steps": [{"t": "Say hello (this is also your kit test)","b": ["Open the `Wonka` folder in Claude's Code tab, start a **new** conversation, and type:",{"cmd": "Hello! Who are you and what is this place?"},"He should answer in character, tell you the factory is empty, and point at the next step.",{"warn": "If he answers like normal Claude, your folder is not really loaded. Close it, reopen the Wonka folder, and start a NEW conversation. This is the single most common Day 1 issue."}]},{"t": "Try to skip the line","b": ["Worth doing once, because it shows you what you actually bought:",{"cmd": "Skip all the research stuff. Just make me 8 beautiful images for my\nproduct right now."},"He will refuse, politely and completely. Every generic AI tool would have handed you eight shiny useless images. That refusal is the difference between a tool and an employee."]},{"t": "Wire machine 1: Genrupt","b": ["Genrupt connects through an **MCP**, which means Wonka can operate the tool himself from inside your chat. No tab switching, no copy paste. He drives.","Genrupt keeps the current connection values in their own docs. In Claude: **Settings**, then **Connectors**, add it with those values.",{"warn": "Then quit Claude completely and reopen it. Not just the window. Cmd+Q on Mac, tray icon quit on Windows. Nine out of ten missing connectors are exactly this."}]},{"t": "Wire machine 2: your OpenAI key","b": ["The rule from Lesson 4 was: never paste the key into a chat, a screenshot, or a screen recording. **That includes this chat.** A key pasted here lives in the transcript forever, and if you ever record or share your Day 1 session, you have broadcast it.","So the key goes into a file, and Wonka opens that file for you:",{"cmd": "Prepare the .env file for my OpenAI key and open it for me. I will paste the\nkey into the file myself."},"He creates the file with a placeholder, opens it in your text editor, and tells you exactly what to replace. You paste the key THERE, save, and tell him done. He verifies it without ever printing it back: he reports only that it is present, its length, and its last four characters.",{"ok": "Already pasted your key into the chat? No drama, one fix: let Wonka store it, then go to platform.openai.com, API keys, revoke that key and make a new one, and wire the new one through the file. Thirty seconds, and the transcript now holds a dead key."}]},{"t": "Machine 3: Python, and you probably already have it","b": ["Two of the factory's rooms run real code on your own computer. The Tasting Room scores a hundred tasters, the Variations Room measures drift, and both are Python. A Mac already has it, so for most people this is a thirty second check and nothing to install. Paste this and read the answer:",{"cmd": "python3 -c \"import sys,importlib.util; v=sys.version_info; print('python','.'.join(map(str,v[:3])),'OK' if v>=(3,9) else 'TOO OLD, need 3.9+'); [print(m, 'ok' if importlib.util.find_spec(m) else 'MISSING') for m in ('openai','numpy','PIL','dotenv')]\""},"On Windows, type `python` instead of `python3`.",{"ul": ["**`python 3.9` or higher, and four `ok` lines.** Nothing to do. Carry on.","**Anything says MISSING.** One line fixes all four: `python3 -m pip install openai numpy pillow python-dotenv`","**TOO OLD, or the command is not found at all.** Install Python from python.org. On Windows, tick **Add Python to PATH** in the installer, or the command stays not-found afterwards."]}]},{"t": "Let him check his own machines","b": ["The settings say connected. This factory has a rule you will hear all week: **we do not trust labels, we verify.**",{"cmd": "/machines-check"},"He runs a real handshake against Genrupt, reads your credit balance as a fuel gauge, checks the OpenAI key is present, and gives a verdict per machine: PASS, FAIL, or SKIPPED, with the exact fix attached to any failure.",{"ok": "Every \"it is not working\" problem this bootcamp will ever hand you starts here. /machines-check first, then debug."}]},{"t": "The First Candy","b": ["A handshake cannot prove OpenAI will let your key actually make an image. Only generating can. So when he offers it:",{"cmd": "Yes, print the First Candy."},"A few cents, one small welcome card, saved to `output/first-candy.png`. It proves the whole pipeline end to end: key, billing, verification, generation.",{"warn": "If it fails here, that is the good outcome. Day 1, with the fix one click away, instead of Day 5 with a batch stopped. Almost always it is verification. Wonka names which machine is cold and what to check."}]},{"t": "Register your product at the gate","b": ["Tomorrow your product walks through the gate, and Wonka will not move until he has material. So the last stop of today is registering the product. One command:",{"cmd": "/meet-my-product"},"Five things happen, and then he stops:",{"ol": ["**He asks for the product identity in one message:** ASIN, full Amazon URL, marketplace, brand, and your niche in your own words. Answer all of it.","**He reads your listing title back to you.** One transposed character in an ASIN registers a stranger's listing, and this read-back is what catches it.","**He opens your product's folder inside the factory:** `1-inputs/` for your files, `2-reference/photos/` for your photos, `2-reference/brand/` for your logo, plus the rooms every later day writes into.","**He starts the owner interview:** what you know works, what must appear, what to avoid. **\"I don't have that\" is a real answer** and Wonka records it rather than inventing it.","**He hands you the shopping list** and stops. Day 1 ends there. Day 2 opens as an interview about what you brought."]}]},{"t": "Fill the basket tonight","b": ["Straight into the folders he just opened.",{"ol": ["**Your listing** into `1-inputs/`: the URL or the ASIN in a text file.","**`1-inputs/reviews.txt`.** About 10 positive and about 10 critical.","**`1-inputs/competitors/`.** Three to five competitors in the same **niche**, not the same keyword. The comparison strip on your own listing is the best place to find real ones. Screenshot each of their full galleries, plus a text file of their URLs.","**`2-reference/photos/`.** The shots from Key 5, plus your packaging shots, or the honest fallback.","**`2-reference/brand/`.** Your logo file, brand colors or fonts, an existing brand guide if one exists.","**`1-inputs/notes.txt`** with your owner intel: what customers ask you over and over, what comes back in returns and why, what you tried that failed, anything you are not allowed to claim."]},{"warn": "Be logged in on amazon.com when you copy reviews. Logged out, the page shows a handful and skews positive, and the whole value of tomorrow lives in the critical ones. Sort by Most recent, copy ten. Filter to Critical, copy ten more. Do not tidy, do not summarise, do not drop the angry ones. The angry ones are the material."},{"link": {"href": "kit-pages-e7c41b/shopping-list.html","label": "The Front Gate shopping list, one page"}}]}]},"d1": {"intro": "","steps": [{"t": "Common mistakes, and what they look like","b": [{"table": [["Symptom","Cause","Fix"],["Wonka sounds like a generic chatbot","The kit folder is not really loaded","Code tab, folder picker shows `Wonka`, reopen it, start a NEW conversation"],["A slash command does nothing","It was described instead of typed","Type it as its own message, starting with the slash: `/machines-check`"],["The Genrupt machine does not appear at all","Claude was not fully quit","Cmd+Q on Mac, tray icon quit on Windows, reopen, run `/machines-check` again"],["Genrupt connects but calls fail","Session or key issue","Log in to genrupt.com in your browser once, retry. If it persists, regenerate the API key and re enter it"],["First Candy fails with a verification error","Organization verification has not cleared","platform.openai.com, Settings, Organization, Verify. Then `/machines-check` again"],["\"No API key\"","The key is not where Wonka looks","Redo Key 4, then its wiring in Lesson 5, then `/machines-check`"],["You cannot see the `.claude` folder","Dot folders are hidden","Mac: Cmd+Shift+. in Finder. Windows: File Explorer, View, Hidden items"],["Your listing shows only about eight reviews","You are logged out","Log in and sort by most recent and by critical, or pull from Seller Central"]]},"The full list lives in `guides/troubleshooting.md` inside your kit. If something is genuinely stuck, post the exact error in the group. Setup friction is the one thing worth interrupting anybody for."]},{"t": "What this bootcamp will cost","b": ["Genrupt usage is included with your ticket. You bring your own Claude subscription and your own OpenAI credit.",{"table": [["Item","When","Typical cost"],["Claude Pro or Max","ongoing","$20 per month and up. Your own subscription, separate from the bootcamp"],["Genrupt usage","included with your ticket","1,000 credits. On average enough for 2 to 3 products"],["OpenAI credit","the fixing and tasting days","$10 to $20 loaded. Cents per edit, a few dollars per race"]]},"For scale: one professionally designed listing image runs $50 to $200, and a full untested set runs $500 to $1500. You are building the factory, not paying per candy.","A standing rule: Wonka never spends your money silently, and he never stalls the line asking the same question twice. There is ONE pre-authorisation point, your approval of the creative brief on Day 3, and it covers the planned flow that follows it. A short named list still waits for a fresh yes every time: a 100-credit Draft Blast, any re-spend on a slot that already produced candidates, a Tasting Round, a paid edit batch, and anything at all when your balance will not cover it. Silence is never a yes."]},{"t": "Before you close the laptop","b": [{"ok": "Do not open Day 2 until /machines-check passes. Not because anyone is strict, because tomorrow spends real credits and a cold machine wastes them."},"One habit worth forming today: tell Wonka where you are in the lessons. He will ask once which day you have watched up to, and from then on he paces the factory with you. It is a recommendation, never a lock: \"let's just continue\" always continues."]}]}};
+
+/* tiny inline formatter: **bold** and `code` only, everything else escaped */
+function sopFmt(t){
+  let h = escapeHtml(String(t));
+  h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return h;
+}
+function sopBlock(b){
+  if (typeof b === 'string') return '<p>' + sopFmt(b) + '</p>';
+  if (b.ul) return '<ul>' + b.ul.map(function(x){return '<li>' + sopFmt(x) + '</li>';}).join('') + '</ul>';
+  if (b.ol) return '<ol>' + b.ol.map(function(x){return '<li>' + sopFmt(x) + '</li>';}).join('') + '</ol>';
+  if (b.cmd) return '<div class="sop-cmd"><code>' + escapeHtml(b.cmd) + '</code>' +
+    '<button class="sop-copy" type="button">Copy</button></div>';
+  if (b.warn) return '<div class="sop-note warn">' + sopFmt(b.warn) + '</div>';
+  if (b.ok) return '<div class="sop-note ok">' + sopFmt(b.ok) + '</div>';
+  if (b.link) return '<a class="sop-link" href="' + escapeHtml(b.link.href) + '" target="_blank" rel="noopener">' + escapeHtml(b.link.label) + ' &rarr;</a>';
+  if (b.table) return '<div class="sop-tablewrap"><table class="sop-table">' +
+    b.table.map(function(row, i){
+      const cell = i === 0 ? 'th' : 'td';
+      return '<tr>' + row.map(function(c){return '<' + cell + '>' + sopFmt(c) + '</' + cell + '>';}).join('') + '</tr>';
+    }).join('') + '</table></div>';
+  return '';
+}
+function sopCopy(btn){
+  const code = btn.parentNode.querySelector('code');
+  const txt = code.innerText;
+  let settled = false;
+  const flag = function(label){
+    if (settled) return; settled = true;
+    btn.textContent = label;
+    btn.classList.add('done');
+    setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1800);
+  };
+  const done = function(){ flag('Copied'); };
+  // some embedded browsers never settle the clipboard promise, so the sync path
+  // is raced in behind it rather than left as a rejection-only fallback
+  const fallback = function(){ if (!settled) sopCopyFallback(txt, code, flag); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch(e) { fallback(); }
+    setTimeout(fallback, 350);
+  } else { fallback(); }
+}
+function sopCopyFallback(txt, code, flag){
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.setAttribute('readonly',''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (ok) { flag('Copied'); return; }
+  // last resort: never claim a copy that did not happen. Select it for the user.
+  try {
+    const r = document.createRange(); r.selectNodeContents(code);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    flag('Selected . press Cmd+C');
+  } catch(e) { flag('Select it manually'); }
+}
+document.addEventListener('click', function(e){
+  const b = e.target.closest ? e.target.closest('.sop-copy') : null;
+  if (b) { e.preventDefault(); sopCopy(b); }
+});
+
+/* key: "d1l3" for a lesson panel, "d1" for the day-level reference desk */
+function sopHtml(key, opts){
+  const s = SOP[key];
+  if (!s || !s.steps || !s.steps.length) return '';
+  opts = opts || {};
+  let h = '<details class="dv2-sop' + (opts.day ? ' is-day' : '') + '"><summary><span class="sop-chev" aria-hidden="true">&#9656;</span>' +
+    (opts.label || 'The written walkthrough') +
+    '<span class="sop-hint">' + (opts.hint || 'every step, and every prompt to copy') + '</span></summary><div class="sop-body">';
+  if (s.intro) h += '<p class="sop-intro">' + sopFmt(s.intro) + '</p>';
+  s.steps.forEach(function(st, i){
+    h += '<div class="sop-step"><h5><span class="sop-num">' + (i + 1) + '</span><span>' + sopFmt(st.t) + '</span></h5>';
+    st.b.forEach(function(b){ h += sopBlock(b); });
+    h += '</div>';
+  });
+  return h + '</div></details>';
+}
+
 function renderDay(dayNum) {
   const d = DAYS.find((x) => x.day === dayNum);
   if (!d) return;
@@ -4873,6 +5000,7 @@ function renderDay(dayNum) {
       }
       html += '<div class="wm" data-email="' + escapeHtml(userEmail || '') + '"><i class="rec-dot"></i></div>';
       html += '</div></div>';
+      html += sopHtml('d' + dayNum + 'l' + (li + 1));
       html += '</div>';
     });
 
@@ -4902,6 +5030,10 @@ function renderDay(dayNum) {
         }
       });
       html += '</div>';
+    }
+    if (epIdx === d.episodes.length - 1) {
+      html += sopHtml('d' + dayNum, { day: true, label: 'The reference desk',
+        hint: 'what goes wrong, what it costs, and the rule before you close the laptop' });
     }
     html += '</article>';
   });
