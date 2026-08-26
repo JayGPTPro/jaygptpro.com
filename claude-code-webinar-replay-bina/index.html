@@ -6,7 +6,7 @@
     <title>פספסת את הוובינר? עוד אפשר להצטרף לאתגר | Jay Margaliot</title>
     <meta name="description" content="הקלטה מלאה של הוובינר 'קלוד קוד . השלב הבא של AI'. הצצה לאתגר 5 הימים בעברית עם מנדי קוריץ וג'יי מרגליות.">
     <meta property="og:title" content="פספסת את הוובינר? צפה בהקלטה ותצטרף לאתגר">
-    <meta property="og:description" content="הוובינר המלא. הצצה לאתגר 5 הימים. זמין רק עד יום ראשון 11:00.">
+    <meta property="og:description" content="הוובינר המלא. הצצה לאתגר 5 הימים בעברית עם מנדי קוריץ וג'יי מרגליות.">
     <meta property="og:image" content="https://jaygptpro.com/claude-code-challenge-bina/og-image.png">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -675,17 +675,11 @@ img { display: block; max-width: 100%; }
     <div class="wrap hero-inner">
         <div class="hero-badge">
             <span class="pulse-dot"></span>
-            <span>הקלטה זמינה לזמן מוגבל</span>
+            <span>ההקלטה המלאה של הוובינר</span>
         </div>
 
         <h1>פספסתם את הוובינר? <span class="hl">הנה ההקלטה.</span></h1>
-        <p class="hero-sub">הוובינר המלא, "קלוד קוד . השלב הבא של AI", עם מנדי קוריץ וג'יי מרגליות. הדגמות חיות, התקנה, ועוד. ההקלטה זמינה רק עד יום ראשון 11:00 בבוקר.</p>
-
-        <!-- Countdown -->
-        <div class="countdown-bar">
-            <span class="countdown-bar-label">ההקלטה תוסר בעוד:</span>
-            <span class="countdown-bar-timer" id="replayTimer">00:00:00:00</span>
-        </div>
+        <p class="hero-sub">הוובינר המלא, "קלוד קוד . השלב הבא של AI", עם מנדי קוריץ וג'יי מרגליות. הדגמות חיות, התקנה, ועוד.</p>
 
         <!-- Video Embed -->
         <div class="video-wrap">
@@ -717,7 +711,7 @@ img { display: block; max-width: 100%; }
             <!-- Big countdown + social proof -->
             <div class="big-timer-box">
                 <div class="big-timer-badges">
-                    <span class="badge-last">⚠ סבב אחרון</span>
+                    <span class="badge-last">הסבב הקרוב</span>
                     <span class="badge-proof">מעל 250 השלימו את האתגר בסבבים הקודמים</span>
                 </div>
                 <div class="big-timer-label">האתגר מתחיל בעוד</div>
@@ -730,7 +724,7 @@ img { display: block; max-width: 100%; }
                     <div class="big-timer-sep">:</div>
                     <div class="big-timer-unit"><span class="big-timer-num" id="bt-s">00</span><span class="big-timer-cap">שניות</span></div>
                 </div>
-                <div class="big-timer-foot">יום ראשון, 24 במאי . 11:00 בבוקר . אחרי זה ההרשמה נסגרת לתמיד</div>
+                <div class="big-timer-foot" id="startLine">יום ראשון . 11:00 בבוקר . ההרשמה נסגרת עם פתיחת האתגר</div>
             </div>
 
             <!-- What's Inside -->
@@ -760,7 +754,7 @@ img { display: block; max-width: 100%; }
             </p>
 
             <div class="challenge-round">
-                <span>סבב הקרוב: 24-28 במאי . ח'-י"ב סיוון</span>
+                <span id="roundLine">סבב הקרוב</span>
             </div>
         </div>
     </div>
@@ -779,36 +773,111 @@ img { display: block; max-width: 100%; }
 </footer>
 
 <script>
-// Countdown to Sunday May 24, 2026 11:00 Israel time (UTC+3)
-function updateReplayTimer() {
-    const target = new Date('2026-05-24T11:00:00+03:00').getTime();
-    const now = Date.now();
-    const diff = target - now;
-    const el = document.getElementById('replayTimer');
-    const pad = n => String(n).padStart(2, '0');
+// ===== Evergreen dates: the challenge always starts the upcoming Sunday, 11:00 Israel time =====
+const IL_TZ = 'Asia/Jerusalem';
+const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const HEB_MONTHS_HE = {
+    'Tishri':'תשרי','Heshvan':'חשוון','Kislev':'כסלו','Tevet':'טבת','Shevat':'שבט',
+    'Adar':'אדר','Adar I':'אדר א׳','Adar II':'אדר ב׳','Nisan':'ניסן','Iyar':'אייר',
+    'Sivan':'סיוון','Tamuz':'תמוז','Av':'אב','Elul':'אלול'
+};
+const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-    if (diff <= 0) {
-        if (el) el.textContent = 'ההקלטה הוסרה';
-        ['bt-d','bt-h','bt-m','bt-s'].forEach(id => {
-            const e = document.getElementById(id);
-            if (e) e.textContent = '00';
-        });
-        return;
+// Wall-clock time in Israel for a given instant
+function ilParts(ts) {
+    const p = {};
+    new Intl.DateTimeFormat('en-US', {
+        timeZone: IL_TZ, hour12: false, weekday: 'short',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    }).formatToParts(new Date(ts)).forEach(x => p[x.type] = x.value);
+    return { y:+p.year, m:+p.month, d:+p.day, hh:+(p.hour === '24' ? 0 : p.hour), mi:+p.minute, se:+p.second, wd:p.weekday };
+}
+// Israel UTC offset at that instant (handles the IST/IDT switch on its own)
+function ilOffset(ts) {
+    const p = ilParts(ts);
+    return Date.UTC(p.y, p.m - 1, p.d, p.hh, p.mi, p.se) - Math.floor(ts / 1000) * 1000;
+}
+// Israel wall clock -> real timestamp
+function ilWallToTs(y, m, d, hh) {
+    const wall = Date.UTC(y, m - 1, d, hh, 0, 0);
+    let ts = wall;
+    for (let i = 0; i < 3; i++) ts = wall - ilOffset(ts);
+    return ts;
+}
+// The next Sunday 11:00 Israel time that is still ahead of us
+function nextSundayStart() {
+    const now = Date.now();
+    const p = ilParts(now);
+    const add = (7 - WEEKDAYS.indexOf(p.wd)) % 7;
+    let ts = ilWallToTs(p.y, p.m, p.d + add, 11);
+    if (ts <= now) ts = ilWallToTs(p.y, p.m, p.d + add + 7, 11);
+    return ts;
+}
+// Hebrew numerals (gematria) for a day of the Hebrew month
+function gematria(n) {
+    const ones = ['','א','ב','ג','ד','ה','ו','ז','ח','ט'];
+    const tens = ['','י','כ','ל'];
+    let out = '';
+    if (n === 15) out = 'טו';
+    else if (n === 16) out = 'טז';
+    else out = tens[Math.floor(n / 10)] + ones[n % 10];
+    if (out.length === 1) return out + '׳';
+    return out.slice(0, -1) + '"' + out.slice(-1);
+}
+function hebDate(ts) {
+    const p = {};
+    new Intl.DateTimeFormat('en-u-ca-hebrew', { timeZone: IL_TZ, day: 'numeric', month: 'long' })
+        .formatToParts(new Date(ts)).forEach(x => p[x.type] = x.value);
+    return { d: gematria(+p.day), m: HEB_MONTHS_HE[p.month] || p.month };
+}
+
+let startTs = nextSundayStart();
+
+function renderDates() {
+    const s = ilParts(startTs);
+    const endTs = startTs + 4 * 86400000;          // Sunday -> Thursday
+    const e = ilParts(endTs);
+    const hs = hebDate(startTs), he = hebDate(endTs);
+
+    const startLine = document.getElementById('startLine');
+    if (startLine) {
+        startLine.textContent = `יום ראשון, ${s.d} ב${MONTHS_HE[s.m - 1]} . 11:00 בבוקר . ההרשמה נסגרת עם פתיחת האתגר`;
     }
+    const roundLine = document.getElementById('roundLine');
+    if (roundLine) {
+        const greg = (s.m === e.m)
+            ? `${s.d}-${e.d} ב${MONTHS_HE[s.m - 1]}`
+            : `${s.d} ב${MONTHS_HE[s.m - 1]} - ${e.d} ב${MONTHS_HE[e.m - 1]}`;
+        const heb = (hs.m === he.m)
+            ? `${hs.d}-${he.d} ${hs.m}`
+            : `${hs.d} ${hs.m} - ${he.d} ${he.m}`;
+        roundLine.textContent = `סבב הקרוב: ${greg} . ${heb}`;
+    }
+}
+
+function updateTimer() {
+    let diff = startTs - Date.now();
+    if (diff <= 0) {                                // rolled past the start, move to the next Sunday
+        startTs = nextSundayStart();
+        renderDates();
+        diff = startTs - Date.now();
+    }
+    const pad = n => String(n).padStart(2, '0');
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-
-    if (el) el.textContent = `${pad(d)} : ${pad(h)} : ${pad(m)} : ${pad(s)}`;
+    const sec = Math.floor((diff % 60000) / 1000);
 
     const bd = document.getElementById('bt-d'); if (bd) bd.textContent = pad(d);
     const bh = document.getElementById('bt-h'); if (bh) bh.textContent = pad(h);
     const bm = document.getElementById('bt-m'); if (bm) bm.textContent = pad(m);
-    const bs = document.getElementById('bt-s'); if (bs) bs.textContent = pad(s);
+    const bs = document.getElementById('bt-s'); if (bs) bs.textContent = pad(sec);
 }
-updateReplayTimer();
-setInterval(updateReplayTimer, 1000);
+
+renderDates();
+updateTimer();
+setInterval(updateTimer, 1000);
 
 // Reveal on scroll
 const revealObserver = new IntersectionObserver((entries) => {
