@@ -2899,10 +2899,10 @@ const DAYS = [
           // hashed filename: the zip sits in a public folder, so a guessable name let
           // anyone download the paid kit without buying
           { name: 'wonka-starter-kit.zip', url: 'wonka-starter-kit-d458a60c79.zip' },
-          'The OpenAI key and verification walkthrough',
-          'Genrupt account setup',
-          'The product photo shot list',
-          'The Front Gate shopping list',
+          { name: 'The OpenAI key and verification walkthrough', url: 'kit-pages-e7c41b/openai-key.html' },
+          { name: 'Genrupt account setup', url: 'kit-pages-e7c41b/genrupt-setup.html' },
+          { name: 'The product photo shot list', url: 'kit-pages-e7c41b/shot-list.html' },
+          { name: 'The Front Gate shopping list', url: 'kit-pages-e7c41b/shopping-list.html' },
         ],
       },
     ],
@@ -2933,7 +2933,7 @@ const DAYS = [
         ],
         resources: [
           'Reading your funnel: CTR vs CVR',
-          'The Front Gate shopping list',
+          { name: 'The Front Gate shopping list', url: 'kit-pages-e7c41b/shopping-list.html' },
         ],
       },
     ],
@@ -2999,7 +2999,7 @@ const DAYS = [
         ],
         resources: [
           'The five point sheet check',
-          'The product photo shot list',
+          { name: 'The product photo shot list', url: 'kit-pages-e7c41b/shot-list.html' },
           'The approved claims worksheet',
         ],
       },
@@ -4861,7 +4861,9 @@ function renderDay(dayNum) {
         // must work: without a link the buyer cannot start, and the mission text has
         // always told them to download it.
         if (r && typeof r === 'object' && r.url) {
-          html += '<a class="dv2-res is-live" href="' + escapeHtml(r.url) + '" download><span class="dv2-resname">' + escapeHtml(r.name) + '</span><span class="dv2-ressub">Click to download.</span></a>';
+          // a .zip is a file the browser saves; a page opens in its own tab
+          const isFile = /\.zip$/i.test(r.url);
+          html += '<a class="dv2-res is-live" href="' + escapeHtml(r.url) + '"' + (isFile ? ' download' : ' target="_blank" rel="noopener"') + '><span class="dv2-resname">' + escapeHtml(r.name) + '</span><span class="dv2-ressub">' + (isFile ? 'Click to download.' : 'Click to open.') + '</span></a>';
         } else {
           html += '<span class="dv2-res is-prop"><span class="dv2-resname">' + escapeHtml(r) + '</span><span class="dv2-ressub">Already in your kit: open the downloads/ folder inside the zip.</span></span>';
         }
