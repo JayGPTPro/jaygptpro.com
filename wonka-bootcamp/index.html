@@ -1933,6 +1933,19 @@ body:has(#app.viewing-day) #film-grain{display:none}
 .dv2 .punch-card.card-punched .card-stamp{opacity:1;transform:rotate(-7deg) scale(1);animation:none}
 
 /* ---------- resources ---------- */
+/* Day 1's kit download, promoted to the top of the room */
+.dv2-kitcta{display:flex;align-items:center;gap:16px;margin:18px 0 6px;padding:16px 20px;
+  background:linear-gradient(135deg,#3a2113,#59331a);border:1px solid #b98a4e;border-radius:14px;
+  text-decoration:none;color:#f6ead2;box-shadow:0 8px 26px rgba(40,20,5,.35)}
+.dv2-kitcta:hover{filter:brightness(1.07)}
+.dv2-kitcta-badge{flex:none;width:44px;height:44px;border-radius:50%;background:#f2c063;color:#3a2113;
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.dv2-kitcta-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dv2-kitcta-text strong{font-size:17px;letter-spacing:.02em}
+.dv2-kitcta-text span{font-size:13px;color:#d9c39d;line-height:1.4}
+.dv2-kitcta-btn{flex:none;background:#f2c063;color:#3a2113;font-weight:700;font-size:14px;
+  padding:10px 20px;border-radius:999px;letter-spacing:.04em}
+@media(max-width:560px){.dv2-kitcta{flex-wrap:wrap}.dv2-kitcta-btn{width:100%;text-align:center}}
 .dv2-restag{
   font-family:var(--font-mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;
   color:var(--brass-dark);margin:28px 0 12px;
@@ -2898,7 +2911,7 @@ const DAYS = [
         resources: [
           // hashed filename: the zip sits in a public folder, so a guessable name let
           // anyone download the paid kit without buying
-          { name: 'wonka-starter-kit.zip', url: 'wonka-starter-kit-d458a60c79.zip' },
+          { name: 'wonka-starter-kit.zip', url: KIT_ZIP },
           { name: 'The OpenAI key and verification walkthrough', url: 'kit-pages-e7c41b/openai-key.html' },
           { name: 'Genrupt account setup', url: 'kit-pages-e7c41b/genrupt-setup.html' },
           { name: 'The product photo shot list', url: 'kit-pages-e7c41b/shot-list.html' },
@@ -2932,7 +2945,7 @@ const DAYS = [
           'Post your sharpest report line in your support channel',
         ],
         resources: [
-          'Reading your funnel: CTR vs CVR',
+          { name: 'Reading your funnel: CTR vs CVR', url: 'kit-pages-e7c41b/funnel.html' },
           { name: 'The Front Gate shopping list', url: 'kit-pages-e7c41b/shopping-list.html' },
         ],
       },
@@ -2964,8 +2977,8 @@ const DAYS = [
           'Post your sharpest buyer question in your support channel',
         ],
         resources: [
-          'The three review questions',
-          'The Genrupt intake guide (in your kit)',
+          { name: 'The three review questions', url: 'kit-pages-e7c41b/three-questions.html' },
+          { name: 'The Genrupt intake guide', url: 'kit-pages-e7c41b/intake-guide.html' },
         ],
       },
     ],
@@ -2998,9 +3011,9 @@ const DAYS = [
           'Post your sheet v1 beside your final version in your support channel',
         ],
         resources: [
-          'The five point sheet check',
+          { name: 'The five point sheet check', url: 'kit-pages-e7c41b/five-point-check.html' },
           { name: 'The product photo shot list', url: 'kit-pages-e7c41b/shot-list.html' },
-          'The approved claims worksheet',
+          { name: 'The approved claims worksheet', url: 'kit-pages-e7c41b/claims-worksheet.html' },
         ],
       },
     ],
@@ -3034,9 +3047,9 @@ const DAYS = [
           'Optional, for the impatient: put your best main up for an A/B test. Save your current one first',
         ],
         resources: [
-          'Main image doctrine, the slides',
-          'Edit versus regenerate',
-          'Amazon main image requirements (Amazon)',
+          { name: 'Main image doctrine', url: 'kit-pages-e7c41b/main-image-doctrine.html' },
+          { name: 'Edit versus regenerate', url: 'kit-pages-e7c41b/edit-vs-regenerate.html' },
+          { name: 'Amazon main image requirements (Amazon)', url: 'https://sellercentral.amazon.com/help/hub/reference/external/G1881' },
         ],
       },
     ],
@@ -3073,8 +3086,8 @@ const DAYS = [
           'Close your coverage map, then stop polishing',
         ],
         resources: [
-          'Set level faults',
-          'Edit versus regenerate',
+          { name: 'Set level faults', url: 'kit-pages-e7c41b/set-level-faults.html' },
+          { name: 'Edit versus regenerate', url: 'kit-pages-e7c41b/edit-vs-regenerate.html' },
         ],
       },
     ],
@@ -3110,8 +3123,8 @@ const DAYS = [
           'Close the A+ column of your coverage map. Anything expected and missing gets NAMED',
         ],
         resources: [
-          'Module count and the carousel',
-          'Edit versus regenerate',
+          { name: 'Module count and the carousel', url: 'kit-pages-e7c41b/modules-carousel.html' },
+          { name: 'Edit versus regenerate', url: 'kit-pages-e7c41b/edit-vs-regenerate.html' },
         ],
       },
     ],
@@ -3146,8 +3159,8 @@ const DAYS = [
           'Post your most surprising objection in your support channel',
         ],
         resources: [
-          'Reading a Tasting Card',
-          'Turning objections into changes',
+          { name: 'Reading a Tasting Card', url: 'kit-pages-e7c41b/tasting-card.html' },
+          { name: 'Turning objections into changes', url: 'kit-pages-e7c41b/objections.html' },
         ],
       },
     ],
@@ -3183,9 +3196,9 @@ const DAYS = [
           'Then /inspect scoped to the variations. Upscaling happens only after the gate',
         ],
         resources: [
-          'Type A versus Type B',
-          'The frame table and the three prompt rules',
-          'Edit versus regenerate',
+          { name: 'Type A versus Type B', url: 'kit-pages-e7c41b/type-a-b.html' },
+          { name: 'The frame table and the three prompt rules', url: 'kit-pages-e7c41b/frame-table.html' },
+          { name: 'Edit versus regenerate', url: 'kit-pages-e7c41b/edit-vs-regenerate.html' },
         ],
       },
     ],
@@ -3217,8 +3230,8 @@ const DAYS = [
           'Post your favourite line from your own Improvement Log',
         ],
         resources: [
-          'The graduation checklist (in your kit)',
-          'Reading a Tasting Card',
+          { name: 'The graduation checklist', url: 'kit-pages-e7c41b/graduation-checklist.html' },
+          { name: 'Reading a Tasting Card', url: 'kit-pages-e7c41b/tasting-card.html' },
         ],
       },
     ],
@@ -4761,6 +4774,10 @@ function lightGradBulbs() {
    ============================================================ */
 function projLensSvg() { return ''; }
 
+// ONE place holds the kit zip's hashed filename. The hero button on Day 1 and
+// the Day 1 resource card both read it, so a redeploy repoints a single line.
+const KIT_ZIP = 'wonka-starter-kit-d458a60c79.zip';
+
 function renderDay(dayNum) {
   const d = DAYS.find((x) => x.day === dayNum);
   if (!d) return;
@@ -4806,6 +4823,17 @@ function renderDay(dayNum) {
     '<button id="nav-next" class="dv2-navbtn dv2-next"' + (dayNum >= CONFIG.TOTAL_DAYS ? ' disabled' : '') + '>' +
       '<span class="dv2-nav-eyebrow">The next door</span><span class="dv2-nav-room">' + escapeHtml(nextRoom || 'Next Room') + '</span></button>' +
     '</nav>';
+
+  // Day 1's one non-negotiable download, promoted to the top of the room.
+  // It also lives in Episode 5's resources, but the first person through the
+  // gate looked for it, could not find it, and had to be told where it was.
+  if (dayNum === 1) {
+    html += '<a class="dv2-kitcta reveal" href="' + KIT_ZIP + '" download>' +
+      '<span class="dv2-kitcta-badge" aria-hidden="true">&#8595;</span>' +
+      '<span class="dv2-kitcta-text"><strong>Download the Starter Kit</strong>' +
+      '<span>wonka-starter-kit.zip &middot; everything today installs from this one file. Unzip it to your Desktop.</span></span>' +
+      '<span class="dv2-kitcta-btn">Download</span></a>';
+  }
 
   d.episodes.forEach((ep, epIdx) => {
     if (epIdx > 0) html += '<div class="dv3-bulbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>';
