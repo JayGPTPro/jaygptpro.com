@@ -2874,6 +2874,13 @@ const CONFIG = {
    VIDEO PLACEHOLDERS: every lesson has vimeo:'VIMEO_ID_Dx_Ly'.
    TODO: replace every VIMEO_ID_* with the real Vimeo video id.
    ============================================================ */
+// ONE place holds the kit zip's hashed filename. The Day 1 hero button and the
+// Day 1 resource card both read it, so a redeploy repoints a single line.
+// It MUST be declared before DAYS below: the data literal reads it at load time,
+// and a const declared later leaves it in the temporal dead zone, which threw a
+// ReferenceError that killed the whole app script (measured live, 26 August).
+const KIT_ZIP = 'wonka-starter-kit-d458a60c79.zip';
+
 const DAYS = [
   {
     day: 1,
@@ -4773,10 +4780,6 @@ function lightGradBulbs() {
    RENDER: DAY VIEW (the dailies room)
    ============================================================ */
 function projLensSvg() { return ''; }
-
-// ONE place holds the kit zip's hashed filename. The hero button on Day 1 and
-// the Day 1 resource card both read it, so a redeploy repoints a single line.
-const KIT_ZIP = 'wonka-starter-kit-d458a60c79.zip';
 
 function renderDay(dayNum) {
   const d = DAYS.find((x) => x.day === dayNum);
