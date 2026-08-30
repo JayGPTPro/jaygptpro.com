@@ -1130,10 +1130,10 @@ export async function mount(container, api, opts) {
       if (st.isCurrent && st.unlocked) hereDay = days[i].day;
       plates[i].name.textContent = days[i].room;
       plates[i].el.classList.toggle('locked', locked);
-      if (st.done) plates[i].note.textContent = 'Toured . lights on';
+      if (st.done) plates[i].note.textContent = 'Run complete · work saved';
       else if (locked) plates[i].note.textContent = 'Opens ' + api.unlockLabel(days[i].day);
-      else if (st.isCurrent) plates[i].note.textContent = 'Now filming . step inside';
-      else plates[i].note.textContent = 'Open . walk in';
+      else if (st.isCurrent) plates[i].note.textContent = 'Your next run · start here';
+      else plates[i].note.textContent = 'Ready to run · enter anytime';
       const was = prev && prev[i];
       if (!firstStates && was && !was.done && st.done) celebrate();
     });

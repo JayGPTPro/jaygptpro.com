@@ -1343,10 +1343,10 @@ export async function mount(container, api, opts) {
       const pl = plates[i];
       pl.name.textContent = d.room;
       pl.el.classList.toggle('locked', !st.unlocked);
-      if (st.done) pl.note.textContent = 'Toured . lights on';
+      if (st.done) pl.note.textContent = 'Run complete · work saved';
       else if (!st.unlocked) pl.note.textContent = 'Opens ' + api.unlockLabel(d.day);
-      else if (st.isCurrent) pl.note.textContent = 'Now filming . step inside';
-      else pl.note.textContent = 'Open . walk in';
+      else if (st.isCurrent) pl.note.textContent = 'Your next run · start here';
+      else pl.note.textContent = 'Ready to run · enter anytime';
     });
   }
 
