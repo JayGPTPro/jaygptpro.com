@@ -30,9 +30,15 @@
    and every section stayed at opacity 0 forever. A blank page for a room that just scanned
    a QR code. Registered in the head, it fires no matter what happens later. */
 document.documentElement.className+=' js';
-setTimeout(function(){
+function __revealAll(){
   var r=document.querySelectorAll('.rv'); for(var i=0;i<r.length;i++) r[i].classList.add('in');
-},2500);
+}
+setTimeout(__revealAll,2500);
+/* A hidden tab does not run timers, so the deadline above can sit unfired for as long
+   as the tab stays in the background. Fire on the first moment it is actually looked at. */
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible') setTimeout(__revealAll,2500);
+});
 </script>
 <style>
 :root{
@@ -218,36 +224,79 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   <h1 class="rv">Give Your Employee Hands</h1>
   <p class="lede rv">Claude is not an image model. Connect one to Claude Code and
   "make me an image" starts working. You do this once.</p>
-  <div class="meta rv"><span><b>5</b> steps</span><span><b>15</b> minutes</span><span>no coding</span></div>
+  <div class="meta rv"><span><b>5</b> steps</span><span><b>15</b> min of setup</span><span>no coding</span></div>
   <p class="need rv">You need <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener">Claude Code</a>
   installed, and a folder to work in. The folder is whichever one you open Claude Code inside:
   your AI employee, a course project, a client, anything. The key goes in that folder.</p>
   <div class="warn rv" style="max-width:560px;margin:20px auto 0;text-align:start">
-  <b>Start step 2 today, even if you finish the rest later.</b> Image generation needs a one-time
-  identity verification, and it is the one step here that can make you wait. Everything else takes
-  minutes. People who leave it until the day they actually need an image are the ones who lose a day.</div>
+  <b>Fifteen minutes of clicking, and one wait you do not control.</b> If your account is asked to
+  verify before it can generate images, that review can take longer than the rest of this page put
+  together. That is why it is step 1: start it, then do everything else while it processes.</div>
 </header>
 
-<div class="step rv" data-n="01" id="s1"><span class="num">Step 1 · Get a key</span>
-  <h2>Create an API key in your OpenAI account</h2>
+<div class="step rv" data-n="01" id="s1"><span class="num">Step 1 · Start the wait</span>
+  <h2>Create the account and start verification</h2>
   <ol>
-    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
-    and sign in. This is the developer platform, a separate place from ChatGPT even though the
-    login is the same. <b>Paying for ChatGPT Plus does not give you this</b>, so if you already
-    have ChatGPT you still need to do everything on this page.</li>
+    <li>Go to <a href="https://platform.openai.com" target="_blank" rel="noopener">platform.openai.com</a>
+    and sign in, or create an account. This is the developer platform, a separate place from
+    ChatGPT even though the login is the same. <b>Paying for ChatGPT Plus does not give you this</b>,
+    so if you already have ChatGPT you still need everything on this page.</li>
+    <li>Go to <a href="https://platform.openai.com/settings/organization/general" target="_blank" rel="noopener">platform.openai.com/settings/organization/general</a>
+    and look for a <b>Verifications</b> section.</li>
+    <li><b>If a verification option is offered, start it now.</b> In OpenAI's own words, it
+    "may ask you to complete verification before you can use certain products, features, models,
+    or programs", and image models are one of the places this shows up. If your organization is
+    already verified, you are done with this step. Do not start another one.</li>
+    <li>Identity verification asks for an original government-issued ID and, if requested, a selfie.
+    It takes a few minutes of your time. Approval is often quick, but it is not guaranteed to be
+    instant, and that is the whole reason this is step 1.</li>
+  </ol>
+  <div class="warn"><b>Your ID verifies one account, and only one.</b> OpenAI states it plainly:
+  "for identity verification, individuals can verify only one account or organization", and
+  attempting more than one can cost you access. So do not spend yours on an account belonging to a
+  partner, a spouse or a client. Verify your own, and have them verify theirs with their own ID.</div>
+  <div class="tip"><b>If it clears and images still refuse</b>, give it a moment. Approval does not
+  always reach every surface at once, so refresh, or sign out and back in, and retry before you
+  conclude something is wrong. <i>Do not start a second verification unless OpenAI specifically
+  asks you to retry.</i></div>
+</div>
+
+<div class="step rv" data-n="02" id="s2"><span class="num">Step 2 · Add credit</span>
+  <h2>Put $10 to $20 on the account</h2>
+  <ol>
+    <li>Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener">platform.openai.com/settings/organization/billing</a>.</li>
+    <li>Add a payment method.</li>
+    <li>Load <b>$10 to $20</b> to start. Exploring at low quality costs cents an image, so that
+    goes a long way.</li>
+  </ol>
+  <div class="warn"><b>Two things about prepaid credit that are easy to miss.</b> OpenAI's billing
+  documentation says purchased credits <b>expire after one year and are non-refundable</b>, and that
+  the expiry date cannot be extended. So buy what you expect to use, not a big balance "to be safe".
+  <br><br>The purchase screen also offers <b>auto recharge</b>, which buys more credit on its own
+  whenever your balance falls under a threshold you set. That is useful for a business and a
+  surprise for everyone else. If you do not want it, leave it switched off.</div>
+  <div class="tip"><b>Set a spend limit while you are here.</b> It lives on its own page, not with
+  billing: <a href="https://platform.openai.com/settings/organization/limits" target="_blank" rel="noopener">platform.openai.com/settings/organization/limits</a>,
+  under <b>Organization spend limit</b>. It is a ceiling that protects you from a runaway loop, and
+  $30 is a sensible place to put it. The same page takes a spend <i>alert</i> if you would rather be
+  warned than stopped.</div>
+</div>
+
+<div class="step rv" data-n="03" id="s3"><span class="num">Step 3 · Get a key</span>
+  <h2>Create an API key</h2>
+  <ol>
+    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>.
+    It is also in the left sidebar, as <b>API keys</b>.</li>
     <li>Click <b>Create new secret key</b>.</li>
-    <li>Name it after the folder it belongs to, so you always know what it is later. Anything
-    works: the project name, the employee's name, <code>images</code>.
-    Leave <b>Project</b> on Default and <b>Permissions</b> on <b>All</b>. A restricted key signs in
-    fine and then fails on images, which looks like a broken key and is not one.</li>
-    <li><b>Copy it now.</b> It starts with <code>sk-</code> and OpenAI shows it exactly once.
-    Close that box without copying and the key is gone for good, and you make a new one.</li>
+    <li>Name it after the project or employee it belongs to, so you know later what it is paying
+    for. Leave <b>Project</b> on Default and <b>Permissions</b> on <b>All</b>. Restricted keys can
+    work, but only when the image endpoints have write access, and All is the simplest thing that
+    works for this setup.</li>
+    <li><b>Copy it now.</b> It starts with <code>sk-</code> and OpenAI shows it exactly once. Close
+    that box without copying and the key is gone for good, and you make a new one.</li>
     <li>Paste it somewhere safe immediately. A password manager is right. A sticky note on your
     monitor is not.</li>
   </ol>
-  <div class="tip"><b>Trust the address, not the screenshot.</b> Menu labels and layouts move
-  every few months. The addresses in this guide do not, so if a screen looks different from a
-  picture you saw somewhere, go by the address.</div>
   <div class="win">
     <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
       <span class="addr">platform.openai.com/api-keys</span></div>
@@ -256,73 +305,36 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
       <div class="wrow"><span>my-project</span><span class="wkey">sk-proj-••••••••••••••••</span></div>
     </div>
   </div>
+  <div class="tip"><b>Trust the address, not the screenshot.</b> Menu labels and layouts move every
+  few months. The addresses in this guide do not, so if a screen looks different from a picture you
+  saw somewhere, go by the address.</div>
+  <div class="tip"><b>One key per project is worth the extra minute.</b> Separate keys mean you can
+  revoke one without breaking everything else, and the usage page shows you which project spent
+  what. Reusing a single key everywhere works, and costs you both of those.</div>
   <div class="warn"><b>A key is a credit card.</b> Never paste it into a chat, never put it in a
   screenshot, and never read it out loud on a recording. It goes into one file on your own machine
   and nowhere else. If that folder is a git repository, add a line saying <code>.env</code> to its
   <code>.gitignore</code> first, or the key rides along the next time you push.
-  <br><br><i>If you ever think a key leaked</i>, go back to the API keys page, revoke it and make
-  a new one. It takes thirty seconds and costs nothing. A revoked key cannot be used by anyone,
+  <br><br><i>If you ever think a key leaked</i>, go back to the API keys page, revoke it and make a
+  new one. It takes thirty seconds and costs nothing. A revoked key stops working for everyone,
   including you, so replace it in your <code>.env</code> at the same time.</div>
 </div>
 
-<div class="step rv" data-n="02" id="s2"><span class="num">Step 2 · Verify · do this first</span>
-  <h2>Turn on image generation with a one-time ID check</h2>
-  <p>Your key can talk to text models the moment you make it. <b>It cannot draw until OpenAI
-  verifies who you are.</b> This is the step people skip, and it is the expensive one to skip.</p>
-  <ol>
-    <li>Go to <a href="https://platform.openai.com/settings/organization/general" target="_blank" rel="noopener">platform.openai.com/settings/organization/general</a>.</li>
-    <li>Find the <b>Verifications</b> section. It reads "Verify as an individual or business".
-    Start it.</li>
-    <li>You give a government ID and a live selfie check. It runs through a verification
-    provider and takes a few minutes of your time.</li>
-    <li>Approval is usually quick, sometimes minutes. It is <b>not always instant</b>, and that
-    is the whole reason this is step 2 and not step 5.</li>
-    <li>When it clears, image models unlock on your key on their own. Nothing to switch on.</li>
-  </ol>
-  <div class="warn"><b>Your ID verifies one account, and only one.</b> That is OpenAI's own rule:
-  an individual can verify a single account or organization, and attempting more than one may get
-  your access blocked. So do not spend yours verifying an account that belongs to a partner, a
-  spouse or a client. Verify your own, and have them verify theirs with their own ID.</div>
-  <div class="tip"><b>Give it a moment before you test, and do not verify twice.</b> A cleared
-  verification does not reach every surface at once. If an image call still refuses right after
-  approval, refresh, or sign out and back in, and try again before you conclude anything is wrong.
-  <i>Starting a second verification is the one thing here that can actually hurt you.</i></div>
-</div>
-
-<div class="step rv" data-n="03" id="s3"><span class="num">Step 3 · Add credit</span>
-  <h2>Put $10 to $20 on the account</h2>
-  <ol>
-    <li>Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener">platform.openai.com/settings/organization/billing</a>.</li>
-    <li>Add a payment method.</li>
-    <li>Load <b>$10 to $20</b> to start. It is usage based, so whatever you do not spend stays
-    yours. Exploring at low quality costs cents an image, so that lasts a long time.</li>
-  </ol>
-  <div class="tip"><b>Set a spend limit while you are here.</b> It lives on its own page, not with
-  billing: <a href="https://platform.openai.com/settings/organization/limits" target="_blank" rel="noopener">platform.openai.com/settings/organization/limits</a>,
-  under <b>Organization spend limit</b>. It is a ceiling that protects you from a runaway loop, and
-  $30 is a sensible place to put it. The same page takes a spend <i>alert</i> if you would rather
-  be warned than stopped.</div>
-</div>
-
 <div class="step rv" data-n="04" id="s4"><span class="num">Step 4 · Hand it over</span>
-  <h2>Paste it into one file in your folder</h2>
+  <h2>Put it in one file in your folder</h2>
   <p>In the folder you work in, create or open a file called <code>.env</code>
   and add a single line:</p>
-  <div class="term" data-copy="OPENAI_API_KEY=sk-proj-your-key-here"><button class="cp">Copy</button><i># inside your employee's folder</i><br>OPENAI_API_KEY=<b>sk-proj-your-key-here</b></div>
-  <p>That is the whole integration. No packages to install, no SDK, no settings screen. The key
-  sits in the folder, and Claude reads it out of the file the first time it needs it.</p>
+  <div class="term" data-copy="OPENAI_API_KEY=sk-proj-your-key-here"><button class="cp">Copy</button><i># inside your folder</i><br>OPENAI_API_KEY=<b>sk-proj-your-key-here</b></div>
+  <p>That is the whole integration. The key stays inside that folder, and the scripts Claude runs
+  load it from <code>.env</code> when they need to call OpenAI. You never type it again.</p>
   <div class="warn"><b>The file name starts with a dot, and that is where most people get stuck.</b>
   A Mac hides dot files: in Finder press <code>Cmd + Shift + .</code> to show them. On Windows,
-    File Explorer &rarr; View &rarr; Show &rarr; Hidden items. If your editor
-  will not save a file with no name before the dot, let Claude Code do it. Open Claude Code in the
-  folder and ask: <i>create a .env file here with OPENAI_API_KEY set to the key I am about to
-  paste</i>.</div>
-  <div class="tip"><b>Why a file and not the chat?</b> Because the folder is the memory. The key
-  sits in it permanently, so every future session in that folder finds it on its own and you never
-  paste it again.</div>
-  <div class="tip"><b>One key, as many folders as you like.</b> You do not need a new key per
-  project. Paste the same line into the <code>.env</code> of every folder you want to give hands to.
-  All of them bill to the same balance, and you can see the spend per key on the OpenAI usage page.</div>
+  File Explorer &rarr; View &rarr; Show &rarr; Hidden items. If your editor will not save a file
+  with no name before the dot, let Claude Code make it for you and then paste the key in yourself:</div>
+  <div class="term" data-copy="Create a .env file in this folder containing the line OPENAI_API_KEY=your-key-here and then open that file for me. I will paste the real key into the file myself."><button class="cp">Copy</button><i>&gt;</i> Create a .env file in this folder containing the line OPENAI_API_KEY=your-key-here and then open that file for me. I will paste the real key into the file myself.</div>
+  <div class="tip"><b>Notice what that prompt does not do.</b> It never asks you to type the real key
+  into the chat. Claude makes an empty file with a placeholder, you open it and paste the key in
+  yourself, and the key never appears in a conversation.</div>
 </div>
 
 <div class="step rv" data-n="05" id="s5"><span class="num">Step 5 · Watch it work</span>
@@ -332,6 +344,8 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   <p>Claude writes the small script, calls the model and saves the file. If an apple lands in
   <code>test/</code>, it has hands. From here you ask for the image you actually need, in your own
   words, and it keeps the script for next time.</p>
+  <div class="tip"><b>You do not need to write or understand any code.</b> If a package is missing
+  on your machine, the error says which one and Claude installs it for you when you ask.</div>
   <div class="tip"><b>Two habits that keep the bill in cents.</b> Generate at
   <b>low quality while exploring</b> and full quality only for the finalists. And always generate
   <b>one image before a batch</b>: a minute of looking catches the wrong colour before it costs you
@@ -342,19 +356,20 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   <h2>Every error you are likely to see</h2>
   <div class="tblwrap"><table>
     <col class="c1"><col class="c2"><col class="c3">
-    <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+    <tr><th>What you see</th><th>What it usually means</th><th>What to do</th></tr>
     <tr><td><code>401 Incorrect API key</code></td><td>The key is wrong, or carries a stray space or line break</td><td>Re-copy it into <code>.env</code>. Check for a trailing space</td></tr>
-    <tr><td><code>403</code>, or a model access error on an image call</td><td>Verification has not cleared</td><td>Back to step 2. This is the usual answer</td></tr>
-    <tr><td><code>429 insufficient_quota</code></td><td>No credit on the account</td><td>Step 3. Note this is not a rate limit, despite the 429</td></tr>
-    <tr><td><code>429 rate limit</code></td><td>Too many calls too fast</td><td>Wait a minute and retry. Nothing is broken</td></tr>
-    <tr><td>The key works for text but not images</td><td>Verification. Every time</td><td>Step 2</td></tr>
-    <tr><td>It says verified, but images still refuse</td><td>The approval has not reached every surface yet</td><td>Refresh, or sign out and back in, then retry. <b>Do not start a second verification</b></td></tr>
-    <tr><td>Still pending a day later</td><td>The review is taking longer than usual, or something was unclear</td><td>Check the account's email for a request for more information</td></tr>
+    <tr><td><code>403</code>, or an image model access error</td><td>Verification, or the key's own permissions</td><td>Check verification first, then that the key may generate images</td></tr>
+    <tr><td>Text works but images do not</td><td>Usually verification, sometimes image permissions</td><td>Check verification status, then the key's permissions</td></tr>
+    <tr><td><code>credit_balance_exhausted</code></td><td>No prepaid credit remains</td><td>Add credit, step 2</td></tr>
+    <tr><td><code>organization_spend_limit_exceeded</code></td><td>The organization spend limit was reached</td><td>Raise or review the limit on the limits page</td></tr>
+    <tr><td><code>project_spend_limit_exceeded</code></td><td>That project's own limit was reached</td><td>Raise or review the project limit</td></tr>
+    <tr><td><code>429 rate limit</code></td><td>Too many requests in a short period</td><td>Wait a minute and retry. Nothing is broken</td></tr>
     <tr><td>Claude will not read the file</td><td>Some setups block reading <code>.env</code> by default</td><td>If it asks for permission, allow it once for this folder</td></tr>
     <tr><td>It says there is no key at all</td><td>The <code>.env</code> is in the wrong folder</td><td>It must sit in the folder Claude Code was opened in. Ask Claude <i>which folder are you in right now</i></td></tr>
   </table></div>
-  <p>Anything else, paste the error into Claude Code and ask it to fix the connection. Debugging its
-  own tools is part of the job description.</p>
+  <p>A billing error and a rate limit can both arrive as a 429, so read the error code itself rather
+  than the number. Anything else, paste the error into Claude Code and ask it to fix the connection.
+  Debugging its own tools is part of the job description.</p>
 </div>
 
 <div class="step rv" data-n="" id="s7"><span class="num">Before you move on</span>
@@ -363,11 +378,11 @@ footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase
   verification clears.</p>
   <ul class="chk">
     <li><label><input type="checkbox"><span>Account created at platform.openai.com</span></label></li>
-    <li><label><input type="checkbox"><span>Secret key created and saved somewhere safe</span></label></li>
-    <li><label><input type="checkbox"><span><b>Verification STARTED</b> (do this before anything else)</span></label></li>
-    <li><label><input type="checkbox"><span>Verification cleared</span></label></li>
+    <li><label><input type="checkbox"><span><b>Verification started</b>, or confirmed already done</span></label></li>
     <li><label><input type="checkbox"><span>$10 to $20 of credit loaded</span></label></li>
+    <li><label><input type="checkbox"><span>Auto recharge is set the way I actually want it</span></label></li>
     <li><label><input type="checkbox"><span>Spend limit set (optional, sensible)</span></label></li>
+    <li><label><input type="checkbox"><span>Secret key created and saved somewhere safe</span></label></li>
     <li><label><input type="checkbox"><span><code>.env</code> created in the right folder, with the key in it</span></label></li>
     <li><label><input type="checkbox"><span><code>.env</code> added to <code>.gitignore</code>, if the folder is a git repo</span></label></li>
     <li><label><input type="checkbox"><span>A test image actually generated</span></label></li>
