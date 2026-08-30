@@ -12,7 +12,7 @@
 const MAP_IMG = 'map-art/map-final-v10b.webp';
 // Exported so index.html can prove the browser actually got the engine it asked
 // for: its MAP_ENGINE_V is the ?v= cache key and must match this string.
-export const BUILD = 'art-2026-08-26-a';
+export const BUILD = 'art-2026-08-30-a';
 // diagnostic breadcrumbs, shown by the ?diag panel and kept on window for support
 const diagLog = (m) => {
   (window.__mapartLog = window.__mapartLog || []).push(m);
@@ -520,8 +520,18 @@ export async function mount(container, api, opts) {
        whole frame alive, not just the river. */
     const k = disp.w / NAT_W * (NAT_W / 1536); // px per 1536-wide art unit
     const far = fxFar.getContext('2d');
-    far.setTransform(fxScale, 0, 0, fxScale, 0, 0);
+    /* Wipe in DEVICE pixels, under the identity transform, BEFORE the dpr scale goes
+       on. clearRect runs through the current transform, so clearing (0,0,width,height)
+       while setTransform(fxScale) is active only wipes the top-left fxScale fraction of
+       the canvas. At dpr >= 1 the overshoot is clamped and nothing shows. At dpr < 1
+       (Chrome zoomed out, or a scaled display) the right and bottom (1-dpr) bands are
+       never cleared, so every star, lantern glow and smoke puff drawn there is painted
+       on top of itself forever and burns in as a vertical smear. Jay, 30.8, at dpr 0.8:
+       the residue sat exactly at x > width*dpr on fxFar and y > height*dpr on fxNear,
+       which is this rectangle and nothing else. */
+    far.setTransform(1, 0, 0, 1, 0, 0);
     far.clearRect(0, 0, fxFar.width, fxFar.height);
+    far.setTransform(fxScale, 0, 0, fxScale, 0, 0);
     far.fillStyle = '#FFF6E8';
     for (const s of stars) {
       const w = Math.sin(t * s.sp + s.ph);
@@ -540,8 +550,9 @@ export async function mount(container, api, opts) {
     }
     far.globalAlpha = 1;
     const ctx = fxNear.getContext('2d');
-    ctx.setTransform(fxScale, 0, 0, fxScale, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);          // same device-pixel wipe as fxFar above
     ctx.clearRect(0, 0, fxNear.width, fxNear.height);
+    ctx.setTransform(fxScale, 0, 0, fxScale, 0, 0);
     for (const p of vidLive ? [] : puffs) {
       const u = (t * p.sp + p.ph) % 1;
       const nx = p.sx + p.drift * u + Math.sin(t * 0.7 + p.seed) * 0.005 * u;
