@@ -821,7 +821,7 @@ footer nav a:hover { color: var(--purple-dark); }
 
         <div class="hero-cta-row">
             <a class="btn" href="#pricing">Reserve My Spot &rarr;</a>
-            <span class="note js-price-note">$497 until midnight &middot; then it goes up</span>
+            <span class="note js-price-note" data-after="$697 &middot; the launch price has closed">$497 until midnight &middot; then it goes up</span>
         </div>
     </div>
 </section>
@@ -973,7 +973,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="show-note reveal">A set like this once took eight jobs, weeks, and thousands of dollars.</p>
         <div class="show-cta reveal">
             <a class="btn" href="#pricing">Build this for my product &rarr;</a>
-            <span class="note">The gates open September 1 &middot; $497 with the launch discount</span>
+            <span class="note js-price-note" data-after="The gates open September 1 &middot; $697">The gates open September 1 &middot; $497 with the launch discount</span>
         </div>
     </div>
 </section>
@@ -1250,7 +1250,7 @@ footer nav a:hover { color: var(--purple-dark); }
             </div>
             <div class="roi-box new reveal reveal-d1">
                 <div class="rb-tag">The factory way</div>
-                <div class="rb-price">$497. Once.</div>
+                <div class="rb-price js-price-note" data-after="$697. Once.">$497. Once.</div>
                 <p>A full tested package for your product during the bootcamp, and the whole factory stays installed for every product after it.</p>
             </div>
         </div>
@@ -1355,13 +1355,13 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">One payment. The factory, the skills, and the recordings are yours for life.</p>
         <div class="price-duo">
             <div class="price-card featured reveal reveal-d1">
-                <div class="pc-flag">Launch price</div>
+                <div class="pc-flag" id="pcFlag">Launch price</div>
                 <div class="pc-name">Golden Ticket</div>
-                <div class="pc-price"><span class="pc-old">$697</span>$497</div>
+                <div class="pc-price" id="pcPrice"><span class="pc-old">$697</span>$497</div>
                 <div class="pc-sub">Everything you need to run the factory</div>
                 <div class="price-alert js-price-alert">
                     <span class="pa-dot"></span>
-                    <span class="js-price-note"><b>$497 until midnight tonight.</b> After that the price goes up and WONKA200 stops working.</span>
+                    <span class="js-price-note" data-after=""><b>$497 until midnight tonight.</b> After that the price goes up and WONKA200 stops working.</span>
                 </div>
                 <ul class="pc-perks">
                     <li><span>All 10 days plus the Wonka kit, <span class="gloss" tabindex="0" data-tip="Fifteen ready-made commands that run the factory: research, brief, image generation, quality gate, edits, testing, variations.">15 skills</span>, yours forever</span></li>
@@ -1450,7 +1450,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1">About 30 minutes a day. By graduation, a tested creative package ready to upload, and a creative employee who can do it for you again and again.</p>
         <div class="reveal reveal-d2">
             <a class="btn gold" href="#pricing">Get My Golden Ticket &rarr;</a>
-            <span class="note">The gates open September 1 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; <span class="js-price-note">$497 until midnight, then it goes up</span></span>
+            <span class="note">The gates open September 1 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; <span class="js-price-note" data-after="$697">$497 until midnight, then it goes up</span></span>
         </div>
     </div>
 </section>
@@ -1546,12 +1546,16 @@ footer nav a:hover { color: var(--purple-dark); }
         if (g) { g.classList.toggle('open'); }
     });
 
-    // Two deadlines, one clock. The gates open on 1 September at 9am New York;
-    // the launch price and WONKA200 end at midnight before that. Both are fixed
-    // instants, so the countdown itself tells a visitor anywhere in the world
-    // exactly how long is left without the page naming a timezone at all.
+    // Two deadlines. The gates open on 1 September at 9am New York. The launch
+    // price ends at midnight in Los Angeles, the last midnight anywhere that still
+    // counts as "tonight", so nobody is cut off early. The page never names a zone
+    // and never shows a clock: Jay wants the deadline felt, not counted down.
+    //
+    // When it passes the page must STOP SELLING $497, everywhere and by itself.
+    // A note left promising a price that ended is worse than no note at all.
     var target = new Date('2026-09-01T09:00:00-04:00').getTime();
-    var priceEnds = new Date('2026-09-01T00:00:00-04:00').getTime();
+    var priceEnds = new Date('2026-09-01T00:00:00-07:00').getTime();   // midnight in Los Angeles
+    var priceSwitched = false;
     function pad(n){ return String(n).padStart(2,'0'); }
     function tick(){
         var d = target - Date.now();
@@ -1578,13 +1582,26 @@ footer nav a:hover { color: var(--purple-dark); }
         if (p > 0) {
             if (priceMsg) priceMsg.hidden = false;
             if (gatesMsg) gatesMsg.hidden = true;
-        } else {
+        } else if (!priceSwitched) {
+            priceSwitched = true;
             if (priceMsg) priceMsg.hidden = true;
             if (gatesMsg) gatesMsg.hidden = false;
+            // the headline price, and the struck-through $697 that no longer means anything
+            (el = document.getElementById('pcPrice')) && (el.textContent = '$697');
+            (el = document.getElementById('pcFlag'))  && (el.hidden = true);
+            // every sentence that promised $497, each with its own replacement
             var notes = document.querySelectorAll('.js-price-note');
-            for (var n = 0; n < notes.length; n++) notes[n].textContent = 'The launch price has closed';
+            for (var n = 0; n < notes.length; n++) {
+                var after = notes[n].getAttribute('data-after');
+                if (after) { notes[n].innerHTML = after; } else { notes[n].hidden = true; }
+            }
             var alerts = document.querySelectorAll('.js-price-alert');
             for (var a = 0; a < alerts.length; a++) alerts[a].hidden = true;
+            // and stop handing out the coupon, or the page sells $697 and charges $497
+            var buys = document.querySelectorAll('a[href*="prefilled_promo_code"]');
+            for (var b = 0; b < buys.length; b++) {
+                buys[b].href = buys[b].href.split('?')[0];
+            }
         }
     }
     tick(); setInterval(tick, 1000);
