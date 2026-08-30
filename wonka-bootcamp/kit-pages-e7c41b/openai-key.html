@@ -1,111 +1,438 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="robots" content="noindex">
-<title>The OpenAI Key and Organization Verification . Wonka Creative Bootcamp</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Give Your Employee Hands · The OpenAI Setup Guide · Jay Margaliot</title>
+<meta name="description" content="Connect an OpenAI image model to Claude Code so 'make me an image' starts working. Five steps, no coding, with the verification step that makes people wait.">
+<meta name="theme-color" content="#f7f5f1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234A2545'/%3E%3Cpath d='M9 22V10h3.4l3.6 7.4L19.6 10H23v12h-2.8v-7.3L17.1 21h-2.2l-3.1-6.3V22z' fill='%23E2A85C'/%3E%3C/svg%3E">
+<link rel="canonical" href="https://jaygptpro.com/openai/">
+<meta property="og:url" content="https://jaygptpro.com/openai/">
+<meta property="og:image" content="https://jaygptpro.com/openai/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Give Your Employee Hands">
+<meta property="og:description" content="The three-step OpenAI image setup for Claude Code. No coding.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Loaded without blocking the parser. This is the page's only external dependency, and
+     on conference wifi behind a captive portal a render-blocking stylesheet meant 16 seconds
+     of blank screen before anything painted. media="print" makes it a low-priority fetch;
+     onload promotes it. The noscript copy keeps it working with JS off. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<script>
+/* The reveal deadline lives HERE, not in the script at the bottom of the page. It used to
+   sit beside the IntersectionObserver, which meant the safety net was inside the very block
+   it was meant to protect: truncate the HTML before that script, or throw anywhere in it,
+   and every section stayed at opacity 0 forever. A blank page for a room that just scanned
+   a QR code. Registered in the head, it fires no matter what happens later. */
+document.documentElement.className+=' js';
+setTimeout(function(){
+  var r=document.querySelectorAll('.rv'); for(var i=0;i<r.length;i++) r[i].classList.add('in');
+},2500);
+</script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#f3ead9;color:#2b1a12;font:17px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;padding:0 16px 60px}
-.wrap{max-width:760px;margin:0 auto}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#8a6a4f}
-.topbar a{color:#a3622a;text-decoration:none;font-weight:600;letter-spacing:.05em;text-transform:none;font-size:14px}
-.topbar a:hover{text-decoration:underline}
-.card{background:#fffdf7;border:1px solid #e2d3ba;border-radius:14px;padding:34px 38px;box-shadow:0 10px 30px rgba(60,35,15,.08)}
-h1{font-size:30px;line-height:1.2;margin:0 0 6px;color:#231208}
-h2{font-size:21px;margin:34px 0 10px;padding-top:18px;border-top:1px solid #eadfca;color:#3a2113}
-h3{font-size:17px;margin:22px 0 8px;color:#54331c}
-p{margin:12px 0}
-ul,ol{margin:12px 0 12px 26px}
-li{margin:5px 0}
-strong{color:#231208}
-code{background:#f4ead7;border:1px solid #e5d5b8;border-radius:5px;padding:1px 6px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
-pre{background:#2b1a12;color:#f3e7d2;border-radius:10px;padding:16px 18px;overflow-x:auto;margin:14px 0;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace}
-pre code{background:none;border:none;padding:0;color:inherit;font:inherit}
-blockquote{border-left:4px solid #cf9d5c;background:#faf3e4;padding:10px 16px;margin:14px 0;border-radius:0 8px 8px 0}
-hr{border:none;border-top:1px dashed #d8c5a4;margin:26px 0}
-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:15px}
-th,td{border:1px solid #e2d3ba;padding:8px 12px;text-align:left;vertical-align:top}
-th{background:#f4ead7}
-.check{list-style:none;margin:10px 0;padding:0}
-.check li{margin:0;padding:0}
-.check label{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:8px;cursor:pointer}
-.check label:hover{background:#faf3e4}
-.check input{margin-top:5px;accent-color:#a3622a;width:16px;height:16px;flex:none}
-.check .grp{font-weight:700;letter-spacing:.08em;font-size:13px;color:#8a6a4f;margin:12px 0 2px;padding:0 10px}
-.check input:checked+span{color:#9b8368;text-decoration:line-through}
-.foot{margin-top:26px;font-size:13px;color:#8a6a4f;text-align:center}
-@media(max-width:640px){.card{padding:24px 18px}h1{font-size:25px}}
-</style></head><body>
+:root{
+  --bg:#f7f5f1; --ink:#0a0a0c; --ink2:#5c5660; --ink3:#6f6862; --line:#e3ddd5;
+  --plum:#4A2545; --bronze:#8A5A2B; --soft:#f0e7e0; --gold:#c98d4e; --red:#9c4348;
+  --disp:'Bricolage Grotesque',sans-serif; --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.62 var(--disp);
+  font-optical-sizing:auto;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(120% 60% at 50% 0%,#fffdfa 0%,#f8f6f2 42%,#efe8de 100%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.6'/></svg>")}
+a{color:inherit}
+#prog{position:fixed;top:0;left:0;right:0;height:2px;background:transparent;z-index:20}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bronze),var(--gold))}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+
+/* ---------- hero ---------- */
+header{padding:62px 0 34px;text-align:center}
+.kick{display:inline-flex;align-items:center;gap:13px;font:500 11px var(--mono);
+  letter-spacing:.24em;text-transform:uppercase;color:var(--bronze);margin-bottom:18px}
+.kick::before,.kick::after{content:"";height:1px;width:24px;background:currentColor;opacity:.45}
+h1{font:800 50px/1.05 var(--disp);letter-spacing:-.042em;margin-bottom:15px;text-wrap:balance}
+.lede{font:400 17.5px/1.6 var(--disp);color:var(--ink2);max-width:520px;margin:0 auto;text-wrap:pretty}
+.meta{display:flex;justify-content:center;gap:22px;margin-top:24px;flex-wrap:wrap}
+.meta span{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.meta b{color:var(--plum);font-weight:600}
+
+/* ---------- steps ---------- */
+.step{border:1px solid var(--line);border-radius:20px;
+  background:linear-gradient(180deg,#fff 0%,#fffdfa 100%);padding:32px 34px;margin-bottom:20px;
+  box-shadow:0 18px 42px -30px rgba(74,37,69,.3);position:relative;overflow:hidden;
+  scroll-margin-top:20px}
+.step::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--bronze) 22%,var(--gold) 50%,var(--bronze) 78%,transparent)}
+/* the step numeral sits big and quiet in the corner, so the eye can count progress */
+.step::after{content:attr(data-n);position:absolute;top:12px;right:22px;
+  font:800 78px/1 var(--disp);letter-spacing:-.05em;color:transparent;
+  -webkit-text-stroke:1.4px rgba(138,90,43,.17);pointer-events:none}
+.step .num{font:500 11.5px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--bronze)}
+h2{font:800 29px/1.14 var(--disp);letter-spacing:-.032em;margin:8px 0 11px;
+  max-width:80%;text-wrap:balance}
+p{color:var(--ink2);margin:9px 0}
+.need{font:400 15px/1.55 var(--disp);color:var(--ink3);max-width:560px;margin:22px auto 0;
+  padding-top:18px;border-top:1px solid var(--line)}
+.need a,.tip a,.warn a,li a,p a{color:var(--plum);font-weight:600;
+  box-shadow:inset 0 -1px 0 rgba(138,90,43,.5);text-decoration:none}
+.warn a{color:#7c3a3e;box-shadow:inset 0 -1px 0 rgba(156,67,72,.5)}
+.warn i,.tip i{font-style:italic;color:var(--ink2)}
+p b,li b{color:var(--ink);font-weight:600}
+ol,ul{margin:10px 0 10px 21px;color:var(--ink2)}
+li{margin:7px 0;padding-inline-start:4px}
+li::marker{color:var(--bronze);font-weight:600}
+code{font:500 14.5px var(--mono);background:var(--soft);border-radius:6px;padding:2px 7px;
+  color:var(--plum);word-break:break-word}
+
+/* ---------- faux windows: no external screenshots to rot ---------- */
+.win{border:1px solid var(--line);border-radius:13px;overflow:hidden;margin:18px 0;background:#fff;
+  box-shadow:0 12px 30px -22px rgba(74,37,69,.35)}
+.bar{display:flex;align-items:center;gap:7px;background:#f1ece4;border-bottom:1px solid var(--line);
+  padding:9px 13px}
+.dot{width:10px;height:10px;border-radius:50%;background:#d9cfc2;flex:0 0 auto}
+.addr{flex:1;background:#fff;border:1px solid var(--line);border-radius:7px;
+  font:500 12px var(--mono);color:var(--ink2);padding:5px 11px;margin-inline-start:8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbody{padding:16px 18px;font:500 13.5px var(--mono);color:var(--ink2)}
+.wrow{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  border-bottom:1px solid var(--soft);padding:11px 2px}
+.wrow:last-child{border-bottom:none}
+.wbtn{background:var(--plum);color:#fff;border-radius:8px;padding:8px 15px;
+  font:600 12.5px var(--disp);white-space:nowrap}
+.wkey{color:var(--plum);letter-spacing:.02em}
+
+/* ---------- terminal blocks with a copy button ---------- */
+/* the top band is reserved for the copy button, so code of any length can never run
+   underneath it. Measured overlap on both desktop and phone before this was added. */
+.term{position:relative;background:#16121c;color:#e8ddc9;border-radius:13px;
+  padding:40px 19px 18px;margin:18px 0;font:500 13.8px/1.8 var(--mono);overflow-x:auto;
+  box-shadow:0 14px 34px -24px rgba(0,0,0,.7)}
+.term i{font-style:normal;color:#8fd8b5}
+.term b{color:#f0c07a;font-weight:500}
+/* min-height 40: this is the primary action of the step and it lives in the corner of a dark
+   block. 23px tall on a phone is a miss-tap, and a miss-tap here means no key in the file. */
+.cp{position:absolute;top:9px;right:10px;background:rgba(255,255,255,.08);
+  min-height:40px;display:flex;align-items:center;
+  border:1px solid rgba(255,255,255,.16);color:#cfc4b2;border-radius:7px;padding:5px 13px;
+  font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  transition:all .25s var(--ease)}
+.cp:hover{background:rgba(240,192,122,.18);border-color:rgba(240,192,122,.5);color:#f0c07a}
+.cp.ok{background:#2f5c4b;border-color:#2f5c4b;color:#d6ffef}
+
+/* ---------- notes ---------- */
+.tip{border-inline-start:4px solid var(--bronze);
+  background:linear-gradient(96deg,var(--soft) 0%,rgba(240,231,224,.35) 70%,transparent 98%);
+  border-radius:0 14px 14px 0;padding:15px 19px;margin:16px 0;color:var(--ink2);
+  font-size:16px;line-height:1.58}
+.tip b{color:var(--ink)}
+.warn{border:1px solid rgba(156,67,72,.35);background:#fdf5f3;border-radius:14px;
+  padding:15px 19px;margin:16px 0;color:#7c3a3e;font-size:16px;line-height:1.58}
+.warn b{color:#5e2b2e}
+
+/* ---------- error table: must scroll inside itself, never widen the page ---------- */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0;
+  border:1px solid var(--line);border-radius:13px;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:552px;font-size:15px;table-layout:fixed}
+col.c1{width:33%}col.c2{width:27%}col.c3{width:40%}
+th{text-align:start;font:600 11px var(--mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--bronze);background:#faf7f2;padding:11px 14px;border-bottom:1px solid var(--line);
+  white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--soft);color:var(--ink2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--plum);font-weight:600}
+td code{font-size:12.8px;padding:1px 6px;white-space:nowrap;word-break:normal}
+
+/* ---------- checklist: ticks survive a reload, and a refusal to store is harmless ---------- */
+.chk{list-style:none;margin:16px 0 0;padding:0}
+.chk li{margin:0;padding:0;border-bottom:1px solid var(--soft)}
+.chk li:last-child{border-bottom:none}
+.chk label{display:flex;align-items:flex-start;gap:12px;padding:11px 2px;cursor:pointer;
+  font-size:16px;color:var(--ink2);transition:color .2s var(--ease)}
+.chk input{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:21px;height:21px;
+  margin-top:1px;border:1.8px solid #cdbfae;border-radius:6px;background:#fff;cursor:pointer;
+  position:relative;transition:all .2s var(--ease)}
+.chk input:checked{background:var(--plum);border-color:var(--plum)}
+.chk input:checked::after{content:"";position:absolute;left:6.5px;top:2.5px;width:5px;height:10px;
+  border:solid #f0c07a;border-width:0 2.4px 2.4px 0;transform:rotate(43deg)}
+.chk input:checked+span{color:var(--ink3);text-decoration:line-through;
+  text-decoration-color:rgba(138,90,43,.45)}
+
+/* ---------- close ---------- */
+.done{border-radius:20px;padding:34px 28px;text-align:center;color:#fff;position:relative;
+  overflow:hidden;margin-top:8px;
+  background:radial-gradient(120% 130% at 50% 0%,#5d3157 0%,#3a1c35 55%,#241220 100%)}
+.done::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.08;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.6'/></svg>")}
+.done h3{position:relative;font:800 27px/1.15 var(--disp);letter-spacing:-.03em;margin-bottom:10px}
+.done p{position:relative;color:rgba(255,255,255,.76);max-width:400px;margin:0 auto 20px;font-size:16px}
+.done .url{position:relative;display:inline-flex;align-items:center;gap:9px;
+  background:rgba(240,192,122,.14);border:1px solid rgba(240,192,122,.38);
+  color:#f0c07a;font:600 13px var(--mono);letter-spacing:.06em;padding:11px 22px;
+  border-radius:99px}
+footer{padding:40px 0 64px;text-align:center;border-top:1px solid var(--line);margin-top:28px}
+footer p{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+
+/* ---------- reveal: visible by default, hidden only once JS is confirmed alive ---------- */
+.js .rv{opacity:0;transform:translateY(16px);
+  transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .js .rv{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+@media(max-width:560px){
+  .wrap{padding:0 17px}
+  header{padding:44px 0 26px}
+  h1{font-size:35px;letter-spacing:-.036em}
+  .lede{font-size:16.5px}
+  .step{padding:26px 21px;border-radius:17px}
+  .step::after{font-size:58px;top:10px;right:15px}
+  h2{font-size:24px;max-width:100%}
+  body{font-size:16.5px}
+  .term{font-size:12.6px;padding:36px 15px 16px;line-height:1.75}
+  table{font-size:14px}
+  th,td{padding:10px 12px}
+  .cp{top:7px;right:8px;padding:4px 11px;font-size:9.5px}   /* height stays 40, never shrink the target */
+  ol,ul{margin-left:18px}
+  .done{padding:28px 21px}
+}
+</style>
+</head>
+<body>
+<div id="prog"><i></i></div>
+
 <div class="wrap">
-<div class="topbar"><span>Wonka Creative Bootcamp &middot; Day 1 kit</span><a href="https://jaygptpro.com/wonka-bootcamp/#day1">&larr; Back to the portal</a></div>
-<div class="card">
-<h1>The OpenAI Key and Organization Verification</h1>
-<p><strong>Every click, in order.</strong></p>
-<p>This is one of the two machines your factory runs on. One key powers four rooms: the Main Image Room's OpenAI Blast on Day 5, the Variations Room's edits on Day 9, the Fixing Room, where surgical image edits cost cents, and the Tasting Room, where a panel of about 100 AI tasters judges your images for a few dollars a race.</p>
-<p><strong>Do this on Day 1, not later.</strong> One step in here can make you wait, and if you skip it you find out on Day 5 in the middle of your main image batch. That is the single most common way a bootcamp week gets derailed.</p>
-<hr>
-<h2>Part 1: Create the account and the key</h2>
-<p><strong>1.</strong> Go to <strong>platform.openai.com</strong> and sign in, or create an account.</p>
-<p>This is the API platform. It is a different thing from a ChatGPT Plus subscription, and paying for ChatGPT does not give you API access. If you already have ChatGPT, you still need this.</p>
-<p><strong>2.</strong> Go to <strong>platform.openai.com/api-keys</strong>. It is also in the left sidebar, as <strong>API Keys</strong>.</p>
-<blockquote><p>Menu labels and layouts move. The addresses in this guide do not, so if a screen looks different from a screenshot you saw somewhere, trust the address.</p></blockquote>
-<p><strong>3.</strong> Click <strong>Create new secret key</strong>.</p>
-<p><strong>4.</strong> Name it something you will recognise later. <code>wonka-factory</code> works.</p>
-<p><strong>5.</strong> Click <strong>Create secret key</strong>.</p>
-<p><strong>6.</strong> <strong>Copy it now.</strong> It starts with <code>sk-</code> and it is shown exactly once. Close that box without copying and the key is gone forever, and you make a new one.</p>
-<p><strong>7.</strong> Paste it somewhere safe immediately. A password manager is right. A sticky note on your monitor is not.</p>
-<blockquote><p><strong>The one rule that matters.</strong> Never paste your key into a chat window, never put it in a screenshot, and never read it out loud on a recording. If you ever think a key leaked, go back to the API keys page, revoke it, and make a new one. It takes thirty seconds and costs nothing.</p></blockquote>
-<hr>
-<h2>Part 2: Organization verification. The step that makes you wait</h2>
-<p><strong>This is the step people skip, and it is the expensive one.</strong> OpenAI requires a one time identity verification before its image models will work for you. Your key can talk to text models immediately, but it cannot draw until this clears.</p>
-<p><strong>1.</strong> Go to <strong>platform.openai.com/settings/organization/general</strong>.</p>
-<p><strong>2.</strong> Find the <strong>Verifications</strong> section. It reads "Verify as an individual or business". Start it.</p>
-<p><strong>3.</strong> You will be asked for a government ID and a live selfie check. It runs through a verification provider and takes a few minutes of your time.</p>
-<blockquote><p><strong>Your ID verifies one account, and only one.</strong> OpenAI's own rule: an individual can verify a single account or organization, and attempting more than one may get access blocked. So do not spend yours verifying an organization that belongs to a partner, a spouse or a client. Verify your own, and have them verify theirs with their own ID.</p></blockquote>
-<p><strong>4.</strong> Approval is usually quick, sometimes minutes. It is not always instant, which is exactly why this happens on Day 1 and not on Day 5.</p>
-<p><strong>5.</strong> When it clears, image models unlock on your key automatically.</p>
-<blockquote><p><strong>Give it a moment before you test.</strong> A cleared verification does not always show up on every surface at once. If an image call still refuses right after approval, refresh, or sign out and back in, and try again before you conclude anything went wrong. Starting a second verification here is the one thing that can actually hurt you.</p></blockquote>
-<blockquote><p><strong>How you know it worked:</strong> Day 1 ends with First Candy, a deliberately tiny print that costs a few cents and exists for exactly one reason: to prove, on camera, on Day 1, that your key can actually generate an image. If First Candy prints, your setup is real. If it errors, you found out on the cheapest possible day.</p></blockquote>
-<hr>
-<h2>Part 3: Add credit</h2>
-<p><strong>1.</strong> Go to <strong>platform.openai.com/settings/organization/billing</strong>.</p>
-<p><strong>2.</strong> Add a payment method.</p>
-<p><strong>3.</strong> Load <strong>$10 to $20</strong> to start.</p>
-<p><strong>Why that number.</strong> The bootcamp runs <strong>two Tasting Room races</strong>, both on Day 8 in one sitting: your main images face the panel, then your gallery does. An optional second round runs the same day, and only when a change was big enough to be a different image. Add the image edits across Days 5 to 7 and $10 to $20 covers a full product comfortably. It is usage based, so whatever you do not spend stays yours.</p>
-<p><strong>4.</strong> Optional but sensible: set a spend limit. It lives on its own page, not with billing: <strong>platform.openai.com/settings/organization/limits</strong>, under <strong>Organization spend limit</strong>. It is a ceiling that protects you from a runaway loop, and $30 is a reasonable place to put it. You can add a spend alert on the same page if you would rather be warned than stopped.</p>
-<hr>
-<h2>Part 4: Give the key to Wonka</h2>
-<p>Put the key where the kit expects it. Wonka walks you through this on Day 1, and <code>/machines-check</code> confirms it.</p>
-<p>Wonka will never print your key back to you. When he checks it, he reports only that it is present, how many characters it is, and its last four. That is deliberate: Day 1 is a lesson you may well be screen recording yourself, and a key on screen is a key in the world.</p>
-<hr>
-<h2>When something goes wrong</h2>
-<table><tr><th>What you see</th><th>What it means</th><th>What to do</th></tr><tr><td><code>401 Incorrect API key</code></td><td>The key is wrong, or has a stray space or line break</td><td>Re-copy it. Check for a trailing space</td></tr><tr><td><code>403</code> or a model access error on an image call</td><td>Organization verification has not cleared</td><td>Go back to Part 2. This is the usual answer</td></tr><tr><td><code>429 insufficient_quota</code></td><td>No credit on the account</td><td>Part 3. Note this is different from a rate limit</td></tr><tr><td><code>429 rate limit</code></td><td>Too many calls too fast</td><td>Wait a minute and retry. Nothing is broken</td></tr><tr><td>First Candy fails on Day 1</td><td>Almost always verification, occasionally credit</td><td>Work through Part 2, then Part 3</td></tr><tr><td>The key works for text but not images</td><td>Verification. Every time</td><td>Part 2</td></tr><tr><td>It says verified, but images still refuse</td><td>The approval has not reached every surface yet</td><td>Refresh, or sign out and back in, then retry. Do not start a second verification</td></tr><tr><td>Still pending a day later</td><td>The review is taking longer than usual, or something was unclear in the submission</td><td>Check the email address on the account for a request for more information. Keep working: only the First Candy waits, and you have until Day 5</td></tr></table>
-<hr>
-<h2>The checklist</h2>
-<ul class="check">
-<li><label><input type="checkbox" data-k="1"><span>Account created at platform.openai.com</span></label></li>
-<li><label><input type="checkbox" data-k="2"><span>Secret key created and saved somewhere safe</span></label></li>
-<li><label><input type="checkbox" data-k="3"><span>Organization verification STARTED on Day 1</span></label></li>
-<li><label><input type="checkbox" data-k="4"><span>Verification cleared</span></label></li>
-<li><label><input type="checkbox" data-k="5"><span>$10 to $20 of credit loaded</span></label></li>
-<li><label><input type="checkbox" data-k="6"><span>Optional: usage limit set</span></label></li>
-<li><label><input type="checkbox" data-k="7"><span>Key handed to Wonka</span></label></li>
-<li><label><input type="checkbox" data-k="8"><span>/machines-check passed</span></label></li>
-<li><label><input type="checkbox" data-k="9"><span>First Candy printed</span></label></li>
-</ul>
-<p>When First Candy prints, this machine is done and you never think about it again.</p>
-<hr>
-<p>*The Wonka Creative Bootcamp. Day 1, The Front Gate.*</p>
+
+<header>
+  <div class="kick rv">Setup guide · One time</div>
+  <h1 class="rv">Give Your Employee Hands</h1>
+  <p class="lede rv">Claude is not an image model. Connect one to Claude Code and
+  "make me an image" starts working. You do this once.</p>
+  <div class="meta rv"><span><b>5</b> steps</span><span><b>15</b> minutes</span><span>no coding</span></div>
+  <p class="need rv">You need <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener">Claude Code</a>
+  installed, and a folder to work in. The folder is whichever one you open Claude Code inside:
+  your AI employee, a course project, a client, anything. The key goes in that folder.</p>
+  <div class="warn rv" style="max-width:560px;margin:20px auto 0;text-align:start">
+  <b>Start step 2 today, even if you finish the rest later.</b> Image generation needs a one-time
+  identity verification, and it is the one step here that can make you wait. Everything else takes
+  minutes. People who leave it until the day they actually need an image are the ones who lose a day.</div>
+</header>
+
+<div class="step rv" data-n="01" id="s1"><span class="num">Step 1 · Get a key</span>
+  <h2>Create an API key in your OpenAI account</h2>
+  <ol>
+    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
+    and sign in. This is the developer platform, a separate place from ChatGPT even though the
+    login is the same. <b>Paying for ChatGPT Plus does not give you this</b>, so if you already
+    have ChatGPT you still need to do everything on this page.</li>
+    <li>Click <b>Create new secret key</b>.</li>
+    <li>Name it after the folder it belongs to, so you always know what it is later. Anything
+    works: the project name, the employee's name, <code>images</code>.
+    Leave <b>Project</b> on Default and <b>Permissions</b> on <b>All</b>. A restricted key signs in
+    fine and then fails on images, which looks like a broken key and is not one.</li>
+    <li><b>Copy it now.</b> It starts with <code>sk-</code> and OpenAI shows it exactly once.
+    Close that box without copying and the key is gone for good, and you make a new one.</li>
+    <li>Paste it somewhere safe immediately. A password manager is right. A sticky note on your
+    monitor is not.</li>
+  </ol>
+  <div class="tip"><b>Trust the address, not the screenshot.</b> Menu labels and layouts move
+  every few months. The addresses in this guide do not, so if a screen looks different from a
+  picture you saw somewhere, go by the address.</div>
+  <div class="win">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="addr">platform.openai.com/api-keys</span></div>
+    <div class="wbody">
+      <div class="wrow"><span>API keys</span><span class="wbtn">+ Create new secret key</span></div>
+      <div class="wrow"><span>my-project</span><span class="wkey">sk-proj-••••••••••••••••</span></div>
+    </div>
+  </div>
+  <div class="warn"><b>A key is a credit card.</b> Never paste it into a chat, never put it in a
+  screenshot, and never read it out loud on a recording. It goes into one file on your own machine
+  and nowhere else. If that folder is a git repository, add a line saying <code>.env</code> to its
+  <code>.gitignore</code> first, or the key rides along the next time you push.
+  <br><br><i>If you ever think a key leaked</i>, go back to the API keys page, revoke it and make
+  a new one. It takes thirty seconds and costs nothing. A revoked key cannot be used by anyone,
+  including you, so replace it in your <code>.env</code> at the same time.</div>
 </div>
-<p class="foot">From the bootcamp kit's library (<code>downloads/openai-key-and-verification-walkthrough.md</code>). The copy in your kit is the one Wonka reads.</p>
+
+<div class="step rv" data-n="02" id="s2"><span class="num">Step 2 · Verify · do this first</span>
+  <h2>Turn on image generation with a one-time ID check</h2>
+  <p>Your key can talk to text models the moment you make it. <b>It cannot draw until OpenAI
+  verifies who you are.</b> This is the step people skip, and it is the expensive one to skip.</p>
+  <ol>
+    <li>Go to <a href="https://platform.openai.com/settings/organization/general" target="_blank" rel="noopener">platform.openai.com/settings/organization/general</a>.</li>
+    <li>Find the <b>Verifications</b> section. It reads "Verify as an individual or business".
+    Start it.</li>
+    <li>You give a government ID and a live selfie check. It runs through a verification
+    provider and takes a few minutes of your time.</li>
+    <li>Approval is usually quick, sometimes minutes. It is <b>not always instant</b>, and that
+    is the whole reason this is step 2 and not step 5.</li>
+    <li>When it clears, image models unlock on your key on their own. Nothing to switch on.</li>
+  </ol>
+  <div class="warn"><b>Your ID verifies one account, and only one.</b> That is OpenAI's own rule:
+  an individual can verify a single account or organization, and attempting more than one may get
+  your access blocked. So do not spend yours verifying an account that belongs to a partner, a
+  spouse or a client. Verify your own, and have them verify theirs with their own ID.</div>
+  <div class="tip"><b>Give it a moment before you test, and do not verify twice.</b> A cleared
+  verification does not reach every surface at once. If an image call still refuses right after
+  approval, refresh, or sign out and back in, and try again before you conclude anything is wrong.
+  <i>Starting a second verification is the one thing here that can actually hurt you.</i></div>
+</div>
+
+<div class="step rv" data-n="03" id="s3"><span class="num">Step 3 · Add credit</span>
+  <h2>Put $10 to $20 on the account</h2>
+  <ol>
+    <li>Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener">platform.openai.com/settings/organization/billing</a>.</li>
+    <li>Add a payment method.</li>
+    <li>Load <b>$10 to $20</b> to start. It is usage based, so whatever you do not spend stays
+    yours. Exploring at low quality costs cents an image, so that lasts a long time.</li>
+  </ol>
+  <div class="tip"><b>Set a spend limit while you are here.</b> It lives on its own page, not with
+  billing: <a href="https://platform.openai.com/settings/organization/limits" target="_blank" rel="noopener">platform.openai.com/settings/organization/limits</a>,
+  under <b>Organization spend limit</b>. It is a ceiling that protects you from a runaway loop, and
+  $30 is a sensible place to put it. The same page takes a spend <i>alert</i> if you would rather
+  be warned than stopped.</div>
+</div>
+
+<div class="step rv" data-n="04" id="s4"><span class="num">Step 4 · Hand it over</span>
+  <h2>Paste it into one file in your folder</h2>
+  <p>In the folder you work in, create or open a file called <code>.env</code>
+  and add a single line:</p>
+  <div class="term" data-copy="OPENAI_API_KEY=sk-proj-your-key-here"><button class="cp">Copy</button><i># inside your employee's folder</i><br>OPENAI_API_KEY=<b>sk-proj-your-key-here</b></div>
+  <p>That is the whole integration. No packages to install, no SDK, no settings screen. The key
+  sits in the folder, and Claude reads it out of the file the first time it needs it.</p>
+  <div class="warn"><b>The file name starts with a dot, and that is where most people get stuck.</b>
+  A Mac hides dot files: in Finder press <code>Cmd + Shift + .</code> to show them. On Windows,
+    File Explorer &rarr; View &rarr; Show &rarr; Hidden items. If your editor
+  will not save a file with no name before the dot, let Claude Code do it. Open Claude Code in the
+  folder and ask: <i>create a .env file here with OPENAI_API_KEY set to the key I am about to
+  paste</i>.</div>
+  <div class="tip"><b>Why a file and not the chat?</b> Because the folder is the memory. The key
+  sits in it permanently, so every future session in that folder finds it on its own and you never
+  paste it again.</div>
+  <div class="tip"><b>One key, as many folders as you like.</b> You do not need a new key per
+  project. Paste the same line into the <code>.env</code> of every folder you want to give hands to.
+  All of them bill to the same balance, and you can see the spend per key on the OpenAI usage page.</div>
+</div>
+
+<div class="step rv" data-n="05" id="s5"><span class="num">Step 5 · Watch it work</span>
+  <h2>Ask for an image</h2>
+  <p>Open Claude Code in that folder and ask in plain words:</p>
+  <div class="term" data-copy="Generate a test image with gpt-image-2 using the OpenAI key in .env: a red apple on a white studio background. Save it to a folder called test/."><button class="cp">Copy</button><i>&gt;</i> Generate a test image with gpt-image-2 using the OpenAI key in .env: a red apple on a white studio background. Save it to a folder called test/.</div>
+  <p>Claude writes the small script, calls the model and saves the file. If an apple lands in
+  <code>test/</code>, it has hands. From here you ask for the image you actually need, in your own
+  words, and it keeps the script for next time.</p>
+  <div class="tip"><b>Two habits that keep the bill in cents.</b> Generate at
+  <b>low quality while exploring</b> and full quality only for the finalists. And always generate
+  <b>one image before a batch</b>: a minute of looking catches the wrong colour before it costs you
+  a hundred images.</div>
+</div>
+
+<div class="step rv" data-n="" id="s6"><span class="num">If something fails</span>
+  <h2>Every error you are likely to see</h2>
+  <div class="tblwrap"><table>
+    <col class="c1"><col class="c2"><col class="c3">
+    <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+    <tr><td><code>401 Incorrect API key</code></td><td>The key is wrong, or carries a stray space or line break</td><td>Re-copy it into <code>.env</code>. Check for a trailing space</td></tr>
+    <tr><td><code>403</code>, or a model access error on an image call</td><td>Verification has not cleared</td><td>Back to step 2. This is the usual answer</td></tr>
+    <tr><td><code>429 insufficient_quota</code></td><td>No credit on the account</td><td>Step 3. Note this is not a rate limit, despite the 429</td></tr>
+    <tr><td><code>429 rate limit</code></td><td>Too many calls too fast</td><td>Wait a minute and retry. Nothing is broken</td></tr>
+    <tr><td>The key works for text but not images</td><td>Verification. Every time</td><td>Step 2</td></tr>
+    <tr><td>It says verified, but images still refuse</td><td>The approval has not reached every surface yet</td><td>Refresh, or sign out and back in, then retry. <b>Do not start a second verification</b></td></tr>
+    <tr><td>Still pending a day later</td><td>The review is taking longer than usual, or something was unclear</td><td>Check the account's email for a request for more information</td></tr>
+    <tr><td>Claude will not read the file</td><td>Some setups block reading <code>.env</code> by default</td><td>If it asks for permission, allow it once for this folder</td></tr>
+    <tr><td>It says there is no key at all</td><td>The <code>.env</code> is in the wrong folder</td><td>It must sit in the folder Claude Code was opened in. Ask Claude <i>which folder are you in right now</i></td></tr>
+  </table></div>
+  <p>Anything else, paste the error into Claude Code and ask it to fix the connection. Debugging its
+  own tools is part of the job description.</p>
+</div>
+
+<div class="step rv" data-n="" id="s7"><span class="num">Before you move on</span>
+  <h2>The checklist</h2>
+  <p>Ticks are remembered in this browser, so you can start it now and come back when the
+  verification clears.</p>
+  <ul class="chk">
+    <li><label><input type="checkbox"><span>Account created at platform.openai.com</span></label></li>
+    <li><label><input type="checkbox"><span>Secret key created and saved somewhere safe</span></label></li>
+    <li><label><input type="checkbox"><span><b>Verification STARTED</b> (do this before anything else)</span></label></li>
+    <li><label><input type="checkbox"><span>Verification cleared</span></label></li>
+    <li><label><input type="checkbox"><span>$10 to $20 of credit loaded</span></label></li>
+    <li><label><input type="checkbox"><span>Spend limit set (optional, sensible)</span></label></li>
+    <li><label><input type="checkbox"><span><code>.env</code> created in the right folder, with the key in it</span></label></li>
+    <li><label><input type="checkbox"><span><code>.env</code> added to <code>.gitignore</code>, if the folder is a git repo</span></label></li>
+    <li><label><input type="checkbox"><span>A test image actually generated</span></label></li>
+  </ul>
+</div>
+
+<div class="done rv">
+  <h3>Hands connected</h3>
+  <p>When that last box is ticked, this is done and you never think about it again. Ask for the
+  image you actually need, in your own words, in any folder that has the key.</p>
+  <span class="url">jaygptpro.com/openai</span>
+</div>
+
+<footer><p>Jay Margaliot · jaygptpro.com</p></footer>
+
 </div>
 <script>
-document.querySelectorAll('.check input').forEach(function(b){
-  var k = 'wcb-' + location.pathname.split('/').pop() + '-' + b.dataset.k;
-  try { if (localStorage.getItem(k) === '1') b.checked = true; } catch(e){}
-  b.addEventListener('change', function(){
-    try { localStorage.setItem(k, b.checked ? '1' : '0'); } catch(e){}
+const bar=document.querySelector('#prog i');
+const onScroll=()=>{const d=document.documentElement;const max=d.scrollHeight-innerHeight;
+  bar.style.width=(max>0?(d.scrollTop/max)*100:0)+'%'};
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* copy buttons: a command you retype from a phone is a command you get wrong */
+document.querySelectorAll('.term').forEach(t=>{
+  const btn=t.querySelector('.cp'); if(!btn)return;
+  btn.addEventListener('click',()=>{
+    const txt=t.dataset.copy||t.innerText.replace(/^Copy\s*/,'');
+    navigator.clipboard?.writeText(txt).then(()=>{
+      btn.textContent='Copied';btn.classList.add('ok');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},1500);
+    }).catch(()=>{btn.textContent='Select it';setTimeout(()=>btn.textContent='Copy',1500)});
   });
 });
+
+/* Checklist ticks, remembered per browser. Storage can throw outright in a private
+   window or with site data blocked, so every touch of it is guarded and the list works
+   the same when nothing can be saved. */
+(function(){
+  var K='openai-setup-checklist', boxes=[].slice.call(document.querySelectorAll('.chk input'));
+  if(!boxes.length) return;
+  var saved=[];
+  try{ saved=JSON.parse(localStorage.getItem(K)||'[]')||[]; }catch(e){ saved=[]; }
+  boxes.forEach(function(b,i){ if(saved.indexOf(i)>-1) b.checked=true; });
+  var save=function(){
+    try{
+      localStorage.setItem(K,JSON.stringify(boxes.map(function(b,i){return b.checked?i:-1})
+        .filter(function(i){return i>-1})));
+    }catch(e){}
+  };
+  boxes.forEach(function(b){ b.addEventListener('change',save); });
+})();
+
+/* Reveal on scroll. Visible by default, hidden only once JS is confirmed alive, with a
+   hard deadline so nothing can ever stay invisible. */
+const rv=[...document.querySelectorAll('.rv')];
+const showAll=()=>rv.forEach(e=>e.classList.add('in'));
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!('IntersectionObserver' in window)||reduce){showAll();}
+else{
+  const io=new IntersectionObserver(es=>es.forEach((e,n)=>{
+    if(e.isIntersecting){e.target.style.transitionDelay=(n*60)+'ms';e.target.classList.add('in');io.unobserve(e.target)}
+  }),{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  rv.forEach(e=>io.observe(e));
+  setTimeout(showAll,2500);
+}
 </script>
-</body></html>
+</body>
+</html>
