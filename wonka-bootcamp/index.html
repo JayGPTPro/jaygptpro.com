@@ -1879,6 +1879,38 @@ body:has(#app.viewing-day) #film-grain{display:none}
   color:rgba(243,233,210,.72);text-transform:uppercase;line-height:1.5;margin:0;
 }
 .dv2-poster small{font-family:var(--font-mono);font-size:.6rem;color:rgba(243,233,210,.42);letter-spacing:.05em}
+/* Jay is filming the 34 lessons now, and wants the rooms to look finished while he
+   does. Each lesson shows its own painted title card with a play button on it, so a
+   day page reads as a shelf of films rather than a column of empty slots. The card is
+   art, not a control: no pointer cursor, nothing to click, and the gradient above stays
+   underneath so a missing file degrades to what was here before. */
+.dv2-poster.is-film{
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  padding:0;gap:0;
+}
+.dv2-poster.is-film::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(closest-side at 50% 50%, rgba(10,4,14,.42), transparent 72%);
+}
+.dv2-play{
+  position:relative;width:clamp(52px,9%,84px);aspect-ratio:1;border-radius:50%;
+  background:rgba(20,9,26,.5);backdrop-filter:blur(3px);
+  border:2px solid rgba(245,184,65,.9);
+  box-shadow:0 6px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.22);
+  display:grid;place-items:center;
+}
+.dv2-play::after{
+  content:"";width:0;height:0;margin-left:18%;
+  border-left:calc(clamp(52px,9vw,84px) * .30) solid var(--gold);
+  border-top:calc(clamp(52px,9vw,84px) * .19) solid transparent;
+  border-bottom:calc(clamp(52px,9vw,84px) * .19) solid transparent;
+}
+.dv2-poster-reel{
+  position:absolute;left:0;right:0;bottom:0;padding:7px 12px;
+  font-family:var(--font-mono);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(243,233,210,.62);text-align:right;
+  background:linear-gradient(0deg, rgba(10,4,14,.62), transparent);
+}
 
 /* ---------- the written walkthrough that sits under every lesson film ---------- */
 /* The film and this panel are two independent paths through the same day: the film
@@ -5071,8 +5103,15 @@ function renderDay(dayNum) {
         // <!-- VIDEO PLACEHOLDER --> projectionist poster shown until a real Vimeo ID exists.
         // TODO: replace ls.vimeo in DAYS with the real numeric Vimeo id;
         // the iframe below will then render automatically.
-        html += '<div class="dv2-poster"><span class="dv2-poster-lens" aria-hidden="true"></span>' +
-          '<p>The projectionist is threading the reel</p><small>Lesson film arrives with this room . ' + reelChip + '</small>' +
+        // The painted title card for this exact lesson, named day-NN_lesson-NN.webp.
+        // If one is ever missing the background simply does not load and the poster
+        // falls back to the plain gradient, which is what stood here before.
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const thumb = 'lesson-thumbs/day-' + pad2(dayNum) + '_lesson-' + pad2(li + 1) + '.webp';
+        html += '<div class="dv2-poster is-film" style="background-image:url(&quot;' + thumb + '&quot;)"' +
+          ' role="img" aria-label="Lesson ' + (li + 1) + ' film, arriving with this room">' +
+          '<span class="dv2-play" aria-hidden="true"></span>' +
+          '<span class="dv2-poster-reel">' + reelChip + '</span>' +
           '<!-- VIMEO_ID: ' + ls.vimeo + ' -->' +
           '</div>';
       } else {
