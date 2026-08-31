@@ -3003,7 +3003,7 @@ const CONFIG = {
 // It MUST be declared before DAYS below: the data literal reads it at load time,
 // and a const declared later leaves it in the temporal dead zone, which threw a
 // ReferenceError that killed the whole app script (measured live, 26 August).
-const KIT_ZIP = 'wonka-starter-kit-5122db6cf3.zip';
+const KIT_ZIP = 'wonka-starter-kit-88c7436a6d.zip';
 
 const DAYS = [
   {
@@ -5046,7 +5046,7 @@ function renderDay(dayNum) {
   // where people downloaded it before any lesson told them what it was for.
   // It now rides with Lesson 4, the lesson that unzips it (see the lessons loop).
   function kitCtaHtml() {
-    return '<a class="dv2-kitcta" href="' + KIT_ZIP + '" download>' +
+    return '<a class="dv2-kitcta" href="' + KIT_ZIP + '" download="wonka-starter-kit.zip">' +
       '<span class="dv2-kitcta-badge" aria-hidden="true">&#8595;</span>' +
       '<span class="dv2-kitcta-text"><strong>Download the Starter Kit</strong>' +
       '<span>wonka-starter-kit.zip &middot; unzip it to your Desktop, then open it in Claude. Lesson 4 walks you through it.</span></span>' +
@@ -5140,7 +5140,7 @@ function renderDay(dayNum) {
         if (r && typeof r === 'object' && r.url) {
           // a .zip is a file the browser saves; a page opens in its own tab
           const isFile = /\.zip$/i.test(r.url);
-          html += '<a class="dv2-res is-live" href="' + escapeHtml(r.url) + '"' + (isFile ? ' download' : ' target="_blank" rel="noopener"') + '><span class="dv2-resname">' + escapeHtml(r.name) + '</span><span class="dv2-ressub">' + (isFile ? 'Click to download.' : 'Click to open.') + '</span></a>';
+          html += '<a class="dv2-res is-live" href="' + escapeHtml(r.url) + '"' + (isFile ? ' download="' + escapeHtml(r.name) + '"' : ' target="_blank" rel="noopener"') + '><span class="dv2-resname">' + escapeHtml(r.name) + '</span><span class="dv2-ressub">' + (isFile ? 'Click to download.' : 'Click to open.') + '</span></a>';
         } else {
           html += '<span class="dv2-res is-prop"><span class="dv2-resname">' + escapeHtml(r) + '</span><span class="dv2-ressub">Already in your kit: open the downloads/ folder inside the zip.</span></span>';
         }
