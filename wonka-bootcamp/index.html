@@ -2066,8 +2066,16 @@ body:has(#app.viewing-day) #film-grain{display:none}
 .dv2-gencta .sop-cmd code{color:#F0CDFF;font-size:1rem;letter-spacing:.16em;font-weight:700}
 .dv2-gencta .sop-copy{color:#F0CDFF;background:rgba(240,205,255,.12);border-color:rgba(240,205,255,.42)}
 .dv2-gencta-fine{font-size:13px;line-height:1.55;color:#d8c2e0;margin:7px 0 0}
+.dv2-gencta-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#d9a7ee;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:9px}
+.dv2-gencta-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#8a5fa0,transparent)}
+.gen-step{align-items:center}
+.dv2-gencta .gen-num{background:transparent;border:2px solid #d9a7ee;color:#d9a7ee;font-size:19px}
+.gen-sep{height:1px;background:linear-gradient(90deg,transparent,#8a5fa0 22%,#8a5fa0 78%,transparent);margin:15px 0}
+.gen-skip{align-self:flex-start;margin-top:6px;font-size:12px;color:#c9a8d8;border:1px dashed #8a5fa0;border-radius:999px;padding:2px 11px}
 .dv2-gencta-fine b{color:#f6ecfa}
-@media(max-width:560px){.dv2-gencta-head{flex-wrap:wrap}.dv2-gencta .dv2-kitcta-btn{width:100%;text-align:center}}
+@media(max-width:560px){.dv2-gencta-head{flex-wrap:wrap}.dv2-gencta .dv2-kitcta-btn{width:100%;text-align:center}
+  /* the badge centres against a tall wrapped column and floats away from its title */
+  .gen-step{align-items:flex-start}.dv2-gencta .gen-num{margin-top:2px}}
 .dv2-tellwonka{margin:14px auto 0;max-width:520px;text-align:center;font-size:.85rem;color:var(--brass-dark);line-height:1.5}
 .dv2-tellwonka code{background:rgba(184,144,31,.16);border:1px solid rgba(184,144,31,.4);border-radius:6px;padding:2px 8px;font-size:.8rem}
 .dv2-restag{
@@ -5050,16 +5058,26 @@ function renderDay(dayNum) {
   // coupon live here rather than in the script, so the code can change without a reshoot.
   function genruptCtaHtml() {
     return '<div class="dv2-gencta">' +
-      '<p class="dv2-gencta-fine"><b>No Genrupt account yet?</b> Create one first at '+
-        '<a href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">genrupt.com/l/aivault</a> '+
-        'and click <b>Apply for Beta Access</b>. Already have a Genrupt account? Go straight to the signup page below.</p>' +
-      '<div class="dv2-gencta-head">' +
-        '<span class="dv2-kitcta-badge" aria-hidden="true">&#9733;</span>' +
-        '<span class="dv2-kitcta-text"><strong>Your 1,000 Genrupt credits</strong>' +
+      '<p class="dv2-gencta-eyebrow">Your 1,000 Genrupt credits</p>' +
+
+      '<div class="dv2-gencta-head gen-step">' +
+        '<span class="dv2-kitcta-badge gen-num" aria-hidden="true">1</span>' +
+        '<span class="dv2-kitcta-text"><strong>Create your Genrupt account</strong>' +
+        '<span>Open the page and click <b>Apply for Beta Access</b>.</span>' +
+        '<span class="gen-skip">Already have a Genrupt account? Go straight to step 2</span></span>' +
+        '<a class="dv2-kitcta-btn" href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">Create the account</a>' +
+      '</div>' +
+
+      '<div class="gen-sep" aria-hidden="true"></div>' +
+
+      '<div class="dv2-gencta-head gen-step">' +
+        '<span class="dv2-kitcta-badge gen-num" aria-hidden="true">2</span>' +
+        '<span class="dv2-kitcta-text"><strong>Join the Wonka plan</strong>' +
         '<span>Sign up on the Wonka plan and enter this code at checkout. Your first month is free.</span></span>' +
         '<a class="dv2-kitcta-btn" href="https://genrupt.com/wonka" target="_blank" rel="noopener">Open the signup page</a>' +
       '</div>' +
       '<div class="sop-cmd"><code>WONKA49</code><button class="sop-copy" type="button">Copy</button></div>' +
+
       '<p class="dv2-gencta-fine">The link and the code together put you on the <b>Creative Factory</b> plan. ' +
         'Keep it after the free month and you stay at <b>$49/month</b>, which is the Wonka rate. ' +
         'The cheapest plan on open sale is $99. Cancel any time during the free month, even today, and it will not renew. The credits stay yours.</p>' +
