@@ -3012,7 +3012,14 @@ const CONFIG = {
   WHATSAPP_LINK: 'https://chat.whatsapp.com/CLWGlcWYIeK2kyJAG2oSkU',
   SUPPORT_EMAIL: 'info@jaygptpro.com',
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
-  UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the door opening are the same moment
+  UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the announced moment are the same
+  /* The door actually opens this many minutes EARLY (Jay, 1.9.2026, and the same
+     thing we did on the Donna challenge). Two reasons, and the second is the real
+     one: he does not mind an eager student getting in ahead of the hour, and if a
+     day is broken he wants to find out while nobody is watching rather than at
+     9:00 with everyone pushing on the door at once.
+     Everything a customer READS still says 9:00. This shifts only the gate. */
+  UNLOCK_EARLY_MIN: 20,
   TOTAL_DAYS: 10,
   FALLBACK_START_DATE: '2026-09-01', // only reached if ROUNDS lookup fails entirely
   // DAY_DATES moved into ROUNDS above, one calendar per round. An explicit
@@ -3601,6 +3608,16 @@ function activeRound() {
      answer and it keeps this in step with roundCfg(). */
   return (userRound && CONFIG.ROUNDS && CONFIG.ROUNDS[userRound]) ? userRound : CONFIG.DEFAULT_ROUND;
 }
+/* Two moments per day, deliberately different.
+   dayUnlockTime  = the ANNOUNCED 9:00 New York. Every label, every "opens at"
+                    line and the landing page countdown use this one.
+   dayOpenTime    = when the door actually gives, UNLOCK_EARLY_MIN before it.
+                    Only isDayUnlocked uses this.
+   Telling somebody 8:40 would move the expectation to 8:40 for ever; the early
+   window is a safety margin, not a promise. */
+function dayOpenTime(dayNum) {
+  return new Date(dayUnlockTime(dayNum).getTime() - (CONFIG.UNLOCK_EARLY_MIN || 0) * 60000);
+}
 function dayUnlockTime(dayNum) {
   // An explicit calendar wins over any computation: the round skips whole days.
   const rc = roundCfg();
@@ -3638,7 +3655,7 @@ function isDayUnlocked(dayNum) {
   if (onLocalhost && DEMO_LOCK_LAST > 0 && dayNum > DAYS.length - DEMO_LOCK_LAST) return false;
   if (isAdmin() || userRound === 'wonka_all') return true;
   if (earlyAccessMaxDay && dayNum <= earlyAccessMaxDay) return true;
-  return new Date() >= dayUnlockTime(dayNum);
+  return new Date() >= dayOpenTime(dayNum);
 }
 function unlockLabel(dayNum) {
   const t = dayUnlockTime(dayNum);
