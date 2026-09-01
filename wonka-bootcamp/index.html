@@ -2533,6 +2533,8 @@ html.map-booting #map3d-stage::after{
   <p id="loading-msg">Warming up the machines...</p>
 </div>
 
+
+
 <!-- ================= LOGIN: THE FACTORY GATES ================= -->
 <div id="gate-screen" class="screen">
   <div class="searchlight sl-a" aria-hidden="true"></div>
@@ -2969,7 +2971,34 @@ html.map-booting #map3d-stage::after{
 const CONFIG = {
   SUPABASE_URL: 'https://faqjilunlzljbgrnpcgi.supabase.co',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcWppbHVubHpsamJncm5wY2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjc2NzIsImV4cCI6MjA5MDgwMzY3Mn0.-SOYLYKaGHKYdJKeO0cCWoFKi3HCkJ1jQQtfeS1BZT0',
-  ROUND_ID: 'wonka_r1',             // the rounds row exists (created 20.7); allowed_emails uses this value
+  /* MULTI ROUND. One portal serves every Wonka round; a customer's row in
+     allowed_emails says which one they are in, and everything date-shaped reads
+     from ROUNDS[thatRound]. Before this, ROUND_ID was a single constant: a
+     wonka_r2 customer was refused at the gate, would have seen round 1's
+     calendar, and their progress would have been written on top of round 1's.
+     Add a round here and in the rounds table, nothing else. */
+  ROUNDS: {
+    wonka_r1: {
+      label: 'Round 1',
+      start: '2026-09-01',
+      // Tue-Fri, then Tue-Thu, then Tue-Thu. Jay away 7-9 Sep, Rosh Hashana 11-13 Sep.
+      days: ['2026-09-01','2026-09-02','2026-09-03','2026-09-04',
+             '2026-09-08','2026-09-09','2026-09-10',
+             '2026-09-15','2026-09-16','2026-09-17'],
+    },
+    wonka_r2: {
+      label: 'Round 2',
+      start: '2026-09-22',
+      // Tue-Thu, then Tue-Thu, then Mon-Thu. Day 7 is a MONDAY, unlike round 1.
+      days: ['2026-09-22','2026-09-23','2026-09-24',
+             '2026-09-29','2026-09-30','2026-10-01',
+             '2026-10-05','2026-10-06','2026-10-07','2026-10-08'],
+    },
+  },
+  // what a signed-out visitor sees, and the fallback for anything round-shaped
+  // asked before we know who is at the door
+  DEFAULT_ROUND: 'wonka_r1',
+  ROUND_ID: 'wonka_r1',             // legacy alias, kept so nothing reading it breaks
   STORAGE_PREFIX: 'wonka-bootcamp', // NEVER 'donna-challenge' (same domain, must not collide)
   SALT: 'wonka2026',
   // Admins get every day unlocked and are excluded from analytics. jmargaliot@gmail.com
@@ -2985,17 +3014,10 @@ const CONFIG = {
   UNLOCK_HOUR_NY: 9,      // 9:00 AM New York = exactly what the landing page counts down to
   UNLOCK_BUFFER_MIN: 0,   // no buffer: the countdown hitting zero and the door opening are the same moment
   TOTAL_DAYS: 10,
-  FALLBACK_START_DATE: '2026-09-01', // Tue 1 Sep 2026. Must match the rounds table row.
-  // The ten factory days, explicitly. The schedule is NOT consecutive weekdays:
-  // Jay is away 7-9 Sep and Rosh Hashana falls 11-13 Sep, so the round runs
-  // Tue-Fri, then Tue-Thu, then Tue-Thu. When DAY_DATES is set it wins over
-  // both start_date and the weekday walk, which would otherwise open day 10 on
-  // Mon 14 Sep instead of Thu 17 Sep. Set it to null to fall back to that walk.
-  DAY_DATES: [
-    '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04',
-    '2026-09-08', '2026-09-09', '2026-09-10',
-    '2026-09-15', '2026-09-16', '2026-09-17',
-  ],
+  FALLBACK_START_DATE: '2026-09-01', // only reached if ROUNDS lookup fails entirely
+  // DAY_DATES moved into ROUNDS above, one calendar per round. An explicit
+  // calendar still wins over the weekday walk, which would otherwise open
+  // round 1 day 10 on Mon 14 Sep instead of Thu 17 Sep.
   MAP3D: true,                       // 3D isometric factory map. false = instant rollback to the 2D map
 };
 </script>
@@ -3450,7 +3472,8 @@ function paintPurchaseCard(){
   }
   var when = document.getElementById('ph-when');
   if (when) {
-    var d = new Date((CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
+    var rcNow = roundCfg();
+    var d = new Date(((rcNow && rcNow.start) || CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
     /* Print the real unlock moment in NEW YORK, the only timezone this schedule is
        defined in. It used to render in the VIEWER's timezone, so the New Zealand
        customer on this list was told Day 1 opens on 2 September. It also read
@@ -3533,7 +3556,7 @@ function track(event, dayNum) {
     // event since launch was silently discarded: 37,918 rows in the table, zero for
     // wonka_r1. The Donna portal has always used day_number.
     sb.from('user_events').insert({
-      user_email: userEmail, round: CONFIG.ROUND_ID, event_type: event,
+      user_email: userEmail, round: activeRound(), event_type: event,
       day_number: dayNum || null, created_at: new Date().toISOString(),
     }).then(() => {}, () => {});
   } catch (e) {}
@@ -3564,9 +3587,24 @@ function nyOffsetMinutes(dateUtc) {
     return (tt >= dstStart && tt < dstEnd) ? -240 : -300;
   }
 }
+/* The round the CURRENT viewer is in. Signed out, or a round we do not know,
+   falls back to the default so the locked view still renders something honest. */
+function roundCfg() {
+  return (CONFIG.ROUNDS && (CONFIG.ROUNDS[userRound] || CONFIG.ROUNDS[CONFIG.DEFAULT_ROUND])) || null;
+}
+/* The round id to WRITE on rows we insert. Never CONFIG.ROUND_ID: that would file
+   a round 2 student's progress and analytics under round 1. */
+function activeRound() {
+  /* Only ever a round this build knows about. 'wonka_all' is an all-access pass,
+     not a cohort, and an id we have no calendar for must not end up stamped on
+     progress rows: the gate refuses those anyway, so the default is the honest
+     answer and it keeps this in step with roundCfg(). */
+  return (userRound && CONFIG.ROUNDS && CONFIG.ROUNDS[userRound]) ? userRound : CONFIG.DEFAULT_ROUND;
+}
 function dayUnlockTime(dayNum) {
   // An explicit calendar wins over any computation: the round skips whole days.
-  const fixed = (CONFIG.DAY_DATES || [])[dayNum - 1];
+  const rc = roundCfg();
+  const fixed = ((rc && rc.days) || [])[dayNum - 1];
   if (fixed) {
     const [fy, fmo, fd] = fixed.split('-').map(Number);
     const fGuess = new Date(Date.UTC(fy, fmo - 1, fd, CONFIG.UNLOCK_HOUR_NY, CONFIG.UNLOCK_BUFFER_MIN, 0));
@@ -3576,7 +3614,7 @@ function dayUnlockTime(dayNum) {
   // (Sat/Sun are skipped: a Mon 10 Aug start puts day 6 on Mon 17 Aug, day 10 on Fri 21 Aug).
   // start_date itself is expected to be a weekday; if it ever lands on a weekend it
   // rolls forward to the next Monday rather than unlocking on the weekend.
-  const start = roundStartDate || CONFIG.FALLBACK_START_DATE;
+  const start = (rc && rc.start) || roundStartDate || CONFIG.FALLBACK_START_DATE;
   const [y, mo, d] = start.split('-').map(Number);
   let cal = new Date(Date.UTC(y, mo - 1, d));
   let left = dayNum - 1;
@@ -3616,14 +3654,14 @@ function unlockDateShort(dayNum) {
 }
 
 async function fetchRound() {
-  const cached = LS.get(P + '-start-date');
+  const cached = LS.get(P + '-start-date-' + activeRound());
   if (cached) roundStartDate = cached;
   if (!sb) return;
   try {
-    const { data, error } = await sb.from('rounds').select('*').eq('id', CONFIG.ROUND_ID).maybeSingle();
+    const { data, error } = await sb.from('rounds').select('*').eq('id', activeRound()).maybeSingle();
     if (!error && data && data.start_date) {
       roundStartDate = String(data.start_date).slice(0, 10);
-      LS.set(P + '-start-date', roundStartDate);
+      LS.set(P + '-start-date-' + activeRound(), roundStartDate);
     }
   } catch (e) { /* fall back to cache / FALLBACK_START_DATE */ }
 }
@@ -3655,7 +3693,8 @@ function signIn() {
 
 async function signOut() {
   try { await sb.auth.signOut(); } catch (e) {}
-  [P, P + '-email', P + '-round', P + '-round-check', P + '-start-date'].forEach(LS.del);
+  [P, P + '-email', P + '-round', P + '-round-check', P + '-start-date',
+   ...Object.keys(CONFIG.ROUNDS || {}).map(r => P + '-start-date-' + r)].forEach(LS.del);
   location.reload();
 }
 
@@ -3807,7 +3846,8 @@ async function checkAllowed(email, isRequery) {
      four Donna insiders a Wonka ticket (caught by Jay on the 20.7 setup run),
      so Wonka accepts only its own values: this round's id, 'wonka_all' (the
      Wonka-specific all-access), or an admin address. */
-  if (round !== CONFIG.ROUND_ID && round !== 'wonka_all' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
+  const knownRound = !!(CONFIG.ROUNDS && CONFIG.ROUNDS[round]);
+  if (!knownRound && round !== 'wonka_all' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
     // same reason as the revoked branch: a refusal must not leave a usable offline pass
     [P + '-email', P + '-round', P + '-round-check'].forEach(LS.del);
     hideLoading();
@@ -3843,7 +3883,7 @@ async function mergeServerProgress() {
   try {
     const { data, error } = await sb.from('user_progress')
       .select('day_num, completed_at, checks')
-      .eq('user_email', userEmail).eq('round', CONFIG.ROUND_ID);
+      .eq('user_email', userEmail).eq('round', activeRound());
     if (error || !data) return;
     data.forEach((row) => {
       if (row.completed_at && !progress.completedDays.includes(row.day_num)) {
@@ -3875,7 +3915,7 @@ async function saveToServer() {
     try {
       await sb.from('user_progress').upsert({
         user_email: userEmail,
-        round: CONFIG.ROUND_ID,
+        round: activeRound(),
         day_num: dayNum,
         completed_at: progress.completedDays.includes(dayNum)
           ? (progress.completedAt[dayNum] || new Date().toISOString())
@@ -6615,6 +6655,8 @@ window.WonkaMapAPI = Object.freeze({
   toast(msg) { toast(msg); },
   track(event, dayNum) { track(event, dayNum); },
 });
+
+
 
 })();
 </script>
