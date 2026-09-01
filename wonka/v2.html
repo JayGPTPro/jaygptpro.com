@@ -509,6 +509,14 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
    the other, once the card scrolls into view. The stagger runs off the same
    .reveal/.visible mechanic as everything else, so no extra JS. */
 .cal-wrap { max-width: 480px; margin: 40px auto 0; }
+/* Round 2 crosses a month boundary, so the ONE calendar card holds two month
+   grids side by side. One card on purpose: two separate cards read as two
+   options to choose between, and there is nothing to choose. Wraps to a
+   column on narrow screens. */
+.cal-wrap.two-months { max-width: 880px; }
+.cal-months { display: flex; gap: 30px; flex-wrap: wrap; }
+.cal-mo { flex: 1 1 300px; min-width: 270px; }
+.cal-mo-label { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; color: var(--text-2); }
 .cal-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--rad); box-shadow: var(--shadow-card); padding: 26px 26px 22px; }
 .cal-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
 .cal-month { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
@@ -771,7 +779,7 @@ footer nav a:hover { color: var(--purple-dark); }
 <div id="launchBar" class="launch-bar">
     <span class="lb-dot"></span>
     <span id="lbPriceMsg" hidden></span>
-    <span id="lbGatesMsg">The factory gates open September 22 &middot; <b id="lbTimer">&hellip;</b></span>
+    <span id="lbGatesMsg">The factory gates open again September 22 &middot; <b id="lbTimer">&hellip;</b></span>
     <button class="launch-bar-close" id="launchBarClose" aria-label="Dismiss">&#x2715;</button>
 </div>
 
@@ -805,7 +813,7 @@ footer nav a:hover { color: var(--purple-dark); }
     <svg class="claude-star cs-2"><use href="#claude-star"/></svg>
     <div class="wrap">
         <h1>Build Your <span class="accent">AI Creative Director</span> <span style="white-space:nowrap;">in 10 Days</span></h1>
-        <p class="hero-date">Round 1 is <b>sold out</b>. The next gates open <b>September 22</b> &middot; <span class="js-tickets-left">50 golden tickets</span></p>
+        <p class="hero-date">Round 1 is <b>sold out</b>. The gates open again <b>September 22</b> &middot; <span class="js-tickets-left">50 golden tickets</span></p>
 
         <!-- The VSL. Vimeo 1216967079, domain-locked to jaygptpro.com, so it will
              not play from localhost or file://. Click-to-play facade: the iframe
@@ -974,7 +982,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="show-note reveal">A set like this once took eight jobs, weeks, and thousands of dollars.</p>
         <div class="show-cta reveal">
             <a class="btn" href="#pricing">Build this for my product &rarr;</a>
-            <span class="note">The gates open September 22 &middot; $697 with the discount</span>
+            <span class="note">The gates open again September 22 &middot; $697 with the discount</span>
         </div>
     </div>
 </section>
@@ -1122,42 +1130,44 @@ footer nav a:hover { color: var(--purple-dark); }
 
         <!-- Sep 2026 starts on a Tuesday. The ten factory days stamp in one by
              one when the card scrolls into view (see .cal-day.fd). -->
-        <div class="cal-wrap reveal reveal-d2" aria-label="The bootcamp calendar. Ten factory days across September and October 2026"
-     style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center">
+        <div class="cal-wrap two-months reveal reveal-d2" aria-label="The bootcamp calendar. Ten factory days across September and October 2026">
             <div class="cal-card">
-                <div class="cal-head"><span class="cal-month">September 2026</span><span class="cal-badge">5 factory days</span></div>
-                <div class="cal-grid">
-                    <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
-                    <span class="cal-day off">.</span><span class="cal-day off">.</span>
-                    <span class="cal-day">1</span><span class="cal-day">2</span><span class="cal-day">3</span><span class="cal-day">4</span><span class="cal-day">5</span>
-                    <span class="cal-day">6</span><span class="cal-day">7</span><span class="cal-day">8</span><span class="cal-day">9</span><span class="cal-day">10</span><span class="cal-day">11</span><span class="cal-day">12</span>
-                    <span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span><span class="cal-day">18</span><span class="cal-day">19</span>
-                    <span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day fd" data-o="1">22</span><span class="cal-day fd" data-o="2">23</span><span class="cal-day fd" data-o="3">24</span><span class="cal-day">25</span><span class="cal-day">26</span>
-                    <span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day fd" data-o="4">29</span><span class="cal-day fd" data-o="5">30</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                <div class="cal-head"><span class="cal-month">The ten factory days</span><span class="cal-badge">Sep 22 &middot; Oct 8</span></div>
+                <div class="cal-months">
+                    <div class="cal-mo">
+                        <div class="cal-mo-label">September 2026</div>
+                        <div class="cal-grid">
+                            <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
+                            <span class="cal-day off">.</span><span class="cal-day off">.</span>
+                            <span class="cal-day">1</span><span class="cal-day">2</span><span class="cal-day">3</span><span class="cal-day">4</span><span class="cal-day">5</span>
+                            <span class="cal-day">6</span><span class="cal-day">7</span><span class="cal-day">8</span><span class="cal-day">9</span><span class="cal-day">10</span><span class="cal-day">11</span><span class="cal-day">12</span>
+                            <span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span><span class="cal-day">18</span><span class="cal-day">19</span>
+                            <span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day fd" data-o="1">22</span><span class="cal-day fd" data-o="2">23</span><span class="cal-day fd" data-o="3">24</span><span class="cal-day">25</span><span class="cal-day">26</span>
+                            <span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day fd" data-o="4">29</span><span class="cal-day fd" data-o="5">30</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                        </div>
+                    </div>
+                    <div class="cal-mo">
+                        <div class="cal-mo-label">October 2026</div>
+                        <div class="cal-grid">
+                            <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
+                            <span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                            <span class="cal-day fd" data-o="6">1</span><span class="cal-day">2</span><span class="cal-day">3</span>
+                            <span class="cal-day">4</span><span class="cal-day fd" data-o="7">5</span><span class="cal-day fd" data-o="8">6</span><span class="cal-day fd" data-o="9">7</span><span class="cal-day fd" data-o="10">8</span><span class="cal-day">9</span><span class="cal-day">10</span>
+                            <span class="cal-day">11</span><span class="cal-day">12</span><span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span>
+                            <span class="cal-day">18</span><span class="cal-day">19</span><span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span>
+                            <span class="cal-day">25</span><span class="cal-day">26</span><span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day">29</span><span class="cal-day">30</span><span class="cal-day">31</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="cal-notes">
                     <span>About 30 minutes a day</span>
-                </div>
-            </div>
-            <div class="cal-card">
-                <div class="cal-head"><span class="cal-month">October 2026</span><span class="cal-badge">5 factory days</span></div>
-                <div class="cal-grid">
-                    <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
-                    <span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
-                    <span class="cal-day fd" data-o="6">1</span><span class="cal-day">2</span><span class="cal-day">3</span>
-                    <span class="cal-day">4</span><span class="cal-day fd" data-o="7">5</span><span class="cal-day fd" data-o="8">6</span><span class="cal-day fd" data-o="9">7</span><span class="cal-day fd" data-o="10">8</span><span class="cal-day">9</span><span class="cal-day">10</span>
-                    <span class="cal-day">11</span><span class="cal-day">12</span><span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span>
-                    <span class="cal-day">18</span><span class="cal-day">19</span><span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span>
-                    <span class="cal-day">25</span><span class="cal-day">26</span><span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day">29</span><span class="cal-day">30</span><span class="cal-day">31</span>
-                </div>
-                <div class="cal-notes">
                     <span>Recorded. Watch at any hour</span>
                 </div>
             </div>
         </div>
 
         <div class="countdown-wrap reveal reveal-d3">
-            <div class="countdown-label">The gates open in</div>
+            <div class="countdown-label">The gates open again in</div>
             <div class="countdown" aria-label="Countdown to the factory opening">
                 <div class="cd-unit"><div class="cd-num" id="cdDays">00</div><div class="cd-lab">Days</div></div>
                 <div class="cd-unit"><div class="cd-num" id="cdHours">00</div><div class="cd-lab">Hours</div></div>
@@ -1442,7 +1452,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1">About 30 minutes a day. By graduation, a tested creative package ready to upload, and a creative employee who can do it for you again and again.</p>
         <div class="reveal reveal-d2">
             <a class="btn gold" href="#pricing">Get My Golden Ticket &rarr;</a>
-            <span class="note">The gates open September 22 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; $697</span>
+            <span class="note">The gates open again September 22 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; $697</span>
         </div>
     </div>
 </section>
