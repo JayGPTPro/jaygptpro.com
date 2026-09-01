@@ -508,6 +508,14 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
    the other, once the card scrolls into view. The stagger runs off the same
    .reveal/.visible mechanic as everything else, so no extra JS. */
 .cal-wrap { max-width: 480px; margin: 40px auto 0; }
+/* Round 2 crosses a month boundary, so the ONE calendar card holds two month
+   grids side by side. One card on purpose: two separate cards read as two
+   options to choose between, and there is nothing to choose. Wraps to a
+   column on narrow screens. */
+.cal-wrap.two-months { max-width: 880px; }
+.cal-months { display: flex; gap: 30px; flex-wrap: wrap; }
+.cal-mo { flex: 1 1 300px; min-width: 270px; }
+.cal-mo-label { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; color: var(--text-2); }
 .cal-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--rad); box-shadow: var(--shadow-card); padding: 26px 26px 22px; }
 .cal-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
 .cal-month { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
@@ -641,7 +649,10 @@ body:not(.lb-off) .topnav { margin-top: var(--lb-h); }
 .price-card.featured .pc-note { color: #BCA8B6; }
 /* two tiers side by side: a detailed hero card, and a quiet premium card that
    deliberately carries no feature list (its job is to anchor, not to compete) */
-.price-duo { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; align-items: stretch; margin-top: 52px; text-align: left; }
+/* One card since the Private Tour left this round. The old 1.3fr/1fr grid
+   parked the lone Golden Ticket in the left column; a capped, centered
+   single column puts it in the middle at a sane width. */
+.price-duo { display: grid; grid-template-columns: minmax(0, 560px); justify-content: center; gap: 22px; align-items: stretch; margin-top: 52px; text-align: left; }
 .price-duo .pc-perks, .price-duo .pc-perks li { text-align: left; }
 .price-duo .pc-name, .price-duo .pc-price, .price-duo .pc-sub, .price-duo .pc-save { text-align: left; }
 .pc-bump { margin-top: 16px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 14.5px; line-height: 1.6; color: #d9d0e8; text-align: left; }
@@ -769,8 +780,8 @@ footer nav a:hover { color: var(--purple-dark); }
 <!-- LAUNCH BAR -->
 <div id="launchBar" class="launch-bar">
     <span class="lb-dot"></span>
-    <span id="lbPriceMsg"><b>Launch price ends at midnight</b> &middot; the $200 discount ends tonight</span>
-    <span id="lbGatesMsg" hidden>The factory gates open September 1 &middot; <b id="lbTimer">&hellip;</b></span>
+    <span id="lbPriceMsg" hidden></span>
+    <span id="lbGatesMsg">The factory gates open again September 22 &middot; <b id="lbTimer">&hellip;</b></span>
     <button class="launch-bar-close" id="launchBarClose" aria-label="Dismiss">&#x2715;</button>
 </div>
 
@@ -804,7 +815,7 @@ footer nav a:hover { color: var(--purple-dark); }
     <svg class="claude-star cs-2"><use href="#claude-star"/></svg>
     <div class="wrap">
         <h1>Build Your <span class="accent">AI Creative Director</span> <span style="white-space:nowrap;">in 10 Days</span></h1>
-        <p class="hero-date">The gates open <b>September 1</b> &middot; <span class="js-tickets-left">50 golden tickets</span></p>
+        <p class="hero-date">Round 1 is <b>sold out</b>. The gates open again <b>September 22</b> &middot; <span class="js-tickets-left">50 golden tickets</span></p>
 
         <!-- The VSL. Vimeo 1216967079, domain-locked to jaygptpro.com, so it will
              not play from localhost or file://. Click-to-play facade: the iframe
@@ -821,7 +832,7 @@ footer nav a:hover { color: var(--purple-dark); }
 
         <div class="hero-cta-row">
             <a class="btn" href="#pricing">Reserve My Spot &rarr;</a>
-            <span class="note js-price-note" data-after="$697 &middot; the launch price has closed">$497 until midnight &middot; then it goes up</span>
+            <span class="note">$697 &middot; $300 off the full price</span>
         </div>
     </div>
 </section>
@@ -973,7 +984,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="show-note reveal">A set like this once took eight jobs, weeks, and thousands of dollars.</p>
         <div class="show-cta reveal">
             <a class="btn" href="#pricing">Build this for my product &rarr;</a>
-            <span class="note js-price-note" data-after="The gates open September 1 &middot; $697">The gates open September 1 &middot; $497 with the launch discount</span>
+            <span class="note">The gates open again September 22 &middot; $697 with the discount</span>
         </div>
     </div>
 </section>
@@ -1105,28 +1116,50 @@ footer nav a:hover { color: var(--purple-dark); }
 <!-- ROUNDS + COUNTDOWN -->
 <section class="rounds" id="rounds">
     <div class="wrap">
-        <div class="section-tag" style="justify-content:center;">The grand opening</div>
-        <h2 class="reveal">For the first time, Wonka<br>opens <span class="hl">the gates</span></h2>
-        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">The factory takes visitors. Ten days, live support on the floor, and fifty golden tickets. The $200 launch discount comes off without notice, and it will not come back for this price.</p>
+        <div class="section-tag" style="justify-content:center;">Round 2</div>
+        <h2 class="reveal">Wonka opens the gates<br><span class="hl">again</span></h2>
+        <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">The first round sold out. The next one runs ten days across three weeks, with live support on the floor and fifty golden tickets.</p>
+        <div class="round-card reveal reveal-d2" style="opacity:.55;cursor:default;position:relative">
+            <div class="round-label">Round 1</div>
+            <div class="round-dates" style="text-decoration:line-through">The Grand Opening</div>
+            <div class="round-seats" style="font-weight:800;letter-spacing:.14em">SOLD OUT</div>
+        </div>
         <a href="#pricing" class="round-card reveal reveal-d2">
-            <div class="round-label">The Grand Opening</div>
-            <div class="round-dates">September 1 &middot; September 17</div>
-            <div class="round-seats">50 golden tickets &middot; The Private Tour limited to 4</div>
+            <div class="round-label">Round 2</div>
+            <div class="round-dates">September 22 &middot; October 8</div>
+            <div class="round-seats">50 golden tickets</div>
         </a>
 
         <!-- Sep 2026 starts on a Tuesday. The ten factory days stamp in one by
              one when the card scrolls into view (see .cal-day.fd). -->
-        <div class="cal-wrap reveal reveal-d2" aria-label="The bootcamp calendar. Ten factory days in September 2026">
+        <div class="cal-wrap two-months reveal reveal-d2" aria-label="The bootcamp calendar. Ten factory days across September and October 2026">
             <div class="cal-card">
-                <div class="cal-head"><span class="cal-month">September 2026</span><span class="cal-badge">10 factory days</span></div>
-                <div class="cal-grid">
-                    <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
-                    <span class="cal-day off">.</span><span class="cal-day off">.</span>
-                    <span class="cal-day fd" data-o="1">1</span><span class="cal-day fd" data-o="2">2</span><span class="cal-day fd" data-o="3">3</span><span class="cal-day fd" data-o="4">4</span><span class="cal-day">5</span>
-                    <span class="cal-day">6</span><span class="cal-day">7</span><span class="cal-day fd" data-o="5">8</span><span class="cal-day fd" data-o="6">9</span><span class="cal-day fd" data-o="7">10</span><span class="cal-day">11</span><span class="cal-day">12</span>
-                    <span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day fd" data-o="8">15</span><span class="cal-day fd" data-o="9">16</span><span class="cal-day fd" data-o="10">17</span><span class="cal-day">18</span><span class="cal-day">19</span>
-                    <span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span><span class="cal-day">25</span><span class="cal-day">26</span>
-                    <span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day">29</span><span class="cal-day">30</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                <div class="cal-head"><span class="cal-month">The ten factory days</span><span class="cal-badge">Sep 22 &middot; Oct 8</span></div>
+                <div class="cal-months">
+                    <div class="cal-mo">
+                        <div class="cal-mo-label">September 2026</div>
+                        <div class="cal-grid">
+                            <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
+                            <span class="cal-day off">.</span><span class="cal-day off">.</span>
+                            <span class="cal-day">1</span><span class="cal-day">2</span><span class="cal-day">3</span><span class="cal-day">4</span><span class="cal-day">5</span>
+                            <span class="cal-day">6</span><span class="cal-day">7</span><span class="cal-day">8</span><span class="cal-day">9</span><span class="cal-day">10</span><span class="cal-day">11</span><span class="cal-day">12</span>
+                            <span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span><span class="cal-day">18</span><span class="cal-day">19</span>
+                            <span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day fd" data-o="1">22</span><span class="cal-day fd" data-o="2">23</span><span class="cal-day fd" data-o="3">24</span><span class="cal-day">25</span><span class="cal-day">26</span>
+                            <span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day fd" data-o="4">29</span><span class="cal-day fd" data-o="5">30</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                        </div>
+                    </div>
+                    <div class="cal-mo">
+                        <div class="cal-mo-label">October 2026</div>
+                        <div class="cal-grid">
+                            <span class="cal-dow">Sun</span><span class="cal-dow">Mon</span><span class="cal-dow">Tue</span><span class="cal-dow">Wed</span><span class="cal-dow">Thu</span><span class="cal-dow">Fri</span><span class="cal-dow">Sat</span>
+                            <span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span><span class="cal-day off">.</span>
+                            <span class="cal-day fd" data-o="6">1</span><span class="cal-day">2</span><span class="cal-day">3</span>
+                            <span class="cal-day">4</span><span class="cal-day fd" data-o="7">5</span><span class="cal-day fd" data-o="8">6</span><span class="cal-day fd" data-o="9">7</span><span class="cal-day fd" data-o="10">8</span><span class="cal-day">9</span><span class="cal-day">10</span>
+                            <span class="cal-day">11</span><span class="cal-day">12</span><span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span>
+                            <span class="cal-day">18</span><span class="cal-day">19</span><span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span>
+                            <span class="cal-day">25</span><span class="cal-day">26</span><span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day">29</span><span class="cal-day">30</span><span class="cal-day">31</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="cal-notes">
                     <span>About 30 minutes a day</span>
@@ -1136,7 +1169,7 @@ footer nav a:hover { color: var(--purple-dark); }
         </div>
 
         <div class="countdown-wrap reveal reveal-d3">
-            <div class="countdown-label">The gates open in</div>
+            <div class="countdown-label">The gates open again in</div>
             <div class="countdown" aria-label="Countdown to the factory opening">
                 <div class="cd-unit"><div class="cd-num" id="cdDays">00</div><div class="cd-lab">Days</div></div>
                 <div class="cd-unit"><div class="cd-num" id="cdHours">00</div><div class="cd-lab">Hours</div></div>
@@ -1250,7 +1283,7 @@ footer nav a:hover { color: var(--purple-dark); }
             </div>
             <div class="roi-box new reveal reveal-d1">
                 <div class="rb-tag">The factory way</div>
-                <div class="rb-price js-price-note" data-after="$697. Once.">$497. Once.</div>
+                <div class="rb-price">$697. Once.</div>
                 <p>A full tested package for your product during the bootcamp, and the whole factory stays installed for every product after it.</p>
             </div>
         </div>
@@ -1336,7 +1369,7 @@ footer nav a:hover { color: var(--purple-dark); }
             </div>
             <div class="faq-item">
                 <button class="faq-q" type="button" aria-expanded="false">How much time does it take, and when does it start?<span class="chev">+</span></button>
-                <div class="faq-a"><div class="faq-a-inner">About 30 minutes a day on average, across 10 factory days over three weeks. The days are September 1 to 4, September 8 to 10, and September 15 to 17. A new room opens each of those mornings at 9am New York time, and everything is recorded, so a missed day never breaks the flow.</div></div>
+                <div class="faq-a"><div class="faq-a-inner">About 30 minutes a day on average, across 10 factory days over three weeks. The days are September 22 to 24, September 29 to October 1, and October 5 to 8. A new room opens each of those mornings at 9am New York time, and everything is recorded, so a missed day never breaks the flow.</div></div>
             </div>
         </div>
     </div>
@@ -1351,14 +1384,11 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1" style="margin-left:auto;margin-right:auto;">One payment. The factory, the skills, and the recordings are yours for life.</p>
         <div class="price-duo">
             <div class="price-card featured reveal reveal-d1">
-                <div class="pc-flag" id="pcFlag">Launch price</div>
+                <div class="pc-flag" id="pcFlag">$300 off</div>
                 <div class="pc-name">Golden Ticket</div>
-                <div class="pc-price" id="pcPrice"><span class="pc-old">$697</span>$497</div>
+                <div class="pc-price" id="pcPrice"><span class="pc-old">$997</span>$697</div>
                 <div class="pc-sub">Everything you need to run the factory</div>
-                <div class="price-alert js-price-alert">
-                    <span class="pa-dot"></span>
-                    <span class="js-price-note" data-after=""><b>$497 until midnight tonight.</b> After that the $200 discount ends and the price goes back to $697.</span>
-                </div>
+                <div class="pc-save">$300 off the full price</div>
                 <ul class="pc-perks">
                     <li><span>All 10 days plus the Wonka kit, <span class="gloss" tabindex="0" data-tip="Fifteen ready-made commands that run the factory: research, brief, image generation, quality gate, edits, testing, variations.">15 skills</span>, yours forever</span></li>
                     <li><span>1,000 <span class="gloss" tabindex="0" data-tip="The image engine Wonka drives through MCP. It locks your real product so every generated image is your product, not a look-alike.">Genrupt</span> credits on the house (your first month, free with your code), enough for 2 to 3 products on average</span></li>
@@ -1367,35 +1397,18 @@ footer nav a:hover { color: var(--purple-dark); }
                 <!-- SEATS: this number is Jay's schedule, NOT the real count.
                      Set it with wonka/bootcamp/scripts/update_seats.sh, which moves
                      all four values together and prints what is actually true. -->
-                <div class="seats" data-taken="48" data-total="50" data-noun="golden tickets">
+                <div class="seats" data-taken="0" data-total="50" data-min-show="15" data-noun="golden tickets">
                     <div class="seats-row">
-                        <span class="seats-txt">48 of 50 golden tickets claimed</span>
-                        <span class="seats-left">2 left</span>
+                        <span class="seats-txt">0 of 50 golden tickets claimed</span>
+                        <span class="seats-left">50 left</span>
                     </div>
-                    <div class="seats-bar"><span style="width:96%"></span></div>
+                    <div class="seats-bar"><span style="width:0%"></span></div>
                 </div>
-                <a class="btn gold" href="https://buy.stripe.com/00w3cxgI9eZ4foadUybwk0g?prefilled_promo_code=WONKA200">Claim Your Golden Ticket &rarr;</a>
+                <a class="btn gold" href="https://buy.stripe.com/cNi3cxcrT7wCb7U7wabwk0j?prefilled_promo_code=WONKA300">Claim Your Golden Ticket &rarr;</a>
                 <div class="pc-note">One payment, yours for life</div>
                 <div class="pc-bump"><b>Never touched Claude Code?</b> Start with the <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" rel="noopener" style="color: #f3edfa; font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Claude Code Challenge</a>, my full course where you build your first AI employee. You can add it at checkout for $250, every day unlocked immediately, and do it before the gates open.</div>
             </div>
-            <div class="price-card quiet reveal reveal-d2">
-                <div class="pb-name">The Private Tour</div>
-                <div class="pb-price">$2,999</div>
-                <div class="pb-vs">One-on-one, all 10 days</div>
-                <p class="pb-body">Everything in the Golden Ticket, plus personal guidance through the entire bootcamp and onboarding for your team.</p>
-                <p class="pb-body">The scope depends on your catalog.</p>
-                <!-- SEATS: change data-taken, keep the fallback text in sync. -->
-                <div class="seats" data-taken="4" data-total="4" data-noun="seats">
-                    <div class="seats-row">
-                        <span class="seats-txt">4 of 4 seats taken</span>
-                        <span class="seats-left">0 left</span>
-                    </div>
-                    <div class="seats-bar"><span style="width:100%"></span></div>
-                </div>
-                <a class="btn" href="https://buy.stripe.com/aFabJ32Rjg38ek68Aebwk0f">Book the Private Tour &rarr;</a>
-                <a class="pb-link" href="mailto:info@jaygptpro.com?subject=The%20Private%20Tour.%20A%20question">or email info@jaygptpro.com with any question</a>
-            </div>
-        </div>
+            
     </div>
 </section>
 
@@ -1441,7 +1454,7 @@ footer nav a:hover { color: var(--purple-dark); }
         <p class="section-sub reveal reveal-d1">About 30 minutes a day. By graduation, a tested creative package ready to upload, and a creative employee who can do it for you again and again.</p>
         <div class="reveal reveal-d2">
             <a class="btn gold" href="#pricing">Get My Golden Ticket &rarr;</a>
-            <span class="note">The gates open September 1 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; <span class="js-price-note" data-after="$697">$497 until midnight, then it goes up</span></span>
+            <span class="note">The gates open again September 22 &middot; <span class="js-tickets-left">50 golden tickets</span> &middot; $697</span>
         </div>
     </div>
 </section>
@@ -1479,8 +1492,14 @@ footer nav a:hover { color: var(--purple-dark); }
                 total = parseInt(box.getAttribute('data-total'), 10),
                 noun  = box.getAttribute('data-noun') || 'seats',
                 fill  = box.querySelector('.seats-bar span'),
-                verb  = noun === 'golden tickets' ? 'claimed' : 'taken';
+                verb  = noun === 'golden tickets' ? 'claimed' : 'taken',
+                minShow = parseInt(box.getAttribute('data-min-show') || '0', 10);
             if (isNaN(taken) || isNaN(total) || total <= 0 || !fill) return;
+            // "0 of 50 claimed" sells the opposite of scarcity, so the whole meter
+            // stays hidden until the count reaches data-min-show (Jay: 15, or
+            // whenever he wants to SAY 15). The hero and CTA echoes then keep
+            // their static "50 golden tickets" instead of "50 of 50 left".
+            if (taken < minShow) { box.hidden = true; return; }
             var pct = Math.max(0, Math.min(100, Math.round(taken / total * 100)));
             box.querySelector('.seats-txt').textContent = taken + ' of ' + total + ' ' + noun + ' ' + verb;
             box.querySelector('.seats-left').textContent = (total - taken) + ' left';
@@ -1537,16 +1556,12 @@ footer nav a:hover { color: var(--purple-dark); }
         if (g) { g.classList.toggle('open'); }
     });
 
-    // Two deadlines. The gates open on 1 September at 9am New York. The launch
-    // price ends at midnight in Los Angeles, the last midnight anywhere that still
-    // counts as "tonight", so nobody is cut off early. The page never names a zone
-    // and never shows a clock: Jay wants the deadline felt, not counted down.
-    //
-    // When it passes the page must STOP SELLING $497, everywhere and by itself.
-    // A note left promising a price that ended is worse than no note at all.
-    var target = new Date('2026-09-01T09:00:00-04:00').getTime();
-    var priceEnds = new Date('2026-09-01T00:00:00-07:00').getTime();   // midnight in Los Angeles
-    var priceSwitched = false;
+    // Round 2 has ONE deadline: the gates opening on 22 September at 9am New York.
+    // Round 1's launch-price switch is deliberately gone. That machinery existed to
+    // retire a $497 price at a fixed instant; round 2 sells at $697 off a $997 list
+    // with no end date set, so leaving it in would have quietly rewritten the price
+    // card the moment the page loaded.
+    var target = new Date('2026-09-22T09:00:00-04:00').getTime();   // round 2, day 1, 9am New York
     function pad(n){ return String(n).padStart(2,'0'); }
     function tick(){
         var d = target - Date.now();
@@ -1564,36 +1579,6 @@ footer nav a:hover { color: var(--purple-dark); }
         (el = document.getElementById('lbTimer')) && (el.textContent =
             d === 0 ? 'the factory is open' : days + 'd ' + hrs + 'h ' + mins + 'm');
 
-        // The launch price. While it is live the bar counts it down; the moment it
-        // expires every promise about it has to stop, on the bar and on all three
-        // notes, or the page is selling a price it no longer honours.
-        var p = priceEnds - Date.now();
-        var priceMsg = document.getElementById('lbPriceMsg'),
-            gatesMsg = document.getElementById('lbGatesMsg');
-        if (p > 0) {
-            if (priceMsg) priceMsg.hidden = false;
-            if (gatesMsg) gatesMsg.hidden = true;
-        } else if (!priceSwitched) {
-            priceSwitched = true;
-            if (priceMsg) priceMsg.hidden = true;
-            if (gatesMsg) gatesMsg.hidden = false;
-            // the headline price, and the struck-through $697 that no longer means anything
-            (el = document.getElementById('pcPrice')) && (el.textContent = '$697');
-            (el = document.getElementById('pcFlag'))  && (el.hidden = true);
-            // every sentence that promised $497, each with its own replacement
-            var notes = document.querySelectorAll('.js-price-note');
-            for (var n = 0; n < notes.length; n++) {
-                var after = notes[n].getAttribute('data-after');
-                if (after) { notes[n].innerHTML = after; } else { notes[n].hidden = true; }
-            }
-            var alerts = document.querySelectorAll('.js-price-alert');
-            for (var a = 0; a < alerts.length; a++) alerts[a].hidden = true;
-            // and stop handing out the coupon, or the page sells $697 and charges $497
-            var buys = document.querySelectorAll('a[href*="prefilled_promo_code"]');
-            for (var b = 0; b < buys.length; b++) {
-                buys[b].href = buys[b].href.split('?')[0];
-            }
-        }
     }
     tick(); setInterval(tick, 1000);
 
