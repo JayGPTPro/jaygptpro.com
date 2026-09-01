@@ -6659,6 +6659,20 @@ window.WonkaMapAPI = Object.freeze({
   track(event, dayNum) { track(event, dayNum); },
 });
 
+/* STAGING ONLY. DELETE THIS BLOCK WHEN PROMOTING TO index.html.
+   The app runs inside a closure, so the round logic cannot be exercised from the
+   console without a hook. This exposes the round helpers read-only for testing
+   the multi-round build, and touches nothing the page itself uses. */
+window.__wonkaDebug = {
+  setRound(r) { userRound = r; return userRound; },
+  getRound() { return userRound; },
+  activeRound: () => activeRound(),
+  roundCfg: () => roundCfg(),
+  dayUnlockTime: (d) => dayUnlockTime(d),
+  isDayUnlocked: (d) => isDayUnlocked(d),
+  setEarlyAccess(n) { earlyAccessMaxDay = n; return earlyAccessMaxDay; },
+};
+
 })();
 </script>
 
