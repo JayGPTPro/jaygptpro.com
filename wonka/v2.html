@@ -1398,7 +1398,7 @@ footer nav a:hover { color: var(--purple-dark); }
                 <!-- SEATS: this number is Jay's schedule, NOT the real count.
                      Set it with wonka/bootcamp/scripts/update_seats.sh, which moves
                      all four values together and prints what is actually true. -->
-                <div class="seats" data-taken="0" data-total="50" data-noun="golden tickets">
+                <div class="seats" data-taken="0" data-total="50" data-min-show="15" data-noun="golden tickets">
                     <div class="seats-row">
                         <span class="seats-txt">0 of 50 golden tickets claimed</span>
                         <span class="seats-left">50 left</span>
@@ -1493,8 +1493,14 @@ footer nav a:hover { color: var(--purple-dark); }
                 total = parseInt(box.getAttribute('data-total'), 10),
                 noun  = box.getAttribute('data-noun') || 'seats',
                 fill  = box.querySelector('.seats-bar span'),
-                verb  = noun === 'golden tickets' ? 'claimed' : 'taken';
+                verb  = noun === 'golden tickets' ? 'claimed' : 'taken',
+                minShow = parseInt(box.getAttribute('data-min-show') || '0', 10);
             if (isNaN(taken) || isNaN(total) || total <= 0 || !fill) return;
+            // "0 of 50 claimed" sells the opposite of scarcity, so the whole meter
+            // stays hidden until the count reaches data-min-show (Jay: 15, or
+            // whenever he wants to SAY 15). The hero and CTA echoes then keep
+            // their static "50 golden tickets" instead of "50 of 50 left".
+            if (taken < minShow) { box.hidden = true; return; }
             var pct = Math.max(0, Math.min(100, Math.round(taken / total * 100)));
             box.querySelector('.seats-txt').textContent = taken + ' of ' + total + ' ' + noun + ' ' + verb;
             box.querySelector('.seats-left').textContent = (total - taken) + ' left';
