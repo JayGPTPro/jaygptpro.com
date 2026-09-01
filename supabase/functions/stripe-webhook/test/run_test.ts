@@ -34,11 +34,16 @@ await import("./index.ts");
 
 const GOLDEN = 'prod_UxhJATVn8CEfCT';
 const PLINK_GOLDEN = 'plink_1U1vCERqcDuiISNTjqJvj1P5';
+// Round 2: its own product, and two links into it.
+const GOLDEN_R2 = 'prod_VB9jlkEBHv4Ddh';
+const PLINK_R2 = 'plink_1UAnQfRqcDuiISNTLrxgGeIg';        // $997, WONKA300 takes it to $697
+const PLINK_R2_FLAT = 'plink_1UAnSIRqcDuiISNT7A1vPRac';   // $697 flat, no coupon
 
 function reset() {
   DB.allowed_emails = []; DB.stripe_customers = []; DB.bina_registrations = [];
   DB.rounds = [
     { id: 'wonka_r1', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: PLINK_GOLDEN, stripe_plink_discounted: 'plink_1TxmiPRqcDuiISNTKsKrn7Lz', stripe_product_id: GOLDEN, start_date: '2026-09-01' },
+    { id: 'wonka_r2', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: PLINK_R2, stripe_plink_discounted: PLINK_R2_FLAT, stripe_product_id: GOLDEN_R2, start_date: '2026-09-22' },
     { id: 'round1', welcome_email_fn_slug: null, start_date: '2026-04-01' },
   ];
   LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true;
@@ -552,6 +557,70 @@ row = DB.allowed_emails.find(r => r.email === 'flat497@buyer.com');
 check('the retry lands them on wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
 check('with the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
+
+console.log('\n14. ROUND 2. A second cohort must not land in the first one');
+// Round 1 finishes on 17 September; round 2 starts on the 22nd. A round 2 buyer
+// filed as wonka_r1 would walk into a cohort that ended before their first day,
+// with every door already open and no round of their own. That is why round 2 has
+// its own product: the product map is the primary route and it is keyed on it.
+reset();
+sendState.stripeLineItems = [GOLDEN_R2];
+const r2 = session('r2buyer@buyer.com', 69700);
+(r2.data.object as any).payment_link = PLINK_R2;
+res = await post(r2);
+row = DB.allowed_emails.find(r => r.email === 'r2buyer@buyer.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('lands on wonka_r2, not wonka_r1', row?.round === 'wonka_r2', JSON.stringify(row));
+check('gets the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+console.log('\n14b. The flat $697 round 2 link resolves the same way');
+reset();
+sendState.stripeLineItems = [GOLDEN_R2];
+const r2f = session('r2flat@buyer.com', 69700);
+(r2f.data.object as any).payment_link = PLINK_R2_FLAT;
+res = await post(r2f);
+row = DB.allowed_emails.find(r => r.email === 'r2flat@buyer.com');
+check('lands on wonka_r2', row?.round === 'wonka_r2', JSON.stringify(row));
+
+console.log('\n14c. Blind product lookup: round 2 still resolves, from the rounds table');
+// Same blind condition as test 13: the Stripe line-items call returns [] so there is
+// no product to key on. Round 2 survives it where the flat $497 round 1 link cannot,
+// and the difference is data, not code: the wonka_r2 row lists BOTH of its plinks,
+// while round 1's row has no free column for its flat link (discounted holds the
+// Private Tour). So this must NOT refuse. It must land them on wonka_r2 anyway.
+reset();
+sendState.stripeLineItems = [];
+const r2blind = session('r2blind@buyer.com', 69700);
+(r2blind.data.object as any).payment_link = PLINK_R2;
+res = await post(r2blind);
+row = DB.allowed_emails.find(r => r.email === 'r2blind@buyer.com');
+check('http 200, no retry needed', res.status === 200, `got ${res.status}`);
+check('lands on wonka_r2 from the plink alone', row?.round === 'wonka_r2', JSON.stringify(row));
+check('never a Donna cohort', String(row?.round || '').startsWith('wonka'), JSON.stringify(row));
+check('and the Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+console.log('\n14c2. Both lookups blind: refuse rather than guess a cohort');
+// Now take the rounds table away too, which is what a network failure or an RLS
+// change looks like. With nothing left to resolve from, the only safe answer is to
+// refuse and let Stripe retry. Before round 2's plinks were listed in WONKA_PLINKS
+// this fell through and filed the buyer into whichever Donna cohort was open.
+reset();
+sendState.stripeLineItems = [];
+DB.rounds = DB.rounds.filter((r: any) => r.id !== 'wonka_r2');
+const r2dark = session('r2dark@buyer.com', 69700);
+(r2dark.data.object as any).payment_link = PLINK_R2;
+res = await post(r2dark);
+row = DB.allowed_emails.find(r => r.email === 'r2dark@buyer.com');
+check('refuses so Stripe retries', res.status === 500, `got ${res.status}`);
+check('not filed into a Donna cohort', !row || String(row.round || '').startsWith('wonka'), JSON.stringify(row));
+check('no welcome sent on a guess', !sendState.calls.some(c => c.url.includes('welcome')), JSON.stringify(sendState.calls.map(c => c.url)));
+
+console.log('\n14d. A round 1 buyer is untouched by any of this');
+reset();
+sendState.stripeLineItems = [GOLDEN];
+res = await post(session('stillr1@buyer.com'));
+row = DB.allowed_emails.find(r => r.email === 'stillr1@buyer.com');
+check('still wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
 
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

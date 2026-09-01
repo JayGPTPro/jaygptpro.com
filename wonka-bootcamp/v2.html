@@ -3602,7 +3602,11 @@ function roundCfg() {
 /* The round id to WRITE on rows we insert. Never CONFIG.ROUND_ID: that would file
    a round 2 student's progress and analytics under round 1. */
 function activeRound() {
-  return userRound && userRound !== 'wonka_all' ? userRound : CONFIG.DEFAULT_ROUND;
+  /* Only ever a round this build knows about. 'wonka_all' is an all-access pass,
+     not a cohort, and an id we have no calendar for must not end up stamped on
+     progress rows: the gate refuses those anyway, so the default is the honest
+     answer and it keeps this in step with roundCfg(). */
+  return (userRound && CONFIG.ROUNDS && CONFIG.ROUNDS[userRound]) ? userRound : CONFIG.DEFAULT_ROUND;
 }
 function dayUnlockTime(dayNum) {
   // An explicit calendar wins over any computation: the round skips whole days.

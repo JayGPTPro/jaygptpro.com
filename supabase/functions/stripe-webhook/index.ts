@@ -68,6 +68,10 @@ const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
   // and issuing a real discount link would overwrite it and drop those buyers.
   'prod_UxhJATVn8CEfCT': 'wonka_r1', // Golden Ticket, $697 / $497 with WONKA200
   'prod_UxhOUOpgTAGC7q': 'wonka_r1', // The Private Tour, $2,999
+  // Round 2 is its OWN product on purpose. Reusing round 1's would have resolved
+  // every round 2 buyer to wonka_r1 through this very map, and they would have
+  // walked into a cohort that finished before their first day.
+  'prod_VB9jlkEBHv4Ddh': 'wonka_r2', // Golden Ticket R2, $997 / $697 with WONKA300
 };
 
 // A Wonka purchase must never be silently reassigned to a Donna cohort. Used to
@@ -77,7 +81,7 @@ const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
 // guard leaned on that alone it would go blind in exactly the failure it exists to catch
 // (proven in the harness: with no Stripe key the buyer still landed in a wk_ cohort).
 // The plink arrives on the webhook payload itself and needs no API call.
-const WONKA_PRODUCTS = new Set(['prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q']);
+const WONKA_PRODUCTS = new Set(['prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q', 'prod_VB9jlkEBHv4Ddh']);
 const WONKA_PLINKS = new Set([
   'plink_1U1vCERqcDuiISNTjqJvj1P5', // Golden Ticket, $697 less WONKA200
   'plink_1TxmiPRqcDuiISNTKsKrn7Lz', // The Private Tour
@@ -88,6 +92,11 @@ const WONKA_PLINKS = new Set([
   // listed here because the product route goes blind when the Stripe line-items call
   // fails, and that is exactly when a Wonka buyer gets filed into a Donna cohort.
   'plink_1U8laoRqcDuiISNT1xwjgIAy',
+  // Round 2, both routes: the $997 link that WONKA300 takes to $697, and a $697
+  // flat link with promo codes off for buyers whose local currency cannot express
+  // a fixed-USD coupon under Adaptive Pricing.
+  'plink_1UAnQfRqcDuiISNTLrxgGeIg',
+  'plink_1UAnSIRqcDuiISNT7A1vPRac',
 ]);
 function isWonkaRound(round: string): boolean {
   return !!round && round.startsWith('wonka');
