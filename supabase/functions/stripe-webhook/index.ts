@@ -56,6 +56,18 @@ const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1TSg6TRqcDuiISNTcj9XcIrf': 'round4',
   'plink_1TSgHFRqcDuiISNT5N0yhhSQ': 'round5',
   'plink_1TSg6YRqcDuiISNTL8bvltkL': 'round5',
+  /* Every Wonka link, in CODE, so no Wonka purchase depends on a rounds row.
+     The rounds table has exactly two plink columns and Wonka round 1 has three
+     live links, so they were competing for a seat: on 1.9 the $497 flat link
+     took the discounted column and the Private Tour immediately lost its only
+     route whenever the Stripe line-items call failed. A $2,999 buyer waiting on
+     a webhook retry is not a trade worth making, and the table was never the
+     right place for a fixed fact about a fixed link. */
+  'plink_1U1vCERqcDuiISNTjqJvj1P5': 'wonka_r1', // Golden Ticket, $697 less WONKA200
+  'plink_1TxmiPRqcDuiISNTKsKrn7Lz': 'wonka_r1', // The Private Tour, $2,999
+  'plink_1U8laoRqcDuiISNT1xwjgIAy': 'wonka_r1', // $497 flat, the link Jay hands out now
+  'plink_1UAnQfRqcDuiISNTLrxgGeIg': 'wonka_r2', // Golden Ticket R2, $997 less WONKA300
+  'plink_1UAnSIRqcDuiISNT7A1vPRac': 'wonka_r2', // $697 flat R2
 };
 const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
   'prod_UCzffM0SU6fWW5': 'round2',
