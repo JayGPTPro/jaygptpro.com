@@ -2681,12 +2681,19 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
 /* Desktop: a three-column grid, so the rail sits on the TRUE centre of the page. As a
    flex row it centred in the gap between the brand and the account button, and the
    brand being wider pushed it about 60px right (Jay spotted it, 2.9). */
-@media(min-width:761px){
+@media(min-width:900px){
   header.portal-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:16px}
-  .header-brand{grid-column:1;justify-self:start}
-  #day-strip{grid-column:2;min-width:0;order:0}
-  .acct-btn{grid-column:3;justify-self:end;order:0}
+  /* grid-row:1 on all three: sparse auto-placement had put the rail on a second row
+     because the account button (column 3) was placed before it in DOM order */
+  .header-brand{grid-column:1;grid-row:1;justify-self:start}
+  #day-strip{grid-column:2;grid-row:1;min-width:0;order:0}
+  .acct-btn{grid-column:3;grid-row:1;justify-self:end;order:0}
   .header-acct{grid-column:3}
+}
+/* between a phone and a wide laptop the side columns cannot be equal (the brand is wider
+   than the account button), so the rail takes its own centred row instead of sitting off-centre */
+@media(min-width:761px) and (max-width:899px){
+  #day-strip{flex:1 1 100%;justify-content:center;order:20}
 }
 #day-strip .rail .dbtn:hover{color:var(--cream);background:rgba(245,184,65,.08)}
 #day-strip .rail .dbtn.map-btn{
