@@ -340,8 +340,11 @@ body::before{
 #app.active{display:block}
 header.portal-header{
   position:sticky;top:0;z-index:120;
-  display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;
-  padding:9px 22px 7px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;
+  padding:6px 18px 5px;min-height:54px;
+  /* ONE row when it fits (the strip is flex:1 with a min width, so at laptop width and
+     up everything sits on one 54px line); at narrower widths the strip wraps under the
+     brand. The email lives behind the account button on every width now. */
   background:rgba(18,8,24,.86);backdrop-filter:blur(12px);
   border-bottom:1px solid rgba(184,115,51,.35);
 }
@@ -351,7 +354,7 @@ header.portal-header::after{
   background:repeating-linear-gradient(90deg, transparent 0 10px, rgba(243,233,210,.12) 10px 16px);
   -webkit-mask:linear-gradient(#000,#000);mask:linear-gradient(#000,#000);
 }
-.header-brand{font-family:var(--font-display);font-weight:700;font-variation-settings:'opsz' 40;font-size:1.1rem;color:var(--cream);white-space:nowrap}
+.header-brand{font-family:var(--font-display);font-weight:700;font-variation-settings:'opsz' 40;font-size:.98rem;color:var(--cream);white-space:nowrap}
 .header-brand span{color:var(--gold)}
 .ticket-chip{
   display:flex;align-items:center;gap:8px;margin-left:auto;
@@ -365,23 +368,43 @@ header.portal-header::after{
 }
 .header-progress{display:flex;align-items:center;gap:9px}
 .header-progress .rooms-lit{font-family:var(--font-mono);font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(243,233,210,.5)}
-.header-progress .bar{position:relative;width:120px;height:9px;border-radius:5px;background:rgba(0,0,0,.45);overflow:hidden;border:1px solid rgba(184,115,51,.4)}
+.header-progress .bar{position:relative;width:96px;height:8px;border-radius:5px;background:rgba(0,0,0,.45);overflow:hidden;border:1px solid rgba(184,115,51,.4)}
 .header-progress .bar i{display:block;height:100%;background:var(--gold-grad);background-size:200% 100%;width:0%;transition:width .8s ease;animation:foilSheen 9s ease-in-out infinite}
 .header-progress em{font-style:normal;font-family:var(--font-mono);font-size:.72rem;color:var(--cream-dim);font-variant-numeric:tabular-nums}
 .btn-signout{background:transparent;border:1px solid rgba(243,233,210,.24);color:var(--cream-dim);border-radius:8px;padding:7px 14px;font-size:.8rem;font-family:var(--font-body)}
 .btn-signout:hover{color:var(--cream);border-color:rgba(243,233,210,.5)}
 .btn-signout:active{transform:translateY(1px)}
-/* On desktop the wrapper is invisible to layout: its two children stay direct flex
-   items of the header, exactly as before. The account button is mobile-only. */
-.header-acct{display:contents}
-.acct-btn{display:none}
+/* The account (email + Sign out) folds behind one round button on EVERY width, so the
+   header spends its row on the day strip. Jay, 2.9.2026: the banner took too much space. */
+.acct-btn{
+  display:flex;align-items:center;justify-content:center;margin-left:0;
+  width:34px;height:34px;border-radius:50%;flex:0 0 auto;
+  background:var(--gold-grad);background-size:200% 200%;
+  border:1px solid rgba(228,180,108,.6);cursor:pointer;
+}
+.acct-btn::after{
+  content:"";width:15px;height:15px;
+  background:#3A2312;-webkit-mask:var(--acct-icon) center/contain no-repeat;
+          mask:var(--acct-icon) center/contain no-repeat;
+}
+.acct-btn[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(245,184,65,.3)}
+.header-acct{
+  display:none;position:absolute;top:100%;right:12px;z-index:10;
+  flex-direction:column;align-items:stretch;gap:8px;
+  padding:10px;border-radius:12px;
+  background:rgba(18,8,24,.97);backdrop-filter:blur(10px);
+  border:1px solid rgba(184,115,51,.55);box-shadow:0 12px 30px rgba(0,0,0,.55);
+}
+.header-acct.open{display:flex}
+.header-acct .ticket-chip{margin-left:0}
+.header-progress{margin-left:auto}
 :root{--acct-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5c0-3-4-5.5-9-5.5Z'/%3E%3C/svg%3E")}
 
 /* --- sticky day navigation strip (slate chips + ticket punch) --- */
 #day-strip{
-  flex:1 1 100%;display:flex;align-items:center;justify-content:center;gap:7px;
+  flex:1 1 auto;min-width:520px;display:flex;align-items:center;justify-content:center;gap:6px;
   overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:5px 2px 6px;
+  scrollbar-width:none;padding:3px 2px;
   /* The strip hides 43% of itself on a phone and auto-scrolls to the active day, and
      it used to cut mid-word with nothing to say so: "y 2" at one end, "Da" at the
      other. The mask fades both cut edges, so an unfinished chip reads as "there is
@@ -391,13 +414,16 @@ header.portal-header::after{
           mask-image:linear-gradient(to right,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
 }
 #day-strip::-webkit-scrollbar{display:none}
+#day-strip .dlab{font-family:var(--font-mono);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(243,233,210,.45);margin:0 2px 0 6px;flex:0 0 auto}
 #day-strip .dbtn{scroll-snap-align:center}
-/* 32px was under every platform's minimum and the chips are the main navigation */
-.dbtn{min-height:44px}
+/* numbered plaques: "3" with the room name in the tooltip and the aria-label, so ten days
+   plus the map fit one header row. 36px tall with a pointer, 44px on touch screens. */
+.dbtn{min-height:36px}
+@media(hover:none){.dbtn{min-height:44px}}
 .dbtn{
-  flex:0 0 auto;height:32px;border-radius:8px;position:relative;
-  display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;
-  font-family:var(--font-mono);font-size:.72rem;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;
+  flex:0 0 auto;height:36px;min-width:36px;border-radius:8px;position:relative;
+  display:flex;align-items:center;justify-content:center;gap:5px;padding:0 10px;
+  font-family:var(--font-mono);font-size:.78rem;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;
   background:var(--flat);border:1px solid rgba(184,115,51,.4);color:var(--brass-light);
   transition:border-color .2s ease, color .2s ease, background .2s ease, transform .09s ease;letter-spacing:.06em;
 }
@@ -415,11 +441,11 @@ header.portal-header::after{
 /* done day = a punched ticket stub (graft 1) */
 .dbtn.done{
   background:linear-gradient(160deg,#F7D774,#B8901F);
-  border-color:#F7D774;color:#3d2a05;font-weight:600;padding-left:22px;
+  border-color:#F7D774;color:#3d2a05;font-weight:600;padding-left:19px;
 }
 .dbtn.done::after{
-  content:"";position:absolute;left:8px;top:50%;transform:translateY(-50%);
-  width:9px;height:9px;border-radius:50%;background:#2a1c04;
+  content:"";position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  width:8px;height:8px;border-radius:50%;background:#2a1c04;
   box-shadow:inset 0 1px 2px rgba(0,0,0,.7), 0 0 0 1.5px rgba(255,243,196,.5);
 }
 .dbtn.done.active{box-shadow:0 0 0 3px rgba(245,184,65,.3)}
@@ -1591,36 +1617,19 @@ html.js.reveal-all .reveal{opacity:1 !important;transform:none !important}
    ============================================================ */
 @media(max-width:760px){
   html{scroll-padding-top:118px}
-  header.portal-header{gap:4px 8px;padding:8px 14px 6px}
-  /* AUDIT 7: identity folds into one 36px button; progress gets the whole row. */
-  .acct-btn{
-    display:flex;align-items:center;justify-content:center;margin-left:auto;
-    width:36px;height:36px;border-radius:50%;flex:0 0 auto;
-    background:var(--gold-grad);background-size:200% 200%;
-    border:1px solid rgba(228,180,108,.6);
-  }
-  .acct-btn::after{
-    content:"";width:15px;height:15px;
-    background:#3A2312;-webkit-mask:var(--acct-icon) center/contain no-repeat;
-            mask:var(--acct-icon) center/contain no-repeat;
-  }
-  .acct-btn[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(245,184,65,.3)}
-  .header-acct{
-    display:none;position:absolute;top:100%;right:12px;z-index:10;
-    flex-direction:column;align-items:stretch;gap:8px;
-    padding:10px;border-radius:12px;
-    background:rgba(18,8,24,.97);backdrop-filter:blur(10px);
-    border:1px solid rgba(184,115,51,.55);box-shadow:0 12px 30px rgba(0,0,0,.55);
-  }
-  .header-acct.open{display:flex}
-  .ticket-chip{margin-left:0}
+  header.portal-header{gap:2px 8px;padding:6px 12px 5px;min-height:0}
+  /* two short rows on a phone: brand + progress + account, then the numbered strip */
+  .header-brand{font-size:.8rem}
   .ticket-chip-inner{max-width:210px}
   .btn-signout{min-height:44px}
-  .header-progress{flex:1 1 100%;gap:8px}
-  .header-progress .bar{flex:1;width:auto}
-  #day-strip{gap:5px}
+  .header-progress{flex:1 1 auto;gap:6px;margin-left:auto;min-width:0}
+  .header-progress .rooms-lit{display:none}
+  .header-progress .bar{flex:1;width:auto;min-width:36px}
+  .header-progress em{font-size:.66rem}
+  #day-strip{flex:1 1 100%;min-width:0;gap:5px;padding:2px 0 3px}
+  #day-strip .dlab{display:none}
   /* no map on a phone, so no doors into it */
-  #day-strip .map-btn,#nav-map{display:none}
+  #day-strip .map-btn,.dv2-navmap{display:none}
   /* AUDIT 10: the "?" sat on top of the day card. It now tucks away while the
      reader is scrolling down and comes back the moment they stop or scroll up. */
   #support-fab{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));
@@ -1809,6 +1818,7 @@ body:has(#app.viewing-day) #film-grain{display:none}
 }
 .dv2-navbtn.dv2-navmap:hover{border-color:var(--brass);background:rgba(184,115,51,.06)}
 
+.dv2-nav-bottom{margin:34px 0 0}
 /* ---------- episode card (per-day accent threads through) ---------- */
 .dv2-ep{
   position:relative;background:var(--room-hi);border:1px solid var(--room-line);border-radius:20px;
@@ -1847,6 +1857,15 @@ body:has(#app.viewing-day) #film-grain{display:none}
   flex:1;line-height:1.3;margin:0;
 }
 .dv2 .gauge{width:22px;height:22px;flex:0 0 auto}
+.gauge-btn{
+  flex:0 0 auto;margin-left:auto;background:var(--room-hi);border:1px solid var(--room-line-hi);
+  border-radius:99px;padding:5px 11px;cursor:pointer;
+  font-family:var(--font-mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--room-ink3);
+  transition:all .15s;
+}
+.gauge-btn:hover{border-color:var(--acc-ink);color:var(--acc-ink)}
+.gauge-btn.on{background:var(--acc-ink);border-color:var(--acc-ink);color:#FFFBF0}
+.gauge-btn:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 .dv2 .gauge circle.dial{stroke:rgba(42,24,16,.15)}
 .dv2 .gauge circle.fill{stroke:var(--acc-ink)}
 /* the film hangs in a GOLD PICTURE FRAME (the map's screening-room frame),
@@ -3200,13 +3219,13 @@ const DAYS = [
           { title: 'The Product Report', vimeo: '1223282478' },
         ],
         missions: [
-          'Prepare five to ten useful reference photos, or an explicitly approved fallback, covering angles, states, scale, important details, and packaging when relevant',
-          'Pack the reference photos and any other useful files into one or more ZIP files',
-          'Install the Genrupt Chrome extension in desktop Chrome, pin it, and confirm that it is logged in on an Amazon product page',
-          'Run /meet-my-product, attach the ZIP, paste the Amazon URL, and verify the product, niche, marketplace, and live cost before approving',
-          'Tell Wonka what only you know, answer his follow-ups honestly, and wait for his closing sentence',
-          'Read the Product Report and correct anything fundamentally wrong about the product, the buyer, or your claims',
-          'Confirm that the research files exist and RESEARCH is marked done',
+          'Five to ten reference photos, or an agreed fallback',
+          'Pack the photos and any useful files into a ZIP',
+          'Install the Genrupt extension, pin it, sign in on Amazon',
+          'Run /meet-my-product, attach the ZIP, approve the preflight',
+          'Tell Wonka what only you know, wait for his closing line',
+          'Read the Product Report, correct what is fundamentally wrong',
+          'Confirm the research files exist and RESEARCH is done',
         ],
         optional: [
           'Send Jay one line from your report that surprised you.',
@@ -3234,12 +3253,12 @@ const DAYS = [
           { title: 'Review, Approve, and Send the Strategy to Genrupt', vimeo: '1223309920' },
         ],
         missions: [
-          'Run /creative-brief in a new conversation after confirming Day 2 research is complete.',
-          'Answer the main-image questions using your real preferences, without searching for perfect answers.',
-          'Skim the full brief using the five checkpoints and review owner-review.md carefully.',
-          'Review the three owner questions and make focused corrections only where needed.',
-          'Type The brief is approved. and verify the saved Genrupt plan was read back correctly.',
-          'Confirm that the brief files exist and that zero images were generated today.',
+          'Run /creative-brief in a new conversation',
+          'Answer the main-image questions from your real preferences',
+          'Skim the brief in five checkpoints, read owner-review.md',
+          'Review the three owner questions, correct where needed',
+          'Type The brief is approved. and check the plan read back',
+          'Confirm the brief files exist and no image was generated',
         ],
         resources: [
           { name: 'The three review questions', url: 'kit-pages-e7c41b/three-questions.html' },
@@ -3264,12 +3283,12 @@ const DAYS = [
           { title: 'The Smoke Test', vimeo: 'VIMEO_ID_D4_L3' }, // <!-- VIDEO PLACEHOLDER: TODO real Vimeo ID -->
         ],
         missions: [
-          'Run /reference-sheet, inspect the source inventory, and verify that at least one sheet includes a clear visual scale cue.',
-          'Inspect every sheet against all five checks. Make focused revisions only where needed, and add additional sheets only when they have a clear job.',
-          'Explicitly approve the Reference Sheets and stop before the Smoke Test.',
-          'Run /brand-kit, then either approve and attach the Brand Kit or record an unbranded decision. Read the saved plan back.',
-          'Run the Smoke Test, open every frame at full size, and complete both reads, product and brief. Correct the sheets, plan or brief where needed, then say the final pass line yourself.',
-          'Confirm that reference-sheet.md contains Smoke test: PASS and Reference status: LOCKED, proof first, lock second.',
+          'Run /reference-sheet, check the inventory and a scale cue',
+          'Inspect every sheet with the five checks, revise if needed',
+          'Approve the Reference Sheets, stop before the Smoke Test',
+          'Run /brand-kit, approve or go unbranded, read the plan back',
+          'Smoke Test: open every frame, both reads, say the pass line',
+          'Confirm Smoke test: PASS and Reference status: LOCKED',
         ],
         resources: [
           { name: 'Reference Sheet check', url: 'kit-pages-e7c41b/five-point-check.html' },
@@ -4198,9 +4217,15 @@ function renderDayStrip() {
   mapBtn.dataset.view = 'map';
   mapBtn.title = 'Back to the Factory Map';
   mapBtn.setAttribute('aria-label', 'Factory Map');
-  mapBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 2.2 6 2v11.6l-6-2V6.2z"/></svg><span>Factory Map</span>';
+  mapBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 2.2 6 2v11.6l-6-2V6.2z"/></svg><span>Map</span>';
   mapBtn.addEventListener('click', showMap);
   strip.appendChild(mapBtn);
+  // the plaques carry only the number; one small "DAY" label says what the numbers are
+  const dlab = document.createElement('span');
+  dlab.className = 'dlab';
+  dlab.setAttribute('aria-hidden', 'true');
+  dlab.textContent = 'Day';
+  strip.appendChild(dlab);
   computeDayStates().forEach((s) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -4208,7 +4233,7 @@ function renderDayStrip() {
     b.dataset.day = s.day;
     b.title = 'Day ' + s.day + ': ' + s.room + (!s.unlocked ? ' (opens ' + unlockLabel(s.day) + ')' : '');
     b.setAttribute('aria-label', b.title);
-    b.innerHTML = '<span>Day ' + s.day + '</span>' +
+    b.innerHTML = '<span>' + s.day + '</span>' +
       (s.done ? '<i class="chk">&#10003;</i>' : '') +
       (!s.unlocked ? '<i class="pl">' + padlockSvg() + '</i>' : '');
     b.addEventListener('click', () => {
@@ -5204,13 +5229,16 @@ function renderDay(dayNum) {
   const nextDay = DAYS.find((x) => x.day === dayNum + 1);
   const prevRoom = prevDay ? prevDay.room : '';
   const nextRoom = nextDay ? nextDay.room : '';
-  html += '<nav class="dv2-nav reveal">' +
-    '<button id="nav-prev" class="dv2-navbtn"' + (dayNum <= 1 ? ' disabled' : '') + '>' +
+  // the same corridor nav renders twice: under the hero, and again after the lever, so a
+  // student who finished the day never scrolls back up to leave the room (Jay, 2.9)
+  const roomNavHtml = (suffix) => '<nav class="dv2-nav reveal' + (suffix ? ' dv2-nav-bottom' : '') + '">' +
+    '<button id="nav-prev' + suffix + '" data-nav="prev" class="dv2-navbtn"' + (dayNum <= 1 ? ' disabled' : '') + '>' +
       '<span class="dv2-nav-eyebrow">The door behind you</span><span class="dv2-nav-room">' + escapeHtml(prevRoom || 'Previous Room') + '</span></button>' +
-    '<button id="nav-map" class="dv2-navbtn dv2-navmap">Factory Map</button>' +
-    '<button id="nav-next" class="dv2-navbtn dv2-next"' + (dayNum >= CONFIG.TOTAL_DAYS ? ' disabled' : '') + '>' +
+    '<button id="nav-map' + suffix + '" data-nav="map" class="dv2-navbtn dv2-navmap">Factory Map</button>' +
+    '<button id="nav-next' + suffix + '" data-nav="next" class="dv2-navbtn dv2-next"' + (dayNum >= CONFIG.TOTAL_DAYS ? ' disabled' : '') + '>' +
       '<span class="dv2-nav-eyebrow">The next door</span><span class="dv2-nav-room">' + escapeHtml(nextRoom || 'Next Room') + '</span></button>' +
     '</nav>';
+  html += roomNavHtml('');
 
   // Day 1's one non-negotiable download. It used to sit at the top of the room,
   // where people downloaded it before any lesson told them what it was for.
@@ -5297,6 +5325,9 @@ function renderDay(dayNum) {
         '<dt>What you need</dt><dd>' + sopFmt(g.need) + '</dd>' +
         '<dt>Your active role</dt><dd>' + sopFmt(g.role) + '</dd>' +
         '<dt>Done when</dt><dd>' + sopFmt(g.done) + '</dd></dl>';
+    }
+    // the jump bar rides on every day (Jay, 2.9): it is the page's table of contents
+    if (ep.lessons.length) {
       const jid = 'd' + dayNum;
       html += '<nav class="dv2-jump" aria-label="Jump to a part of this day"><span class="dv2-jump-eyebrow">Jump to</span>';
       ep.lessons.forEach((ls, li) => {
@@ -5314,9 +5345,11 @@ function renderDay(dayNum) {
       // derived reel chip, e.g. "REEL D4-L2"
       const reelChip = 'REEL D' + dayNum + '-L' + (li + 1);
       html += '<div class="dv2-lesson" id="d' + dayNum + '-l' + (li + 1) + '">';
+      // the gauge is a WATCHED toggle the student sets, no longer lit by mission number N
       html += '<div class="dv2-lrow">' +
-        '<svg class="gauge' + (gaugeOn ? ' on' : '') + '" data-gauge="' + gaugeKey + '" viewBox="0 0 24 24"><circle class="dial" cx="12" cy="12" r="10"/><circle class="fill" cx="12" cy="12" r="10"/></svg>' +
+        '<svg class="gauge' + (gaugeOn ? ' on' : '') + '" data-gauge="' + gaugeKey + '" viewBox="0 0 24 24" aria-hidden="true"><circle class="dial" cx="12" cy="12" r="10"/><circle class="fill" cx="12" cy="12" r="10"/></svg>' +
         '<h4>Lesson ' + (li + 1) + ': ' + escapeHtml(ls.title) + '</h4>' +
+        '<button type="button" class="gauge-btn' + (gaugeOn ? ' on' : '') + '" data-watch="' + gaugeKey + '" aria-pressed="' + (gaugeOn ? 'true' : 'false') + '">' + (gaugeOn ? 'Watched' : 'Mark watched') + '</button>' +
         '</div>';
       // No duration chip, and no dur field either. Jay, 27.8 and again 31.8:
       // "אני לא רוצה שהפורטל יצהיר הצהרות על זמנים... יפתחו את הפרק ויראו."
@@ -5407,6 +5440,7 @@ function renderDay(dayNum) {
     html += '<p class="dv2-tellwonka">Now tell Wonka, in your factory chat: <code>I\'ve watched through Day ' + dayNum + '</code> &middot; he paces the rooms with your lessons.</p>';
   }
   html += '</div>';
+  html += roomNavHtml('-b');
   html += '</div>'; // close .dv2
 
   view.innerHTML = html;
@@ -5432,13 +5466,12 @@ function litKeyline(el) {
 
 function wireDayView(dayNum) {
   const view = $('day-view');
-  const prev = $('nav-prev'), next = $('nav-next'), mapBtn = $('nav-map');
-  if (prev) prev.addEventListener('click', () => { if (isDayUnlocked(dayNum - 1)) openDay(dayNum - 1, true); else toast('That door is behind you and already open. Walk right in.'); });
-  if (next) next.addEventListener('click', () => {
+  view.querySelectorAll('[data-nav="prev"]').forEach((prev) => prev.addEventListener('click', () => { if (isDayUnlocked(dayNum - 1)) openDay(dayNum - 1, true); else toast('That door is behind you and already open. Walk right in.'); }));
+  view.querySelectorAll('[data-nav="next"]').forEach((next) => next.addEventListener('click', () => {
     if (isDayUnlocked(dayNum + 1)) openDay(dayNum + 1, true);
     else toast('The suspense is doing wonders for you. Day ' + (dayNum + 1) + ' opens ' + unlockLabel(dayNum + 1) + ' (your local time).');
-  });
-  if (mapBtn) mapBtn.addEventListener('click', showMap);
+  }));
+  view.querySelectorAll('[data-nav="map"]').forEach((mapBtn) => mapBtn.addEventListener('click', showMap));
   // the jump bar scrolls in place. It must NOT change location.hash: the router
   // reads #dayN on load and on hashchange, and #d2-l1 would land on the map.
   // the jump bar sticks under the header: measure the header (it wraps to a taller block on
@@ -5471,8 +5504,15 @@ function wireDayView(dayNum) {
       chips.forEach((a) => a.classList.toggle('is-current', a.dataset.jump === cur));
       jumpBar.classList.toggle('is-stuck', jumpBar.getBoundingClientRect().top <= hdrH + 1 && window.scrollY > 0);
     };
-    let tick = false;
-    const onScroll = () => { if (tick) return; tick = true; requestAnimationFrame(() => { tick = false; light(); }); };
+    let tick = false, lastSave = 0;
+    const onScroll = () => {
+      if (tick) return; tick = true;
+      requestAnimationFrame(() => {
+        tick = false; light();
+        const now = Date.now();
+        if (now - lastSave > 600) { lastSave = now; try { LS.set(P + '-scroll-d' + dayNum, String(Math.round(window.scrollY))); } catch (e) {} }
+      });
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     view.__jumpScroll && window.removeEventListener('scroll', view.__jumpScroll);
     view.__jumpScroll = onScroll;
@@ -5494,17 +5534,25 @@ function wireDayView(dayNum) {
       const key = cb.dataset.check;
       progress.checks['d' + dayNum] = progress.checks['d' + dayNum] || {};
       progress.checks['d' + dayNum][key] = cb.checked;
-      // fill the matching lesson gauge: mission index i lights gauge of lesson i (same episode)
-      const m = /^ep(\d+)-m(\d+)$/.exec(key);
-      if (m) {
-        const g = view.querySelector('[data-gauge="ep' + m[1] + '-l' + m[2] + '"]');
-        if (g) {
-          g.classList.toggle('on', cb.checked);
-          progress.checks['d' + dayNum]['ep' + m[1] + '-l' + m[2]] = cb.checked;
-        }
-      }
       persistProgress(dayNum);
       refreshPunchState(dayNum); // ITEM 6: card stamps + lever arm state
+    });
+  });
+  // lessons: the Watched toggle owns the gauge (it used to light from mission number N,
+  // an accidental coupling: ticking mission 3 lit lesson 3)
+  view.querySelectorAll('.gauge-btn[data-watch]').forEach((wb) => {
+    wb.addEventListener('click', () => {
+      const key = wb.dataset.watch;
+      progress.checks['d' + dayNum] = progress.checks['d' + dayNum] || {};
+      const on = !progress.checks['d' + dayNum][key];
+      progress.checks['d' + dayNum][key] = on;
+      wb.classList.toggle('on', on);
+      wb.setAttribute('aria-pressed', on ? 'true' : 'false');
+      wb.textContent = on ? 'Watched' : 'Mark watched';
+      const g = view.querySelector('[data-gauge="' + key + '"]');
+      if (g) g.classList.toggle('on', on);
+      persistProgress(dayNum);
+      refreshPunchState(dayNum);
     });
   });
   refreshPunchState(dayNum); // set the initial card/lever state on open
@@ -5517,6 +5565,7 @@ function wireDayView(dayNum) {
       if (!progress.completedDays.includes(dayNum)) progress.completedDays.push(dayNum);
       if (!progress.completedAt[dayNum]) progress.completedAt[dayNum] = new Date().toISOString();
       persistProgress(dayNum);
+      try { LS.del(P + '-scroll-d' + dayNum); } catch (e) {}
       btn.style.display = 'none';
       const seal = $('day-seal');
       seal.classList.add('stamped');
@@ -5547,19 +5596,27 @@ function refreshPunchState(dayNum) {
     boxes.forEach((b) => { if (!b.checked) cardAll = false; });
     card.classList.toggle('card-punched', cardAll);
   });
+  let lessonsLeft = 0, missionsLeft = 0;
   if (d) d.episodes.forEach((ep) => {
     ep.missions.forEach((m, mi) => {
       anyMission = true;
-      if (!checks['ep' + ep.num + '-m' + mi]) allDone = false;
+      if (!checks['ep' + ep.num + '-m' + mi]) { allDone = false; missionsLeft++; }
+    });
+    // the lever also waits for every lesson to be marked watched (Jay, 2.9)
+    ep.lessons.forEach((ls, li) => {
+      anyMission = true;
+      if (!checks['ep' + ep.num + '-l' + li]) { allDone = false; lessonsLeft++; }
     });
   });
   const lever = $('btn-complete');
   if (lever) {
-    const armed = !anyMission || allDone; // no missions on the card => lever always ready
+    const armed = !anyMission || allDone; // nothing on the card => lever always ready
     lever.classList.toggle('armed', armed);
     lever.classList.toggle('waiting', !armed);
     const note = $('lever-note');
-    if (note) note.textContent = armed ? '' : 'Punch every mission to arm the lever';
+    if (note) note.textContent = armed ? '' :
+      (lessonsLeft && missionsLeft ? 'Mark every lesson watched and punch every mission to arm the lever'
+       : lessonsLeft ? 'Mark every lesson watched to arm the lever' : 'Punch every mission to arm the lever');
   }
 }
 
@@ -5880,7 +5937,12 @@ function openDay(dayNum, scroll, viaQA) {
     $('app').classList.add('viewing-day');
     syncDayStrip(dayNum, true);
     track('day_view', dayNum);
-    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+    // resume where they left off: a day they were partway through reopens at the last
+    // scroll position instead of the top of the hero (Jay, 2.9). A finished day opens at
+    // the top, and anything above the fold is not worth restoring.
+    const saved = progress.completedDays.includes(dayNum) ? 0 : (parseInt(LS.get(P + '-scroll-d' + dayNum) || '0', 10) || 0);
+    if (saved > 300) requestAnimationFrame(() => window.scrollTo({ top: saved, behavior: 'auto' }));
+    else window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
   };
   if (viaQA) { swap(); return; }
   // the pavilion portrait + Wonka walking in (replaces the old white bloom)
