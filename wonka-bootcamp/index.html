@@ -2631,6 +2631,87 @@ html.map-booting #map3d-stage::after{
   border-radius:8px;border:2.5px solid var(--night);
 }
 ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#E9B96F,var(--brass))}
+
+/* ============================================================
+   HEADER v3 (Jay, 2.9.2026): a monogram and a ticket rail.
+   The long name became a gold "W" seal with two small lines; the ten
+   plaques and the Map button fused into ONE rail with dividers, like a
+   strip of ticket stubs; Rooms Lit left the bar (the punched stubs say
+   the same thing) and lives in the account popover with Sign out.
+   This layer overrides the older header rules above on purpose.
+   ============================================================ */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
+.header-brand{display:flex;align-items:center;gap:10px;font-size:1rem;white-space:nowrap}
+.header-brand .seal{
+  width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--gold-grad);background-size:200% 200%;animation:foilSheen 9s ease-in-out infinite;
+  font-family:var(--font-display);font-weight:900;font-size:19px;line-height:1;color:#3d2a05;
+  border:1px solid rgba(255,243,196,.6);box-shadow:0 0 0 2px rgba(138,84,36,.5);
+}
+.header-brand .brand-t{
+  font-family:var(--font-mono);font-weight:600;font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--cream-dim);line-height:1.2;
+}
+.header-brand .brand-t small{display:block;font-size:8.5px;letter-spacing:.24em;color:rgba(243,233,210,.5);margin-top:3px}
+/* the rail */
+#day-strip{
+  flex:1 1 auto;min-width:0;justify-content:center;gap:0;padding:0;overflow:visible;
+  -webkit-mask-image:none;mask-image:none;
+}
+#day-strip .rail{
+  display:flex;align-items:stretch;height:36px;border-radius:10px;overflow:hidden;
+  border:1px solid rgba(228,180,108,.45);background:var(--flat);flex:none;max-width:100%;
+}
+#day-strip .rail .dbtn,#day-strip .rail .dbtn.done,#day-strip .rail .dbtn.locked,#day-strip .rail .dbtn.map-btn{
+  height:34px;min-height:34px;min-width:40px;padding:0 11px;border:0;border-right:1px solid rgba(228,180,108,.22);border-radius:0;
+  background:transparent;box-shadow:none;animation:none;opacity:1;
+  font-family:var(--font-mono);font-weight:600;font-size:.8rem;letter-spacing:.02em;color:rgba(243,233,210,.42);
+}
+#day-strip .rail .dbtn:last-child{border-right:0}
+#day-strip .rail .dbtn span,#day-strip .rail .dbtn.map-btn span{color:inherit;text-shadow:none}
+#day-strip .rail .dbtn.map-btn svg{fill:currentColor;width:14px;height:14px}
+#day-strip .rail .dbtn,#day-strip .rail .dbtn:hover,#day-strip .rail .dbtn.locked,#day-strip .rail .dbtn.current{filter:none;transform:none;text-shadow:none;outline:0}
+#day-strip .rail .dbtn.locked span{color:inherit}
+/* order, not margins: the strip is flex:1, so an auto margin on the account button had
+   nothing to push against; ordering puts brand, rail, account left to right */
+.acct-btn{margin-left:0;order:10}
+.header-acct{order:11}
+#day-strip{order:5}
+#day-strip .rail .dbtn:hover{color:var(--cream);background:rgba(245,184,65,.08)}
+#day-strip .rail .dbtn.map-btn{
+  font-family:var(--font-body);font-weight:700;font-size:.78rem;letter-spacing:0;color:var(--gold);
+  background:rgba(245,184,65,.08);padding:0 14px;
+}
+#day-strip .rail .dbtn.map-btn.active{background:var(--gold);color:#3d2a05}
+#day-strip .rail .dbtn.done{background:linear-gradient(160deg,#F7D774,#B8901F);color:#3d2a05;padding-left:11px}
+#day-strip .rail .dbtn.done::after{position:static;transform:none;width:6px;height:6px;margin-right:6px;order:-1;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+#day-strip .rail .dbtn.active,#day-strip .rail .dbtn.done.active{
+  background:var(--cream);color:#3d2a05;box-shadow:inset 0 0 0 2px var(--gold);
+}
+#day-strip .rail .dbtn.current::before{width:6px;height:6px;margin-right:6px;background:var(--raspberry);box-shadow:0 0 7px rgba(224,53,107,.8)}
+#day-strip .rail .dbtn.current.active::before{background:var(--raspberry);box-shadow:0 0 7px rgba(224,53,107,.8)}
+#day-strip .rail .dbtn.done.current::after{display:none}
+#day-strip .rail .dbtn.locked{color:rgba(243,233,210,.26);cursor:not-allowed}
+#day-strip .rail .dbtn.locked:hover{background:transparent;color:rgba(243,233,210,.32)}
+#day-strip .rail .dbtn .pl svg{width:9px;height:9px;fill:rgba(243,233,210,.35)}
+/* the account popover carries the count now */
+.header-acct .header-progress{display:flex;margin:0;gap:9px;padding:2px 2px 4px;border-bottom:1px solid rgba(228,180,108,.25)}
+.header-acct .header-progress .bar{width:110px}
+.header-acct .header-progress .rooms-lit{display:inline}
+@media(max-width:760px){
+  header.portal-header{padding:6px 12px 5px;gap:2px 8px}
+  .header-brand .seal{width:30px;height:30px;font-size:17px}
+  .header-brand .brand-t small{display:none}
+  #day-strip{flex:1 1 100%;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;padding:2px 0 3px;
+    -webkit-mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+            mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%)}
+  #day-strip .rail{margin:0 auto}
+  #day-strip .rail .dbtn{min-height:34px;min-width:38px;padding:0 10px}
+  /* phone: brand + account on row one, the rail on row two */
+  .acct-btn{order:1;margin-left:auto}
+  #day-strip{order:6}
+}
 </style>
 </head>
 <script>
@@ -2827,7 +2908,7 @@ html.map-booting #map3d-stage::after{
 <!-- ================= MAIN APP: THE FACTORY TOUR ================= -->
 <div id="app">
   <header class="portal-header">
-    <div class="header-brand">The <span>Wonka</span> Creative Bootcamp</div>
+    <div class="header-brand"><span class="seal" aria-hidden="true">W</span><span class="brand-t">Wonka<small>Creative Bootcamp</small></span><span class="sr-only">The Wonka Creative Bootcamp</span></div>
     <!-- AUDIT 7: on a phone the email and Sign out took two whole rows and the
          progress bar got a sliver. .header-acct is display:contents on desktop, so
          the layout there is unchanged; under 760px it becomes a small popover behind
@@ -2835,12 +2916,12 @@ html.map-booting #map3d-stage::after{
     <button class="acct-btn" id="acct-btn" aria-label="Your account" aria-expanded="false" aria-controls="header-acct"></button>
     <div class="header-acct" id="header-acct">
       <div class="ticket-chip"><div class="ticket-chip-inner" id="chip-email">ticket holder</div></div>
+      <div class="header-progress">
+        <span class="rooms-lit">Rooms Lit</span>
+        <div class="bar"><i id="progress-bar"></i></div>
+        <em id="progress-label" class="mono">0 / 10</em>
+      </div>
       <button class="btn-signout" id="btn-signout">Sign out</button>
-    </div>
-    <div class="header-progress">
-      <span class="rooms-lit">Rooms Lit</span>
-      <div class="bar"><i id="progress-bar"></i></div>
-      <em id="progress-label" class="mono">0 / 10</em>
     </div>
     <!-- sticky day navigation: buttons rendered by renderDayStrip() -->
     <nav id="day-strip" aria-label="Day navigation"></nav>
@@ -4210,6 +4291,10 @@ function renderDayStrip() {
   const strip = $('day-strip');
   if (!strip) return;
   strip.innerHTML = '';
+  // one fused rail: the Map segment, then the ten stubs, divided by hairlines
+  const rail = document.createElement('div');
+  rail.className = 'rail';
+  strip.appendChild(rail);
   // the Factory Map button returns to the world view
   const mapBtn = document.createElement('button');
   mapBtn.type = 'button';
@@ -4219,13 +4304,7 @@ function renderDayStrip() {
   mapBtn.setAttribute('aria-label', 'Factory Map');
   mapBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 2.2 6 2v11.6l-6-2V6.2z"/></svg><span>Map</span>';
   mapBtn.addEventListener('click', showMap);
-  strip.appendChild(mapBtn);
-  // the plaques carry only the number; one small "DAY" label says what the numbers are
-  const dlab = document.createElement('span');
-  dlab.className = 'dlab';
-  dlab.setAttribute('aria-hidden', 'true');
-  dlab.textContent = 'Day';
-  strip.appendChild(dlab);
+  rail.appendChild(mapBtn);
   computeDayStates().forEach((s) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -4240,7 +4319,7 @@ function renderDayStrip() {
       if (!isDayUnlocked(s.day)) { lockedDayToast(s.day); return; }
       openDay(s.day, true);
     });
-    strip.appendChild(b);
+    rail.appendChild(b);
   });
   syncDayStrip(activeDay, false);
 }
