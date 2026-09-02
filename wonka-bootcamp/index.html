@@ -1812,7 +1812,9 @@ body:has(#app.viewing-day) #film-grain{display:none}
 /* ---------- episode card (per-day accent threads through) ---------- */
 .dv2-ep{
   position:relative;background:var(--room-hi);border:1px solid var(--room-line);border-radius:20px;
-  padding:40px 38px 30px;margin-bottom:26px;box-shadow:var(--dv2-shadow);overflow:hidden;
+  padding:40px 38px 30px;margin-bottom:26px;box-shadow:var(--dv2-shadow);overflow:clip;
+  /* clip, not hidden: hidden makes the article a scroll container and position:sticky on the
+     jump bar inside it would then stick to the article instead of the viewport */
 }
 .dv2-ep::before{
   content:"";position:absolute;top:0;left:0;right:0;height:6px;
@@ -2163,7 +2165,17 @@ body:has(#app.viewing-day) #film-grain{display:none}
 .dv2-glance dd strong{color:var(--room-ink)}
 
 /* ---------- jump bar: one row of chips, the page's table of contents ---------- */
-.dv2-jump{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 28px;align-items:center}
+/* It STICKS under the portal header once the page scrolls past it (the local nav pattern
+   under a global header), lights the chip of the section in view, and on a phone collapses
+   to one horizontally scrollable row so it never eats two rows of a small screen. */
+.dv2-jump{
+  display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+  position:sticky;top:var(--hdr-h,110px);z-index:40;
+  margin:0 -38px 28px;padding:9px 38px;background:var(--room-hi);
+  transition:box-shadow .2s,border-color .2s;border-bottom:1px solid transparent;
+}
+.dv2-jump.is-stuck{border-bottom-color:var(--room-line);box-shadow:0 10px 18px -12px rgba(42,24,16,.35)}
+.dv2-jump a.is-current{background:var(--acc-ink);border-color:var(--acc-ink);color:#FFFBF0}
 .dv2-jump-eyebrow{font-family:var(--font-mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--room-faint);margin-right:4px}
 .dv2-jump a{
   font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
@@ -2172,9 +2184,9 @@ body:has(#app.viewing-day) #film-grain{display:none}
 }
 .dv2-jump a:hover{background:var(--acc-line);transform:translateY(-1px)}
 .dv2-jump a:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
-/* a jump lands under the sticky header, never behind it */
-/* html already carries scroll-padding-top:104px; this only adds the breathing room the taller phone header needs */
-.dv2-lesson,.dv2 .punch-card,.sop.is-day{scroll-margin-top:40px}
+/* a jump lands under the sticky header AND the stuck jump bar, never behind either.
+   html carries scroll-padding-top:104px; the bar is ~46px; so margin = header + 46 + 12 - 104 */
+.dv2-lesson,.dv2 .punch-card,.sop.is-day{scroll-margin-top:calc(var(--hdr-h,110px) - 46px)}
 .dv2-lesson:focus,.dv2 .punch-card:focus,.sop.is-day:focus{outline:none}
 
 /* ---------- optional prompts: beside the missions, never on the punch card ---------- */
@@ -2191,8 +2203,10 @@ body:has(#app.viewing-day) #film-grain{display:none}
   .dv2-glance{grid-template-columns:1fr;gap:2px 0;padding:13px 15px}
   .dv2-glance dt{padding-top:9px}
   .dv2-glance dt:first-child{padding-top:0}
-  .dv2-jump{gap:6px}
-  .dv2-jump a{font-size:.62rem;padding:6px 10px}
+  .dv2-jump{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -20px 24px;padding:8px 20px}
+  .dv2-jump::-webkit-scrollbar{display:none}
+  .dv2-jump .dv2-jump-eyebrow{display:none}
+  .dv2-jump a{font-size:.62rem;padding:6px 10px;white-space:nowrap;flex:none}
 }
 .dv2-res.is-live .dv2-ressub{color:var(--room-ink2)}
 
@@ -5427,6 +5441,43 @@ function wireDayView(dayNum) {
   if (mapBtn) mapBtn.addEventListener('click', showMap);
   // the jump bar scrolls in place. It must NOT change location.hash: the router
   // reads #dayN on load and on hashchange, and #d2-l1 would land on the map.
+  // the jump bar sticks under the header: measure the header (it wraps to a taller block on
+  // phones), light the chip whose section is in view, and shade the bar once it is stuck
+  const jumpBar = view.querySelector('.dv2-jump');
+  if (jumpBar) {
+    // measured on every pass, not once: at render time the header's day strip may not have
+    // laid out yet (measured 66px against a real 110px), and a stale value parks the bar
+    // 44px under the header
+    let hdrH = 110;
+    const setHdr = () => {
+      const hdr = document.querySelector('header.portal-header');
+      if (!hdr) return hdrH;
+      const h = Math.round(hdr.getBoundingClientRect().height);
+      if (h && h !== hdrH) { hdrH = h; view.querySelector('.dv2').style.setProperty('--hdr-h', h + 'px'); }
+      return hdrH;
+    };
+    view.querySelector('.dv2').style.setProperty('--hdr-h', setHdr() + 'px');
+    if (!window.__jumpResizeWired) {
+      window.__jumpResizeWired = true;
+      window.addEventListener('resize', () => { const v = $('day-view'); const d = v && v.querySelector('.dv2'); const h = document.querySelector('header.portal-header'); if (d && h) d.style.setProperty('--hdr-h', Math.round(h.getBoundingClientRect().height) + 'px'); });
+    }
+    const chips = [...jumpBar.querySelectorAll('a[data-jump]')];
+    const targets = chips.map((a) => document.getElementById(a.dataset.jump)).filter(Boolean);
+    const light = () => {
+      setHdr();
+      const line = hdrH + jumpBar.getBoundingClientRect().height + 40; // a jump lands ~12-30px under the bar
+      let cur = null;
+      targets.forEach((t) => { if (t.getBoundingClientRect().top <= line) cur = t.id; });
+      chips.forEach((a) => a.classList.toggle('is-current', a.dataset.jump === cur));
+      jumpBar.classList.toggle('is-stuck', jumpBar.getBoundingClientRect().top <= hdrH + 1 && window.scrollY > 0);
+    };
+    let tick = false;
+    const onScroll = () => { if (tick) return; tick = true; requestAnimationFrame(() => { tick = false; light(); }); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    view.__jumpScroll && window.removeEventListener('scroll', view.__jumpScroll);
+    view.__jumpScroll = onScroll;
+    light();
+  }
   view.querySelectorAll('.dv2-jump a[data-jump]').forEach((a) => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
