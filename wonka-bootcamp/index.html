@@ -1984,6 +1984,17 @@ body:has(#app.viewing-day) #film-grain{display:none}
 }
 .sop-copy:hover{background:#F5D48A;color:var(--room-ink)}
 .sop-copy.done{background:#3E8F6F;border-color:#3E8F6F;color:#fff}
+/* TEMPORARY_WONKA_UPDATE_NOTICE styles (remove with the block) */
+.temp-update-notice{margin:18px 0 22px;padding:20px 22px 18px;border-radius:14px;background:#1E1712;color:#F4EBDD;border:1px solid #6B5320;box-shadow:0 0 0 3px rgba(245,184,65,.18),0 12px 30px rgba(30,23,18,.25);position:relative;overflow:hidden}
+.temp-update-notice::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--gold-grad);background-size:220% 220%;animation:foilSheen 8s ease-in-out infinite}
+.temp-update-notice .tun-eyebrow{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.temp-update-notice .tun-title{margin:0 0 8px;font-size:1.25rem;line-height:1.2;color:#FFF3C4}
+.temp-update-notice .tun-lead{margin:0 0 10px;font-size:.95rem;line-height:1.6;color:#E8DCC8}
+.temp-update-notice .tun-steps{margin:0 0 10px;padding-left:22px;font-size:.95rem;line-height:1.7;color:#F4EBDD}
+.temp-update-notice .tun-steps strong{color:#FFF3C4}
+.temp-update-notice .tun-cmd{margin:6px 0 12px}
+.temp-update-notice .tun-note{margin:0;font-size:.84rem;line-height:1.6;color:#C9B99C}
+@media (max-width:640px){.temp-update-notice{padding:16px 16px 14px}.temp-update-notice .tun-title{font-size:1.1rem}}
 .sop-note{border-radius:9px;padding:13px 15px;margin:12px 0;font-size:.93rem;line-height:1.7;color:var(--room-ink2)}
 .sop-note.warn{background:#FDF0F3;border:1px solid #E9BCC8;border-left:3px solid #B03052}
 .sop-note.warn b,.sop-note.warn strong{color:#8A1638}
@@ -6114,14 +6125,17 @@ function firstUnlockedIncompleteDay() {
 const TEMPORARY_WONKA_UPDATE_NOTICE_DAYS = [3, 4];
 function tempWonkaUpdateNoticeHtml(dayNum) {
   if (TEMPORARY_WONKA_UPDATE_NOTICE_DAYS.indexOf(dayNum) === -1) return '';
-  return '<div class="sop-note warn temp-update-notice" data-temp-notice="wonka-update">' +
-    '<strong>&#9888;&#65039; Important Wonka update before you begin</strong><br>' +
-    'I have been improving Wonka throughout the Bootcamp based on your feedback. Before starting this day, open a new Claude Code session inside your Wonka folder and send:<br>' +
-    '<code>Wonka, where did we leave off?</code><br>' +
-    'This will load the latest version of Wonka and his skills, then continue from everything already saved in the factory.<br>' +
-    'The update runs silently, so you will not see a separate confirmation. Once Wonka responds, run this room\u2019s command as usual.<br>' +
-    'Starting a fresh session also keeps Wonka focused. Your progress lives in the factory, not in the conversation.' +
-    '</div>';
+  return '<section class="temp-update-notice" data-temp-notice="wonka-update" aria-label="Wonka update">' +
+    '<div class="tun-eyebrow">Before you begin &middot; one-time update</div>' +
+    '<h3 class="tun-title">Get the latest Wonka first</h3>' +
+    '<p class="tun-lead">I have been improving Wonka throughout the Bootcamp based on your feedback. Two steps, then this room as usual.</p>' +
+    '<ol class="tun-steps">' +
+    '<li><strong>Open a new Claude Code session</strong> inside your Wonka folder.</li>' +
+    '<li><strong>Send this</strong> as your first message:</li>' +
+    '</ol>' +
+    '<div class="sop-cmd tun-cmd"><code>Wonka, where did we leave off?</code><button class="sop-copy" type="button">Copy</button></div>' +
+    '<p class="tun-note">Wonka and his skills update silently, so there is no confirmation to wait for. He continues from everything saved in the factory. A fresh session also keeps him focused: your progress lives in the factory, not in the conversation.</p>' +
+    '</section>';
 }
 function promiseHtml(text) {
   const raw = String(text || '').trim();
