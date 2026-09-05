@@ -129,19 +129,21 @@ h1 .sub{display:block;font-size:.42em;font-weight:300;font-style:italic;letter-s
 .step .num{font-family:var(--serif);font-size:44px;line-height:1;color:var(--gold);font-weight:300;font-style:italic;margin-bottom:8px}
 .step h3{font-size:17px;font-weight:800;margin-bottom:6px}
 .step p{font-size:14px;color:var(--txt-dim);line-height:1.55}
-.term{margin-top:26px;border-radius:18px;overflow:hidden;border:1px solid var(--brd);background:#05060c;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
-.term-top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--brd-soft)}
+.app{margin-top:26px;border-radius:18px;overflow:hidden;border:1px solid var(--brd);background:#0b0d17;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
+.app-top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--brd-soft)}
 .dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;display:block}
 .dots .r{background:#ff5f57}.dots .y{background:#febc2e}.dots .g{background:#28c840}
-.term-title{font-size:12px;color:var(--txt-mut);font-weight:600;letter-spacing:.04em}
-.term-body{padding:22px 24px;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:#e7e7ee;position:relative;overflow-x:auto}
-.term-body .ln{white-space:pre}
-.c-p{color:var(--gold)}.c-c{color:#7b7b88}.c-g{color:#7ee0a6}.c-b{color:#9cc7ff}.c-r{color:#ff8a90}
-.copy-chip{position:absolute;top:12px;right:12px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);border:1px solid var(--brd);color:var(--txt-dim);font-family:var(--sans);font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;transition:.25s}
-.copy-chip:hover{background:rgba(230,192,105,.14);color:var(--gold);border-color:rgba(230,192,105,.4)}
-.copy-chip svg{width:14px;height:14px}
-.copy-chip .ck{display:none}
-.copy-chip.done .cp{display:none}.copy-chip.done .ck{display:block}.copy-chip.done{color:var(--green-2);border-color:rgba(78,168,116,.5)}
+.app-title{font-size:12px;color:var(--txt-mut);font-weight:600;letter-spacing:.04em}
+.app-body{padding:46px 28px 34px;text-align:center}
+.app-caption{font-size:13px;color:var(--txt-mut);margin-bottom:16px;font-weight:600}
+.app-input{display:flex;align-items:center;justify-content:space-between;gap:14px;max-width:640px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(230,192,105,.35);border-radius:16px;padding:16px 16px 16px 22px;box-shadow:0 0 0 6px rgba(230,192,105,.06)}
+.app-cmd{font-family:var(--mono);font-size:clamp(15px,2.2vw,19px);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-cmd .slash{color:var(--gold)}
+.caret{display:inline-block;width:2px;height:1.1em;background:var(--gold);vertical-align:-3px;margin-left:3px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.app-send{flex:none;width:36px;height:36px;border-radius:50%;background:var(--grad);color:#1a1405;display:flex;align-items:center;justify-content:center}
+.app-send svg{width:16px;height:16px}
+.app-note{margin-top:16px;font-size:14px;color:var(--txt-dim)}
 .install-line{margin-top:22px;display:flex;align-items:center;gap:0;border:1px solid rgba(230,192,105,.4);border-radius:16px;background:linear-gradient(150deg,rgba(230,192,105,.12),rgba(230,192,105,.03));overflow:hidden}
 .install-line code{flex:1;background:none;color:var(--gold-2);font-size:15px;padding:18px 22px;white-space:nowrap;overflow-x:auto}
 .install-line button{border:0;background:var(--grad);color:#1a1405;font-family:var(--sans);font-weight:800;font-size:14px;padding:18px 24px;cursor:pointer;transition:filter .2s;white-space:nowrap}
@@ -350,40 +352,29 @@ html.no-js .reveal{opacity:1;transform:none}
   <div class="wrap">
     <div class="reveal"><div class="eyebrow">How it works</div></div>
     <div class="reveal" style="--d:.05s"><h2>Install once. <span class="accent">Then it is one line per listing.</span></h2></div>
-    <div class="reveal" style="--d:.1s"><p class="lead">Paste the install line into your terminal. From then on, every Claude Code session on your machine knows the skill.</p></div>
+    <div class="reveal" style="--d:.1s"><p class="lead">Paste this line into Claude Code. Claude runs it, and from then on every session on your machine knows the skill.</p></div>
 
     <div class="install-line reveal" style="--d:.12s">
       <code id="installCmd">npx skills add JayGPTPro/santa-skill -g</code>
       <button onclick="copyText('installCmd',this)">Copy</button>
     </div>
-    <p class="hint reveal" style="--d:.14s"><b>Works on macOS, Windows and Linux.</b> Needs Node for the installer, and Claude Code for the run.</p>
+    <p class="hint reveal" style="--d:.14s"><b>Works on macOS and Windows.</b> Claude Code Desktop or the terminal, either one.</p>
 
     <div class="steps">
-      <div class="step reveal" style="--d:.05s"><div class="num">01</div><h3>Type the ASIN</h3><p>In any Claude Code session, in any folder. An Amazon URL or a folder of your own images works too.</p></div>
+      <div class="step reveal" style="--d:.05s"><div class="num">01</div><h3>Type the ASIN</h3><p>In any Claude Code chat, in any folder. An Amazon URL or a folder of your own images works too.</p></div>
       <div class="step reveal" style="--d:.12s"><div class="num">02</div><h3>Claude looks, then generates</h3><p>It fetches the gallery, opens every image, decides what to transform and what to skip, and runs the images in parallel. No questions.</p></div>
       <div class="step reveal" style="--d:.19s"><div class="num">03</div><h3>Review the sheet, upload</h3><p>A before/after contact sheet with a one-line verdict per image. Pick the ones you like, swap them in for Q4, swap them out in January.</p></div>
     </div>
 
-    <div class="term reveal" style="--d:.1s">
-      <div class="term-top"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="term-title">Claude Code</div></div>
-      <div class="term-body">
-        <button class="copy-chip" onclick="copyText('runCmd',this)">
-          <svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Copy</span>
-        </button>
-<div class="ln"><span class="c-p">&gt;</span> <span id="runCmd">/santa-skill B0GYY18GYC</span></div>
-<div class="ln">&nbsp;</div>
-<div class="ln"><span class="c-c">Fetched 10 images. Looking at each one...</span></div>
-<div class="ln"><span class="c-g">transform</span>  02  lifestyle, backyard party, headline kept</div>
-<div class="ln"><span class="c-g">transform</span>  03  lifestyle, living room</div>
-<div class="ln"><span class="c-r">skip</span>       04  infographic, text-heavy</div>
-<div class="ln"><span class="c-g">transform</span>  06  lifestyle, campsite, no tree</div>
-<div class="ln"><span class="c-r">skip</span>       07  collage</div>
-<div class="ln"><span class="c-c">...</span></div>
-<div class="ln"><span class="c-c">5 transformed, 5 skipped, 41 seconds</span></div>
-<div class="ln"><span class="c-b">santa/B0GYY18GYC/christmas/</span></div>
-<div class="ln"><span class="c-b">santa/B0GYY18GYC/contact-sheet.html</span></div>
+    <div class="app reveal" style="--d:.1s">
+      <div class="app-top"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app-title">Claude Code</div></div>
+      <div class="app-body">
+        <div class="app-caption">Any project, any folder. Type this and press Enter.</div>
+        <div class="app-input">
+          <span class="app-cmd"><span class="slash">/santa-skill</span> B0XXXXXXXX<span class="caret"></span></span>
+          <span class="app-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+        </div>
+        <div class="app-note">Swap in your own ASIN. That is the whole request.</div>
       </div>
     </div>
   </div>
