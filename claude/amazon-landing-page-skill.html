@@ -1,7 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" class="no-js">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Landing Page Skill for Claude Code | Jay Margaliot</title>
+<meta name="description" content="A free Claude Code skill: paste an Amazon product URL, get a complete landing page with the real images, bullets and reviews, an email form and your own link on the buy button.">
+<meta property="og:title" content="The Landing Page Skill. Amazon URL in, a full landing page out.">
+<meta property="og:description" content="One command in Claude Code. Real product data, real reviews, email capture, your link on the button.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jaygptpro.com/claude/amazon-landing-page-skill.html">
+<meta name="twitter:card" content="summary_large_image">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
 <script>
@@ -10,336 +18,375 @@
   gtag('js', new Date());
   gtag('config', 'G-M4RK6H5NMH');
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Track skill download
-  var dlBtn = document.querySelector('.download-btn');
-  if (dlBtn) {
-    dlBtn.addEventListener('click', function() {
-      gtag('event', 'skill_download', { event_category: 'conversion', event_label: 'amazon_landing_page' });
-    });
-  }
-  // Track challenge banner click
-  var challengeLink = document.querySelector('a[href*="claude-code-challenge"]');
-  if (challengeLink) {
-    challengeLink.addEventListener('click', function() {
-      gtag('event', 'challenge_click', { event_category: 'conversion', event_label: 'from_skill_page' });
-    });
-  }
-  // Track scroll depth
-  var scrollMarks = { 25: false, 50: false, 75: false, 100: false };
-  window.addEventListener('scroll', function() {
-    var scrollTop = window.scrollY;
-    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    var percent = Math.round((scrollTop / docHeight) * 100);
-    [25, 50, 75, 100].forEach(function(mark) {
-      if (percent >= mark && !scrollMarks[mark]) {
-        scrollMarks[mark] = true;
-        gtag('event', 'scroll_depth', { event_category: 'engagement', event_label: mark + '%' });
-      }
-    });
-  }, { passive: true });
-});
-</script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amazon Landing Page Skill | Daily Claude Hacks by Jay</title>
-<meta property="og:title" content="Free Skill: Amazon Product → Premium Landing Page">
-<meta property="og:description" content="One command. Claude pulls real product data, images, reviews, and builds a complete landing page. Free download.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://jaygptpro.com/claude/amazon-landing-page-skill.html">
-<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--orange:#f97316;--orange-dark:#ea580c;--orange-glow:rgba(249,115,22,.25);--dark:#1a1a2e;--dark-mid:#16213e;--text:#1e293b;--text-secondary:#64748b;--text-muted:#94a3b8;--border:#e2e8f0;--surface:#ffffff;--bg:#faf8f5;--green:#22c55e;--terminal-bg:#0d1117;--terminal-header:#161b22;--terminal-border:#30363d;--code-text:#e6edf3}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;color:var(--text);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0a0b10;--bg-2:#10121a;--panel:rgba(255,255,255,.035);--panel-2:rgba(255,255,255,.06);
+  --brd:rgba(255,255,255,.09);--brd-soft:rgba(255,255,255,.06);
+  --txt:#f4f2ee;--txt-dim:#b0aca4;--txt-mut:#6d6a64;
+  --acc:#f0a35a;--acc-2:#f7c58a;--acc-deep:#c2772f;
+  --glow:rgba(240,163,90,.42);--glow-soft:rgba(240,163,90,.14);
+  --grad:linear-gradient(135deg,#fbe0b8 0%,#f0a35a 45%,#d9822b 100%);
+  --green-2:#4ea874;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',Menlo,monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--txt);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(240,163,90,.3);color:#fff}
+code{font-family:var(--mono);font-size:.86em;background:rgba(240,163,90,.12);color:var(--acc);padding:1px 7px;border-radius:6px}
+b,strong{font-weight:700;color:var(--txt)}
 
-/* Hero */
-.hero{background:linear-gradient(135deg,var(--dark) 0%,var(--dark-mid) 100%);color:#fff;padding:60px 20px 44px;text-align:center}
-.hero h1{font-size:clamp(26px,5vw,40px);font-weight:800;line-height:1.2;margin-bottom:14px;max-width:600px;margin-left:auto;margin-right:auto}
-.hero h1 span{color:var(--orange)}
-.hero p{font-size:17px;opacity:.75;max-width:480px;margin:0 auto 24px}
-.badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
-.badge{background:rgba(249,115,22,.15);color:var(--orange);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:100}
+.progress span{display:block;height:100%;width:0;background:var(--grad);box-shadow:0 0 12px var(--glow);transition:width .1s linear}
 
-/* Sections */
-.section{padding:40px 20px;max-width:640px;margin:0 auto}
-.section h2{font-size:22px;font-weight:700;margin-bottom:16px;text-align:center}
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%,#1a1520 0%,var(--bg) 55%)}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform}
+.blob.a{width:560px;height:560px;top:-180px;left:-100px;background:radial-gradient(circle,rgba(240,163,90,.4),transparent 70%)}
+.blob.b{width:480px;height:480px;top:300px;right:-160px;background:radial-gradient(circle,rgba(120,90,200,.26),transparent 70%)}
+.blob.c{width:620px;height:620px;top:1400px;left:-200px;background:radial-gradient(circle,rgba(240,163,90,.18),transparent 70%)}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* Why cards */
-.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.why-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
-.why-card .icon{font-size:24px;margin-bottom:6px}
-.why-card h3{font-size:14px;font-weight:600;margin-bottom:4px}
-.why-card p{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.section{padding:88px 0;position:relative}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--acc);font-weight:700;margin-bottom:14px}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(30px,4.4vw,48px);line-height:1.12;letter-spacing:-.01em;margin-bottom:16px}
+h2 .accent,h1 .accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h2 em,h1 em{font-style:italic;font-weight:300}
+.lead{font-size:18px;color:var(--txt-dim);max-width:640px;line-height:1.65}
 
-/* Terminal */
-.terminal{background:var(--terminal-bg);border-radius:10px;overflow:hidden;margin:24px auto;max-width:520px;border:1px solid var(--terminal-border)}
-.terminal-header{background:var(--terminal-header);padding:8px 14px;display:flex;align-items:center;gap:6px}
-.terminal-dot{width:10px;height:10px;border-radius:50%}
-.terminal-dot.r{background:#ff5f56}.terminal-dot.y{background:#ffbd2e}.terminal-dot.g{background:#27c93f}
-.terminal-body{padding:16px;font-family:'SF Mono',Consolas,monospace;font-size:13px;color:var(--code-text);line-height:1.8}
-.terminal-body .prompt{color:#7ee787}
-.terminal-body .comment{color:#8b949e}
+/* hero */
+.hero{position:relative;text-align:center;padding:130px 24px 80px;overflow:hidden}
+.hero-content{max-width:860px;margin:0 auto;position:relative;z-index:2}
+.hero .eyebrow{margin-bottom:22px}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(44px,8vw,92px);line-height:.98;letter-spacing:-.02em;margin-bottom:26px}
+h1 .sub{display:block;font-size:.4em;font-weight:300;font-style:italic;letter-spacing:0;color:var(--txt-dim);margin-top:14px}
+.hero-sub{font-size:clamp(17px,2vw,20px);color:var(--txt-dim);max-width:620px;margin:0 auto 36px;line-height:1.6}
+.hero-sub b{color:var(--txt)}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-primary{display:inline-flex;align-items:center;gap:10px;background:var(--grad);color:#1a1005;font-weight:800;font-size:15px;padding:16px 28px;border-radius:999px;box-shadow:0 12px 40px -10px var(--glow);transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s}
+.cta-primary:hover{transform:translateY(-3px);box-shadow:0 18px 50px -10px var(--glow)}
+.cta-primary svg{width:18px;height:18px}
+.cta-ghost{display:inline-flex;align-items:center;gap:10px;color:var(--txt);font-weight:700;font-size:15px;padding:16px 26px;border-radius:999px;border:1px solid var(--brd);background:var(--panel);transition:border-color .3s,background .3s,transform .35s}
+.cta-ghost:hover{border-color:rgba(240,163,90,.5);background:var(--panel-2);transform:translateY(-3px)}
+.js .hero-content>*{opacity:0;transform:translateY(22px);animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+.js .hero-content>*:nth-child(2){animation-delay:.08s}
+.js .hero-content>*:nth-child(3){animation-delay:.18s}
+.js .hero-content>*:nth-child(4){animation-delay:.28s}
+.js .hero-content>*:nth-child(5){animation-delay:.42s}
+@keyframes rise{to{opacity:1;transform:none}}
 
-/* Steps */
-.steps{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:24px;max-width:520px;margin:0 auto}
-.step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start}
-.step:last-child{margin-bottom:0}
-.step-num{background:var(--dark);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-.step-content h3{font-size:14px;font-weight:600;margin-bottom:2px}
-.step-content p{font-size:13px;color:var(--text-secondary)}
-.step-content code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px;font-family:monospace}
+/* Claude Code mock */
+.app{margin-top:26px;text-align:left;border-radius:18px;overflow:hidden;border:1px solid var(--brd);background:#0c0e16;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
+.app-top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--brd-soft)}
+.dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;display:block}
+.dots .r{background:#ff5f57}.dots .y{background:#febc2e}.dots .g{background:#28c840}
+.app-title{font-size:12px;color:var(--txt-mut);font-weight:600;letter-spacing:.04em}
+.app-body{padding:34px 24px 30px;text-align:center}
+.app-caption{font-size:13px;color:var(--txt-mut);margin-bottom:16px;font-weight:600}
+.app-input{display:flex;align-items:center;justify-content:space-between;gap:14px;max-width:680px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(240,163,90,.35);border-radius:16px;padding:16px 16px 16px 22px;box-shadow:0 0 0 6px rgba(240,163,90,.06)}
+.app-cmd{font-family:var(--mono);font-size:clamp(14px,2.1vw,18px);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-cmd .slash{color:var(--acc)}
+.caret{display:inline-block;width:2px;height:1.1em;background:var(--acc);vertical-align:-3px;margin-left:3px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.app-send{flex:none;width:36px;height:36px;border-radius:50%;background:var(--grad);color:#1a1005;display:flex;align-items:center;justify-content:center}
+.app-send svg{width:16px;height:16px}
+.hero-app{margin:52px auto 0;max-width:780px}
 
-/* Tip */
-.tip-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin:20px auto;max-width:520px}
-.tip-box h4{color:#166534;font-size:13px;margin-bottom:4px}
-.tip-box p{font-size:13px;color:#15803d}
+/* what it builds: a drawn page skeleton beside the list */
+.build{display:grid;grid-template-columns:.9fr 1.1fr;gap:34px;align-items:center;margin-top:40px}
+.page{position:relative;border-radius:18px;border:1px solid var(--brd);background:var(--bg-2);padding:18px;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
+.page .row{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.page .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1)}
+.page .bar.w1{width:36%}.page .bar.w2{width:60%}.page .bar.w3{width:80%}.page .bar.w4{width:48%}
+.page .btn{height:12px;width:80px;border-radius:99px;background:var(--grad);margin-left:auto}
+.page .hero-blk{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}
+.page .img{aspect-ratio:1/1;border-radius:10px;background:linear-gradient(150deg,rgba(240,163,90,.25),rgba(255,255,255,.05))}
+.page .txt{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.page .tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--acc);margin:12px 0 6px}
+.page .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.page .grid3 i{display:block;height:34px;border-radius:8px;background:rgba(255,255,255,.06)}
+.page .rev{display:flex;gap:8px;margin-top:8px}
+.page .rev i{flex:1;height:26px;border-radius:8px;background:rgba(255,255,255,.06)}
+.page .stars{color:var(--acc);font-size:11px;letter-spacing:2px}
+.page .mail{margin-top:10px;display:flex;gap:6px}
+.page .mail i{flex:1;height:14px;border-radius:99px;background:rgba(255,255,255,.08)}
+.page .mail b{width:44px;height:14px;border-radius:99px;background:var(--grad);display:block}
+.page .lbl{position:absolute;right:-10px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#1a1005;background:var(--grad);padding:4px 10px;border-radius:999px;box-shadow:0 8px 24px -8px var(--glow)}
+.feat{list-style:none;display:grid;gap:12px}
+.feat li{background:var(--panel);border:1px solid var(--brd);border-radius:16px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;transition:transform .4s cubic-bezier(.16,1,.3,1),border-color .4s}
+.feat li:hover{transform:translateX(4px);border-color:rgba(240,163,90,.35)}
+.feat .ic{flex:none;width:36px;height:36px;border-radius:10px;background:rgba(240,163,90,.12);display:flex;align-items:center;justify-content:center;font-size:18px}
+.feat h3{font-size:16px;font-weight:800;margin-bottom:2px}
+.feat p{font-size:14px;color:var(--txt-dim);line-height:1.5}
 
-/* Download */
-.download-section{background:linear-gradient(135deg,#fff7ed,#fef3c7);border-radius:14px;padding:32px 24px;text-align:center;max-width:520px;margin:0 auto;border:2px solid #fed7aa}
-.download-section h2{font-size:20px;margin-bottom:8px}
-.download-section p{color:var(--text-secondary);margin-bottom:16px;font-size:14px}
-.download-btn{display:inline-block;background:var(--orange);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:.2s;box-shadow:0 4px 16px var(--orange-glow)}
-.download-btn:hover{background:var(--orange-dark);transform:translateY(-1px)}
+/* steps + install */
+.steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:40px}
+.step{position:relative;background:var(--panel);border:1px solid var(--brd);border-radius:18px;padding:28px 24px 24px}
+.step .num{font-family:var(--serif);font-size:44px;line-height:1;color:var(--acc);font-weight:300;font-style:italic;margin-bottom:8px}
+.step h3{font-size:17px;font-weight:800;margin-bottom:6px}
+.step p{font-size:14px;color:var(--txt-dim);line-height:1.55}
+.install-line{margin-top:22px;display:flex;align-items:center;border:1px solid rgba(240,163,90,.4);border-radius:16px;background:linear-gradient(150deg,rgba(240,163,90,.12),rgba(240,163,90,.03));overflow:hidden}
+.install-line code{flex:1;background:none;color:var(--acc-2);font-size:15px;padding:18px 22px;white-space:nowrap;overflow-x:auto}
+.install-line button{border:0;background:var(--grad);color:#1a1005;font-family:var(--sans);font-weight:800;font-size:14px;padding:18px 24px;cursor:pointer;transition:filter .2s;white-space:nowrap}
+.install-line button:hover{filter:brightness(1.06)}
+.install-line button.done{background:var(--green-2);color:#fff}
+.hint{margin-top:12px;font-size:13.5px;color:var(--txt-mut)}
+.hint b{color:var(--txt-dim)}
 
-/* Requirements */
-.req-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
-.req-tag{background:var(--surface);border:1px solid var(--border);padding:6px 14px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:6px}
+/* requirements + tip */
+.req{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:36px}
+.req .box{background:var(--panel);border:1px solid var(--brd);border-radius:18px;padding:26px}
+.req h3{font-family:var(--serif);font-weight:500;font-size:22px;margin-bottom:12px}
+.req ul{list-style:none}
+.req li{font-size:14.5px;color:var(--txt-dim);padding:7px 0 7px 26px;position:relative;line-height:1.5;border-bottom:1px solid var(--brd-soft)}
+.req li:last-child{border-bottom:0}
+.req li::before{content:'';position:absolute;left:2px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--glow)}
+.tipbox{background:linear-gradient(150deg,rgba(240,163,90,.14),rgba(240,163,90,.03));border:1px solid rgba(240,163,90,.35)}
+.tipbox .t{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--acc);margin-bottom:8px}
+.tipbox p{font-size:14.5px;color:var(--txt-dim);line-height:1.55}
+.tipbox p+p{margin-top:10px}
 
-/* Footer */
-footer{text-align:center;padding:24px;font-size:13px;color:var(--text-muted)}
-footer a{color:var(--orange);text-decoration:none}
+/* promos */
+.cta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.promo{position:relative;padding:34px 28px;border-radius:20px;overflow:hidden;border:1px solid var(--brd);transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s;display:block}
+.promo:hover{transform:translateY(-5px)}
+.promo .pe{font-size:30px;margin-bottom:12px;display:block}
+.promo h3{font-size:19px;font-weight:800;margin-bottom:7px}
+.promo p{font-size:14px;line-height:1.55;color:var(--txt-dim)}
+.promo .go{margin-top:16px;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700}
+.promo.wa{background:linear-gradient(150deg,rgba(34,197,94,.16),rgba(34,197,94,.04))}
+.promo.wa:hover{box-shadow:0 22px 50px -24px rgba(34,197,94,.5)}
+.promo.wa h3,.promo.wa .go{color:#4ade80}
+.promo.ch{background:linear-gradient(150deg,rgba(251,146,60,.16),rgba(168,85,247,.08))}
+.promo.ch:hover{box-shadow:0 22px 50px -24px rgba(251,146,60,.45)}
+.promo.ch h3{background:linear-gradient(135deg,#fde68a,#fb923c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}.promo.ch .go{color:#fbbf24}
+.promo.wk{background:linear-gradient(150deg,rgba(168,85,247,.16),rgba(236,72,153,.06))}
+.promo.wk:hover{box-shadow:0 22px 50px -24px rgba(168,85,247,.5)}
+.promo.wk h3,.promo.wk .go{color:#c084fc}
 
-@media(max-width:500px){
-  .hero{padding:36px 16px 32px}
-  .section{padding:28px 16px}
-  .why-grid{grid-template-columns:1fr}
+.foot{text-align:center;padding:30px 24px 60px;color:var(--txt-mut);font-size:13px}
+.foot a{color:var(--acc);font-weight:700}
+
+.reveal{opacity:0;transform:translateY(38px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);transition-delay:var(--d,0s);will-change:opacity,transform}
+.reveal.in{opacity:1;transform:none}
+html.no-js .reveal{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1!important;transform:none!important}
+  .blob,.caret{animation:none!important}
+  .js .hero-content>*{animation:none!important;opacity:1;transform:none}
+}
+@media (max-width:860px){
+  .build,.steps,.req,.cta-grid{grid-template-columns:1fr}
+  .hero{padding:110px 20px 60px}
+  .section{padding:60px 0}
+  .install-line{flex-direction:column;align-items:stretch}
+  .install-line code{white-space:normal;word-break:break-all;font-size:14px}
+  .page .lbl{right:8px}
 }
 </style>
 </head>
 <body>
 
-<div class="hero">
-<div class="badge-row">
-<span class="badge">Free Skill</span>
-<span class="badge">Amazon Sellers</span>
+<div class="progress"><span id="bar"></span></div>
+<div class="bg">
+  <div class="blob a" data-speed="0.06"></div>
+  <div class="blob b" data-speed="0.04"></div>
+  <div class="blob c" data-speed="0.05"></div>
 </div>
-<h1>Any Amazon Product → <span>Premium Landing Page</span></h1>
-<p>One command. Real product data, reviews, email capture.</p>
-</div>
+<div class="grain"></div>
 
-<div class="section">
-<h2>What This Skill Does</h2>
-<div class="why-grid">
-<div class="why-card">
-<div class="icon">🛒</div>
-<h3>Real Product Data</h3>
-<p>Pulls title, images, features, price, and reviews from the actual listing.</p>
-</div>
-<div class="why-card">
-<div class="icon">📧</div>
-<h3>Email Capture</h3>
-<p>Built-in email form so you can collect leads on the way to Amazon.</p>
-</div>
-<div class="why-card">
-<div class="icon">🔗</div>
-<h3>Your Link on the Button</h3>
-<p>Add your affiliate or attribution link to every buy button.</p>
-</div>
-<div class="why-card">
-<div class="icon">⚡</div>
-<h3>One Command, You're Done</h3>
-<p>Type the command, paste a URL, let Claude do the rest.</p>
-</div>
-</div>
-</div>
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-content">
+    <div class="eyebrow">A free Claude Code skill by Jay Margaliot</div>
+    <h1>The <span class="accent">Landing Page</span> Skill<span class="sub">your Amazon listing, off Amazon</span></h1>
+    <p class="hero-sub">Paste an Amazon product URL. Get a complete landing page with the <b>real</b> images, bullets and reviews, an email form, and <b>your own link</b> on the buy button.</p>
+    <div class="cta-row">
+      <a href="#install" class="cta-primary">Get the skill
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </a>
+      <a href="#what" class="cta-ghost">What it builds</a>
+    </div>
+    <div class="app hero-app">
+      <div class="app-top"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app-title">Claude Code</div></div>
+      <div class="app-body">
+        <div class="app-caption">Any project, any folder. This is the whole request.</div>
+        <div class="app-input">
+          <span class="app-cmd"><span id="typed"></span><span class="caret"></span></span>
+          <span class="app-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
-<div class="section">
-<h2>How to Install the Skill</h2>
+<!-- WHY -->
+<section class="section">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">Why sellers want one</div></div>
+    <div class="reveal" style="--d:.05s"><h2>You pay for the click. <em>Amazon shows them</em> <span class="accent">every competitor.</span></h2></div>
+    <div class="reveal" style="--d:.1s"><p class="lead">A landing page of your own fixes three things at once: the ad traffic lands on a page with nothing but your product, you can put a coupon on it, and you can take the shopper's email before they leave for Amazon. It used to cost a few hundred dollars and a week. Now it is one line.</p></div>
+  </div>
+</section>
 
-<div class="steps">
-<div class="step">
-<div class="step-num">1</div>
-<div class="step-content">
-<h3>Download the file below</h3>
-<p>You'll get a <code>SKILL.md</code> file.</p>
-</div>
-</div>
-<div class="step">
-<div class="step-num">2</div>
-<div class="step-content">
-<h3>Save it to your skills folder</h3>
-<p>Put it in <code>~/.claude/skills/amazon-landing-page/SKILL.md</code></p>
-</div>
-</div>
-<div class="step">
-<div class="step-num">3</div>
-<div class="step-content">
-<h3>Run it</h3>
-<p>Type <code>/amazon-landing-page</code> and paste your Amazon URL.</p>
-</div>
-</div>
-</div>
+<!-- WHAT IT BUILDS -->
+<section class="section" id="what">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">What it builds</div></div>
+    <div class="reveal" style="--d:.05s"><h2>One file. <span class="accent">Every section a landing page needs.</span></h2></div>
+    <div class="reveal" style="--d:.1s"><p class="lead">A single HTML page, ready to upload anywhere. Nothing in it is invented: every image, bullet, price and review comes from your live listing.</p></div>
+    <div class="build">
+      <div class="page reveal" style="--d:.05s" aria-hidden="true">
+        <div class="row"><span class="bar w1"></span><span class="btn"></span></div>
+        <div class="hero-blk"><div class="img"></div><div class="txt"><span class="bar w3"></span><span class="bar w2"></span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="bar w4"></span></div></div>
+        <span class="lbl" style="top:74px">Real images</span>
+        <div class="tag">Features</div>
+        <div class="grid3"><i></i><i></i><i></i></div>
+        <div class="tag">Reviews</div>
+        <div class="rev"><i></i><i></i></div>
+        <span class="lbl" style="bottom:88px">Real reviews</span>
+        <div class="tag">Join the list</div>
+        <div class="mail"><i></i><b></b></div>
+      </div>
+      <ul class="feat">
+        <li class="reveal" style="--d:.06s"><span class="ic">🛒</span><div><h3>Real product data</h3><p>Title, images, bullets, price, rating and the actual reviews, pulled from the listing. Never made up.</p></div></li>
+        <li class="reveal" style="--d:.12s"><span class="ic">🔗</span><div><h3>Your link on every button</h3><p>Swap in your attribution or affiliate link once. Every buy button on the page carries it.</p></div></li>
+        <li class="reveal" style="--d:.18s"><span class="ic">📧</span><div><h3>Email capture</h3><p>A VIP-list form on the way to Amazon. Plug in your own email tool.</p></div></li>
+        <li class="reveal" style="--d:.24s"><span class="ic">📱</span><div><h3>Built for phones</h3><p>Sticky buy bar on mobile, scroll animations, FAQ, trust badges. It looks like a brand site, not a template.</p></div></li>
+        <li class="reveal" style="--d:.3s"><span class="ic">💬</span><div><h3>Then you just talk to it</h3><p>"Change the headline." "Add the coupon." "Make the reviews bigger." Claude edits the page for you.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
 
-<div class="terminal">
-<div class="terminal-header">
-<div class="terminal-dot r"></div>
-<div class="terminal-dot y"></div>
-<div class="terminal-dot g"></div>
-</div>
-<div class="terminal-body">
-<span class="prompt">/amazon-landing-page</span> https://amazon.com/dp/B0...<br>
-<span class="comment"># Claude does its thing → open index.html</span>
-</div>
-</div>
+<!-- INSTALL -->
+<section class="section" id="install">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">Get the skill</div></div>
+    <div class="reveal" style="--d:.05s"><h2>Install once. <span class="accent">Then it is one line per product.</span></h2></div>
+    <div class="reveal" style="--d:.1s"><p class="lead">Paste this line into Claude Code. Claude runs it, and from then on every session on your machine knows the skill.</p></div>
 
-<div class="tip-box">
-<h4>💡 Add Your Attribution Link</h4>
-<p>After generating, swap the Amazon link on the buy button with your affiliate/attribution link. Every click counts toward your earnings.</p>
-</div>
-</div>
+    <div class="install-line reveal" style="--d:.12s">
+      <code id="installCmd">npx skills add JayGPTPro/amazon-landing-page -g</code>
+      <button onclick="copyText('installCmd',this)">Copy</button>
+    </div>
+    <p class="hint reveal" style="--d:.14s"><b>Works on macOS and Windows.</b> Claude Code Desktop or the terminal, either one.</p>
 
-<div class="section">
-<div class="download-section">
-<h2>📥 Download the Skill</h2>
-<p>Free. No signup. Download, save, use.</p>
-<button class="download-btn" onclick="downloadSkill()">Download SKILL.md</button>
-<p style="margin-top:10px;font-size:11px;color:var(--text-muted)">Save to: ~/.claude/skills/amazon-landing-page/SKILL.md</p>
-</div>
-</div>
+    <div class="steps">
+      <div class="step reveal" style="--d:.05s"><div class="num">01</div><h3>Paste the Amazon URL</h3><p>In any Claude Code chat, in any folder, exactly like the box at the top of this page.</p></div>
+      <div class="step reveal" style="--d:.12s"><div class="num">02</div><h3>Claude opens the listing and builds</h3><p>It reads the product page in Chrome, downloads the images, writes the page, and opens it in your browser.</p></div>
+      <div class="step reveal" style="--d:.19s"><div class="num">03</div><h3>Add your link, upload</h3><p>Put your attribution link on the button, connect the email form, upload the file to your host. Done.</p></div>
+    </div>
+  </div>
+</section>
 
-<div class="section">
-<div style="background:linear-gradient(135deg,var(--dark) 0%,var(--dark-mid) 100%);border-radius:14px;padding:32px 24px;text-align:center;max-width:520px;margin:0 auto;color:#fff">
-<p style="font-size:13px;opacity:.6;margin-bottom:6px">WANT TO GO DEEPER?</p>
-<h2 style="font-size:20px;margin-bottom:10px;color:#fff">🚀 Join the Claude Code Challenge</h2>
-<p style="font-size:14px;opacity:.75;margin-bottom:18px">5 days. Build a full AI employee that works 24/7. No coding needed.</p>
-<a href="https://jaygptpro.com/claude-code-challenge-earlybird/" style="display:inline-block;background:var(--orange);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 4px 16px var(--orange-glow)">Grab an early spot →</a>
-</div>
-</div>
+<!-- REQUIREMENTS -->
+<section class="section">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">Before you run it</div></div>
+    <div class="reveal" style="--d:.05s"><h2>What you need. <em>Not much.</em></h2></div>
+    <div class="req">
+      <div class="box reveal" style="--d:.05s">
+        <h3>Requirements</h3>
+        <ul>
+          <li><b>Claude Code</b>, desktop app or terminal.</li>
+          <li><b>Chrome, connected to Claude Code.</b> The skill reads the listing through your browser. If you already use Claude with Chrome, you are set. If not, ask Claude to connect it: it walks you through the one-time setup.</li>
+          <li><b>Node</b>, only for the one-line installer.</li>
+        </ul>
+      </div>
+      <div class="box tipbox reveal" style="--d:.12s">
+        <div class="t">Two things to do after the run</div>
+        <p><b>Your link.</b> The buy button ships with the plain Amazon URL. Swap it for your attribution or affiliate link so every click is counted to you.</p>
+        <p><b>Your email tool.</b> The form is wired for a field id. Paste the id from your email service and the signups land in your list.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-<footer>
-<p style="margin-top:12px">Built by Jay | Daily Claude Hacks</p>
+<!-- PROMOS -->
+<section class="section">
+  <div class="wrap">
+    <div class="cta-grid">
+      <a href="https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY" target="_blank" class="promo wa reveal">
+        <span class="pe">📲</span>
+        <h3>AI for eCom Sellers</h3>
+        <p>Free WhatsApp group. Updates and insights on AI for eCommerce sellers.</p>
+        <span class="go">Join &#x2192;</span>
+      </a>
+      <a href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" class="promo ch reveal" style="--d:.1s">
+        <span class="pe">🚀</span>
+        <h3>Claude Code Challenge</h3>
+        <p>Build your first AI employee in Claude Code. 5 days.</p>
+        <span class="go">Start &#x2192;</span>
+      </a>
+      <a href="https://jaygptpro.com/wonka/" target="_blank" class="promo wk reveal" style="--d:.2s">
+        <span class="pe">🎩</span>
+        <h3>Wonka Bootcamp</h3>
+        <p>Build your AI creative employee for Amazon. Images, A+, variations. 10 days.</p>
+        <span class="go">See it &#x2192;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  Built by <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank">Jay Margaliot</a>
 </footer>
 
 <script>
-function downloadSkill(){
-const skill=`---
-name: amazon-landing-page
-description: Build a premium landing page from any Amazon product URL. Extracts real product data (title, images, features, reviews, price) via Chrome MCP and generates a complete, beautiful landing page with scroll animations, real reviews, FAQ, email capture, and mobile-optimized CTA. Use when the user says "build a landing page", "create a product page", "amazon landing page", or provides an Amazon product URL.
-argument-hint: "<amazon-product-url>"
-user-invocable: true
----
+(function(){
+  var bar=document.getElementById('bar'), blobs=document.querySelectorAll('.blob');
+  function onScroll(){
+    var st=window.scrollY, h=document.documentElement.scrollHeight-window.innerHeight;
+    bar.style.width=(h>0?st/h*100:0)+'%';
+    blobs.forEach(function(b){ b.style.transform='translateY('+(st*parseFloat(b.dataset.speed||0))+'px)'; });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
 
-# Amazon Product Landing Page Builder
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }); },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 
-You are about to build a premium landing page for the Amazon product at **$ARGUMENTS**.
+  // typed command in the hero
+  (function(){
+    var el=document.getElementById('typed'); if(!el) return;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var cmd='/amazon-landing-page', rest=' amazon.com/dp/B0XXXXXXXX';
+    function render(a,b){ el.innerHTML='<span class="slash">'+a+'</span>'+b; }
+    if(reduce){ render(cmd,rest); return; }
+    var i=0, full=cmd+rest;
+    function tick(){
+      i++; var a=full.slice(0,Math.min(i,cmd.length)), b=i>cmd.length?full.slice(cmd.length,i):'';
+      render(a,b);
+      if(i<full.length) setTimeout(tick, i<cmd.length?60:70);
+    }
+    setTimeout(tick,900);
+  })();
 
-## Requirements
+  window.copyText=function(id,btn){
+    var txt=document.getElementById(id).innerText.trim();
+    function done(){ var orig=btn.textContent; btn.textContent='Copied'; btn.classList.add('done'); setTimeout(function(){ btn.textContent=orig; btn.classList.remove('done'); },2200); }
+    function fallback(){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,fallback); } else fallback();
+    if(typeof gtag==='function') gtag('event','copy_'+id,{event_category:'conversion',event_label:'amazon_landing_page'});
+  };
 
-- **Chrome MCP is required.** Test it immediately. If unavailable, tell the user to enable it.
-- The landing page will be a single HTML file with Tailwind CDN (no build step needed).
-- All product data must be extracted from the real Amazon page. Never invent or fabricate data.
+  document.querySelectorAll('.promo').forEach(function(a){ a.addEventListener('click',function(){ if(typeof gtag==='function') gtag('event','promo_click',{event_category:'conversion',event_label:a.classList.contains('wa')?'whatsapp':a.classList.contains('ch')?'challenge':'wonka'}); }); });
 
-## Process
-
-### Phase 1: Setup
-
-1. Create a project folder: \\\`amazon-landing-page-[product-name]\\\` in the current directory.
-2. Create an \\\`images/\\\` subfolder inside it.
-
-### Phase 2: Extract Product Data via Chrome MCP
-
-1. Open the Amazon product URL in Chrome MCP.
-2. Wait for the page to load (3 seconds).
-3. Extract the following using JavaScript execution:
-
-\\\`\\\`\\\`javascript
-// Product basics
-{
-  title: document.getElementById('productTitle')?.textContent?.trim(),
-  price: document.querySelector('.a-price .a-offscreen')?.textContent?.trim(),
-  rating: document.querySelector('#acrPopover')?.title || document.querySelector('.a-icon-alt')?.textContent,
-  reviewCount: document.querySelector('#acrCustomerReviewText')?.textContent?.trim(),
-  brand: document.querySelector('#bylineInfo')?.textContent?.trim(),
-  badges: document.querySelector('#acBadge_feature_div')?.textContent?.trim()
-}
-\\\`\\\`\\\`
-
-\\\`\\\`\\\`javascript
-// Feature bullets
-Array.from(document.querySelectorAll('#feature-bullets .a-list-item'))
-  .map(el => el.textContent?.trim())
-  .filter(t => t && t.length > 10)
-\\\`\\\`\\\`
-
-\\\`\\\`\\\`javascript
-// High-res image URLs
-Array.from(document.querySelectorAll('#altImages .a-button-thumbnail img'))
-  .map(img => img.src.replace(/\\\\._.*_\\\\./, '._SL1500_.'))
-  .filter(s => s.includes('images/I/'))
-\\\`\\\`\\\`
-
-4. Scroll to the reviews section and extract REAL reviews:
-
-\\\`\\\`\\\`javascript
-Array.from(document.querySelectorAll('[data-hook="review"]')).map(r => ({
-  stars: parseFloat(r.querySelector('[data-hook="review-star-rating"] .a-icon-alt')?.textContent || '0'),
-  body: r.querySelector('[data-hook="review-body"] span')?.textContent?.trim(),
-  author: r.querySelector('.a-profile-name')?.textContent?.trim(),
-  date: r.querySelector('[data-hook="review-date"]')?.textContent?.trim(),
-  verified: !!r.querySelector('[data-hook="avp-badge"]')
-})).filter(r => r.stars >= 4 && r.body && r.body.length > 20 && r.verified)
-\\\`\\\`\\\`
-
-### Phase 3: Download Images
-
-Download all product images using curl:
-\\\`\\\`\\\`bash
-curl -sL "[image-url]" -o images/product-1.jpg
-\\\`\\\`\\\`
-
-### Phase 4: Build the Landing Page
-
-Create \\\`index.html\\\` with the following sections (IN THIS ORDER):
-
-1. **Fixed Navigation Bar** - Brand name, section links, "Buy on Amazon - $[price]" CTA button, glassmorphism background
-2. **Hero Section** - LEFT: Product image gallery with thumbnails. RIGHT: Badge, catchy headline, description, star rating, price, trust badges, CTA with pulse animation
-3. **Social Proof Bar** - Animated counters for customer count, rating, key specs
-4. **Features Section** - 6 feature cards in 3-column grid from Amazon bullets, staggered scroll reveal
-5. **What's in the Box** - Product image + checklist with green checkmarks
-6. **Image Gallery** - 2-3 column grid with hover zoom
-7. **Email Capture** - "Join our VIP list", email input + button, Google Form integration (with setup comments)
-8. **Real Reviews** - ONLY extracted Amazon reviews, 4-5 star verified, with author/date/badge
-9. **FAQ Section** - 5 questions with accordion toggle
-10. **Final CTA** - Gradient card with headline and large CTA
-11. **Footer** - Trademark disclaimer
-12. **Sticky Mobile Bar** - Price + buy button fixed to bottom on mobile
-
-Design System: IMPORTANT. Do NOT use a generic dark theme. Adapt colors and style to match the brand and product. Look at the brand website, packaging, product category. The page should look like the brand made it. Inter font, rounded-2xl cards, scroll reveal animations, counter animations, CTA with glow.
-
-Technical: Single HTML file, Tailwind CDN, custom config, responsive mobile-first, all Amazon links target="_blank".
-
-### Phase 5: Open and Verify
-
-1. Open the HTML file: \\\`open index.html\\\`
-2. Tell the user the page is ready
-3. Remind about Google Form setup for email capture
-
-### Important Rules
-
-- NEVER fabricate or invent reviews. Only use reviews extracted from the Amazon page.
-- If no 4-5 star verified reviews exist, skip the reviews section entirely.
-- All product data must come from the real Amazon page.
-- The headline should be a rewritten, catchy version of the product title.
-- The page should look premium and professional, not like a template.`;
-
-  const blob=new Blob([skill],{type:'text/markdown'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='SKILL.md';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
+  // scroll depth
+  var marks={25:false,50:false,75:false,100:false};
+  window.addEventListener('scroll',function(){
+    var h=document.documentElement.scrollHeight-window.innerHeight; if(h<=0) return;
+    var pc=Math.round(window.scrollY/h*100);
+    [25,50,75,100].forEach(function(m){ if(pc>=m&&!marks[m]){ marks[m]=true; if(typeof gtag==='function') gtag('event','scroll_depth',{event_category:'engagement',event_label:m+'%'}); } });
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
