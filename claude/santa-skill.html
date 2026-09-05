@@ -91,6 +91,7 @@ h1 .sub{display:block;font-size:.42em;font-weight:300;font-style:italic;letter-s
 .js .hero-content>*:nth-child(2){animation-delay:.08s}
 .js .hero-content>*:nth-child(3){animation-delay:.18s}
 .js .hero-content>*:nth-child(4){animation-delay:.28s}
+.js .hero-content>*:nth-child(5){animation-delay:.42s}
 @keyframes rise{to{opacity:1;transform:none}}
 .hat{position:absolute;font-size:64px;top:118px;right:14%;transform:rotate(14deg);filter:drop-shadow(0 12px 30px rgba(200,50,58,.5));animation:hatFloat 5s ease-in-out infinite;z-index:1}
 @keyframes hatFloat{0%,100%{transform:rotate(14deg) translateY(0)}50%{transform:rotate(10deg) translateY(-12px)}}
@@ -129,7 +130,7 @@ h1 .sub{display:block;font-size:.42em;font-weight:300;font-style:italic;letter-s
 .step .num{font-family:var(--serif);font-size:44px;line-height:1;color:var(--gold);font-weight:300;font-style:italic;margin-bottom:8px}
 .step h3{font-size:17px;font-weight:800;margin-bottom:6px}
 .step p{font-size:14px;color:var(--txt-dim);line-height:1.55}
-.app{margin-top:26px;border-radius:18px;overflow:hidden;border:1px solid var(--brd);background:#0b0d17;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
+.app{margin-top:26px;text-align:left;border-radius:18px;overflow:hidden;border:1px solid var(--brd);background:#0b0d17;box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
 .app-top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--brd-soft)}
 .dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;display:block}
 .dots .r{background:#ff5f57}.dots .y{background:#febc2e}.dots .g{background:#28c840}
@@ -143,7 +144,9 @@ h1 .sub{display:block;font-size:.42em;font-weight:300;font-style:italic;letter-s
 @keyframes blink{50%{opacity:0}}
 .app-send{flex:none;width:36px;height:36px;border-radius:50%;background:var(--grad);color:#1a1405;display:flex;align-items:center;justify-content:center}
 .app-send svg{width:16px;height:16px}
-.app-note{margin-top:16px;font-size:14px;color:var(--txt-dim)}
+.hero-app{margin:52px auto 0;max-width:760px}
+.hero-app .app-body{padding:34px 24px 30px}
+.app-cmd .ph{color:var(--txt-mut)}
 .install-line{margin-top:22px;display:flex;align-items:center;gap:0;border:1px solid rgba(230,192,105,.4);border-radius:16px;background:linear-gradient(150deg,rgba(230,192,105,.12),rgba(230,192,105,.03));overflow:hidden}
 .install-line code{flex:1;background:none;color:var(--gold-2);font-size:15px;padding:18px 22px;white-space:nowrap;overflow-x:auto}
 .install-line button{border:0;background:var(--grad);color:#1a1405;font-family:var(--sans);font-weight:800;font-size:14px;padding:18px 24px;cursor:pointer;transition:filter .2s;white-space:nowrap}
@@ -242,6 +245,16 @@ html.no-js .reveal{opacity:1;transform:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
       </a>
       <a href="#proof" class="cta-ghost">See it on real listings</a>
+    </div>
+    <div class="app hero-app">
+      <div class="app-top"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app-title">Claude Code</div></div>
+      <div class="app-body">
+        <div class="app-caption">Any project, any folder. This is the whole request.</div>
+        <div class="app-input">
+          <span class="app-cmd"><span id="typed"></span><span class="caret"></span></span>
+          <span class="app-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -361,22 +374,11 @@ html.no-js .reveal{opacity:1;transform:none}
     <p class="hint reveal" style="--d:.14s"><b>Works on macOS and Windows.</b> Claude Code Desktop or the terminal, either one.</p>
 
     <div class="steps">
-      <div class="step reveal" style="--d:.05s"><div class="num">01</div><h3>Type the ASIN</h3><p>In any Claude Code chat, in any folder. An Amazon URL or a folder of your own images works too.</p></div>
+      <div class="step reveal" style="--d:.05s"><div class="num">01</div><h3>Type the ASIN</h3><p>In any Claude Code chat, in any folder, exactly like the box at the top of this page. An Amazon URL or a folder of your own images works too.</p></div>
       <div class="step reveal" style="--d:.12s"><div class="num">02</div><h3>Claude looks, then generates</h3><p>It fetches the gallery, opens every image, decides what to transform and what to skip, and runs the images in parallel. No questions.</p></div>
       <div class="step reveal" style="--d:.19s"><div class="num">03</div><h3>Review the sheet, upload</h3><p>A before/after contact sheet with a one-line verdict per image. Pick the ones you like, swap them in for Q4, swap them out in January.</p></div>
     </div>
 
-    <div class="app reveal" style="--d:.1s">
-      <div class="app-top"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app-title">Claude Code</div></div>
-      <div class="app-body">
-        <div class="app-caption">Any project, any folder. Type this and press Enter.</div>
-        <div class="app-input">
-          <span class="app-cmd"><span class="slash">/santa-skill</span> B0XXXXXXXX<span class="caret"></span></span>
-          <span class="app-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
-        </div>
-        <div class="app-note">Swap in your own ASIN. That is the whole request.</div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -444,6 +446,22 @@ html.no-js .reveal{opacity:1;transform:none}
       c.style.setProperty('--x','72%'); requestAnimationFrame(step);
     } }); },{threshold:.4}).observe(c);
   });
+
+  // typed command in the hero
+  (function(){
+    var el=document.getElementById('typed'); if(!el) return;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var cmd='/santa-skill', asin=' B0XXXXXXXX';
+    function render(a,b){ el.innerHTML='<span class="slash">'+a+'</span>'+b; }
+    if(reduce){ render(cmd,asin); return; }
+    var i=0, full=cmd+asin;
+    function tick(){
+      i++; var a=full.slice(0,Math.min(i,cmd.length)), b=i>cmd.length?full.slice(cmd.length,i):'';
+      render(a,b);
+      if(i<full.length) setTimeout(tick, i<cmd.length?70:95);
+    }
+    setTimeout(tick,900);
+  })();
 
   // copy helpers
   window.copyText=function(id,btn){
