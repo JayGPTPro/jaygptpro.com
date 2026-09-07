@@ -546,7 +546,6 @@ var VAULT = (function () {
       { id: "home", label: "Home", href: "/ai-vault/home.html" },
       { id: "episodes", label: "AI Episodes", href: "/ai-vault/episodes.html" },
       { id: "live", label: "Upcoming", href: "/ai-vault/live.html" },
-      { id: "masterminds", label: "Masterminds", href: "/ai-vault/masterminds.html" },
       { id: "challenges", label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
       { id: "deals", label: "Buying Club", href: "/ai-vault/tools.html" },
       { id: "ask", label: "Ask the Experts", href: "/ai-vault/ask.html" },
@@ -594,14 +593,13 @@ var VAULT = (function () {
     var moreItems = [
       { label: "Start Here", href: "/ai-vault/induction.html" },
       { label: "Challenges & Courses", href: "/ai-vault/challenges.html" },
-      { label: "Masterminds", href: "/ai-vault/masterminds.html" },
       { label: "Buying Club", href: "/ai-vault/tools.html", tag: "DEALS" },
       { label: "Ask the Experts", href: "/ai-vault/ask.html" },
       { label: "Your 1-on-1 with Jay", href: "/ai-vault/consultation.html" },
       { label: "WhatsApp Groups", href: "/ai-vault/whatsapp.html" },
       { label: "AI Vault FAQs", href: "/ai-vault/faq.html" }
     ];
-    var moreActive = ["masterminds", "deals", "challenges", "ask", "consultation", "induction"].indexOf(active) >= 0;
+    var moreActive = ["deals", "challenges", "ask", "consultation", "induction"].indexOf(active) >= 0;
     var tabHtml = tabDefs.map(function (n) {
       return '<a href="' + n.href + '" class="' + (active === n.id ? "active" : "") + '"><span class="ico">' + ICON[n.ico] + "</span>" + n.label + "</a>";
     }).join("") +

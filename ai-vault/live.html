@@ -34,13 +34,6 @@
     <div id="episodeSessions"></div>
   </section>
 
-  <section class="band rv">
-    <div class="band-head">
-      <h2>Monthly Masterminds</h2>
-      <a class="more" href="/ai-vault/masterminds.html">Details + enroll →</a>
-    </div>
-    <div id="mastermindSessions"></div>
-  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -79,14 +72,10 @@
   }
 
   var eps = sessions.filter(function (s) { return s.kind !== "mastermind"; });
-  var mms = sessions.filter(function (s) { return s.kind === "mastermind"; });
 
   document.getElementById("episodeSessions").innerHTML = eps.length
     ? eps.map(card).join("")
     : '<div class="notice">The next episode date lands here as soon as it is set.</div>';
-  document.getElementById("mastermindSessions").innerHTML = mms.length
-    ? mms.map(card).join("")
-    : '<div class="notice">The next Mastermind date lands here as soon as it is set.</div>';
 
   var cd = document.querySelector("[data-count]");
   if (cd) VAULT.mountCountdown(cd, Number(cd.dataset.count));

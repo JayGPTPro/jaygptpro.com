@@ -8,7 +8,8 @@
 
 <!-- Apply saved language before paint to avoid flash -->
 <script>
-(function(){try{var l=localStorage.getItem('lang')||'en';var h=document.documentElement;h.lang=l;h.dir=l==='he'?'rtl':'ltr';}catch(e){}})();
+/* Hebrew hidden 27.8.26. To restore: swap 'en' back for localStorage.getItem('lang')||'en' */
+(function(){try{var l='en';var h=document.documentElement;h.lang=l;h.dir=l==='he'?'rtl':'ltr';}catch(e){}})();
 </script>
 
 <!-- Canonical + OG -->
@@ -123,7 +124,8 @@ nav.hide{transform:translateY(-110%)}
 .nav-brand img{width:30px;height:30px;border-radius:8px;object-fit:cover}
 .nav-brand .nm{font-weight:800;font-size:.96rem;letter-spacing:-.01em;color:var(--bright)}
 .nav-right{display:flex;align-items:center;gap:14px}
-.lang-toggle{display:inline-flex;border:1px solid var(--glass-border);border-radius:100px;overflow:hidden;background:var(--glass)}
+/* Hebrew hidden 27.8.26. To restore the switcher: display:none -> display:inline-flex */
+.lang-toggle{display:none;border:1px solid var(--glass-border);border-radius:100px;overflow:hidden;background:var(--glass)}
 .lang-toggle button{font-family:'JetBrains Mono',monospace;font-size:.74rem;letter-spacing:.06em;background:none;border:none;color:var(--dim);
   padding:6px 12px;cursor:pointer;transition:color .2s,background .2s}
 .lang-toggle button.on{color:var(--bg);background:var(--blue-light);font-weight:700}
@@ -747,8 +749,10 @@ function init(){
   var fine=window.matchMedia('(pointer:fine)').matches && !window.matchMedia('(hover:none)').matches;
 
   // --- language first ---
+  // Hebrew hidden 27.8.26. Forced to English so visitors who once picked Hebrew
+  // are not stranded on a Hebrew page with the switcher gone.
+  // To restore: try{saved=localStorage.getItem('lang')||'en';}catch(e){}
   var saved='en';
-  try{saved=localStorage.getItem('lang')||'en';}catch(e){}
   applyLang(saved);
   var enBtn=document.getElementById('lang-en'),heBtn=document.getElementById('lang-he');
   if(enBtn) enBtn.addEventListener('click',function(){applyLang('en');});
