@@ -38,6 +38,12 @@ const PLINK_GOLDEN = 'plink_1U1vCERqcDuiISNTjqJvj1P5';
 const GOLDEN_R2 = 'prod_VB9jlkEBHv4Ddh';
 const PLINK_R2 = 'plink_1UAnQfRqcDuiISNTLrxgGeIg';        // $997, WONKA300 takes it to $697
 const PLINK_R2_FLAT = 'plink_1UAnSIRqcDuiISNT7A1vPRac';   // $697 flat, no coupon
+// Round 2's $497 flat link, 8.9. VAULT500 is a fixed-USD coupon, so Adaptive Pricing
+// cannot apply it for a buyer offered a local currency: they see $997 and a generic
+// error. This link bakes $497 into the price instead, which converts cleanly. It is
+// NOT in the rounds row (both plink columns are taken by $997 and $697), so code is
+// its only route and test 13 is what proves it.
+const PLINK_R2_FLAT_497 = 'plink_1UDNMERqcDuiISNTF5stng8V';
 // Round 1's $497 flat link. It took the rounds row's discounted column on 1.9,
 // which the Private Tour used to hold: round 1 is off the sales page and this is
 // the link Jay hands out now, so it is the one that needs the primary route.
@@ -549,6 +555,7 @@ const ALL_WONKA_LINKS: Array<[string, string]> = [
   ['plink_1TxmiPRqcDuiISNTKsKrn7Lz', 'wonka_r1'],   // Private Tour
   [PLINK_R2,       'wonka_r2'],
   [PLINK_R2_FLAT,  'wonka_r2'],
+  [PLINK_R2_FLAT_497, 'wonka_r2'],
 ];
 for (const [plink, want] of ALL_WONKA_LINKS) {
   reset();
@@ -589,6 +596,20 @@ const r2f = session('r2flat@buyer.com', 69700);
 res = await post(r2f);
 row = DB.allowed_emails.find(r => r.email === 'r2flat@buyer.com');
 check('lands on wonka_r2', row?.round === 'wonka_r2', JSON.stringify(row));
+
+console.log('\n14b2. The flat $497 round 2 link (Vault fallback) resolves the same way');
+// The link a Vault member gets when VAULT500 cannot convert to their currency. They
+// pay $497 for the same round 2 product, so they must land exactly where a $997 buyer
+// with the coupon lands. The amount differs by $500 and nothing keys on the amount.
+reset();
+sendState.stripeLineItems = [GOLDEN_R2];
+const r2f497 = session('r2vault@buyer.com', 49700);
+(r2f497.data.object as any).payment_link = PLINK_R2_FLAT_497;
+res = await post(r2f497);
+row = DB.allowed_emails.find(r => r.email === 'r2vault@buyer.com');
+check('lands on wonka_r2', row?.round === 'wonka_r2', JSON.stringify(row));
+check('not wonka_r1 on the $497 amount', row?.round !== 'wonka_r1', JSON.stringify(row));
+check('gets the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
 console.log('\n14c. Blind product lookup: round 2 still resolves, from the rounds table');
 // Same blind condition as test 13: the Stripe line-items call returns [] so there is

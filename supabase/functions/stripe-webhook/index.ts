@@ -68,6 +68,7 @@ const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1U8laoRqcDuiISNT1xwjgIAy': 'wonka_r1', // $497 flat, the link Jay hands out now
   'plink_1UAnQfRqcDuiISNTLrxgGeIg': 'wonka_r2', // Golden Ticket R2, $997 less WONKA300
   'plink_1UAnSIRqcDuiISNT7A1vPRac': 'wonka_r2', // $697 flat R2
+  'plink_1UDNMERqcDuiISNTF5stng8V': 'wonka_r2', // $497 flat R2, Vault fallback when VAULT500 cannot convert
 };
 const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
   'prod_UCzffM0SU6fWW5': 'round2',
