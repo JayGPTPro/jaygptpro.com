@@ -707,10 +707,11 @@
     var locked = el('locked');
     if (animate && locked) {
       locked.classList.add('just-opened');
-      setTimeout(function () {
-        var need = el('need');
-        if (need) { need.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      }, 90);
+      // instant and right now, never smooth or deferred. opening WhatsApp puts this tab in
+      // the background, where requestAnimationFrame is paused and a smooth scroll never
+      // arrives, and html{scroll-behavior:smooth} makes a plain scrollTo smooth as well
+      var need = el('need');
+      if (need) { need.scrollIntoView({ behavior: 'instant', block: 'start' }); }
     }
   }
 
