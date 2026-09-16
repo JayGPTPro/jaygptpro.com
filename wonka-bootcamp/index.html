@@ -3651,7 +3651,6 @@ const DAYS = [
           'I know how to start the next product or brand with Wonka.',
         ],
         resources: [
-          { name: 'The Donna Challenge', url: 'https://jaygptpro.com/claude-code-challenge-launch/', cond: 'Your second employee: inbox, calendar, meetings and the daily routines.' },
         ],
       },
     ],
@@ -5621,9 +5620,6 @@ function renderDay(dayNum) {
       html += '</div>';
     }
 
-    // ?finale on the last day replays the wrap without touching progress (Jay, 16.9.2026)
-    if (dayNum === CONFIG.TOTAL_DAYS && /(\?|&)finale\b/.test(location.search)) setTimeout(() => playFinale(), 600);
-
     // Day 10 only: the second-employee block, before the resources (Jay, 16.9.2026)
     if (dayNum === CONFIG.TOTAL_DAYS) {
       html += '<div class="dv2-donna"><div class="dv2-donna-in">' +
@@ -5704,6 +5700,26 @@ function litKeyline(el) {
 
 function wireDayView(dayNum) {
   const view = $('day-view');
+  /* Two URL switches on the last day, for testing the wrap without faking anyone's progress
+     (Jay, 16.9.2026). ?finale plays it. ?replay10 un-completes Day 10 for the signed-in user,
+     locally and on the server, so the real lever can be pulled again. */
+  if (dayNum === CONFIG.TOTAL_DAYS) {
+    const q = location.search || '';
+    if (/[?&]replay10\b/.test(q)) {
+      progress.completedDays = progress.completedDays.filter((n) => n !== dayNum);
+      delete progress.completedAt[dayNum];
+      if (progress.checks) progress.checks['d' + dayNum] = {};
+      persistProgress(dayNum);
+      history.replaceState(null, '', location.pathname + '#day' + dayNum);
+      toast('Day ' + dayNum + ' is open again. Tick the three checks and pull the lever.');
+      setTimeout(() => openDay(dayNum, false), 60);
+      return;
+    }
+    if (/[?&]finale\b/.test(q)) {
+      history.replaceState(null, '', location.pathname + '#day' + dayNum);
+      setTimeout(() => playFinale(), 500);
+    }
+  }
   view.querySelectorAll('[data-nav="prev"]').forEach((prev) => prev.addEventListener('click', () => { if (isDayUnlocked(dayNum - 1)) openDay(dayNum - 1, true); else toast('That door is behind you and already open. Walk right in.'); }));
   view.querySelectorAll('[data-nav="next"]').forEach((next) => next.addEventListener('click', () => {
     if (isDayUnlocked(dayNum + 1)) openDay(dayNum + 1, true);
