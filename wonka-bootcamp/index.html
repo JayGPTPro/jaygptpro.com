@@ -1408,6 +1408,7 @@ body.map-3d .tour-hero{display:none}
   background:var(--gold-grad);background-size:200% 200%;
   border-radius:var(--room-radius);color:#3d2a05;box-shadow:0 0 90px rgba(245,184,65,.4), var(--shadow-3);
 }
+#app.viewing-day:not(.last-room) #grad-banner.show{display:none}
 #grad-banner.show{display:block;animation:foilSheen 7s ease-in-out infinite, gradIn .7s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes gradIn{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
 /* marquee bulb border */
@@ -6195,6 +6196,8 @@ function openDay(dayNum, scroll, viaQA) {
     if (map3dCtl) map3dCtl.pause(); // 3D engine sleeps behind the day view
     renderDay(dayNum);
     $('app').classList.add('viewing-day');
+    // the graduation banner belongs to the last room and the map only (Jay, 16.9.2026)
+    $('app').classList.toggle('last-room', dayNum >= CONFIG.TOTAL_DAYS);
     syncDayStrip(dayNum, true);
     track('day_view', dayNum);
     // resume where they left off: a day they were partway through reopens at the last
