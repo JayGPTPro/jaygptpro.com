@@ -2971,7 +2971,7 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
       </div>
       <div class="booth-line buy-hide">The Factory Gates Are Open</div>
       <div class="gate-msg" id="gate-msg"></div>
-      <div class="ticket-serial">SERIAL WCB-R1 &middot; NON-TRANSFERABLE &middot; FACTORY ACCESS</div>
+      <div class="ticket-serial">SERIAL WCB &middot; NON-TRANSFERABLE &middot; FACTORY ACCESS</div>
     </div>
   </div>
 </div>
@@ -3790,7 +3790,13 @@ let progress = { completedDays: [], checks: {}, completedAt: {}, currentDay: 1 }
 
 function loadProgress() {
   const raw = LS.get(P);
-  if (raw) { try { const p = JSON.parse(raw); progress = Object.assign(progress, p); } catch (e) {} }
+  if (raw) { try {
+    const p = JSON.parse(raw);
+    // progress saved under another round never carries over (a Round 1 student moved to Round 2
+    // would otherwise import ten toured rooms and write them to the server under Round 2)
+    if (!p.round || p.round === activeRound()) progress = Object.assign(progress, p);
+  } catch (e) {} }
+  progress.round = activeRound();
   if (!progress.completedAt) progress.completedAt = {};
   // Only real rooms count. The pre-launch prep page saved itself as day 0 for eleven buyers,
   // and ten entries (0..9) lit the graduation banner after Day 9 (Chris Haupt, 16.9.2026).
@@ -3876,12 +3882,12 @@ function nyOffsetMinutes(dateUtc) {
     /* Was a flat -300 (EST). Every Wonka day falls in September, which is EDT, so an
        older browser (Safari < 15.4, Chrome < 95) opened every door an hour late. Use
        the US rule: DST runs second Sunday in March to first Sunday in November. */
-    const yy = d.getUTCFullYear();
+    const yy = dateUtc.getUTCFullYear();
     const mar = new Date(Date.UTC(yy, 2, 1));
     const dstStart = Date.UTC(yy, 2, 1 + ((7 - mar.getUTCDay()) % 7) + 7, 7);
     const nov = new Date(Date.UTC(yy, 10, 1));
     const dstEnd = Date.UTC(yy, 10, 1 + ((7 - nov.getUTCDay()) % 7), 6);
-    const tt = d.getTime();
+    const tt = dateUtc.getTime();
     return (tt >= dstStart && tt < dstEnd) ? -240 : -300;
   }
 }
@@ -4216,7 +4222,9 @@ async function mergeServerProgress() {
       }
       if (row.checks) {
         const local = progress.checks['d' + row.day_num] || {};
-        progress.checks['d' + row.day_num] = Object.assign({}, row.checks, local);
+        const merged = Object.assign({}, row.checks, local);
+        Object.keys(row.checks).forEach((k) => { if (row.checks[k]) merged[k] = true; }); // a tick on either side wins
+        progress.checks['d' + row.day_num] = merged;
       }
     });
     // a server row saved against the old Day 7 page is dropped the same way, and the empty
@@ -4258,9 +4266,10 @@ function missionStats(dayNum) {
   const checks = progress.checks['d' + dayNum] || {};
   let total = 0, done = 0;
   if (d) d.episodes.forEach((ep) => {
+    const skipped = !!(ep.skip && checks['ep' + ep.num + '-skip']); // Day 9: the skip box stands in for every mission
     ep.missions.forEach((m, mi) => {
       total++;
-      if (checks['ep' + ep.num + '-m' + mi]) done++;
+      if (skipped || checks['ep' + ep.num + '-m' + mi]) done++;
     });
   });
   return { done: done, total: total };
@@ -5169,6 +5178,8 @@ function updateProgressUI() {
     paintCert();
     $('grad-banner').classList.add('show');
     lightGradBulbs();
+  } else {
+    $('grad-banner').classList.remove('show');
   }
 }
 
@@ -5191,7 +5202,7 @@ function updateHeroLine() {
   }
   const cur = firstUnlockedIncompleteDay();
   const d = DAYS[(cur || 1) - 1] || DAYS[0];
-  if (d && d.wonkaLine) hl.textContent = d.wonkaLine;
+  hl.textContent = (d && d.wonkaLine) || DAYS[0].wonkaLine;
 }
 
 /* ============================================================
@@ -5716,6 +5727,7 @@ function wireDayView(dayNum) {
       delete progress.completedAt[dayNum];
       if (progress.checks) progress.checks['d' + dayNum] = {};
       persistProgress(dayNum);
+      renderMap();
       history.replaceState(null, '', location.pathname + '#day' + dayNum);
       toast('Day ' + dayNum + ' is open again. Tick the three checks and pull the lever.');
       setTimeout(() => openDay(dayNum, false), 60);
@@ -5793,7 +5805,8 @@ function wireDayView(dayNum) {
     cb.addEventListener('change', () => {
       const key = cb.dataset.check;
       progress.checks['d' + dayNum] = progress.checks['d' + dayNum] || {};
-      progress.checks['d' + dayNum][key] = cb.checked;
+      // an untick removes the key, so a stale local false can never beat a tick made on another device
+      if (cb.checked) progress.checks['d' + dayNum][key] = true; else delete progress.checks['d' + dayNum][key];
       persistProgress(dayNum);
       refreshPunchState(dayNum); // ITEM 6: card stamps + lever arm state
     });
@@ -5854,6 +5867,11 @@ function refreshPunchState(dayNum) {
     const boxes = card.querySelectorAll('input[data-check]');
     let cardAll = boxes.length > 0;
     boxes.forEach((b) => { if (!b.checked) cardAll = false; });
+    // a ticked skip box punches the missions card it stands in for (Day 9)
+    if (!cardAll && !card.classList.contains('is-skip') && card.querySelector('input[data-check^="ep"][data-check$="-m0"]')) {
+      const ep = card.dataset.ep || (card.querySelector('input[data-check]') || {}).dataset?.ep;
+      if (ep && checks['ep' + ep + '-skip']) cardAll = true;
+    }
     card.classList.toggle('card-punched', cardAll);
   });
   let lessonsLeft = 0, missionsLeft = 0;
