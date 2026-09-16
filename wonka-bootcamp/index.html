@@ -3791,6 +3791,9 @@ function loadProgress() {
   const raw = LS.get(P);
   if (raw) { try { const p = JSON.parse(raw); progress = Object.assign(progress, p); } catch (e) {} }
   if (!progress.completedAt) progress.completedAt = {};
+  // Only real rooms count. The pre-launch prep page saved itself as day 0 for eleven buyers,
+  // and ten entries (0..9) lit the graduation banner after Day 9 (Chris Haupt, 16.9.2026).
+  progress.completedDays = (progress.completedDays || []).filter((n) => n >= 1 && n <= CONFIG.TOTAL_DAYS);
   migrateDay7Checks();
 }
 // Day 7 went from five lessons and twelve missions to two lessons and four checklist items
@@ -4202,6 +4205,8 @@ async function mergeServerProgress() {
       .eq('user_email', userEmail).eq('round', activeRound());
     if (error || !data) return;
     data.forEach((row) => {
+      // a server row outside 1..TOTAL_DAYS (the day-0 prep page) must never count as a room
+      if (!(row.day_num >= 1 && row.day_num <= CONFIG.TOTAL_DAYS)) return;
       if (row.completed_at && !progress.completedDays.includes(row.day_num)) {
         progress.completedDays.push(row.day_num);
       }
