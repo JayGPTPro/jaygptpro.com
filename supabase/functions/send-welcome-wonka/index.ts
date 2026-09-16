@@ -161,7 +161,7 @@ function buildGiftEmail(meta: Meta, firstName: string, loginNote: boolean): { su
 <div style="max-width:600px;margin:0;padding:16px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;color:#202124">
 <p>${hi}</p>
 <p>I decided to give you a free ticket to the Wonka Creative Bootcamp. It is yours, nothing to pay.</p>
-<p>Ten days. You build an AI creative director called Wonka inside Claude Code, and he runs your Amazon listing images end to end: research, brief, a new main image, a full secondary set, A+ content and variations. The Grand Opening runs ${meta.dates}.</p>
+<p>Ten days. You build an AI creative director called Wonka inside Claude Code, and he runs your Amazon listing images end to end: research, brief, a new main image, a full secondary set, A+ content and variations. The bootcamp runs ${meta.dates}.</p>
 <p>Two things when you have a minute:</p>
 <p>1. The portal: ${a(meta.portal, meta.portal)}</p>
 ${wa}
@@ -216,7 +216,7 @@ function buildEmail(meta: Meta, privateTour = false, gift = false): { subject: s
     <p style="${S.p}">Here is what it is, in one sentence: complete the 10 days and your product has a full creative package. A new main image, a full secondary set, A+ content, and variation images. Quality checked, tested in the Tasting Room, and ready to upload to Amazon or start an A/B test.</p>`
       : `<p style="${S.p}">Here is what you just bought, in one sentence: complete the 10 days and your product has a full creative package. A new main image, a full secondary set, A+ content, and variation images. Quality checked, tested in the Tasting Room, and ready to upload to Amazon or start an A/B test.</p>`}
     <p style="${S.p}">Built by an AI employee named <span style="${S.gold}">Wonka</span> that you hire on Day 1.</p>
-    <p style="${S.p}"><span style="${S.strong}">The Grand Opening runs ${meta.dates}.</span></p>
+    <p style="${S.p}"><span style="${S.strong}">The bootcamp runs ${meta.dates}.</span></p>
   </td></tr>
 ${tourBlock}
 
