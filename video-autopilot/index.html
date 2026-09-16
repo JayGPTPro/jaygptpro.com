@@ -47,7 +47,7 @@
   .wrap { max-width:var(--maxw); margin:0 auto; padding:0 24px; }
   section { padding:76px 0; }
 
-  /* ---------- whatsapp gate + community band ---------- */
+  /* ---------- whatsapp community band ---------- */
   .wa-card {
     text-align:center; border-radius:26px; padding:54px 36px; color:#f3edfa;
     background:linear-gradient(155deg, #3a1d37 0%, #241220 100%);
@@ -82,14 +82,6 @@
     font-family:var(--mono); font-size:12px; letter-spacing:.06em;
     color:rgba(243,237,250,.42); margin-top:18px; word-break:break-all;
   }
-
-  /* everything under the gate stays shut until the click */
-  body:not(.unlocked) #locked { display:none; }
-  body:not(.unlocked) .navlinks { display:none; }
-  body.unlocked #gate { display:none; }
-  .noscript-link { display:none; }
-  #locked.just-opened { animation:rise .55s ease; }
-  @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
 
   @media (max-width:600px){
     .wa-card { padding:38px 22px; border-radius:20px; }
@@ -362,20 +354,8 @@
     .coupon-row { padding:14px 16px; }
   }
 </style>
-<noscript><style>
-  /* script blocked: never leave the page shut behind a button that cannot fire */
-  body:not(.unlocked) #locked { display:block; }
-  body:not(.unlocked) .navlinks { display:flex; }
-  #gate #joinbtn { display:none; }
-  #gate .noscript-link { display:inline-flex; }
-</style></noscript>
 </head>
 <body>
-<script>
-  /* runs before the page paints, so a returning visitor never sees the gate flash */
-  try { if (localStorage.getItem('va_wa_joined')) { document.body.classList.add('unlocked'); } } catch (e) {}
-</script>
-
 <nav class="topnav">
   <div class="topnav-inner">
     <a href="#top" class="navbrand">
@@ -406,30 +386,6 @@
   <p class="caption">How it works &middot; 60 seconds</p>
 
 </div>
-
-<!-- ============ WHATSAPP GATE ============ -->
-<div class="wrap">
-  <section id="gate">
-    <div class="wa-card">
-      <span class="flag">One step first</span>
-      <h2>Join the free <em>WhatsApp group</em></h2>
-      <p>That is where I post what actually works with AI for Amazon sellers, the new
-      skills as they land, and what broke on the way. <b>Click, and the rest of this page
-      opens.</b></p>
-      <button class="wa-btn" id="joinbtn" type="button">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
-        <span>Join on WhatsApp</span>
-      </button>
-      <a class="wa-btn noscript-link" href="https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
-        <span>Join on WhatsApp</span>
-      </a>
-      <p class="fine">Free, and you can leave whenever you want.</p>
-    </div>
-  </section>
-</div>
-
-<div id="locked">
 
 <div class="wrap">
 
@@ -669,21 +625,19 @@
 
   <section id="community" style="padding-top:0;">
     <div class="wa-card">
-      <span class="flag">Stuck on your first run?</span>
-      <h2>Ask in the <em>group</em></h2>
-      <p>That is where I answer questions about the skill, and where the next version gets
-      announced. If you have not joined yet, this is the link.</p>
+      <span class="flag">Free WhatsApp group</span>
+      <h2>More <em>AI tips and skills</em> for Amazon sellers</h2>
+      <p>I post the new skills there as they land, and what actually works with AI
+      on a real listing.</p>
       <a class="wa-btn" href="https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
-        <span>Open the group</span>
+        <span>Join the group</span>
       </a>
       <p class="url">chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs</p>
     </div>
   </section>
 
 </div>
-
-</div><!-- /#locked -->
 
 <footer>
   <span class="brand">Jay GPT Pro</span>
@@ -696,46 +650,6 @@
 
 <script>
 (function () {
-  // ---- the whatsapp gate: one click opens the group and the rest of the page ----
-  var el = function (id) { return document.getElementById(id); };
-  var WHATSAPP_URL = 'https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs';
-  var DEEP = ['#need', '#setup', '#faq', '#community'];
-
-  function openPage(animate, remember) {
-    document.body.classList.add('unlocked');
-    if (remember) { try { localStorage.setItem('va_wa_joined', '1'); } catch (e) {} }
-    var locked = el('locked');
-    if (animate && locked) {
-      locked.classList.add('just-opened');
-      // instant and right now, never smooth or deferred. opening WhatsApp puts this tab in
-      // the background, where requestAnimationFrame is paused and a smooth scroll never
-      // arrives, and html{scroll-behavior:smooth} makes a plain scrollTo smooth as well
-      var need = el('need');
-      if (need) { need.scrollIntoView({ behavior: 'instant', block: 'start' }); }
-    }
-  }
-
-  var joinBtn = el('joinbtn');
-  if (joinBtn) {
-    joinBtn.addEventListener('click', function () {
-      window.open(WHATSAPP_URL, '_blank', 'noopener');
-      if (!document.body.classList.contains('unlocked')) { openPage(true, true); }
-    });
-  }
-
-  // an old link straight into a section still lands on that section.
-  // it opens the page for this visit only, and never writes the join flag.
-  if (DEEP.indexOf(location.hash) > -1 && !document.body.classList.contains('unlocked')) {
-    openPage(false, false);
-    var target = document.querySelector(location.hash);
-    if (target) {
-      var jump = function () { target.scrollIntoView({ behavior: 'instant', block: 'start' }); };
-      jump();
-      // the browser restores its own scroll position after load, so land again behind it
-      window.addEventListener('load', function () { setTimeout(jump, 60); });
-    }
-  }
-
   document.querySelectorAll('pre .copy').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var code = btn.parentElement.textContent.replace(/^COPY/, '').trim();
