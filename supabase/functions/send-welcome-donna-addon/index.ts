@@ -29,7 +29,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const resendKey = Deno.env.get('RESEND_API_KEY')!;
-const sharedSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
+// EDGE_SHARED_SECRET, not FORM_SYNC_SECRET (16.9.2026). FORM_SYNC_SECRET's value is
+// hardcoded in donna-challenge/admin.html, which is served publicly, so anyone who
+// viewed that page's source held a key to every edge function. The public value now
+// opens ONLY the two legacy Donna resend functions the admin page actually calls
+// (send-welcome-email, send-welcome-bina), which have no source in this repo.
+const sharedSecret = Deno.env.get('EDGE_SHARED_SECRET') || '';
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
 
 const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6';   // "Donna Challenge. Full Access", $250

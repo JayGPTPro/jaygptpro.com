@@ -6,7 +6,12 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
-const formSecret = Deno.env.get('FORM_SYNC_SECRET') || '';
+// EDGE_SHARED_SECRET, not FORM_SYNC_SECRET (16.9.2026). FORM_SYNC_SECRET's value is
+// hardcoded in donna-challenge/admin.html, which is served publicly, so anyone who
+// viewed that page's source held a key to every edge function. The public value now
+// opens ONLY the two legacy Donna resend functions the admin page actually calls
+// (send-welcome-email, send-welcome-bina), which have no source in this repo.
+const formSecret = Deno.env.get('EDGE_SHARED_SECRET') || '';
 
 // Signature verification. This endpoint is public and unauthenticated, so without it
 // anyone who knows the URL can POST a forged checkout.session.completed and grant
@@ -421,7 +426,7 @@ async function claimWelcome(supabase: SupabaseClient, email: string): Promise<bo
 // the Wonka path checked its result. They now report, and every caller releases the
 // claim and answers 500 so Stripe retries and the failure shows red on the dashboard.
 async function postWelcome(url: string, label: string, body: Record<string, unknown>): Promise<boolean> {
-  if (!formSecret) { console.error(`${label}: FORM_SYNC_SECRET missing, cannot send`); return false; }
+  if (!formSecret) { console.error(`${label}: EDGE_SHARED_SECRET missing, cannot send`); return false; }
   try {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-form-secret': formSecret }, body: JSON.stringify(body) });
     const detail = await res.json().catch(() => ({}));
@@ -483,7 +488,7 @@ async function welcomeFnSlugFor(supabase: SupabaseClient, canonical: string): Pr
 // early return here is a path where the buyer gets NO email, so each must report false.
 async function sendWelcomeBySlugAsync(slug: string, email: string, round: string): Promise<boolean> {
   if (!email || !slug) return false;
-  if (!formSecret) { console.error('FORM_SYNC_SECRET is not set: cannot call the welcome function.'); return false; }
+  if (!formSecret) { console.error('EDGE_SHARED_SECRET is not set: cannot call the welcome function.'); return false; }
   // Guard the slug: it becomes a URL path segment.
   if (!/^[a-z0-9-]{1,60}$/.test(slug)) { console.error('Refusing suspicious welcome slug:', slug); return false; }
   try {

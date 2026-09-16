@@ -3,7 +3,7 @@
 import { DB, LOG } from "./stub_supabase.ts";
 
 // Match production: both secrets ARE set in the deployed environment.
-Deno.env.set('FORM_SYNC_SECRET', 'test-form-secret');
+Deno.env.set('EDGE_SHARED_SECRET', 'test-form-secret');
 Deno.env.set('STRIPE_SECRET_KEY', 'sk_test_stub');
 Deno.env.set('SUPABASE_URL', 'https://stub.supabase.co');
 Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'stub-service-key');
