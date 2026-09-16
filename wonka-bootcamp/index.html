@@ -1404,7 +1404,7 @@ body.map-3d .tour-hero{display:none}
    SECTION: GRADUATION (the premiere: bulb-bordered marquee + certificate)
    ============================================================ */
 #grad-banner{
-  display:none;position:relative;max-width:660px;margin:36px auto;padding:44px 40px;text-align:center;
+  display:none;position:relative;max-width:660px;margin:36px auto 88px;padding:44px 40px;text-align:center;
   background:var(--gold-grad);background-size:200% 200%;
   border-radius:var(--room-radius);color:#3d2a05;box-shadow:0 0 90px rgba(245,184,65,.4), var(--shadow-3);
 }
@@ -2453,7 +2453,7 @@ body::after{
     radial-gradient(1.4px 1.4px at 93% 8%,  rgba(243,233,210,.45) 50%, transparent 51%);
   background-repeat:no-repeat;
 }
-#app{position:relative;z-index:1}
+#app{position:relative;z-index:1;padding-bottom:1px} /* the 1px keeps the last child's bottom margin from collapsing through #app: the certificate used to sit flush on the page's dark edge (Jay, 16.9.2026) */
 /* day chips = the map's hanging cream signs */
 #day-strip .dbtn{
   background:linear-gradient(180deg,var(--mk-plaque-hi) 0%,var(--mk-plaque) 100%);
@@ -5823,7 +5823,7 @@ function wireDayView(dayNum) {
       const seal = $('day-seal');
       seal.classList.add('stamped');
       letterboxFlash();
-      if (!(dayNum >= CONFIG.TOTAL_DAYS && playFinale())) confetti(60);
+      confetti(60); // Day 10 gets the same confetti as every room; the finale stays behind ?finale only (Jay, 16.9.2026)
       toast(dayNum >= CONFIG.TOTAL_DAYS ? 'Up and out. You have run out of factory.' : 'Room ' + dayNum + ' lit. So many rooms, so little tour. Onward.');
       track('day_complete', dayNum);
       renderMap(); // elevator car steps up + day-strip stub takes its punch (grafts 1,4)
