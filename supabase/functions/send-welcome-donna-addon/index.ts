@@ -44,7 +44,26 @@ const FROM_EMAIL = 'Jay Margaliot <info@jaygptpro.com>';
 const REPLY_TO = 'info@jaygptpro.com';
 const PORTAL = 'https://jaygptpro.com/donna-challenge/';
 const WA = 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS';
-const WONKA_OPENS = '1 September';
+
+// When does THIS buyer's factory open? It used to be the constant '1 September', which
+// was round 1's date and stayed there through round 2: on 16.9.2026 two round 2 buyers
+// were about to be told to finish Donna before a day that had already passed. The date
+// now comes from the buyer's own round row. When it cannot be found the sentence is
+// dropped rather than guessed, the same rule the Wonka welcome uses for missing links.
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+async function wonkaOpensFor(supabase: any, email: string): Promise<string> {
+  try {
+    const { data: row } = await supabase.from('allowed_emails')
+      .select('round').eq('email', email.toLowerCase()).maybeSingle();
+    const round = String(row?.round || '');
+    if (!round.startsWith('wonka')) return '';
+    const { data: r } = await supabase.from('rounds').select('start_date').eq('id', round).maybeSingle();
+    const iso = String(r?.start_date || '');                 // YYYY-MM-DD
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return '';
+    return `${parseInt(m[3], 10)} ${MONTHS[parseInt(m[2], 10) - 1]}`;
+  } catch (e) { console.error('wonkaOpensFor failed, omitting the date:', e); return ''; }
+}
 
 function corsHeaders() {
   return {
@@ -79,8 +98,12 @@ const S = {
 // unlock schedule the entire subject of a mail announcing a course about hiring an
 // AI Chief of Staff. All-days-open is a logistical detail, so it sits in a note near
 // the bottom where a logistical detail belongs.
-function buildEmail(): { subject: string; html: string } {
+function buildEmail(wonkaOpens: string): { subject: string; html: string } {
   const subject = `You're in. Now go hire Donna.`;
+  // The deadline clause exists only when we know the buyer's own factory date.
+  const finishBy = wonkaOpens
+    ? ` Try to finish before <span style="${S.strong}">${wonkaOpens}</span>, when the factory opens, so you walk into Wonka with Donna already running.`
+    : ` Finish it before your factory opens and you walk into Wonka with Donna already running.`;
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="${S.bg}">
@@ -125,7 +148,7 @@ function buildEmail(): { subject: string; html: string } {
   <tr><td style="padding:28px 48px 0">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="${S.note}">
       <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#4a2d75">One note on timing</p>
-      <p style="margin:0;font-size:14.5px;line-height:1.7;color:#3d3d3d">Because you bought this alongside your Wonka ticket, all five days are unlocked from the start. Nothing is on a timer. Try to finish before <span style="${S.strong}">${WONKA_OPENS}</span>, when the factory opens, so you walk into Wonka with Donna already running.</p>
+      <p style="margin:0;font-size:14.5px;line-height:1.7;color:#3d3d3d">Because you bought this alongside your Wonka ticket, all five days are unlocked from the start. Nothing is on a timer.${finishBy}</p>
     </td></tr></table>
   </td></tr>
 
@@ -162,6 +185,12 @@ Deno.serve(async (req: Request) => {
     const url = new URL(req.url);
     const isPreview = url.searchParams.get('preview') === '1';
     const previewTo = url.searchParams.get('to') || '';
+    // manual=1: a buyer who paid through a partner's Stripe (Kevin King's cohort,
+    // 16.9.2026) has no checkout session in OUR account, so the proof below can never
+    // pass for them, by design. This path skips the proof but KEEPS the claim, so the
+    // mail still cannot go twice, and it is reachable only with the shared secret.
+    // It is not preview: the mail goes to the buyer and the send is recorded.
+    const isManual = url.searchParams.get('manual') === '1';
     const to = isPreview && previewTo ? previewTo : email;
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -179,7 +208,7 @@ Deno.serve(async (req: Request) => {
     // The only acceptable evidence is Stripe's own line items for the checkout
     // session that triggered this. Nothing else is a purchase.
     // ---------------------------------------------------------------------
-    if (!isPreview) {
+    if (!isPreview && !isManual) {
       if (!sessionId) {
         console.warn('refusing: no checkout session to verify against', { email });
         return new Response(JSON.stringify({ error: 'no session id, cannot prove purchase', sent: false }), { status: 409, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
@@ -212,11 +241,14 @@ Deno.serve(async (req: Request) => {
         console.warn('refusing: this checkout did not include the add-on', { email, sessionId, productIds });
         return new Response(JSON.stringify({ error: 'add-on not in this purchase', sent: false, productIds }), { status: 409, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } });
       }
+    }
 
-      // CLAIM. email_sends has a unique index on (lower(email), campaign), so this
-      // insert IS the atomic claim: whoever lands it sends, everyone else is a replay.
-      // Stripe retries a failed webhook for three days, so without this the buyer
-      // receives the same mail once per retry.
+    // CLAIM. email_sends has a unique index on (lower(email), campaign), so this
+    // insert IS the atomic claim: whoever lands it sends, everyone else is a replay.
+    // Stripe retries a failed webhook for three days, so without this the buyer
+    // receives the same mail once per retry. It sits OUTSIDE the proof block on
+    // purpose: a manual send skips the proof but must never skip the claim.
+    if (!isPreview) {
       const { error: claimErr } = await supabase.from('email_sends')
         .insert({ email: email.toLowerCase(), campaign: CAMPAIGN, sent_at: new Date().toISOString() });
       if (claimErr) {
@@ -229,7 +261,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const { subject, html } = buildEmail();
+    const { subject, html } = buildEmail(await wonkaOpensFor(supabase, email));
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
