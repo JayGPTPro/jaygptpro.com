@@ -1533,11 +1533,11 @@ footer nav a:hover { color: var(--purple-dark); }
                      all four values together and prints what is actually true.
                      It sits under the button on purpose: full size, but supporting the
                      call to act instead of competing with the price for the first look. -->
-                <div class="seats" data-taken="27" data-total="50" data-min-show="15" data-noun="golden tickets">
+                <div class="seats" data-taken="29" data-total="50" data-min-show="15" data-noun="golden tickets">
                     <div class="seats-row">
-                        <span class="seats-txt">27 of 50 golden tickets claimed</span>
+                        <span class="seats-txt">29 of 50 golden tickets claimed</span>
                     </div>
-                    <div class="seats-bar"><span style="width:54%"></span></div>
+                    <div class="seats-bar"><span style="width:58%"></span></div>
                 </div>
 
                 <div class="pc-rule"></div>
@@ -1687,6 +1687,7 @@ footer nav a:hover { color: var(--purple-dark); }
             buy  = document.getElementById('pcBuy'),
             note = document.getElementById('pcNote'),
             code = document.getElementById('offerCode'),
+            bar = { price: document.getElementById('lbPriceMsg'), gates: document.getElementById('lbGatesMsg') },
             h = document.getElementById('offH'), m = document.getElementById('offM'), s = document.getElementById('offS');
         if (!flag || !price || !save || !buy || !note || !code || !lead || !h || !m || !s) return;
         // Captured from the markup, so "put it back" never needs a second copy of the
@@ -1712,6 +1713,7 @@ footer nav a:hover { color: var(--purple-dark); }
             if (!on) return;
             on = false;
             deal.removeAttribute('data-live');
+            if (bar.price && bar.gates) { bar.price.hidden = true; bar.gates.hidden = false; }
             flag.innerHTML = was.flag;
             price.innerHTML = was.price;
             save.innerHTML = was.save;
@@ -1726,6 +1728,11 @@ footer nav a:hover { color: var(--purple-dark); }
             if (!on) {
                 on = true;
                 deal.setAttribute('data-live', '1');
+                // The launch bar counts down to the gates opening on 22 September, which is
+                // five days out and therefore the weaker of the two clocks today. While the
+                // one-day offer runs it carries that instead, and it is driven from THIS
+                // tick so the page can never show two clocks that disagree.
+                if (bar.price && bar.gates) { bar.gates.hidden = true; bar.price.hidden = false; }
                 flag.innerHTML = OFFER.FLAG;
                 price.innerHTML = OFFER.PRICE;
                 save.innerHTML = OFFER.SAVE;
@@ -1739,6 +1746,11 @@ footer nav a:hover { color: var(--purple-dark); }
             h.textContent = pad(Math.floor(secs / 3600));
             m.textContent = pad(Math.floor(secs / 60) % 60);
             s.textContent = pad(secs % 60);
+            if (bar.price) {
+                bar.price.innerHTML = 'Today only &middot; <b>$497</b> with code <b>' + OFFER.CODE +
+                    '</b> &middot; <b>' + pad(Math.floor(secs / 3600)) + 'h ' +
+                    pad(Math.floor(secs / 60) % 60) + 'm ' + pad(secs % 60) + 's</b> left';
+            }
         }
 
         tick();
