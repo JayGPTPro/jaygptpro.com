@@ -4460,7 +4460,13 @@ async function checkAllowed(email, isRequery) {
       already clicked through to the Vault", which is true of the human, not of the
       portal they happened to be standing in.
    ============================================================ */
-const VAULT_ENABLED = true;          // master kill switch
+/* OFF since 18.9.2026. The whole Vault pitch is held back until the new VSL is finished
+   . not just the film, the banner and everything in it. Jay: nobody reads this before it
+   is perfect. This flag returns before every other check, including the admin path, and
+   #vaultBanner is display:none in the markup with nothing else setting it, so false takes
+   the entire section off the portal. To bring it back: flip to true AND swap the Vimeo id
+   inside #vaultBanner in the same commit, or the old film is what comes back. */
+const VAULT_ENABLED = false;         // master kill switch
 const VAULT_MIN_DAY = 6;             // their round's Day 6, using the portal's own gate
 const VAULT_MAX_SHOWS = 3;           // lifetime impressions on this browser
 const VAULT_MIN_HOURS_BETWEEN = 24;  // once a day, even without a dismiss
