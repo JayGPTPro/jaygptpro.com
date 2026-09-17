@@ -1,0 +1,84 @@
+# Deploy Supabase edge functions, so nobody has to hold a Supabase token on their
+# own machine. Run it from a terminal with:
+#
+#   gh workflow run deploy-edge-functions -f slugs="send-wonka-daily"
+#   gh workflow run deploy-edge-functions -f slugs="send-welcome-email send-welcome-bina"
+#
+# Deliberately MANUAL, never on push. On 16.9.2026 a deploy silently broke three
+# pg_cron jobs, because the functions moved to a new secret and the callers were
+# still sending the old one. A deploy is a decision; pushing code is not.
+name: Deploy edge functions
+
+on:
+  workflow_dispatch:
+    inputs:
+      slugs:
+        description: 'Space separated function slugs, or "all"'
+        required: true
+        default: 'all'
+
+concurrency:
+  group: deploy-edge-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Pick the functions
+        id: pick
+        run: |
+          cd supabase/functions
+          if [ "${{ inputs.slugs }}" = "all" ]; then
+            list=$(ls -d */ | tr -d '/' | tr '\n' ' ')
+          else
+            list="${{ inputs.slugs }}"
+          fi
+          for s in $list; do
+            [ -f "$s/index.ts" ] || { echo "::error::no source for '$s' in supabase/functions"; exit 1; }
+          done
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "Will deploy: $list"
+
+      - name: Type check first
+        run: |
+          cd supabase/functions
+          for s in ${{ steps.pick.outputs.list }}; do
+            echo "--- $s"
+            deno check "$s/index.ts"
+          done
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          for s in ${{ steps.pick.outputs.list }}; do
+            echo "--- deploying $s"
+            supabase functions deploy "$s" --no-verify-jwt --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+          done
+
+      # A deployed function that answers 401 to a garbage key is gated, which is
+      # what every one of these must be. Never probe with a VALID key: several of
+      # them take no body and a valid key would fire a real send.
+      - name: Prove each one is still gated
+        run: |
+          for s in ${{ steps.pick.outputs.list }}; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+              "https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co/functions/v1/$s" \
+              -H 'Content-Type: application/json' -H 'x-form-secret: garbage-probe' -d '{}')
+            echo "$s -> $code"
+            case "$s:$code" in
+              *:401|cardcom-webhook:*|stripe-webhook:*) ;;
+              *) echo "::error::$s answered $code to a garbage key, expected 401"; exit 1 ;;
+            esac
+          done
