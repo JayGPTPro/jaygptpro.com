@@ -3031,6 +3031,238 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
     <nav id="day-strip" aria-label="Day navigation"></nav>
   </header>
 
+  <!-- ============================================================
+       THE VAULT BANNER. Ported from the Donna portal 17.9.2026, same film
+       (Vimeo 1186394715) and same look, because it is the same offer.
+
+       WHO SEES IT: Wonka customers whose row has addon_donna = false, i.e. people
+       who have never been inside the Donna portal. Anyone with Donna has already
+       been shown this exact film there, and showing it to them again is nagging,
+       not marketing. That flag is read from the customer's OWN row, which is all
+       RLS ever returns, so it has to be correct on every address a person signs in
+       with. See VAULT_EXCLUDE below for the addresses where it is not yet.
+
+       WHERE IT SENDS THEM: /vault-bootcamp-offer/, NOT the /vault-challenge-offer/
+       page the Donna portal uses. That page's every framing device is aimed at
+       Claude Code Challenge graduates ("Claude Code Was the Start", "Your Challenge
+       Price", "When the Challenge Ends"), and it opens by telling the reader the
+       offer is exclusive to challenge members. This audience is defined by NOT being
+       one, so it would have greeted all of them with a reason they do not qualify.
+       The Wonka page is the same offer, same price, same coupon, reworded.
+       ============================================================ -->
+  <!-- Feels like a separate landing page at the top -->
+  <!-- ============================================ -->
+  <style>
+    /* Banner entrance */
+    @keyframes vaultBannerIn {
+      0% { opacity: 0; transform: translateY(-30px) scale(0.96); filter: blur(8px); }
+      60% { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @keyframes vaultHeadlineIn {
+      0% { opacity: 0; transform: translateY(20px); letter-spacing: 0.2em; }
+      100% { opacity: 1; transform: translateY(0); letter-spacing: -0.03em; }
+    }
+    @keyframes vaultGoldShimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(500px) rotate(900deg); opacity: 0; }
+    }
+
+    /* #1 . Vault doors opening */
+    @keyframes vaultDoorLeft {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-105%); }
+    }
+    @keyframes vaultDoorRight {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(105%); }
+    }
+    @keyframes vaultSeamSplit {
+      0% { transform: scaleY(0.2); opacity: 0; }
+      20% { transform: scaleY(1); opacity: 1; }
+      80% { transform: scaleY(1); opacity: 1; }
+      100% { transform: scaleY(0); opacity: 0; }
+    }
+    .vault-door {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 51%;
+      background:
+        linear-gradient(135deg,#0a1424 0%,#050a14 50%,#03080f 100%),
+        repeating-linear-gradient(0deg, rgba(212,175,55,0.04) 0px, rgba(212,175,55,0.04) 1px, transparent 1px, transparent 4px);
+      background-blend-mode: overlay;
+      z-index: 10;
+      pointer-events: none;
+      box-shadow: inset 0 0 80px rgba(0,0,0,0.6);
+    }
+    .vault-door::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(212,175,55,0.08) 0%, transparent 60%);
+      opacity: 0.6;
+    }
+    .vault-door-left { left: 0; }
+    .vault-door-right { right: 0; }
+    .vault-door-seam {
+      position: absolute;
+      top: 5%;
+      bottom: 5%;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, transparent 0%, #d4af37 30%, #f4d03f 50%, #d4af37 70%, transparent 100%);
+      box-shadow: 0 0 20px #d4af37, 0 0 40px rgba(212,175,55,0.4);
+      z-index: 11;
+      opacity: 0;
+      transform-origin: center;
+    }
+    #vaultBanner.entering .vault-door-left { animation: vaultDoorLeft 2s cubic-bezier(0.86, 0, 0.07, 1) 0.3s forwards; }
+    #vaultBanner.entering .vault-door-right { animation: vaultDoorRight 2s cubic-bezier(0.86, 0, 0.07, 1) 0.3s forwards; }
+    #vaultBanner.entering .vault-door-seam { animation: vaultSeamSplit 2.3s ease-in-out forwards; }
+
+    /* #2 . Spotlight on video */
+    @keyframes vaultSpotlightIn {
+      0% { opacity: 0; transform: scale(0.7); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .vault-spotlight {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 50% 60% at 50% 55%, rgba(255,235,180,0.10) 0%, rgba(255,235,180,0.04) 35%, transparent 70%),
+        radial-gradient(ellipse 30% 40% at 50% 55%, rgba(212,175,55,0.12) 0%, transparent 60%);
+      opacity: 0;
+      z-index: 1;
+    }
+    #vaultBanner.entering .vault-spotlight { animation: vaultSpotlightIn 1.8s ease-out 1.8s forwards; }
+
+    /* Video glow . pulses then settles */
+    @keyframes vaultGlowPulse {
+      0%, 100% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,55,0.25), 0 0 60px rgba(212,175,55,0.15); }
+      50% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,55,0.5), 0 0 100px rgba(212,175,55,0.35); }
+    }
+    #vaultBanner.entering .vault-video-glow { animation: vaultGlowPulse 3s ease-in-out 2s 2; }
+    .vault-video-glow {
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* #3 . CTA shine sweep */
+    @keyframes ctaShineSweep {
+      0% { left: -120%; }
+      18% { left: 120%; }
+      100% { left: 120%; }
+    }
+    .vault-cta {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .vault-cta::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(110deg, transparent 0%, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%, transparent 100%);
+      animation: ctaShineSweep 5s ease-in-out infinite;
+      animation-delay: 4s;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* #4 . Floating gold dust (ambient) */
+    @keyframes dustDrift {
+      0% { transform: translate(0, 0); opacity: 0; }
+      8% { opacity: var(--dust-opacity, 0.4); }
+      92% { opacity: var(--dust-opacity, 0.4); }
+      100% { transform: translate(var(--dust-x, 20px), -120%); opacity: 0; }
+    }
+    .vault-dust {
+      position: absolute;
+      bottom: -10px;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+      will-change: transform, opacity;
+    }
+
+    /* Confetti piece */
+    .confetti-piece {
+      position: absolute;
+      top: 0;
+      width: 10px;
+      height: 4px;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    /* Headline entrance */
+    #vaultBanner.entering { animation: vaultBannerIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    #vaultBanner.entering .vault-headline-anim { animation: vaultHeadlineIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 2.0s backwards; }
+    .vault-headline-shimmer {
+      background: linear-gradient(90deg,#b8941f 0%,#d4af37 25%,#f4d03f 50%,#d4af37 75%,#b8941f 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: vaultGoldShimmer 4s ease-in-out infinite;
+    }
+
+    /* Reveal content delayed so doors open first */
+    #vaultBanner .vault-content { opacity: 0; transition: opacity 0.6s ease-out 1.8s; }
+    #vaultBanner.entering .vault-content { opacity: 1; }
+  </style>
+  <div id="vaultBanner" style="display:none;margin:-40px -20px 40px;padding:60px 20px 56px;position:relative;z-index:3;background:radial-gradient(ellipse at top,#0f1e35 0%,#081428 50%,#03080f 100%);border-bottom:1px solid rgba(212,175,55,0.25);overflow:hidden">
+    <!-- Subtle gold glow overlay on navy -->
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(212,175,55,0.08) 0%,transparent 45%),radial-gradient(circle at 80% 70%,rgba(212,175,55,0.06) 0%,transparent 45%),radial-gradient(circle at 50% 100%,rgba(59,130,246,0.08) 0%,transparent 50%);pointer-events:none"></div>
+
+    <!-- #2: Spotlight on video -->
+    <div class="vault-spotlight"></div>
+
+    <!-- #1: Vault doors (slide out on entrance) -->
+    <div class="vault-door vault-door-left"></div>
+    <div class="vault-door vault-door-right"></div>
+    <div class="vault-door-seam"></div>
+
+    <!-- X close button . top right -->
+    <button onclick="dismissVaultBanner()" aria-label="Close and continue to portal" style="position:absolute;top:18px;right:18px;background:rgba(255,255,255,0.04);border:1px solid rgba(212,175,55,0.3);color:#d4af37;font-size:18px;cursor:pointer;line-height:1;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s;z-index:12" onmouseover="this.style.background='rgba(212,175,55,0.15)';this.style.borderColor='rgba(212,175,55,0.6)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(212,175,55,0.3)'" title="Close">×</button>
+
+    <div class="vault-content" style="max-width:820px;margin:0 auto;position:relative;z-index:2;text-align:center">
+      <!-- Vault label -->
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.35);color:#d4af37;font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;padding:8px 18px;border-radius:2px;margin-bottom:28px">
+        <span style="font-size:14px">🔑</span>
+        <span>The AI Vault</span>
+      </div>
+
+      <!-- Bombastic minimalist headline -->
+      <h2 class="vault-headline-anim" style="font-size:clamp(36px,6vw,56px);font-weight:800;color:#fff;margin:0 0 32px;line-height:1.05;letter-spacing:-0.03em"><span class="vault-headline-shimmer">The Vault is open.</span></h2>
+
+      <!-- VIDEO . wide, prominent . the hero of this section -->
+      <div class="vault-video-glow" style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000;margin:0 auto 32px;max-width:760px;box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(212,175,55,0.25)">
+        <iframe src="https://player.vimeo.com/video/1186394715?h=0f2912987d&title=0&byline=0&portrait=0&color=d4af37" title="The Vault" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+      </div>
+
+      <!-- CTA Button . gold on navy with shine sweep -->
+      <a class="vault-cta" href="https://jaygptpro.com/vault-bootcamp-offer/" target="_blank" onclick="trackVaultBannerClick()" style="display:inline-block;background:linear-gradient(135deg,#f4d03f 0%,#d4af37 50%,#b8941f 100%);color:#03080f;padding:18px 40px;border-radius:4px;text-decoration:none;font-weight:800;font-size:17px;letter-spacing:1px;text-transform:uppercase;transition:all 0.25s;box-shadow:0 15px 40px rgba(212,175,55,0.35),0 0 0 1px rgba(255,255,255,0.1) inset" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 20px 50px rgba(212,175,55,0.5),0 0 0 1px rgba(255,255,255,0.15) inset'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 15px 40px rgba(212,175,55,0.35),0 0 0 1px rgba(255,255,255,0.1) inset'"><span style="position:relative;z-index:2">🔑 Unlock the Vault</span></a>
+
+      <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:22px 0 0;letter-spacing:1px">Or scroll down to continue the challenge ↓</p>
+    </div>
+  </div>
+
   <section class="tour-hero">
     <span class="hero-eyebrow">Now Showing . Night Shoot, Ten Sets</span>
     <h1><span class="foil">Welcome to the Factory</span></h1>
@@ -3683,6 +3915,7 @@ let sb = null;
 let userEmail = null;
 let userRound = null;
 let earlyAccessMaxDay = null;
+let userHasDonna = false;
 let roundStartDate = null; // 'YYYY-MM-DD'
 let portalRendered = false;
 let activeDay = null;
@@ -4077,7 +4310,7 @@ async function checkAllowed(email, isRequery) {
   const safeEmail = email.replace(/([%_\\])/g, '\\$1');
   try {
     const res = await sb.from('allowed_emails')
-      .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
+      .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day, addon_donna')
       .ilike('email', safeEmail).limit(1);
     /* .limit(1), not .maybeSingle(): maybeSingle turns "more than one row" into an
        error, and the branch below reads every error as a transport failure, so a
@@ -4144,7 +4377,7 @@ async function checkAllowed(email, isRequery) {
     try {
       const safePrimary = data.primary_email.replace(/([%_\\])/g, '\\$1');
       const hop = await sb.from('allowed_emails')
-        .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day')
+        .select('round, access_revoked_at, access_revoked_reason, primary_email, early_access_max_day, addon_donna')
         .ilike('email', safePrimary).limit(1);
       const hopRow = Array.isArray(hop.data) ? (hop.data[0] || null) : hop.data;
       if (!hop.error && hopRow) data = hopRow;
@@ -4189,11 +4422,272 @@ async function checkAllowed(email, isRequery) {
   userEmail = email;
   userRound = round;
   earlyAccessMaxDay = data.early_access_max_day || null;
+  /* Whether this customer also owns Donna. The Vault banner is for people who have
+     NOT been through the Donna portal, because that portal pitches this same film and
+     showing it twice to the same person is the definition of nagging. */
+  userHasDonna = data.addon_donna === true;
   LS.set(P + '-email', email);
   LS.set(P + '-round', round);
   LS.set(P + '-round-check', btoa(round + ':' + CONFIG.SALT));
   await enterFactory();
 }
+
+
+/* ============================================================
+   THE VAULT BANNER
+   ------------------------------------------------------------
+   Ported from the Donna portal 17.9.2026. Same film, same doors, same caps.
+   Three things are deliberately different here.
+
+   1. WHO. Donna shows it to everyone past Day 4. Wonka shows it ONLY to customers
+      with addon_donna = false, because anyone who owns Donna has already been shown
+      this exact film in that portal, and a second run of it is nagging.
+
+      That flag is read off the customer's own row, which is all RLS ever returns.
+      Eight people today own Donna on one address and carry addon_donna = false on
+      another, so signing in with the second address would pitch them a product they
+      already bought. Until those rows are corrected they are listed in VAULT_EXCLUDE.
+
+   2. WHEN. Day 6 of their own round, not Day 4. Wonka is a ten day course and the
+      first week is the part people are most likely to abandon; the offer waits until
+      they are past it. isDayUnlocked already handles admins, wonka_all and per
+      student early access, so the gate is one call.
+
+   3. WHERE THE COUNTERS LIVE. jaygptpro.com serves both portals off ONE origin, so
+      unprefixed keys are shared storage. The frequency counters are namespaced per
+      portal so neither can spend the other's budget. The single exception is
+      'vault-banner-done', left UNPREFIXED on purpose: it means "this person has
+      already clicked through to the Vault", which is true of the human, not of the
+      portal they happened to be standing in.
+   ============================================================ */
+const VAULT_ENABLED = true;          // master kill switch
+const VAULT_MIN_DAY = 6;             // their round's Day 6, using the portal's own gate
+const VAULT_MAX_SHOWS = 3;           // lifetime impressions on this browser
+const VAULT_MIN_HOURS_BETWEEN = 24;  // once a day, even without a dismiss
+const VAULT_DISMISS_HOURS = 24;      // and once a day after a dismiss
+/* Per-person opt-out. Empty on purpose.
+   It held eight addresses until 17.9.2026: people who owned Donna under one address
+   while this row said they did not, so signing in with the second one would have
+   pitched them a product they already bought. That was a data problem wearing a code
+   patch, and it was fixed in the data instead . every row in a cluster now carries the
+   same addon_donna, which also repairs their Donna access from the second address.
+   Verified afterwards: zero clusters disagree. Add an address here only for somebody
+   who asks to stop seeing the Vault offer. */
+const VAULT_EXCLUDE = [];
+/* Namespaced so the Donna portal's counters and this one's cannot overwrite each
+   other on the shared origin. */
+function VK(name) { return P + '-vault-' + name; }
+
+function showVaultBannerIfEligible() {
+  try {
+    if (!VAULT_ENABLED) return;
+    if (!userEmail) return;
+    const email = userEmail.toLowerCase();
+    const admin = isAdmin();
+
+    if (!admin) {
+      // Owns Donna: already been shown this film in that portal.
+      if (userHasDonna) return;
+      if (VAULT_EXCLUDE.indexOf(email) >= 0) return;
+      // Not far enough in yet.
+      if (!isDayUnlocked(VAULT_MIN_DAY)) return;
+      // Already clicked through to the Vault, from either portal. Never again.
+      if (localStorage.getItem('vault-banner-done') === '1') return;
+      const shown = parseInt(LS.get(VK('count')) || '0', 10);
+      if (shown >= VAULT_MAX_SHOWS) return;
+      const lastDismiss = parseInt(LS.get(VK('dismissed')) || '0', 10);
+      if ((Date.now() - lastDismiss) / 3600000 < VAULT_DISMISS_HOURS) return;
+      const lastShown = parseInt(LS.get(VK('last-shown')) || '0', 10);
+      if ((Date.now() - lastShown) / 3600000 < VAULT_MIN_HOURS_BETWEEN) return;
+    }
+
+    const banner = document.getElementById('vaultBanner');
+    if (!banner) return;
+    const shownCount = parseInt(LS.get(VK('count')) || '0', 10);
+    const firstTime = shownCount === 0;
+    banner.style.display = 'block';
+    // next frame, so display:block lands before the entrance animation starts
+    requestAnimationFrame(() => {
+      banner.classList.add('entering');
+      if (firstTime && !REDUCED) setTimeout(spawnVaultConfetti, 1400);
+      if (!REDUCED) {
+        setTimeout(startVaultDust, 2400);
+        setTimeout(setupVaultParallax, 2800);
+      }
+    });
+    // An admin preview must not spend a real customer's budget.
+    if (!admin) {
+      LS.set(VK('last-shown'), Date.now().toString());
+      LS.set(VK('count'), String(shownCount + 1));
+    }
+    try { if (typeof track === 'function') track('vault_banner_shown'); } catch (e) {}
+  } catch (e) {}
+}
+
+/* The ambient dust timer. Declared here because startVaultDust and stopVaultDust
+   both reach for it and neither owns it. */
+let vaultDustInterval = null;
+
+function startVaultDust() {
+  try {
+    const banner = document.getElementById('vaultBanner');
+    if (!banner) return;
+    if (vaultDustInterval) return; // Already running
+
+    let dustContainer = banner.querySelector('.vault-dust-container');
+    if (!dustContainer) {
+      dustContainer = document.createElement('div');
+      dustContainer.className = 'vault-dust-container';
+      dustContainer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden';
+      banner.appendChild(dustContainer);
+    }
+
+    const colors = ['#d4af37', '#f4d03f', '#e8c547', '#fff8dc'];
+
+    function spawnDustParticle() {
+      if (banner.style.display === 'none') return;
+      const piece = document.createElement('div');
+      piece.className = 'vault-dust';
+      const size = Math.random() * 3 + 2;
+      const left = Math.random() * 100;
+      const driftX = (Math.random() - 0.5) * 80;
+      const duration = Math.random() * 8 + 10; // 10-18s
+      const opacity = Math.random() * 0.5 + 0.3; // 0.3-0.8
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.cssText = `
+        left:${left}%;
+        width:${size}px;
+        height:${size}px;
+        color:${color};
+        background:${color};
+        --dust-x:${driftX}px;
+        --dust-opacity:${opacity};
+        animation:dustDrift ${duration}s linear forwards;
+      `;
+      dustContainer.appendChild(piece);
+      // Self-cleanup
+      setTimeout(() => { try { piece.remove(); } catch(e){} }, (duration + 0.5) * 1000);
+    }
+
+    // Initial burst (15 particles already in mid-flight)
+    for (let i = 0; i < 15; i++) {
+      setTimeout(spawnDustParticle, i * 200);
+    }
+
+    // Continuous spawn every ~600ms
+    vaultDustInterval = setInterval(spawnDustParticle, 600);
+  } catch(e) {}
+}
+
+function setupVaultParallax() {
+  try {
+    const banner = document.getElementById('vaultBanner');
+    if (!banner) return;
+    const video = banner.querySelector('.vault-video-glow');
+    if (!video) return;
+    if (banner.dataset.parallaxBound) return;
+    banner.dataset.parallaxBound = '1';
+
+    let rafId = null;
+    let pendingX = 0, pendingY = 0;
+
+    function applyTransform() {
+      rafId = null;
+      const rotateY = pendingX * 5; // up to ~5deg
+      const rotateX = -pendingY * 5;
+      video.style.transform = `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+    }
+
+    banner.addEventListener('mousemove', (e) => {
+      const rect = banner.getBoundingClientRect();
+      pendingX = (e.clientX - rect.left) / rect.width - 0.5;
+      pendingY = (e.clientY - rect.top) / rect.height - 0.5;
+      if (!rafId) rafId = requestAnimationFrame(applyTransform);
+    });
+
+    banner.addEventListener('mouseleave', () => {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      video.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg)';
+    });
+  } catch(e) {}
+}
+
+function spawnVaultConfetti() {
+  try {
+    const banner = document.getElementById('vaultBanner');
+    if (!banner) return;
+    // Avoid duplicate spawn
+    if (banner.querySelector('.confetti-container')) return;
+
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    container.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden';
+    banner.appendChild(container);
+
+    const colors = ['#d4af37', '#f4d03f', '#b8941f', '#ffffff', '#e8c547'];
+    const shapes = ['rect', 'circle'];
+    const total = 60;
+
+    for (let i = 0; i < total; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = Math.random() * 8 + 5;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 0.6;
+      const duration = Math.random() * 2 + 2.5;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const isCircle = shape === 'circle';
+      piece.style.cssText = `
+        position:absolute;
+        top:-20px;
+        left:${left}%;
+        width:${size}px;
+        height:${isCircle ? size : size * 0.4}px;
+        background:${color};
+        border-radius:${isCircle ? '50%' : '1px'};
+        box-shadow:0 0 6px ${color}66;
+        transform:rotate(${Math.random() * 360}deg);
+        animation:confettiFall ${duration}s cubic-bezier(0.4,0.1,0.6,1) ${delay}s forwards;
+        opacity:0;
+      `;
+      container.appendChild(piece);
+    }
+
+    // Clean up after animation done
+    setTimeout(() => { try { container.remove(); } catch(e){} }, 6000);
+  } catch(e) {}
+}
+
+function stopVaultDust() {
+  if (vaultDustInterval) { clearInterval(vaultDustInterval); vaultDustInterval = null; }
+  const dust = document.querySelector('.vault-dust-container');
+  if (dust) dust.remove();
+}
+
+function dismissVaultBanner() {
+  try {
+    LS.set(VK('dismissed'), Date.now().toString());
+    const banner = document.getElementById('vaultBanner');
+    if (banner) banner.style.display = 'none';
+    if (typeof stopVaultDust === 'function') stopVaultDust();
+    try { if (typeof track === 'function') track('vault_banner_dismissed'); } catch(e){}
+  } catch(e) {}
+}
+
+function trackVaultBannerClick() {
+  // They engaged with the offer. don't surface the banner again on this browser.
+  try { localStorage.setItem('vault-banner-done', '1'); } catch(e){}
+  try { if (typeof track === 'function') track('vault_banner_cta_clicked'); } catch(e){}
+}
+/* The banner's close button and its CTA are inline onclick handlers in the markup,
+   and an inline handler is resolved against window, never against this closure. The
+   Donna portal's script is not wrapped in one, so there they resolved by accident of
+   scope; here they have to be handed over deliberately or both buttons throw
+   ReferenceError and the banner cannot be dismissed. The markup is otherwise a
+   verbatim copy of Donna's, which is worth keeping so the two can be diffed. */
+window.dismissVaultBanner = dismissVaultBanner;
+window.trackVaultBannerClick = trackVaultBannerClick;
 
 function rattleGates() {
   const g = $('gate-screen');
@@ -7076,6 +7570,10 @@ function finishEnter() {
     const h1 = document.querySelector('.tour-hero h1');
     if (h1) { h1.classList.add('sweep'); setTimeout(() => h1.classList.remove('sweep'), 1800); }
   }
+
+  /* The Vault offer, for customers who have never been inside the Donna portal.
+     After the app is visible, so it can never appear over the gate or the loader. */
+  setTimeout(showVaultBannerIfEligible, 600);
 
   // the Factory Map is the home view. Only open a day directly if the URL asks for one (#dayN).
   const hm = /#day(\d+)/.exec(location.hash || '');
