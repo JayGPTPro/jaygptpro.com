@@ -48,7 +48,7 @@ function corsHeaders() {
   };
 }
 
-type Meta = { wa: string; dates: string; portal: string };
+type Meta = { wa: string; dates: string; portal: string; day1: string };
 
 // The Private Tour ($2,999) and the Golden Ticket ($497/$697) share round wonka_r1,
 // so the round alone cannot tell them apart and a buyer paying six times as much was
@@ -80,16 +80,26 @@ async function boughtPrivateTour(supabase: any, email: string): Promise<boolean>
   } catch (e) { console.error('boughtPrivateTour exception:', e); return false; }
 }
 
+// "22 September" from a rounds.start_date of 2026-09-22. The three personal emails
+// below used to say "1 September" in their own words, which round 2's buyers (from
+// 16.9.2026) would have read as their start (Jay, 17.9.2026).
+function day1Label(startDate: unknown): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(startDate || ''));
+  if (!m) return '';
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${Number(m[3])} ${months[Number(m[2]) - 1]}`;
+}
+
 async function loadRoundMeta(supabase: any, round: string): Promise<Meta> {
   // If the rounds read fails, this is what a paying customer is told. It said
   // "August 10 to 21, 2026", a dead date from an earlier schedule, which would have
   // told a buyer the bootcamp already happened. Keep it in step with
   // rounds.wonka_r1.welcome_dates_display.
-  const fallback: Meta = { wa: '', dates: 'September 1 to 4, 8 to 10, and 15 to 17, 2026', portal: DEFAULT_PORTAL };
+  const fallback: Meta = { wa: '', dates: 'September 1 to 4, 8 to 10, and 15 to 17, 2026', portal: DEFAULT_PORTAL, day1: '1 September' };
   try {
     const { data, error } = await supabase
       .from('rounds')
-      .select('whatsapp_link, welcome_dates_display, portal_url')
+      .select('whatsapp_link, welcome_dates_display, portal_url, start_date')
       .eq('id', round || 'wonka_r1')
       .maybeSingle();
     if (!error && data) {
@@ -97,6 +107,7 @@ async function loadRoundMeta(supabase: any, round: string): Promise<Meta> {
         wa: data.whatsapp_link || '',
         dates: data.welcome_dates_display || fallback.dates,
         portal: data.portal_url || DEFAULT_PORTAL,
+        day1: day1Label(data.start_date) || fallback.day1,
       };
     }
   } catch (e) { console.error('loadRoundMeta exception, falling back:', e); }
@@ -128,8 +139,8 @@ const S = {
 // It also offers the way out if the MX guess was wrong, because a Google account
 // CAN be created on any address.
 // ---------------------------------------------------------------------------
-function buildLoginHelpEmail(firstName: string, theirAddress: string): { subject: string; html: string } {
-  const subject = `One small thing before September`;
+function buildLoginHelpEmail(firstName: string, theirAddress: string, day1: string): { subject: string; html: string } {
+  const subject = `One small thing before Day 1`;
   const hi = firstName ? `Hi ${firstName},` : 'Hi,';
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#ffffff">
@@ -138,7 +149,7 @@ function buildLoginHelpEmail(firstName: string, theirAddress: string): { subject
 <p>Something on my side, not yours, and I would rather fix it now than have you find it on Day 1.</p>
 <p>The bootcamp portal signs in with Google, and ${theirAddress} does not look like a Google account. If that is right, the gate will not recognise you.</p>
 <p>Just reply with a Google address you use and I will connect it to your ticket today. If ${theirAddress} <em>is</em> a Google account, tell me that instead and I will leave everything as it is.</p>
-<p>Nothing else to do. Day 1 opens 1 September.</p>
+<p>Nothing else to do. Day 1 opens ${day1}.</p>
 <p>Jay</p>
 </div>
 </body></html>`;
@@ -171,7 +182,7 @@ function buildGiftEmail(meta: Meta, firstName: string, loginNote: boolean): { su
 <p>1. The portal: ${a(meta.portal, meta.portal)}</p>
 ${wa}
 ${loginNote ? `<p>One heads-up: the portal signs in with Google. If this address is not a Google account it will not recognise you. Reply to me with a Google address and I will connect it to your ticket.</p>` : ''}
-<p>See you inside the factory on 1 September.</p>
+<p>See you inside the factory on ${meta.day1}.</p>
 <p>Jay</p>
 </div>
 </body></html>`;
@@ -310,7 +321,7 @@ Deno.serve(async (req: Request) => {
       if (!/^[A-Za-z][A-Za-z'.-]{1,20}$/.test(firstName)) firstName = '';
     }
     const { subject, html } = loginHelp
-      ? buildLoginHelpEmail(firstName, email)
+      ? buildLoginHelpEmail(firstName, email, meta.day1)
       : gift
         ? buildGiftEmail(meta, firstName, url.searchParams.get('loginnote') === '1')
         : buildEmail(meta, privateTour, false);
