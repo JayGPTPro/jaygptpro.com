@@ -3037,15 +3037,14 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
        carries the rebuilt Wonka cut (Vimeo 1227974106) while Donna's portal still runs
        the original 1186394715. Note what that does to the rule below: the exclusion was
        written because a Donna owner had already been shown this exact film. That is no
-       longer literally true, so if the exclusion is ever revisited, revisit it on the
-       offer, not on the film.
+       longer literally true, and on 18.9.2026 the exclusion went with it.
 
-       WHO SEES IT: Wonka customers whose row has addon_donna = false, i.e. people
-       who have never been inside the Donna portal. Anyone with Donna has already
-       been shown this exact film there, and showing it to them again is nagging,
-       not marketing. That flag is read from the customer's OWN row, which is all
-       RLS ever returns, so it has to be correct on every address a person signs in
-       with. See VAULT_EXCLUDE below for the addresses where it is not yet.
+       WHO SEES IT: every Wonka customer past Day 6 of their own round. Donna owners
+       were excluded until 18.9 for one reason only . that they had already been shown
+       this exact film in the Donna portal . and the films are different now. Owning
+       Donna never meant owning the Vault. The one thing that still stops a repeat is
+       'vault-banner-done', which is shared across both portals and means the person
+       has already clicked THROUGH to the offer.
 
        WHERE IT SENDS THEM: /vault-bootcamp-offer/, NOT the /vault-challenge-offer/
        page the Donna portal uses. That page's every framing device is aimed at
@@ -4453,6 +4452,9 @@ async function checkAllowed(email, isRequery) {
   /* Whether this customer also owns Donna. The Vault banner is for people who have
      NOT been through the Donna portal, because that portal pitches this same film and
      showing it twice to the same person is the definition of nagging. */
+  // Read, but no longer a gate: the Vault banner stopped excluding Donna owners on
+  // 18.9.2026. Kept because the field is part of the row this portal reads and the
+  // per-address consistency of it is what the 17.9 data repair was about.
   userHasDonna = data.addon_donna === true;
   LS.set(P + '-email', email);
   LS.set(P + '-round', round);
@@ -4467,14 +4469,13 @@ async function checkAllowed(email, isRequery) {
    Ported from the Donna portal 17.9.2026. Same film, same doors, same caps.
    Three things are deliberately different here.
 
-   1. WHO. Donna shows it to everyone past Day 4. Wonka shows it ONLY to customers
-      with addon_donna = false, because anyone who owns Donna has already been shown
-      this exact film in that portal, and a second run of it is nagging.
-
-      That flag is read off the customer's own row, which is all RLS ever returns.
-      Eight people today own Donna on one address and carry addon_donna = false on
-      another, so signing in with the second address would pitch them a product they
-      already bought. Until those rows are corrected they are listed in VAULT_EXCLUDE.
+   1. WHO. Both portals now show it to everyone past their own day gate. Wonka
+      excluded Donna owners from 17.9 to 18.9.2026, because the two portals ran the
+      same film and a second run of it is nagging. Wonka moved to the rebuilt cut on
+      18.9 and the exclusion came out the same day, so addon_donna no longer gates
+      anything here. It is still READ off the row (userHasDonna) because that field
+      being right per address matters elsewhere, and because the eight clusters that
+      disagreed were repaired on 17.9 on the strength of it.
 
    2. WHEN. Day 6 of their own round, not Day 4. Wonka is a ten day course and the
       first week is the part people are most likely to abandon; the offer waits until
@@ -4521,8 +4522,14 @@ function showVaultBannerIfEligible() {
     const admin = isAdmin();
 
     if (!admin) {
-      // Owns Donna: already been shown this film in that portal.
-      if (userHasDonna) return;
+      // Donna owners are NO LONGER excluded (Jay, 18.9.2026). The exclusion existed for one
+      // reason: this portal showed the same film Donna's portal shows, so a Donna owner who
+      // saw it there would only be nagged with it again. That stopped being true the moment
+      // this portal moved to the rebuilt cut (Vimeo 1227974106) while Donna's kept 1186394715.
+      // Owning Donna has never meant owning the Vault, so there is nothing else in the rule.
+      // What still holds them back is 'vault-banner-done' below: it is deliberately unprefixed
+      // and shared across both portals, so somebody who has already clicked THROUGH to the
+      // Vault offer from either one is not asked twice, whichever film they happened to see.
       if (VAULT_EXCLUDE.indexOf(email) >= 0) return;
       // Not far enough in yet.
       if (!isDayUnlocked(VAULT_MIN_DAY)) return;
