@@ -169,6 +169,23 @@ pre code{background:none;color:inherit;padding:0;font:inherit}
 .dont b{color:#fff}
 
 
+/* the paste block */
+.pastebox{background:var(--card);border:2px solid var(--plum);border-radius:var(--rad);box-shadow:6px 6px 0 rgba(59,30,78,.14);margin-top:24px;overflow:hidden}
+.pastehead{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--plum);color:#fff;padding:12px 18px;font:600 14px var(--sans);flex-wrap:wrap}
+.pastehead .copy{position:static;background:var(--gold);color:var(--choc-dark);border:none;border-radius:8px;padding:7px 16px;font:600 12px var(--mono);cursor:pointer}
+.pastehead .copy.done{background:var(--mint)}
+pre.plain{margin:0;border:none;border-radius:0;background:var(--choc-dark);padding:20px 22px;font:13.5px/1.7 var(--mono);white-space:pre-wrap}
+.after{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.after>div{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold-ink);border-radius:12px;padding:16px 20px;font-size:15.5px;color:#4a372a}
+.after b{color:var(--choc-dark)}
+.manual{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.manual summary{cursor:pointer;padding:16px 20px;font:600 15.5px var(--sans);color:var(--plum);list-style:none}
+.manual summary::-webkit-details-marker{display:none}
+.manual summary::after{content:" +";font:600 16px var(--mono);color:var(--gold-ink)}
+.manual[open] summary::after{content:" -"}
+.manualbody{padding:0 20px 20px;font-size:15.5px;color:#4a372a}
+.manualbody p{margin:10px 0}
+
 /* start here */
 .starthere{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;background:var(--card);border:2px solid var(--plum);border-radius:16px;padding:16px 20px;margin-top:18px;box-shadow:4px 4px 0 rgba(59,30,78,.12)}
 .starthere b{font:600 16px var(--sans);color:var(--plum);white-space:nowrap}
@@ -211,7 +228,7 @@ footer a{color:var(--brass-dark);text-decoration:none}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--d,0s)}
 .reveal.in,.no-js .reveal{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.app{transform:none}.app .cmd::after{animation:none}html{scroll-behavior:auto}}
-@media(max-width:860px){.band,.band.dark{padding-left:24px;padding-right:24px}.hero{grid-template-columns:1fr;gap:28px}.lands{grid-template-columns:1fr}.app{transform:none;margin-top:6px}.rule,.two{grid-template-columns:1fr}.steps,.evening{grid-template-columns:1fr}section{padding:48px 0}}
+@media(max-width:860px){.band,.band.dark{padding-left:24px;padding-right:24px}.after{grid-template-columns:1fr}.hero{grid-template-columns:1fr;gap:28px}.lands{grid-template-columns:1fr}.app{transform:none;margin-top:6px}.rule,.two{grid-template-columns:1fr}.steps,.evening{grid-template-columns:1fr}section{padding:48px 0}}
 @media(max-width:600px){.wrap{padding:0 16px}section{padding:48px 0}.band,.band.dark{padding-left:18px;padding-right:18px;border-radius:18px}pre{padding-bottom:44px}pre .copy{bottom:8px}.tree dl{grid-template-columns:1fr;gap:0}.tree dt{white-space:normal;word-break:break-all;margin-top:6px}.tree dt.f{margin-top:8px}.tree dd{padding-left:14px;margin-bottom:2px}.tree .grp{height:8px}.hero h1{font-size:38px}pre{padding:14px 14px 48px}pre .copy{top:auto;bottom:10px}.skill .badge{position:static;align-self:flex-start}.flow{flex-direction:column}.wire{width:2px;height:26px}.wire::after{right:-4px;top:auto;bottom:-1px;border:5px solid transparent;border-top-color:var(--brass)}.sticker{right:6px;top:-12px}}
 </style>
 </head>
@@ -387,34 +404,47 @@ footer a{color:var(--brass-dark);text-decoration:none}
   <!-- INSTALL -->
   <section id="install">
     <span class="eyebrow reveal">Install, once</span>
-    <h2 class="reveal" style="--d:.05s">Download, run one line, <span class="u">ask Wonka what is new.</span></h2>
+    <h2 class="reveal" style="--d:.05s">Paste one message to Wonka. <span class="u">He does the rest.</span></h2>
+    <p class="lead mut reveal" style="--d:.1s">No download, no unzip, no terminal, and nothing to type twice. Wonka is already standing inside your factory, so he knows where every file goes.</p>
 
-    <div class="dl reveal" style="--d:.1s">
-      <a class="btn gold" href="wonka-bonus-pack.zip" download onclick="track('download','zip')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download wonka-bonus-pack.zip</a>
-      <small>v4 · about 0.6 MB · unpacks to a folder called <code>wonka-bonus-pack</code></small>
+    <div class="pastebox reveal" style="--d:.15s">
+      <div class="pastehead">
+        <span>Open your Wonka folder in Claude Code and paste this</span>
+        <button class="copy" type="button" aria-label="Copy the install message" onclick="copyText('pmt',this,'install_prompt')">Copy</button>
+      </div>
+      <pre class="plain"><code id="pmt">Install my Wonka bonus pack into this factory. Here is the whole job:
+
+1. Read https://jaygptpro.com/wonka-bootcamp/kit-pages-e7c41b/bonus-latest.txt
+   Three lines: a version number, a zip filename, and that zip's sha256.
+2. Download that zip from the same folder as the manifest, into a temp directory, and check
+   its sha256 against line 3. If they differ, stop and tell me. Do not install a file whose
+   digest does not match.
+3. Unzip it. Inside is a folder called wonka-bonus-pack.
+4. Run its install.sh against THIS factory, from the factory root, and show me the line it
+   prints. If install.sh will not run on this machine, copy each folder inside its skills/
+   into .claude/skills/ and its pack/ into .claude/pack/ instead, and tell me you did it
+   that way.
+5. Delete the temp directory.
+6. Tell me the version you installed and the names of the new skills.
+
+Then remind me to start a new session, because skills are read when a session starts.</code></pre>
     </div>
 
-    <div class="steps">
-      <div class="step reveal"><div class="num">1</div><h3>Unzip it anywhere</h3><p>Downloads is fine. You get a folder called <code>wonka-bonus-pack</code> with the eleven skills, the shared engine and the installer inside.</p></div>
-      <div class="step reveal" style="--d:.05s"><div class="num">2</div><h3>Run the installer</h3><p>Right-click the unzipped folder and choose <b>New Terminal at Folder</b> (Mac) or <b>Open in Terminal</b> (Windows). Type the first two words, then <b>drag your Wonka folder onto the terminal window</b>: it types the path for you.</p>
+    <div class="after">
+      <div class="reveal"><b>He fetches it, checks it, installs it.</b> The message names no version, so it keeps working. Wonka reads a small file on the site that says which pack is current, downloads that one, and checks its fingerprint before writing anything.</div>
+      <div class="reveal" style="--d:.05s"><b>Then open a NEW session.</b> Skills are read when a session starts, so the window that was open while he installed will not see them however many times you ask.</div>
+      <div class="reveal" style="--d:.1s"><b>Ask him what is new.</b> Say <code>What new skills do I have?</code> and he answers with the eleven by name. That is the whole install.</div>
+    </div>
+
+    <details class="manual reveal" style="--d:.15s">
+      <summary>Rather do it by hand? The file is right here.</summary>
+      <div class="manualbody">
+        <p>Same pack, same installer, more steps. Download it, unzip it anywhere, then open a terminal in that folder and give the installer the path to your own Wonka folder, the one that holds <code>factory/</code> and <code>CLAUDE.md</code>. Tip: type the first two words, then drag your Wonka folder onto the terminal window and it fills in the path.</p>
+        <p><a class="btn gold" href="wonka-bonus-pack.zip" download onclick="track('download','zip')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download wonka-bonus-pack.zip</a></p>
         <pre><button class="copy" type="button" aria-label="Copy this command" onclick="copyText('c1',this,'install_cmd')">Copy</button><code id="c1">bash install.sh /path/to/your/Wonka</code></pre>
-        <p class="mut" style="font-size:14px;margin-top:10px">Your Wonka folder is the one that holds <code>factory/</code> and <code>CLAUDE.md</code>.</p></div>
-      <div class="step reveal" style="--d:.1s"><div class="num">3</div><h3>Start a NEW session, then ask</h3><p><b>Skills are read when a Claude Code session starts.</b> A window that was already open will not see them, however many times you ask. Close it, open your Wonka folder again, then say:</p>
-        <pre><button class="copy" type="button" aria-label="Copy this command" onclick="copyText('c2',this,'ask_wonka')">Copy</button><code id="c2">What new skills do I have?</code></pre></div>
-    </div>
-
-    <div class="two">
-      <div class="tip reveal">
-        <h3>Not a terminal person? Let Wonka install it</h3>
-        <p>Unzip the pack, open your Wonka folder in Claude Code, and paste this. Then close the window and open it again, so the new skills are read.</p>
-        <pre><button class="copy" type="button" aria-label="Copy this command" onclick="copyText('c3',this,'paste_prompt')">Copy</button><code id="c3">I unzipped the Wonka bonus pack somewhere under my home folder. Find the folder called wonka-bonus-pack, run its install.sh against THIS factory, and show me the line it prints. If install.sh will not run on this machine, copy each folder in its skills/ into .claude/skills/ and its pack/ into .claude/pack/ instead, and tell me you did it that way.</code></pre>
+        <p>Then start a new session and ask him what new skills you have. The installer refuses anything that is not a Wonka factory, refuses a folder it does not own, and never deletes a file you added. Running it twice is safe.</p>
       </div>
-      <div class="tip reveal" style="--d:.05s">
-        <h3>What the installer will and will not do</h3>
-        <p>It copies the eleven skills into <code>.claude/skills/</code> beside the kit's rooms, and the shared engine into <code>.claude/pack/</code>. It refuses to touch anything that is not a pack skill, so your kit stays exactly as it was. Running it twice is safe.</p>
-        <p>Wonka's own updates leave the pack alone, and the pack leaves them alone.</p>
-      </div>
-    </div>
+    </details>
   </section>
 
   <!-- REQUIREMENTS -->
@@ -505,18 +535,19 @@ footer a{color:var(--brass-dark);text-decoration:none}
     <span class="eyebrow reveal">Done when</span>
     <h2 class="reveal" style="--d:.05s">Four lines, <span class="u">and you are set.</span></h2>
     <ul class="check">
-      <li class="reveal"><span>The installer printed the line that starts with <code>installed 11 skills</code>.</span></li>
+      <li class="reveal"><span>Wonka reported the version he installed and the line that starts with <code>installed 11 skills</code>.</span></li>
       <li class="reveal" style="--d:.05s"><span>In a <b>newly opened</b> session, Wonka answered "What new skills do I have?" with the pack's skills by name.</span></li>
       <li class="reveal" style="--d:.1s"><span><code>/running-order</code> ran on a finished product and you opened <code>shelf-strip.png</code>.</span></li>
       <li class="reveal" style="--d:.15s"><span>For video: the environment check printed READY, or you know exactly which of its lines to fix.</span></li>
     </ul>
     <h3 class="troublehead">When it does not go like that</h3>
     <div class="trouble">
-      <div class="tr reveal"><b>"REFUSED: does not look like a Wonka factory"</b><p>The path is wrong. It must be the folder holding <code>factory/</code> and <code>CLAUDE.md</code>, not the folder above it and not the zip.</p></div>
+      <div class="tr reveal"><b>"REFUSED: does not look like a Wonka factory"</b><p>You pasted the message somewhere other than your Wonka folder, or you are installing by hand from the wrong path. It must be the folder holding <code>factory/</code> and <code>CLAUDE.md</code>.</p></div>
       <div class="tr reveal" style="--d:.05s"><b>Wonka does not know the new skills</b><p>The session was already open when you installed. Close that window, open your Wonka folder again, and ask once more.</p></div>
-      <div class="tr reveal" style="--d:.1s"><b>"rsync: command not found" (Windows)</b><p>The installer handles it on its own and copies the files the plain way. If it still stops, use the paste-to-Wonka prompt above and he will copy the folders in.</p></div>
+      <div class="tr reveal" style="--d:.1s"><b>"rsync: command not found" (Windows)</b><p>The installer handles it on its own and copies the files the plain way. If it still stops, tell Wonka to copy the folders in by hand, which the message above already licenses him to do.</p></div>
       <div class="tr reveal" style="--d:.15s"><b>You cannot see the <code>.claude</code> folder</b><p>It is hidden on purpose. Mac: <b>Cmd + Shift + .</b> in Finder. Windows: View, then Show, then Hidden items.</p></div>
       <div class="tr reveal" style="--d:.2s"><b>"REFUSED: exists and is not a pack skill"</b><p>A folder of that name is already there from something else. Rename it, then install again. Nothing of yours was touched.</p></div>
+      <div class="tr reveal" style="--d:.2s"><b>Wonka says the fingerprint does not match</b><p>He is doing his job. The download was cut short or the file is not the one the site listed. Ask him to try once more. If it happens twice, message me.</p></div>
       <div class="tr reveal" style="--d:.25s"><b>A skill stops and talks about a cap</b><p>That is the cap doing its job, not a failure. It tells you what it would cost and waits. Raise the cap in the command, or run fewer frames.</p></div>
     </div>
     <div class="help reveal" style="--d:.2s">
