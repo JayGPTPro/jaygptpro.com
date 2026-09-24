@@ -21,7 +21,7 @@ const GLOSSARY_DAYS = {
   7:  { room: 'The A+ Room',               accent: '#E0A94A', mood: 'The page takes shape.' },
   8:  { room: 'The Tasting Room',          accent: '#E0356B', mood: 'The tasters deliver their verdict.' },
   9:  { room: 'The Variations Room',       accent: '#B87333', mood: 'One good set. The rest of the family.' },
-  10: { room: 'The Shipping Room',         accent: '#F7D774', mood: 'The loop closes and turns again.' },
+  10: { room: 'The Improvement Loop',      accent: '#F7D774', mood: 'The loop closes and turns again.' },
 };
 
 const GLOSSARY = [
@@ -189,7 +189,7 @@ const GLOSSARY = [
   { t: '/variations', d: 9, a: ['variations', 'variation', 'variant', 'colors', 'sizes', 'family'],
     def: 'Adapts your approved images to your product\'s other versions, like different colors, sizes or scents. Wonka shows you the first images to check before he makes the rest.' },
 
-  /* ---------- Day 10 . The Shipping Room ---------- */
+  /* ---------- Day 10 . The Improvement Loop ---------- */
   { t: '/ready-to-upload', d: 10, a: ['ready to upload', 'package', 'upload', 'final files'],
     def: 'Packs your final files into one folder, output/[product-name]-package, with an upload list. Check the files, then upload them to Amazon.' },
   { t: 'Improvement Loop', d: 10, cmd: '/improvement-loop', a: ['lessons learned'],
