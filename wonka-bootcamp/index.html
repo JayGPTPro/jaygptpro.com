@@ -2817,6 +2817,9 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
   #day-strip{order:6}
 }
 </style>
+<!-- The Factory Dictionary (24.9.2026): its own view, built from wonka/bootcamp/glossary by
+     build-portal.py. The ?v= key on both files is the cache key the build prints. -->
+<link rel="stylesheet" href="dictionary.css?v=0562072d">
 </head>
 <script>
 /* before first paint: hide the 2D portal so it never flashes ahead of the map.
@@ -3017,6 +3020,8 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
          progress bar got a sliver. .header-acct is display:contents on desktop, so
          the layout there is unchanged; under 760px it becomes a small popover behind
          the account button and progress takes the row it frees. -->
+    <!-- the Factory Dictionary, one tap from anywhere (24.9.2026) -->
+    <button class="dict-btn" id="dict-btn" type="button" aria-label="The Factory Dictionary" title="The Factory Dictionary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/><path d="M9 7h6M9 11h4"/></svg><span>Dictionary</span></button>
     <button class="acct-btn" id="acct-btn" aria-label="Your account" aria-expanded="false" aria-controls="header-acct"></button>
     <div class="header-acct" id="header-acct">
       <div class="ticket-chip"><div class="ticket-chip-inner" id="chip-email">ticket holder</div></div>
@@ -3456,6 +3461,8 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
   </div>
 
   <section id="day-view"></section>
+  <!-- The Factory Dictionary view: dictionary.js renders into it on first open -->
+  <section id="dict-view" aria-label="The Factory Dictionary"></section>
 
   <div id="grad-banner">
     <div class="grad-bulbs" aria-hidden="true"></div>
@@ -3523,6 +3530,7 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="dictionary.js?v=0562072d"></script>
 <!-- three.js for the 3D factory map (map3d.js). Pinned exact version; resolved lazily
      via dynamic import() inside initMapEngine(), so the sign-in gate never downloads it. -->
 <script type="importmap">
@@ -4984,6 +4992,8 @@ function renderDayStrip() {
 function syncDayStrip(dayNum, scrollIntoView) {
   const strip = $('day-strip');
   if (!strip) return;
+  // in the Factory Dictionary neither the map nor a day is lit (renderMap redraws the rail)
+  if ($('app').classList.contains('viewing-dict')) dayNum = -1;
   const inMap = !dayNum; // dayNum 0/null means the Factory Map view is active
   strip.querySelectorAll('.dbtn').forEach((b) => {
     if (b.dataset.view === 'map') { b.classList.toggle('active', inMap); return; }
@@ -5961,6 +5971,7 @@ function renderDay(dayNum) {
             '<div class="dv3-rule" aria-hidden="true"></div>' +
             '<p class="dv3-desc">' + escapeHtml(d.desc) + '</p>' +
             (d.wonkaLine ? '<p class="dv3-quote">&ldquo;' + escapeHtml(d.wonkaLine) + '&rdquo;</p>' : '') +
+            dictWordsLine(dayNum) +
           '</div>';
   html += '</header>';
 
@@ -6752,6 +6763,7 @@ function openDay(dayNum, scroll, viaQA) {
     keyMode = false; charVel = 0; keysDown.fwd = keysDown.back = false; // release the map camera
     if (map3dCtl) map3dCtl.pause(); // 3D engine sleeps behind the day view
     renderDay(dayNum);
+    leaveDictionary();
     $('app').classList.add('viewing-day');
     // the graduation banner belongs to the last room and the map only (Jay, 16.9.2026)
     $('app').classList.toggle('last-room', dayNum >= CONFIG.TOTAL_DAYS);
@@ -6774,6 +6786,7 @@ function showMap() {
   if (!MAP_ENABLED) { openDay(firstUnlockedIncompleteDay(), true); return; }
   const swap = () => {
     $('app').classList.remove('viewing-day');
+    leaveDictionary();
     $('day-view').classList.remove('active');
     activeDay = 0;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
@@ -6796,6 +6809,58 @@ function showMap() {
     });
   };
   playSceneWipe({ scene: 'Cut', room: 'BACK TO THE FLOOR', take: 'Take 1' }, swap);
+}
+
+/* ============================================================
+   THE FACTORY DICTIONARY (24.9.2026)
+   Its own view, like a room: the header button opens it from anywhere, and each
+   room's title card links to the words that room introduces (one quiet line, never
+   underlines in the lesson text: Jay, 24.9). dictionary.js holds the words and
+   renders the page; this block only swaps views and routes #dictionary links.
+   ============================================================ */
+let dictReturn = 0; // where Back goes: a day number, or 0 for the map
+function dictWordsLine(dayNum) {
+  const n = window.WonkaDictionary ? window.WonkaDictionary.count(dayNum) : 0;
+  if (!n) return '';
+  return '<a class="dv3-words" href="#dictionary-day-' + dayNum + '" data-dict="day-' + dayNum + '">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/></svg>' +
+    n + (n === 1 ? ' new word' : ' new words') + ' in this room</a>';
+}
+function leaveDictionary() {
+  $('app').classList.remove('viewing-dict');
+  const b = $('dict-btn');
+  if (b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); }
+}
+function showDictionary(anchor) {
+  const D = window.WonkaDictionary;
+  if (!D) { toast('The dictionary did not load. Refresh the page and try again.'); return; }
+  const app = $('app');
+  if (!app.classList.contains('viewing-dict')) dictReturn = app.classList.contains('viewing-day') ? activeDay : 0;
+  // the room's scroll saver would otherwise record the dictionary's scroll as the room's
+  const dv = $('day-view');
+  if (dv.__jumpScroll) { window.removeEventListener('scroll', dv.__jumpScroll); dv.__jumpScroll = null; }
+  keyMode = false; charVel = 0; keysDown.fwd = keysDown.back = false; // release the map camera
+  if (map3dCtl) map3dCtl.pause();
+  app.classList.remove('viewing-day');
+  dv.classList.remove('active');
+  app.classList.add('viewing-dict');
+  const b = $('dict-btn');
+  if (b) { b.classList.add('active'); b.setAttribute('aria-pressed', 'true'); }
+  syncDayStrip(-1, false);
+  D.mount($('dict-view'), {
+    assetBase: 'map-art/dictionary/',
+    headerHeight: () => { const h = document.querySelector('header.portal-header'); return h ? h.offsetHeight : 0; },
+    onBack: closeDictionary,
+    toast: toast,
+  });
+  if (!anchor) { try { history.replaceState(null, '', location.pathname + location.search + '#dictionary'); } catch (e) {} }
+  D.open(anchor || '', dictReturn ? 'Back to Day ' + dictReturn : (MAP_ENABLED ? 'Back to the map' : 'Back to your room'));
+  track('dictionary_view', dictReturn || null);
+}
+function closeDictionary() {
+  if (dictReturn && isDayUnlocked(dictReturn)) openDay(dictReturn, true, true);
+  else if (MAP_ENABLED) showMap();
+  else openDay(firstUnlockedIncompleteDay(), true, true);
 }
 
 function firstUnlockedIncompleteDay() {
@@ -7608,6 +7673,15 @@ function finishEnter() {
   startWatermarkRotation();
   wireSupportFab();
   wireAccountMenu();
+  // the Factory Dictionary: the header button, and every room's "new words" line
+  // (one delegated listener: the day view is re-rendered on every visit)
+  $('dict-btn').addEventListener('click', () => showDictionary(''));
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('[data-dict]');
+    if (!a) return;
+    e.preventDefault();
+    showDictionary(a.dataset.dict);
+  });
 
   // one-time hero key-light sweep on the marquee title
   if (!REDUCED) {
@@ -7619,6 +7693,9 @@ function finishEnter() {
      After the app is visible, so it can never appear over the gate or the loader. */
   setTimeout(showVaultBannerIfEligible, 600);
 
+  // #dictionary or #dictionary-<word> opens the Factory Dictionary. Read it FIRST: the
+  // phone path below opens a room, and openDay rewrites the hash to #dayN.
+  const dm = /^#dictionary(?:-([a-z0-9-]+))?$/.exec(location.hash || '');
   // the Factory Map is the home view. Only open a day directly if the URL asks for one (#dayN).
   const hm = /#day(\d+)/.exec(location.hash || '');
   const deepDay = hm ? parseInt(hm[1], 10) : 0;
@@ -7633,6 +7710,7 @@ function finishEnter() {
     activeDay = 0;
     syncDayStrip(0, false);
   }
+  if (dm) showDictionary(dm[1] || '');
 
   // decide 2D vs 3D (async), THEN bring the map machinery up in that mode
   mapEngineSettled = initMapEngine().then(() => {
@@ -7641,6 +7719,7 @@ function finishEnter() {
     armRevealFailsafe();
     if (!deepLinked) {
       requestAnimationFrame(() => {
+        if ($('app').classList.contains('viewing-dict')) return; // never scroll the dictionary
         if (MAP_MODE === '3d' && map3dCtl) {
           map3dCtl.focusDay(firstUnlockedIncompleteDay(), true);
           return;
@@ -7661,6 +7740,8 @@ function finishEnter() {
   setInterval(() => { renderMap(); }, 60000);
 
   window.addEventListener('hashchange', () => {
+    const d2 = /^#dictionary(?:-([a-z0-9-]+))?$/.exec(location.hash || '');
+    if (d2) { showDictionary(d2[1] || ''); return; }
     const m2 = /#day(\d+)/.exec(location.hash || '');
     if (m2) {
       const n = parseInt(m2[1], 10);
@@ -7672,6 +7753,7 @@ function finishEnter() {
 /* instant map (no wipe) for the initial landing path */
 function showMapInstant() {
   $('app').classList.remove('viewing-day');
+  leaveDictionary();
   $('day-view').classList.remove('active');
   activeDay = 0;
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
