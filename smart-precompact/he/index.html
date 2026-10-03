@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart PreCompact · מנהל את כל מה שקורה סביב /compact</title>
+<meta name="description" content="Smart PreCompact הוא סקיל ל-Claude Code שמזהה מתי הקונטקסט מתמלא, מכין קומפאקט חכם ששומר את מה שחשוב, ומחזיר את ההקשר אוטומטית אחרי.">
+<meta property="og:title" content="Smart PreCompact · ממשיכים מאיפה שעצרתם, גם אחרי קומפאקט">
+<meta property="og:description" content="הקומפאקט הרגיל מסכם הכל. Smart PreCompact דואג שלא יאבדו לך ההחלטות, מה שכבר נכשל ומה שביקשת. סקיל עצמאי ל-Claude Code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Heebo:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root{
+  --bg:#0a0807; --panel:#15100c; --panel2:#1d1611; --line:#2b2118; --line2:#3a2c20;
+  --ember:#ff7a18; --ember2:#ffb24d; --gold:#ffd98a; --claude:#d97757;
+  --text:#f6efe6; --muted:#a8998a; --ash:#5d544c;
+  --ok:#7fd6a1; --bad:#ff6b5a;
+  --display:'Karantina','Heebo',sans-serif;
+  --body:'Heebo',sans-serif;
+  --mono:'JetBrains Mono','Heebo',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;font-size:17px;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.cmdtag{font-family:var(--mono);font-size:.86em;color:var(--gold);background:#ff7a1814;border:1px solid #ff7a1830;padding:1px 7px;border-radius:6px;direction:ltr;unicode-bidi:isolate;display:inline-block;white-space:nowrap}
+
+/* atmosphere */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.glow{position:fixed;border-radius:50%;filter:blur(110px);z-index:0;pointer-events:none}
+.glow.a{width:620px;height:620px;background:radial-gradient(circle,#ff7a1838,transparent 70%);bottom:-260px;left:-120px}
+.glow.b{width:520px;height:520px;background:radial-gradient(circle,#d977572e,transparent 70%);top:-200px;right:-160px}
+#sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+#sparks i{position:absolute;bottom:-12px;border-radius:50%;background:var(--ember2);box-shadow:0 0 8px 2px #ff7a1899;opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}10%{opacity:.8}80%{opacity:.4}100%{transform:translate(var(--dx),-105vh);opacity:0}}
+
+main,header,footer{position:relative;z-index:2}
+section{padding:96px 0;scroll-margin-top:64px}
+
+/* nav */
+nav{position:fixed;top:0;inset-inline:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(10,8,7,.55);border-bottom:1px solid transparent;transition:.3s}
+nav.scrolled{border-color:var(--line);background:rgba(10,8,7,.88)}
+.nav-in{max-width:1140px;margin:0 auto;padding:12px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;text-decoration:none;direction:ltr}
+.brand .flame{width:22px;height:22px}
+.nav-links{display:flex;gap:22px;font-size:15px;color:var(--muted)}
+.nav-links a{text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--body);font-weight:800;font-size:16px;border:0;cursor:pointer;text-decoration:none;border-radius:12px;padding:14px 22px;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s,color .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(135deg,var(--ember),var(--claude));color:#1a0d04;box-shadow:0 10px 40px -10px #ff7a18aa,inset 0 1px 0 #ffffff55}
+.btn.primary:hover{box-shadow:0 14px 50px -8px #ff7a18cc,inset 0 1px 0 #ffffff66}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line2)}
+.btn.ghost:hover{border-color:var(--ember);color:var(--gold)}
+.btn.small{padding:8px 14px;font-size:14px;border-radius:10px}
+.btn.done{background:linear-gradient(135deg,#7fd6a1,#4fb07a);color:#06200f}
+
+/* hero */
+.hero{padding:126px 0 64px;min-height:100vh;display:flex;align-items:center}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ember2);background:#ff7a1812;border:1px solid #ff7a1833;padding:6px 12px;border-radius:999px;margin-bottom:20px}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--ember);box-shadow:0 0 10px var(--ember);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+h1{margin-bottom:20px}
+h1 .product{display:block;direction:ltr;text-align:right;font-family:var(--display);font-weight:700;font-size:clamp(64px,8.6vw,112px);line-height:.9;letter-spacing:.005em;background:linear-gradient(100deg,var(--gold),var(--ember) 50%,var(--claude));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px #ff7a1838);padding-bottom:6px}
+h1 .tagline{display:block;font-family:var(--body);font-weight:800;font-size:clamp(26px,3.2vw,38px);line-height:1.2;margin-top:10px;letter-spacing:-.01em}
+.lede{font-size:clamp(17px,1.9vw,20px);color:#e9dfd3;max-width:560px;margin-bottom:22px}
+.lede b{color:var(--gold);font-weight:700}
+.verbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.verbs span{display:inline-flex;align-items:center;gap:7px;font-size:14.5px;font-weight:700;padding:7px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line2);color:#eadfce}
+.verbs span b{font-family:var(--display);font-size:21px;line-height:.8;color:var(--ember)}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta-note{font-size:14.5px;color:var(--muted);margin-top:14px}
+
+/* the console */
+.console{position:relative;background:linear-gradient(180deg,#1a130e,#120d0a);border:1px solid var(--line2);border-radius:18px;box-shadow:0 40px 90px -30px #000,0 0 0 1px #ffffff06 inset,0 0 80px -30px #ff7a1840;overflow:hidden}
+.console-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted);direction:ltr}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:#3a2c20}
+.dots i:first-child{background:#ff6b5a88}.dots i:nth-child(2){background:#ffb24d88}.dots i:nth-child(3){background:#7fd6a188}
+.console-body{padding:16px 18px 20px}
+.stages{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.stages span{font-size:12px;font-weight:700;padding:5px 9px;border-radius:8px;border:1px solid var(--line);color:var(--ash);transition:.35s;white-space:nowrap}
+.stages span.done{color:var(--muted);border-color:var(--line2)}
+.stages span.now{color:#1a0d04;background:linear-gradient(135deg,var(--gold),var(--ember2));border-color:transparent;box-shadow:0 6px 20px -8px #ffb24d}
+.meter-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.meter-row .pct{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);direction:ltr}
+.meter{position:relative;height:12px;border-radius:99px;background:#241b14;border:1px solid var(--line)}
+.meter-fill{position:absolute;inset-block:0;inset-inline-start:0;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--claude),var(--ember),var(--gold));box-shadow:0 0 18px #ff7a1866}
+.tick{position:absolute;top:-6px;bottom:-6px;width:2px;background:#ffd98a55;border-radius:2px}
+.tick span{position:absolute;top:-20px;transform:translateX(50%);font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;min-height:140px;margin:24px 0 14px;align-content:flex-start}
+.chip{font-size:13px;padding:7px 11px;border-radius:9px;border:1px solid var(--line2);background:#1f1812;color:#d9cdbf;opacity:0;transform:translateY(8px) scale(.97);transition:opacity .45s,transform .45s,filter .9s,background .6s,border-color .6s,color .6s,box-shadow .6s}
+.chip.on{opacity:1;transform:none}
+.chip.key{border-color:#ff7a1855;color:var(--gold)}
+.chip.routine{color:#b3a596}
+.chip.compressed{opacity:0;filter:blur(6px) grayscale(1);transform:translateY(20px) scale(.9)}
+.chip.kept{background:#ff7a1822;border-color:var(--ember);box-shadow:0 0 22px -4px #ff7a18aa;color:#fff1dc}
+.toast{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700;color:#1a0d04;background:linear-gradient(135deg,var(--gold),var(--ember2));padding:10px 13px;border-radius:11px;margin-bottom:12px;opacity:0;transform:translateY(-6px);transition:.4s;box-shadow:0 10px 30px -10px #ffb24daa}
+.toast.on{opacity:1;transform:none}
+.cmd{font-size:13.5px;background:#0d0a08;border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ember2);min-height:44px;direction:rtl;white-space:pre-wrap;opacity:.25;transition:opacity .3s}
+.cmd.on{opacity:1}
+.cmd .pfx{color:var(--gold);font-family:var(--mono)}
+.cmd .caret{display:inline-block;width:7px;height:14px;background:var(--ember2);vertical-align:-2px;animation:blink 1s steps(1) infinite;margin-inline-start:2px}
+@keyframes blink{50%{opacity:0}}
+.restored{margin-top:12px;font-size:13.5px;font-weight:700;color:var(--ok);display:flex;gap:8px;align-items:center;opacity:0;transition:.5s}
+.restored.on{opacity:1}
+.console-caption{text-align:center;font-size:13.5px;color:var(--muted);margin-top:14px}
+.console-caption b{color:var(--gold);font-weight:700}
+
+/* section heads */
+.kicker{font-family:var(--mono);font-size:13px;color:var(--ember2);letter-spacing:.04em;margin-bottom:12px;direction:ltr;text-align:right}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(46px,6.2vw,76px);line-height:.98;margin-bottom:16px}
+h2 em{font-style:normal;color:var(--ember2)}
+.sub{color:#d8ccbe;max-width:660px;font-size:18px}
+h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
+
+/* loop */
+.flow{list-style:none;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:46px;position:relative}
+.node{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 15px 16px;transition:border-color .4s,box-shadow .4s,transform .4s}
+.node .i{font-family:var(--display);font-size:40px;line-height:.8;color:#ff7a1840;font-weight:700;display:block;margin-bottom:10px;transition:color .4s}
+.node h3{font-size:16.5px;margin-bottom:6px}
+.node p{font-size:14px;color:var(--muted);line-height:1.5}
+.node .badge{position:absolute;top:12px;inset-inline-end:12px;font-family:var(--mono);font-size:10.5px;color:var(--ember2);border:1px solid #ff7a1844;border-radius:6px;padding:1px 6px;direction:ltr}
+.node .badge.you{color:var(--ok);border-color:#7fd6a155;font-family:var(--body);font-weight:700}
+.node:not(:last-child)::after{content:"←";position:absolute;top:50%;inset-inline-end:-14px;transform:translate(-50%,-50%);font-size:18px;color:var(--ember);z-index:2;width:14px;text-align:center}
+.node.active{border-color:var(--ember);box-shadow:0 0 40px -14px #ff7a18;transform:translateY(-3px)}
+.node.active .i{color:var(--ember)}
+.loopback{margin-top:16px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14.5px}
+.loopback::before{content:"";flex:1;height:2px;background:repeating-linear-gradient(270deg,#ff7a1866 0 10px,transparent 10px 18px);border-radius:2px}
+.loopback span{display:inline-flex;align-items:center;gap:8px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.fact{border:1px solid var(--line);border-radius:16px;padding:20px;background:linear-gradient(180deg,#17110d,#120e0b)}
+.fact h3{font-size:17.5px}
+.fact p{font-size:14.5px;color:var(--muted)}
+
+/* before / after */
+.moments{margin-top:40px;background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:22px}
+.moments-title{font-size:14px;font-weight:800;color:var(--muted);margin-bottom:14px}
+.moment{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start;padding:12px 0;border-top:1px dashed var(--line2)}
+.moment:first-of-type{border-top:0}
+.moment .lbl{font-size:13px;font-weight:800;padding:5px 10px;border-radius:8px;background:#ff7a1816;color:var(--gold);justify-self:start}
+.moment p{font-size:16px;color:#e7dccf}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.chat{border-radius:18px;border:1px solid var(--line2);background:var(--panel);padding:22px;position:relative}
+.chat.good{border-color:#ff7a1866;box-shadow:0 0 60px -30px #ff7a18}
+.chat-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;font-weight:800;font-size:15.5px}
+.chat-label .tag{font-family:var(--mono);font-size:12px;padding:4px 9px;border-radius:7px;background:#ffffff0d;color:var(--muted);direction:ltr}
+.chat.good .chat-label .tag{background:#ff7a1822;color:var(--gold)}
+.divider{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);margin:2px 0 14px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line2) 0 6px,transparent 6px 11px)}
+.msg{border-radius:13px;padding:11px 14px;font-size:15.5px;margin-bottom:10px;max-width:94%}
+.msg.user{background:#2a2019;margin-inline-start:auto;border-end-end-radius:4px}
+.msg.ai{background:#1f1813;border:1px solid var(--line);border-end-start-radius:4px}
+.checks{list-style:none;display:grid;gap:7px;margin-top:14px}
+.checks li{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;font-weight:700;padding:9px 12px;border-radius:10px}
+.checks svg{flex:0 0 16px;margin-top:4px}
+.checks.bad li{background:#ff6b5a12;color:#ffb3a8;border:1px solid #ff6b5a2e}
+.checks.good li{background:#7fd6a110;color:#b9f0cf;border:1px solid #7fd6a12e}
+
+/* remembers */
+.rem{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:44px;align-items:start}
+.keep-list{display:grid;gap:10px}
+.keep{display:grid;grid-template-columns:46px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px 16px}
+.keep .n{font-family:var(--display);font-size:42px;line-height:.8;color:var(--ember);font-weight:700;text-align:center}
+.keep h3{font-size:17px;margin:0}
+.keep p{font-size:14px;color:var(--muted)}
+.pill{font-size:12px;font-weight:800;padding:5px 10px;border-radius:99px;background:linear-gradient(135deg,var(--ember),var(--claude));color:#1a0d04;white-space:nowrap}
+.dropped{margin-top:16px;font-size:14.5px;color:var(--muted)}
+.dropped s{color:var(--ash);text-decoration-color:#ff6b5a88}
+.note-card{background:#0e0b09;border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:0 30px 60px -40px #000}
+.note-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);font-size:14px;font-weight:800}
+.note-head span{color:var(--muted);font-weight:500;font-size:13px}
+.note-card pre{font-family:var(--body);font-size:15px;line-height:1.85;color:#ead9c4;padding:16px 18px;white-space:pre-wrap;direction:rtl}
+.note-card pre .k{color:var(--ember2);font-weight:700}
+.note-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+
+/* disk */
+.disk{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:42px}
+.col{border:1px solid var(--line);border-radius:18px;padding:22px;background:var(--panel)}
+.col h3{display:flex;align-items:center;gap:10px;font-size:19px;margin-bottom:14px}
+.col h3 i{width:10px;height:10px;border-radius:50%;background:var(--ember);box-shadow:0 0 10px var(--ember);display:inline-block}
+.col.no h3 i{background:var(--ash);box-shadow:none}
+.col ul{list-style:none;display:grid;gap:12px}
+.col li{font-size:15.5px;color:#ddd1c3;padding-bottom:12px;border-bottom:1px dashed var(--line2)}
+.col li:last-child{border-bottom:0;padding-bottom:0}
+.col li b{color:var(--text)}
+.col li small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
+.callout{margin-top:22px;border:1px solid #ffb24d44;background:#ffb24d0d;border-radius:16px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
+.callout svg{flex:0 0 22px;color:var(--ember2);margin-top:2px}
+.callout p{font-size:15.5px;color:#eadfce}
+.callout b{color:var(--gold)}
+
+/* install */
+.install-box{margin-top:40px;max-width:860px;background:linear-gradient(180deg,#1a130e,#120d0a);border:1px solid #ff7a1855;border-radius:20px;padding:24px;box-shadow:0 0 80px -40px #ff7a18}
+.install-box pre{font-family:var(--body);font-size:16.5px;line-height:1.8;color:#f3e7d8;white-space:pre-wrap;direction:rtl;background:#0d0a08;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:18px}
+.install-box pre .url{display:block;font-family:var(--mono);font-size:.8em;color:var(--ember2);direction:ltr;text-align:left;overflow-wrap:anywhere;margin:2px 0}
+.install-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.install-row .meta{font-size:14.5px;color:var(--muted)}
+.what-happens{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.what-happens li{font-size:14px;color:#d4c8ba;border-top:2px solid #ff7a1844;padding-top:10px}
+.what-happens li b{display:block;color:var(--text);font-size:15px}
+.manual{margin-top:18px;font-size:14.5px;color:var(--muted)}
+.manual a{color:var(--ember2)}
+
+/* faq */
+.faq{margin-top:38px;display:grid;gap:10px;max-width:880px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px 20px;transition:border-color .2s}
+details[open]{border-color:var(--line2)}
+summary{cursor:pointer;list-style:none;padding:15px 0;font-weight:800;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+summary::-webkit-details-marker{display:none}
+summary .plus{flex:0 0 22px;height:22px;border-radius:7px;border:1px solid var(--line2);display:grid;place-items:center;color:var(--ember2);font-size:15px;transition:transform .25s}
+details[open] summary .plus{transform:rotate(45deg)}
+details p{color:#cfc3b5;font-size:15.5px;padding:0 0 16px;max-width:740px}
+details p + p{margin-top:-6px}
+.modes{display:grid;gap:8px;padding:0 0 18px}
+.mode{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:center;padding:10px 12px;border-radius:10px;background:#0f0c0a;border:1px solid var(--line)}
+.mode > code{color:var(--gold);direction:ltr;unicode-bidi:isolate;text-align:left;display:block;font-size:13.5px}
+.mode p{padding:0;font-size:14.5px}
+
+/* final */
+.final{text-align:center;padding:110px 0 120px}
+.final h2{font-size:clamp(50px,7.6vw,98px)}
+.final .sub{margin:0 auto 30px}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);font-size:14px}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* reveal: visible without JS; JS hides an element only until it scrolls in */
+.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.js .reveal.in{opacity:1;transform:none}
+.js .reveal.d1{transition-delay:.08s}.js .reveal.d2{transition-delay:.16s}.js .reveal.d3{transition-delay:.24s}
+
+@media (max-width:1060px){
+  .flow{grid-template-columns:repeat(3,1fr)}
+  .node:nth-child(3)::after{display:none}
+}
+@media (max-width:960px){
+  .hero-grid,.ba,.rem,.disk{grid-template-columns:1fr}
+  .facts{grid-template-columns:1fr}
+  .what-happens{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .hero{padding-top:108px;min-height:auto}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  section{padding:72px 0}
+  .flow{grid-template-columns:1fr;gap:22px}
+  .node:not(:last-child)::after{content:"↓";top:auto;bottom:-21px;inset-inline-end:auto;left:50%;transform:translateX(-50%)}
+  .node:nth-child(3)::after{display:block}
+  .moment{grid-template-columns:1fr;gap:6px}
+  .keep{grid-template-columns:38px 1fr;gap:12px}
+  .keep .pill{grid-column:2;justify-self:start}
+  .mode{grid-template-columns:1fr;gap:4px}
+  .mode > code{text-align:right}
+  .what-happens{grid-template-columns:1fr}
+  .console-body{padding:14px}
+  .chips{min-height:180px}
+  .btn{padding:13px 18px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  #sparks{display:none}
+  .js .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="glow a"></div><div class="glow b"></div>
+<div id="sparks" aria-hidden="true"></div>
+
+<nav id="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top" aria-label="Smart PreCompact">
+      <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c1 3.5-1.5 5-1.5 7.5 0 1.4 1 2.5 2.3 2.5 1.6 0 2.4-1.3 2.2-3 2.3 1.7 3.5 4.2 3.5 6.7A7 7 0 0 1 5.5 15.7c0-4.6 4.6-7.4 6.5-13.7Z" fill="url(#fg)"/><defs><linearGradient id="fg" x1="12" y1="2" x2="12" y2="22.7" gradientUnits="userSpaceOnUse"><stop stop-color="#ffd98a"/><stop offset=".5" stop-color="#ff7a18"/><stop offset="1" stop-color="#d97757"/></linearGradient></defs></svg>
+      Smart PreCompact
+    </a>
+    <div class="nav-links">
+      <a href="#loop">איך זה עובד</a>
+      <a href="#problem">לפני ואחרי</a>
+      <a href="#disk">פרטיות</a>
+      <a href="#faq">שאלות</a>
+    </div>
+    <a class="btn primary small" href="#install">התקנה</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span>סקיל עצמאי וחינמי ל-Claude Code</div>
+      <h1>
+        <span class="product">Smart PreCompact</span>
+        <span class="tagline">מנהל בשבילך את כל מה שקורה סביב <span class="cmdtag">/compact</span></span>
+      </h1>
+      <p class="lede">מכיר את זה ש-Claude פתאום שוכח מה כבר ניסיתם ומה ביקשת, ומציע שוב את מה שכבר נפסל? זה קורה אחרי קומפאקט: כשהשיחה מתארכת, Claude Code מקצר אותה לסיכום, והסיכום לא יודע מה הכי חשוב לך. <b>Smart PreCompact אומר לסיכום מה אסור לאבד, שומר את זה בצד, ומחזיר את זה אחרי.</b> אתה ממשיך לעבוד כרגיל.</p>
+      <div class="verbs" aria-label="מה הוא עושה">
+        <span><b>1</b>מזהה את הרגע</span>
+        <span><b>2</b>מכין את הקומפאקט</span>
+        <span><b>3</b>שומר את מה שחשוב</span>
+        <span><b>4</b>מחזיר את ההקשר</span>
+      </div>
+      <div class="cta-row">
+        <a class="btn primary" href="#install">התקן את Smart PreCompact</a>
+        <a class="btn ghost" href="#loop">איך זה עובד</a>
+      </div>
+      <p class="cta-note">חינמי. התקנה של כדקה, הסרה בפקודה אחת. לא כותב לתוך הפרויקט שלך בלי שתבקש.</p>
+    </div>
+
+    <div>
+      <div class="console" role="img" aria-label="הדגמה: הקונטקסט גדל, ב-60% Smart PreCompact מזכיר ומכין את הקומפאקט, הפרטים החשובים נשמרים והשגרתיים נדחסים, וההקשר חוזר לבד">
+        <div class="console-top"><div class="dots"><i></i><i></i><i></i></div><span>claude code · session</span></div>
+        <div class="console-body">
+          <div class="stages" id="stages">
+            <span>הקונטקסט גדל</span><span>תזכורת</span><span>מכין את ההמשך</span><span class="ltr">/compact</span><span>ההקשר חזר</span>
+          </div>
+          <div class="meter-row"><span>קונטקסט</span><span class="pct" id="pct">8%</span></div>
+          <div class="meter">
+            <div class="meter-fill" id="fill"></div>
+            <div class="tick" style="inset-inline-start:60%"><span>60%</span></div>
+            <div class="tick" style="inset-inline-start:80%"><span>80%</span></div>
+          </div>
+          <div class="chips" id="chips">
+            <span class="chip routine">קריאת listing.md</span>
+            <span class="chip key">נכשל: רקע מטבח בתמונה הראשית</span>
+            <span class="chip routine">סבב ניסוחים לבולטים</span>
+            <span class="chip key">הוחלט: תמונה 2 היא מידות, בגלל הביקורות</span>
+            <span class="chip routine">עוד סבב תמונות</span>
+            <span class="chip routine">ניסוח ביניים</span>
+            <span class="chip key">ביקשת: לא לשנות את הכותרת</span>
+            <span class="chip routine">ls על התיקייה</span>
+          </div>
+          <div class="toast" id="toast">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            הקונטקסט עבר 60%. שורת ה-compact מוכנה.
+          </div>
+          <div class="cmd" id="cmd"><span class="ltr pfx">/compact</span> <span id="cmdText"></span></div>
+          <div class="restored" id="restored">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+            ההקשר חזר לבד. ממשיכים לעבוד מאותה נקודה.
+          </div>
+        </div>
+      </div>
+      <p class="console-caption"><b>מה שחשוב נשמר.</b> השגרתי נדחס.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="loop">
+  <div class="wrap">
+    <div class="kicker reveal">01 / the loop</div>
+    <h2 class="reveal">ככה זה רץ. <em>ברקע.</em></h2>
+    <p class="sub reveal d1">אתה עובד כרגיל. Smart PreCompact מתערב רק כשצריך, ומבקש ממך פעולה אחת.</p>
+
+    <ol class="flow" id="flow">
+      <li class="node reveal"><span class="i">1</span><h3>הקונטקסט גדל</h3><p>אתה עובד כרגיל, כמו תמיד.</p></li>
+      <li class="node reveal d1"><span class="badge">hook</span><span class="i">2</span><h3>תזכורת ב-60%</h3><p>מגיעה עם ההודעה הבאה שלך. Claude קודם עונה לך כרגיל.</p></li>
+      <li class="node reveal d2"><span class="i">3</span><h3>Smart PreCompact מכין את ההמשך</h3><p>בסוף התשובה: שורת <span class="cmdtag">/compact</span> מוכנה עם הוראות. ההמשך נשמר בקובץ קטן מחוץ לפרויקט.</p></li>
+      <li class="node reveal"><span class="badge you">אתה</span><span class="i">4</span><h3>אתה שולח את השורה</h3><p>מעתיקים את שורת ה-<span class="cmdtag">/compact</span> המוכנה ושולחים, מתי שנוח. זה הצעד הידני היחיד.</p></li>
+      <li class="node reveal d1"><span class="badge">hook</span><span class="i">5</span><h3>ההקשר חוזר לבד</h3><p>מיד אחרי הקומפאקט. גם אם פספסת והקומפאקט האוטומטי רץ לבד.</p></li>
+      <li class="node reveal d2"><span class="i">6</span><h3>ממשיכים לעבוד</h3><p>מאותה נקודה, עם אותן החלטות.</p></li>
+    </ol>
+    <div class="loopback reveal"><span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      וחוזר חלילה, בכל פעם שהקונטקסט מתמלא</span></div>
+
+    <div class="facts">
+      <div class="fact reveal"><h3>לא מחליף את <span class="cmdtag">/compact</span></h3><p><span class="cmdtag">/compact</span> נשאר הפקודה שמסכמת. Smart PreCompact מכין אותו ומנהל את מה שקורה לפניו ואחריו.</p></div>
+      <div class="fact reveal d1"><h3>בלי שיטת עבודה חדשה</h3><p>אחרי ההתקנה ממשיכים לעבוד ב-Claude Code בדיוק כמו קודם. אין פקודות חדשות שצריך לזכור.</p></div>
+      <div class="fact reveal d2"><h3>60% הוא הסף שלו</h3><p>זה הסף ש-Smart PreCompact משתמש בו כדי להזכיר לך, ושוב ב-80%. זה לא חוק של Claude, ואפשר לשנות אותו.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="kicker reveal">02 / before &amp; after</div>
+    <h2 class="reveal">שלושה דברים שקומפאקט רגיל <em>עלול לאבד.</em></h2>
+    <p class="sub reveal d1">באמצע עבודה על תמונות לליסטינג באמזון נקבעו שלושה דברים. ככה זה יכול להיראות אחרי הקומפאקט.</p>
+
+    <div class="moments reveal">
+      <div class="moments-title">בשיחה, לפני הקומפאקט</div>
+      <div class="moment"><span class="lbl">ניסיון שנכשל</span><p>ייצרנו תמונה ראשית עם רקע של מטבח. נפסלה: באמזון התמונה הראשית חייבת להיות על רקע לבן.</p></div>
+      <div class="moment"><span class="lbl">החלטה, עם סיבה</span><p>התמונה השנייה תהיה אינפוגרפיקה של מידות, כי אצל המתחרים רוב הביקורות השליליות הן שהמוצר קטן מהצפוי.</p></div>
+      <div class="moment"><span class="lbl">בקשה שלך</span><p>"לא לשנות את הכותרת. עובדים רק על התמונות."</p></div>
+    </div>
+
+    <div class="ba">
+      <div class="chat reveal">
+        <div class="chat-label">אחרי קומפאקט רגיל <span class="tag">/compact</span></div>
+        <div class="divider">השיחה סוכמה</div>
+        <div class="msg user">תמשיך מאיפה שעצרנו</div>
+        <div class="msg ai">בטח. נתחיל מתמונה ראשית עם רקע של מטבח, ובדרך אשכתב גם את הכותרת כדי שתכלול יותר מילות מפתח.</div>
+        <ul class="checks bad">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>מנסה שוב את מה שכבר נפסל</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>שכח מה הוחלט על התמונה השנייה, ולמה</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>נוגע בכותרת, למרות שביקשת שלא</li>
+        </ul>
+      </div>
+      <div class="chat good reveal d2">
+        <div class="chat-label">אחרי קומפאקט עם Smart PreCompact <span class="tag">/compact</span></div>
+        <div class="divider">השיחה סוכמה, וההקשר חזר</div>
+        <div class="msg user">תמשיך מאיפה שעצרנו</div>
+        <div class="msg ai">ממשיך לתמונה השנייה, אינפוגרפיקת המידות, כי אצל המתחרים מתלוננים שהמוצר קטן מהצפוי. התמונה הראשית נשארת על רקע לבן, כי אמזון פוסלת רקע אחר. ואת הכותרת אני לא משנה, כמו שביקשת.</div>
+        <ul class="checks good">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר מה כבר נכשל, ולמה</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר על מה החלטתם, ולמה</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר מה ביקשת ממנו</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="remembers">
+  <div class="wrap">
+    <div class="kicker reveal">03 / carried forward</div>
+    <h2 class="reveal">מה Claude <em>זוכר</em> אחרי הקומפאקט.</h2>
+    <p class="sub reveal d1">לכל פרט בשיחה Smart PreCompact שואל שאלה אחת: אם זה ייעלם, מה יישבר אחר כך?</p>
+
+    <div class="rem">
+      <div class="reveal">
+        <div class="keep-list">
+          <div class="keep"><div class="n">1</div><div><h3>מה כבר נכשל, ולמה</h3><p>בלי זה, Claude מנסה שוב את אותה גישה.</p></div><span class="pill">הכי יקר</span></div>
+          <div class="keep"><div class="n">2</div><div><h3>החלטות, עם הסיבה</h3><p>"בחרנו X" לא מספיק. "בחרנו X כי Y" חוסך ויכוח שלם.</p></div></div>
+          <div class="keep"><div class="n">3</div><div><h3>מה שביקשת ממנו</h3><p>"תמיד", "אף פעם", "לא ככה". במילים שלך.</p></div></div>
+          <div class="keep"><div class="n">4</div><div><h3>איפה העבודה עומדת</h3><p>מה גמור, מה באמצע, ומה עוד לא נבדק.</p></div></div>
+          <div class="keep"><div class="n">5</div><div><h3>מה הלאה</h3><p>עד שלושה צעדים, לפי הסדר.</p></div></div>
+        </div>
+        <p class="dropped">מה נדחס בכוונה: <s>קריאות קבצים</s> · <s>סבבי דיבוג שהסתיימו בלי לקח</s> · <s>ניסוחי ביניים</s> · <s>מה שהקוד כבר אומר</s></p>
+      </div>
+      <div class="reveal d1">
+        <div class="note-card">
+          <div class="note-head">ההמשך ש-Smart PreCompact שומר <span>וחוזר לבד אחרי הקומפאקט</span></div>
+<pre>המשך מאיפה שעצרנו.
+
+<span class="k">בונים:</span> סט תמונות לליסטינג באמזון של בקבוק מים מתקפל.
+<span class="k">מצב:</span> התמונה הראשית מוכנה, על רקע לבן. תמונות 2 עד 7 עוד לא נוצרו.
+<span class="k">החלטות:</span> תמונה 2 היא אינפוגרפיקת מידות, כי אצל המתחרים מתלוננים שהמוצר קטן מהצפוי.
+<span class="k">נכשל, אל תנסה שוב:</span> רקע של מטבח בתמונה הראשית (אמזון דורשת רקע לבן).
+<span class="k">חוקים שנקבעו:</span> לא לשנות את הכותרת. עובדים רק על התמונות.
+<span class="k">הבא בתור:</span> 1) אינפוגרפיקת המידות  2) תמונה בשימוש בטיול  3) להראות לי לפני שממשיכים</pre>
+          <div class="note-foot">ובנוסף, שורת <span class="cmdtag">/compact</span> שאומרת לסיכום של Claude Code מה הוא חייב לשמור.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="disk">
+  <div class="wrap">
+    <div class="kicker reveal">04 / on your disk</div>
+    <h2 class="reveal">מה נכתב לדיסק. <em>ומה לא.</em></h2>
+    <p class="sub reveal d1">יש דברים שנשמרים אצלך במחשב. הנה בדיוק מה, איפה, ולכמה זמן:</p>
+
+    <div class="disk">
+      <div class="col reveal">
+        <h3><i></i>מה נכתב</h3>
+        <ul>
+          <li><b>קובץ המשך אחד לכל שיחה,</b> בתיקייה <span class="cmdtag">~/.claude/handoffs</span>, מחוץ לפרויקט. בתוכו פרומפט ההמשך: מה בונים, מה הוחלט, מה נכשל ומה ביקשת, עד כ-200 מילה. הוא נכתב כשה-hook מזכיר, או כשמבקשים <span class="cmdtag">handoff</span>.<small>באותה שיחה הוא נדרס בכל שמירה. עם ה-hook, קובץ שלא נגעו בו 14 יום נמחק אוטומטית.</small></li>
+          <li><b>קובץ מצב זעיר לכל שיחה:</b> באיזה סף כבר קיבלת תזכורת.<small>בלי שום תוכן מהשיחה. נמחק אוטומטית אחרי 14 יום.</small></li>
+          <li><b>רק אם ביקשת <span class="cmdtag">save</span> במפורש:</b> שורות חדשות בקבצי תיעוד שכבר קיימים בפרויקט.<small>הוא לא מחליט לבד מה לשמור לפרויקט. אף שורה קיימת לא נמחקת, ושורה קיימת משתנה רק בסימון [x] על משימה שהסתיימה.</small></li>
+          <li><b>רק אם ביקשת <span class="cmdtag">save notes</span>:</b> רשומות בתיקיית הפתקים שהגדרת ב-config.md (Obsidian וכדומה), כולל קובץ חדש ליומן היום ולכל החלטה.</li>
+        </ul>
+      </div>
+      <div class="col no reveal d1">
+        <h3><i></i>מה לא נכתב</h3>
+        <ul>
+          <li><b>עותק של השיחה.</b> ה-hook קורא מקובץ השיחה המקומי של Claude Code רק את מספרי הטוקנים ואת שם המודל, כדי לדעת כמה הקונטקסט מלא.</li>
+          <li><b>קבצים חדשים בתוך הפרויקט.</b> גם עם <span class="cmdtag">save</span>, רק קבצים שכבר קיימים.</li>
+          <li><b>שום יעד חדש.</b> אין שרת ואין שליחה לשום מקום. אחרי הקומפאקט ההמשך חוזר לשיחה עם Claude, כמו כל הודעה אחרת בה.</li>
+          <li><b>שום פקודה בשמך.</b> הוא לא מריץ <span class="cmdtag">/compact</span>. את השורה המוכנה אתה שולח.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout reveal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <p><b>מפתחות וסיסמאות:</b> Smart PreCompact מונחה להחליף מפתח, טוקן או סיסמה שעלו בשיחה ב-<span class="cmdtag">[REDACTED]</span> לפני שהוא כותב משהו. זו הנחיה ל-Claude, לא מסנן אוטומטי. לכן הכי בטוח לא להדביק סודות לשיחה מלכתחילה.</p>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="kicker reveal">05 / install</div>
+    <h2 class="reveal">התקן את <em>Smart PreCompact.</em></h2>
+    <p class="sub reveal d1">פרומפט אחד. מדביקים אותו ב-Claude Code, והוא עושה את השאר.</p>
+
+    <div class="install-box reveal">
+      <!-- When the page and the zip go live, the URL below must point at the real file. -->
+<pre id="ip">תתקין לי את Smart PreCompact. תוריד את הקובץ:
+<span class="url">https://jaygptpro.com/smart-precompact/he/smart-precompact.zip</span>תחלץ אותו לתיקייה זמנית, ותבצע את ההוראות שבקובץ install-prompt.txt שבתוכו.</pre>
+      <div class="install-row">
+        <button class="btn primary" id="copyInstall" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          <span>העתק את פרומפט ההתקנה</span>
+        </button>
+        <span class="meta">התקנה של כדקה. עם ה-hook הוא מזכיר ומכין לבד, ואתה רק שולח את השורה.</span>
+      </div>
+      <ol class="what-happens">
+        <li><b>בודק</b>שיש לך Python, בשביל ה-hook</li>
+        <li><b>מתקין</b>את הסקיל אצלך במחשב</li>
+        <li><b>מריץ בדיקה</b>ומספר לך שהכל עבר</li>
+        <li><b>שואל</b>אם להפעיל את ה-hook</li>
+      </ol>
+    </div>
+    <p class="manual reveal">מעדיף ידנית? <a href="smart-precompact.zip" download>הורד את הקובץ</a>, גרור את התיקייה לפרויקט, והדבק ל-Claude את התוכן של install-prompt.txt.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="kicker reveal">06 / faq</div>
+    <h2 class="reveal">שאלות שכבר שאלו.</h2>
+    <div class="faq">
+      <details class="reveal"><summary>מה ההבדל מ-/compact הרגיל? <span class="plus">+</span></summary>
+        <p>הקומפאקט הרגיל מסכם את כל השיחה, בלי לדעת מה הכי חשוב לך. Smart PreCompact נותן לו הוראות מה אסור לאבד, שומר את ההמשך בקובץ, ומחזיר אותו לשיחה מיד אחרי (עם ה-hook לבד, בלי ה-hook מדביקים אותו). הקומפאקט עצמו נשאר אותו <span class="cmdtag">/compact</span> של Claude Code.</p></details>
+      <details class="reveal"><summary>מה אני עושה אחרי ההתקנה? <span class="plus">+</span></summary>
+        <p>ממשיכים לעבוד כרגיל. אחרי שהקונטקסט עובר 60%, בהודעה הבאה שלך Claude קודם עונה על מה שביקשת, ובסוף התשובה מוסיף שורת <span class="cmdtag">/compact</span> מוכנה. מעתיקים אותה ושולחים, מתי שנוח. זה הצעד הידני היחיד.</p></details>
+      <details class="reveal"><summary>מה נשמר אצלי במחשב, ולכמה זמן? <span class="plus">+</span></summary>
+        <p>Smart PreCompact יוצר קובץ המשך קטן בתיקייה <span class="cmdtag">~/.claude/handoffs</span>, אחד לכל שיחה. הוא לא מוסיף שום יעד חדש שאליו נשלח מידע. עם ה-hook, קובץ שלא נגעו בו 14 יום נמחק אוטומטית. הוא מוחק רק קבצים שהסקיל עצמו כתב, ואפשר למחוק את התיקייה בכל רגע. לתוך הפרויקט נכתב משהו רק אם ביקשת <span class="cmdtag">save</span> במפורש.</p></details>
+      <details class="reveal"><summary>למה דווקא 60%? <span class="plus">+</span></summary>
+        <p>זה הסף ש-Smart PreCompact בחר: מספיק מוקדם כדי שיישאר מקום לסיכום טוב. Claude Code עצמו עושה קומפאקט אוטומטי רק כשהקונטקסט כמעט מלא, ואז כבר אין זמן להכין אותו. במודלים עם חלון קטן יותר (200 אלף טוקנים) הספים הם 50% ו-70%. אפשר לשנות אותם בשורה אחת.</p></details>
+      <details class="reveal"><summary>אפשר להפעיל אותו ידנית? <span class="plus">+</span></summary>
+        <p>כן, בכל רגע. יש ארבעה מצבים:</p>
+        <div class="modes">
+          <div class="mode"><code>/smart-precompact</code><p>מכין את השורות להדבקה. לא נכתב כלום לדיסק.</p></div>
+          <div class="mode"><code>/smart-precompact handoff</code><p>שומר גם את ההמשך לקובץ, כדי להמשיך מחר בשיחה חדשה.</p></div>
+          <div class="mode"><code>/smart-precompact save</code><p>מוסיף החלטות ומשימות לקבצי התיעוד שכבר קיימים בפרויקט.</p></div>
+          <div class="mode"><code>/smart-precompact save notes</code><p>כמו save, וגם לתיקיית הפתקים שהגדרת ב-config.md (Obsidian וכדומה).</p></div>
+        </div>
+        <p>אפשר גם במילים: "תכין אותי לקומפאקט".</p></details>
+      <details class="reveal"><summary>חייבים את ה-hook? <span class="plus">+</span></summary>
+        <p>לא. בלי ה-hook מפעילים ידנית. ה-hook מוסיף את שני החלקים האוטומטיים: התזכורת ב-60%, וההחזרה של ההקשר אחרי הקומפאקט. הוא גם זה שמוחק קבצי המשך ישנים.</p></details>
+      <details class="reveal"><summary>קומפאקט לא שורף לי usage? <span class="plus">+</span></summary>
+        <p>הוא עולה פעם אחת, כי הוא קורא את השיחה כדי לסכם אותה. להישאר באחוזים גבוהים עולה בכל הודעה, כי Claude Code שולח את כל השיחה מחדש עם כל הודעה ועם כל פעולה. אחרי קומפאקט חוזרים לשיחה קטנה, והוא מחזיר את עצמו תוך הודעה או שתיים.</p>
+        <p>שני טיפים: עושים קומפאקט מיד בסוף שלב, לא אחרי הפסקה ארוכה. ואם עוברים למשימה אחרת לגמרי, <span class="cmdtag">/clear</span> זול יותר.</p></details>
+      <details class="reveal"><summary>איך יודעים שהוא באמת עובד? <span class="plus">+</span></summary>
+        <p>אחרי ההתקנה, בדיקה אחת מראה לך שה-hook פועל וכמה הקונטקסט מלא. מאחורי הקלעים: 55 טסטים אוטומטיים, 5 תרחישים שנבדקו על מודל נפרד עם שופט, וה-hook רץ על 749 שיחות אמיתיות בלי שגיאה.</p></details>
+      <details class="reveal"><summary>זה עובד עם כל המודלים? ובווינדוס? <span class="plus">+</span></summary>
+        <p>הסקיל עובד עם כל המודלים ובכל מקום שבו Claude Code רץ: בטרמינל, באפליקציה ובתוסף של VS Code. ה-hook מעריך את גודל החלון לפי שם המודל, ומראה לך את ההערכה בבדיקה. עובדים דרך Bedrock או Vertex? מגדירים את הגודל במשתנה סביבה אחד. הוא דורש Python 3.8 ומעלה, ופרומפט ההתקנה בודק את זה לפני שהוא מתקין משהו. נבדק על Mac. בווינדוס ובלינוקס הוא אמור לעבוד, אבל עוד לא נבדק בפועל.</p></details>
+      <details class="reveal"><summary>זה מוצר של Anthropic? <span class="plus">+</span></summary>
+        <p>לא. Smart PreCompact הוא סקיל עצמאי של JayGPTPro, שבנוי סביב <span class="cmdtag">/compact</span> של Claude Code. השם מזכיר את PreCompact, אחד מאירועי ה-hook הרשמיים של Claude Code, אבל הסקיל לא קשור ל-Anthropic.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2 class="reveal">ממשיכים מאיפה שעצרתם. <em>גם אחרי קומפאקט.</em></h2>
+    <p class="sub reveal d1">פרומפט אחד, דקה של התקנה, ואתה מפסיק להסביר ל-Claude שוב את מה שכבר הסברת.</p>
+    <a class="btn primary reveal d2" href="#install">התקן את Smart PreCompact</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>Smart PreCompact · סקיל עצמאי, לא מוצר של Anthropic</span>
+    <span>JayGPTPro · נבנה עם skill-skiller</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  function init() {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // nav
+    var nav = document.getElementById('nav');
+    var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 20); };
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+    // reveal on scroll; anything already in view is shown right away
+    var items = [].slice.call(document.querySelectorAll('.reveal'));
+    if (!('IntersectionObserver' in window) || reduce) {
+      items.forEach(function (el) { el.classList.add('in'); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      items.forEach(function (el) { io.observe(el); });
+      // Backup for when the observer misses (hidden tab, very fast scroll): anything at or
+      // above the bottom of the screen is shown, so nothing can stay invisible once passed.
+      var last = 0;
+      var sweep = function () {
+        var limit = window.innerHeight * 0.95;
+        items.forEach(function (el) { if (!el.classList.contains('in') && el.getBoundingClientRect().top < limit) el.classList.add('in'); });
+      };
+      window.addEventListener('scroll', function () {
+        var now = Date.now();
+        if (now - last > 120) { last = now; sweep(); }
+      }, { passive: true });
+      window.addEventListener('scrollend', sweep);
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) sweep(); });
+      window.addEventListener('load', function () { setTimeout(sweep, 300); });
+    }
+
+    // copy the install prompt
+    var copyBtn = document.getElementById('copyInstall');
+    copyBtn.addEventListener('click', function () {
+      var text = document.getElementById('ip').innerText;
+      var label = copyBtn.querySelector('span');
+      var done = function () {
+        label.textContent = 'הועתק. עכשיו הדבק ב-Claude Code'; copyBtn.classList.add('done');
+        setTimeout(function () { label.textContent = 'העתק את פרומפט ההתקנה'; copyBtn.classList.remove('done'); }, 2600);
+      };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, done); }
+      else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (err) {} t.remove(); done(); }
+    });
+
+    // sparks
+    if (!reduce) {
+      var box = document.getElementById('sparks');
+      for (var i = 0; i < 18; i++) {
+        var s = document.createElement('i');
+        s.style.left = (Math.random() * 100) + '%';
+        s.style.setProperty('--dx', ((Math.random() - .5) * 160) + 'px');
+        s.style.animationDuration = (10 + Math.random() * 10) + 's';
+        s.style.animationDelay = (-Math.random() * 18) + 's';
+        var size = 2 + Math.random() * 2.5; s.style.width = s.style.height = size + 'px';
+        box.appendChild(s);
+      }
+    }
+
+    // the loop: light the steps one after another
+    var nodes = [].slice.call(document.querySelectorAll('#flow .node'));
+    if (!reduce && nodes.length) {
+      var at = 0;
+      setInterval(function () {
+        nodes.forEach(function (n, i) { n.classList.toggle('active', i === at); });
+        at = (at + 1) % nodes.length;
+      }, 1500);
+    }
+
+    // hero demo
+    var pct = document.getElementById('pct'), fill = document.getElementById('fill');
+    var chips = [].slice.call(document.querySelectorAll('#chips .chip'));
+    var stages = [].slice.call(document.querySelectorAll('#stages span'));
+    var toast = document.getElementById('toast'), cmd = document.getElementById('cmd'), cmdText = document.getElementById('cmdText'), restored = document.getElementById('restored');
+    var line = 'שמור: למה נפסל רקע המטבח (אמזון דורשת רקע לבן בתמונה הראשית), למה תמונה 2 היא אינפוגרפיקת מידות, והבקשה: לא לשנות את הכותרת. אפשר לדחוס את סבבי הניסוח. קובץ ההמשך: ~/.claude/handoffs/a1b2c3d4.md';
+    var timers = [];
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+    function stage(n) { stages.forEach(function (s, i) { s.classList.toggle('now', i === n); s.classList.toggle('done', i < n); }); }
+    function setPct(v) { pct.textContent = Math.round(v) + '%'; fill.style.width = v + '%'; }
+    function animatePct(from, to, ms) {
+      var start = null;
+      function step(t) {
+        if (!start) start = t;
+        var k = Math.min(1, (t - start) / ms), e = 1 - Math.pow(1 - k, 3);
+        setPct(from + (to - from) * e);
+        if (k < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    function settle() { chips.forEach(function (c) { c.classList.add('on'); c.classList.add(c.classList.contains('key') ? 'kept' : 'compressed'); }); }
+    function reset() {
+      timers.forEach(clearTimeout); timers = [];
+      setPct(8); stage(0);
+      chips.forEach(function (c) { c.classList.remove('on', 'compressed', 'kept'); });
+      toast.classList.remove('on'); cmd.classList.remove('on'); cmdText.textContent = ''; restored.classList.remove('on');
+    }
+    function type(i) {
+      if (i > line.length) return;
+      cmdText.textContent = line.slice(0, i);
+      var c = document.createElement('span'); c.className = 'caret'; cmdText.appendChild(c);
+      later(function () { type(i + 2); }, 22);
+    }
+    function run() {
+      reset();
+      animatePct(8, 61, 4200);
+      chips.forEach(function (c, i) { later(function () { c.classList.add('on'); }, 250 + i * 470); });
+      later(function () { stage(1); toast.classList.add('on'); }, 4300);
+      later(function () { stage(2); cmd.classList.add('on'); type(1); }, 5000);
+      later(function () {
+        stage(3); toast.classList.remove('on');
+        settle(); cmdText.textContent = line;
+        animatePct(61, 7, 1300);
+      }, 8400);
+      later(function () { stage(4); restored.classList.add('on'); }, 9500);
+      later(run, 14500);
+    }
+    if (reduce) { setPct(7); stage(4); settle(); cmd.classList.add('on'); cmdText.textContent = line; restored.classList.add('on'); }
+    else run();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>
