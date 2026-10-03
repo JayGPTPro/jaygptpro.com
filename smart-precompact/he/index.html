@@ -31,14 +31,11 @@ code,.mono{font-family:var(--mono);font-size:.88em}
 .cmdtag{font-family:var(--mono);font-size:.86em;color:var(--gold);background:#ff7a1814;border:1px solid #ff7a1830;padding:1px 7px;border-radius:6px;direction:ltr;unicode-bidi:isolate;display:inline-block;white-space:nowrap}
 
 /* atmosphere */
-body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 .glow{position:fixed;border-radius:50%;filter:blur(110px);z-index:0;pointer-events:none}
-.glow.a{width:620px;height:620px;background:radial-gradient(circle,#ff7a1838,transparent 70%);bottom:-260px;left:-120px}
-.glow.b{width:520px;height:520px;background:radial-gradient(circle,#d977572e,transparent 70%);top:-200px;right:-160px}
-#sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
-#sparks i{position:absolute;bottom:-12px;border-radius:50%;background:var(--ember2);box-shadow:0 0 8px 2px #ff7a1899;opacity:0;animation:rise linear infinite}
-@keyframes rise{0%{transform:translate(0,0);opacity:0}10%{opacity:.8}80%{opacity:.4}100%{transform:translate(var(--dx),-105vh);opacity:0}}
+.glow.a{width:620px;height:620px;background:radial-gradient(circle,#ff7a181f,transparent 70%);bottom:-260px;left:-120px}
+.glow.b{width:520px;height:520px;background:radial-gradient(circle,#d977571a,transparent 70%);top:-200px;right:-160px}
 
 main,header,footer{position:relative;z-index:2}
 section{padding:96px 0;scroll-margin-top:64px}
@@ -134,7 +131,7 @@ h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
 .loopback{margin-top:16px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14.5px}
 .loopback::before{content:"";flex:1;height:2px;background:repeating-linear-gradient(270deg,#ff7a1866 0 10px,transparent 10px 18px);border-radius:2px}
 .loopback span{display:inline-flex;align-items:center;gap:8px}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.loop-note{margin:36px auto 0;text-align:center;font-size:15.5px}
 .fact{border:1px solid var(--line);border-radius:16px;padding:20px;background:linear-gradient(180deg,#17110d,#120e0b)}
 .fact h3{font-size:17.5px}
 .fact p{font-size:14.5px;color:var(--muted)}
@@ -164,7 +161,7 @@ h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
 .checks.good li{background:#7fd6a110;color:#b9f0cf;border:1px solid #7fd6a12e}
 
 /* remembers */
-.rem{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:44px;align-items:start}
+.rem{max-width:760px;margin:44px auto 0}
 .keep-list{display:grid;gap:10px}
 .keep{display:grid;grid-template-columns:46px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px 16px}
 .keep .n{font-family:var(--display);font-size:42px;line-height:.8;color:var(--ember);font-weight:700;text-align:center}
@@ -265,14 +262,12 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
-  #sparks{display:none}
   .js .reveal{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
 <div class="glow a"></div><div class="glow b"></div>
-<div id="sparks" aria-hidden="true"></div>
 
 <nav id="nav">
   <div class="nav-in">
@@ -299,12 +294,6 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
         <span class="tagline">מנהל בשבילך את כל מה שקורה סביב <span class="cmdtag">/compact</span></span>
       </h1>
       <p class="lede">מכיר את זה ש-Claude פתאום שוכח מה כבר ניסיתם ומה ביקשת, ומציע שוב את מה שכבר נפסל? זה קורה אחרי קומפאקט: כשהשיחה מתארכת, Claude Code מקצר אותה לסיכום, והסיכום לא יודע מה הכי חשוב לך. <b>Smart PreCompact אומר לסיכום מה אסור לאבד, שומר את זה בצד, ומחזיר את זה אחרי.</b> אתה ממשיך לעבוד כרגיל.</p>
-      <div class="verbs" aria-label="מה הוא עושה">
-        <span><b>1</b>מזהה את הרגע</span>
-        <span><b>2</b>מכין את הקומפאקט</span>
-        <span><b>3</b>שומר את מה שחשוב</span>
-        <span><b>4</b>מחזיר את ההקשר</span>
-      </div>
       <div class="cta-row">
         <a class="btn primary" href="#install">התקן את Smart PreCompact</a>
         <a class="btn ghost" href="#loop">איך זה עובד</a>
@@ -371,11 +360,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
       וחוזר חלילה, בכל פעם שהקונטקסט מתמלא</span></div>
 
-    <div class="facts">
-      <div class="fact reveal"><h3>לא מחליף את <span class="cmdtag">/compact</span></h3><p><span class="cmdtag">/compact</span> נשאר הפקודה שמסכמת. Smart PreCompact מכין אותו ומנהל את מה שקורה לפניו ואחריו.</p></div>
-      <div class="fact reveal d1"><h3>בלי שיטת עבודה חדשה</h3><p>אחרי ההתקנה ממשיכים לעבוד ב-Claude Code בדיוק כמו קודם. אין פקודות חדשות שצריך לזכור.</p></div>
-      <div class="fact reveal d2"><h3>60% הוא הסף שלו</h3><p>זה הסף ש-Smart PreCompact משתמש בו כדי להזכיר לך, ושוב ב-80%. זה לא חוק של Claude, ואפשר לשנות אותו.</p></div>
-    </div>
+    <p class="sub reveal loop-note">לא מחליף את <span class="cmdtag">/compact</span> ולא משנה את הדרך שבה אתה עובד. 60% ו-80% הם הספים של Smart PreCompact, ואפשר לשנות אותם.</p>
   </div>
 </section>
 
@@ -398,22 +383,12 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
         <div class="divider">השיחה סוכמה</div>
         <div class="msg user">תמשיך מאיפה שעצרנו</div>
         <div class="msg ai">בטח. נתחיל מתמונה ראשית עם רקע של מטבח, ובדרך אשכתב גם את הכותרת כדי שתכלול יותר מילות מפתח.</div>
-        <ul class="checks bad">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>מנסה שוב את מה שכבר נפסל</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>שכח מה הוחלט על התמונה השנייה, ולמה</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>נוגע בכותרת, למרות שביקשת שלא</li>
-        </ul>
       </div>
       <div class="chat good reveal d2">
         <div class="chat-label">אחרי קומפאקט עם Smart PreCompact <span class="tag">/compact</span></div>
         <div class="divider">השיחה סוכמה, וההקשר חזר</div>
         <div class="msg user">תמשיך מאיפה שעצרנו</div>
         <div class="msg ai">ממשיך לתמונה השנייה, אינפוגרפיקת המידות, כי אצל המתחרים מתלוננים שהמוצר קטן מהצפוי. התמונה הראשית נשארת על רקע לבן, כי אמזון פוסלת רקע אחר. ואת הכותרת אני לא משנה, כמו שביקשת.</div>
-        <ul class="checks good">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר מה כבר נכשל, ולמה</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר על מה החלטתם, ולמה</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>זוכר מה ביקשת ממנו</li>
-        </ul>
       </div>
     </div>
   </div>
@@ -426,16 +401,6 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
     <p class="sub reveal d1">לכל פרט בשיחה Smart PreCompact שואל שאלה אחת: אם זה ייעלם, מה יישבר אחר כך?</p>
 
     <div class="rem">
-      <div class="reveal">
-        <div class="keep-list">
-          <div class="keep"><div class="n">1</div><div><h3>מה כבר נכשל, ולמה</h3><p>בלי זה, Claude מנסה שוב את אותה גישה.</p></div><span class="pill">הכי יקר</span></div>
-          <div class="keep"><div class="n">2</div><div><h3>החלטות, עם הסיבה</h3><p>"בחרנו X" לא מספיק. "בחרנו X כי Y" חוסך ויכוח שלם.</p></div></div>
-          <div class="keep"><div class="n">3</div><div><h3>מה שביקשת ממנו</h3><p>"תמיד", "אף פעם", "לא ככה". במילים שלך.</p></div></div>
-          <div class="keep"><div class="n">4</div><div><h3>איפה העבודה עומדת</h3><p>מה גמור, מה באמצע, ומה עוד לא נבדק.</p></div></div>
-          <div class="keep"><div class="n">5</div><div><h3>מה הלאה</h3><p>עד שלושה צעדים, לפי הסדר.</p></div></div>
-        </div>
-        <p class="dropped">מה נדחס בכוונה: <s>קריאות קבצים</s> · <s>סבבי דיבוג שהסתיימו בלי לקח</s> · <s>ניסוחי ביניים</s> · <s>מה שהקוד כבר אומר</s></p>
-      </div>
       <div class="reveal d1">
         <div class="note-card">
           <div class="note-head">ההמשך ש-Smart PreCompact שומר <span>וחוזר לבד אחרי הקומפאקט</span></div>
@@ -464,7 +429,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
       <div class="col reveal">
         <h3><i></i>מה נכתב</h3>
         <ul>
-          <li><b>קובץ המשך אחד לכל שיחה,</b> בתיקייה <span class="cmdtag">~/.claude/handoffs</span>, מחוץ לפרויקט. בתוכו פרומפט ההמשך: מה בונים, מה הוחלט, מה נכשל ומה ביקשת, עד כ-200 מילה. הוא נכתב כשה-hook מזכיר, או כשמבקשים <span class="cmdtag">handoff</span>.<small>באותה שיחה הוא נדרס בכל שמירה. עם ה-hook, קובץ שלא נגעו בו 14 יום נמחק אוטומטית.</small></li>
+          <li><b>קובץ המשך אחד לכל שיחה,</b> בתיקייה <span class="cmdtag">~/.claude/handoffs</span>, מחוץ לפרויקט. עד כ-200 מילה.<small>נדרס בכל שמירה. עם ה-hook, קובץ שלא נגעו בו 14 יום נמחק אוטומטית.</small></li>
           <li><b>קובץ מצב זעיר לכל שיחה:</b> באיזה סף כבר קיבלת תזכורת.<small>בלי שום תוכן מהשיחה. נמחק אוטומטית אחרי 14 יום.</small></li>
           <li><b>רק אם ביקשת <span class="cmdtag">save</span> במפורש:</b> שורות חדשות בקבצי תיעוד שכבר קיימים בפרויקט.<small>הוא לא מחליט לבד מה לשמור לפרויקט. אף שורה קיימת לא נמחקת, ושורה קיימת משתנה רק בסימון [x] על משימה שהסתיימה.</small></li>
           <li><b>רק אם ביקשת <span class="cmdtag">save notes</span>:</b> רשומות בתיקיית הפתקים שהגדרת ב-config.md (Obsidian וכדומה), כולל קובץ חדש ליומן היום ולכל החלטה.</li>
@@ -616,20 +581,6 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
       if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, done); }
       else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (err) {} t.remove(); done(); }
     });
-
-    // sparks
-    if (!reduce) {
-      var box = document.getElementById('sparks');
-      for (var i = 0; i < 18; i++) {
-        var s = document.createElement('i');
-        s.style.left = (Math.random() * 100) + '%';
-        s.style.setProperty('--dx', ((Math.random() - .5) * 160) + 'px');
-        s.style.animationDuration = (10 + Math.random() * 10) + 's';
-        s.style.animationDelay = (-Math.random() * 18) + 's';
-        var size = 2 + Math.random() * 2.5; s.style.width = s.style.height = size + 'px';
-        box.appendChild(s);
-      }
-    }
 
     // the loop: light the steps one after another
     var nodes = [].slice.call(document.querySelectorAll('#flow .node'));
