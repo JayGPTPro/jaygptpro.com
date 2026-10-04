@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart PreCompact · מנהל את כל מה שקורה סביב /compact</title>
-<meta name="description" content="Smart PreCompact הוא סקיל ל-Claude Code שמזהה מתי הקונטקסט מתמלא, מכין קומפאקט חכם ששומר את מה שחשוב, ומחזיר את ההקשר אוטומטית אחרי.">
-<meta property="og:title" content="Smart PreCompact · ממשיכים מאיפה שעצרתם, גם אחרי קומפאקט">
-<meta property="og:description" content="הקומפאקט הרגיל מסכם הכל. Smart PreCompact דואג שלא יאבדו לך ההחלטות, מה שכבר נכשל ומה שביקשת. סקיל עצמאי ל-Claude Code.">
+<title>Smart PreCompact · Everything around /compact, handled</title>
+<meta name="description" content="Smart PreCompact is a free Claude Code skill that reminds you to compact in time, tells the summary what it must keep, and brings your context back right after.">
+<meta property="og:title" content="Smart PreCompact · Pick up where you left off, even after a compact">
+<meta property="og:description" content="A regular compact summarizes everything. Smart PreCompact makes sure you keep your decisions, what already failed, and what you asked for. An independent skill for Claude Code.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Heebo:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
 <style>
 :root{
@@ -17,9 +17,9 @@
   --ember:#ff7a18; --ember2:#ffb24d; --gold:#ffd98a; --claude:#d97757;
   --text:#f6efe6; --muted:#a8998a; --ash:#5d544c;
   --ok:#7fd6a1; --bad:#ff6b5a;
-  --display:'Karantina','Heebo',sans-serif;
-  --body:'Heebo',sans-serif;
-  --mono:'JetBrains Mono','Heebo',ui-monospace,monospace;
+  --display:'Karantina','Inter',sans-serif;
+  --body:'Inter',sans-serif;
+  --mono:'JetBrains Mono','Inter',ui-monospace,monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -65,7 +65,7 @@ nav.scrolled{border-color:var(--line);background:rgba(10,8,7,.88)}
 .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--ember);box-shadow:0 0 10px var(--ember);animation:pulse 1.8s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
 h1{margin-bottom:20px}
-h1 .product{display:block;direction:ltr;text-align:right;font-family:var(--display);font-weight:700;font-size:clamp(64px,8.6vw,112px);line-height:.9;letter-spacing:.005em;background:linear-gradient(100deg,var(--gold),var(--ember) 50%,var(--claude));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px #ff7a1838);padding-bottom:6px}
+h1 .product{display:block;direction:ltr;text-align:left;font-family:var(--display);font-weight:700;font-size:clamp(64px,8.6vw,112px);line-height:.9;letter-spacing:.005em;background:linear-gradient(100deg,var(--gold),var(--ember) 50%,var(--claude));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px #ff7a1838);padding-bottom:6px}
 h1 .tagline{display:block;font-family:var(--body);font-weight:800;font-size:clamp(26px,3.2vw,38px);line-height:1.2;margin-top:10px;letter-spacing:-.01em}
 .lede{font-size:clamp(17px,1.9vw,20px);color:#e9dfd3;max-width:560px;margin-bottom:22px}
 .lede b{color:var(--gold);font-weight:700}
@@ -90,7 +90,7 @@ h1 .tagline{display:block;font-family:var(--body);font-weight:800;font-size:clam
 .meter{position:relative;height:12px;border-radius:99px;background:#241b14;border:1px solid var(--line)}
 .meter-fill{position:absolute;inset-block:0;inset-inline-start:0;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--claude),var(--ember),var(--gold));box-shadow:0 0 18px #ff7a1866}
 .tick{position:absolute;top:-6px;bottom:-6px;width:2px;background:#ffd98a55;border-radius:2px}
-.tick span{position:absolute;top:-20px;transform:translateX(50%);font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+.tick span{position:absolute;top:-20px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
 .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:140px;margin:24px 0 14px;align-content:flex-start}
 .chip{font-size:13px;padding:7px 11px;border-radius:9px;border:1px solid var(--line2);background:#1f1812;color:#d9cdbf;opacity:0;transform:translateY(8px) scale(.97);transition:opacity .45s,transform .45s,filter .9s,background .6s,border-color .6s,color .6s,box-shadow .6s}
 .chip.on{opacity:1;transform:none}
@@ -100,7 +100,7 @@ h1 .tagline{display:block;font-family:var(--body);font-weight:800;font-size:clam
 .chip.kept{background:#ff7a1822;border-color:var(--ember);box-shadow:0 0 22px -4px #ff7a18aa;color:#fff1dc}
 .toast{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700;color:#1a0d04;background:linear-gradient(135deg,var(--gold),var(--ember2));padding:10px 13px;border-radius:11px;margin-bottom:12px;opacity:0;transform:translateY(-6px);transition:.4s;box-shadow:0 10px 30px -10px #ffb24daa}
 .toast.on{opacity:1;transform:none}
-.cmd{font-size:13.5px;background:#0d0a08;border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ember2);min-height:44px;direction:rtl;white-space:pre-wrap;opacity:.25;transition:opacity .3s}
+.cmd{font-size:13.5px;background:#0d0a08;border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ember2);min-height:44px;direction:ltr;white-space:pre-wrap;opacity:.25;transition:opacity .3s}
 .cmd.on{opacity:1}
 .cmd .pfx{color:var(--gold);font-family:var(--mono)}
 .cmd .caret{display:inline-block;width:7px;height:14px;background:var(--ember2);vertical-align:-2px;animation:blink 1s steps(1) infinite;margin-inline-start:2px}
@@ -111,7 +111,7 @@ h1 .tagline{display:block;font-family:var(--body);font-weight:800;font-size:clam
 .console-caption b{color:var(--gold);font-weight:700}
 
 /* section heads */
-.kicker{font-family:var(--mono);font-size:13px;color:var(--ember2);letter-spacing:.04em;margin-bottom:12px;direction:ltr;text-align:right}
+.kicker{font-family:var(--mono);font-size:13px;color:var(--ember2);letter-spacing:.04em;margin-bottom:12px;direction:ltr;text-align:left}
 h2{font-family:var(--display);font-weight:700;font-size:clamp(46px,6.2vw,76px);line-height:.98;margin-bottom:16px}
 h2 em{font-style:normal;color:var(--ember2)}
 .sub{color:#d8ccbe;max-width:660px;font-size:18px}
@@ -123,9 +123,9 @@ h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
 .node .i{font-family:var(--display);font-size:40px;line-height:.8;color:#ff7a1840;font-weight:700;display:block;margin-bottom:10px;transition:color .4s}
 .node h3{font-size:16.5px;margin-bottom:6px}
 .node p{font-size:14px;color:var(--muted);line-height:1.5}
-.node .badge{position:absolute;top:14px;left:12px;right:auto;font-family:var(--mono);font-size:10.5px;color:var(--ember2);border:1px solid #ff7a1844;border-radius:6px;padding:1px 6px;direction:ltr}
+.node .badge{position:absolute;top:14px;right:12px;left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ember2);border:1px solid #ff7a1844;border-radius:6px;padding:1px 6px;direction:ltr}
 .node .badge.you{color:var(--ok);border-color:#7fd6a155;font-family:var(--body);font-weight:700}
-.node:not(:last-child)::after{content:"←";position:absolute;top:50%;inset-inline-end:-14px;transform:translate(-50%,-50%);font-size:18px;color:var(--ember);z-index:2;width:14px;text-align:center}
+.node:not(:last-child)::after{content:"→";position:absolute;top:50%;inset-inline-end:-14px;transform:translate(50%,-50%);font-size:18px;color:var(--ember);z-index:2;width:14px;text-align:center}
 .node.active{border-color:var(--ember);box-shadow:0 0 40px -14px #ff7a18;transform:translateY(-3px)}
 .node.active .i{color:var(--ember)}
 .loopback{margin-top:16px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14.5px}
@@ -173,7 +173,7 @@ h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
 .note-card{background:#0e0b09;border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:0 30px 60px -40px #000}
 .note-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);font-size:14px;font-weight:800}
 .note-head span{color:var(--muted);font-weight:500;font-size:13px}
-.note-card pre{font-family:var(--body);font-size:15px;line-height:1.85;color:#ead9c4;padding:16px 18px;white-space:pre-wrap;direction:rtl}
+.note-card pre{font-family:var(--body);font-size:15px;line-height:1.85;color:#ead9c4;padding:16px 18px;white-space:pre-wrap;direction:ltr}
 .note-card pre .k{color:var(--ember2);font-weight:700}
 .note-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
 
@@ -195,7 +195,7 @@ h3{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3}
 
 /* install */
 .install-box{margin-top:40px;max-width:860px;background:linear-gradient(180deg,#1a130e,#120d0a);border:1px solid #ff7a1855;border-radius:20px;padding:24px;box-shadow:0 0 80px -40px #ff7a18}
-.install-box pre{font-family:var(--body);font-size:16.5px;line-height:1.8;color:#f3e7d8;white-space:pre-wrap;direction:rtl;background:#0d0a08;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:18px}
+.install-box pre{font-family:var(--body);font-size:16.5px;line-height:1.8;color:#f3e7d8;white-space:pre-wrap;direction:ltr;background:#0d0a08;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:18px}
 .install-box pre .url{display:block;font-family:var(--mono);font-size:.8em;color:var(--ember2);direction:ltr;text-align:left;overflow-wrap:anywhere;margin:2px 0}
 .install-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .install-row .meta{font-size:14.5px;color:var(--muted)}
@@ -254,7 +254,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
   .keep{grid-template-columns:38px 1fr;gap:12px}
   .keep .pill{grid-column:2;justify-self:start}
   .mode{grid-template-columns:1fr;gap:4px}
-  .mode > code{text-align:right}
+  .mode > code{text-align:left}
   .what-happens{grid-template-columns:1fr}
   .console-body{padding:14px}
   .chips{min-height:180px}
@@ -276,66 +276,66 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
       Smart PreCompact
     </a>
     <div class="nav-links">
-      <a href="#loop">איך זה עובד</a>
-      <a href="#problem">הבעיה</a>
-      <a href="#faq">שאלות</a>
-      <a href="../" lang="en">English</a>
+      <a href="#loop">How it works</a>
+      <a href="#problem">The problem</a>
+      <a href="#faq">FAQ</a>
+      <a href="he/" lang="he">עברית</a>
     </div>
-    <a class="btn primary small" href="#install">התקנה</a>
+    <a class="btn primary small" href="#install">Install</a>
   </div>
 </nav>
 
 <header class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow"><span class="dot"></span>סקיל עצמאי וחינמי ל-Claude Code</div>
+      <div class="eyebrow"><span class="dot"></span>A free, independent skill for Claude Code</div>
       <h1>
         <span class="product">Smart PreCompact</span>
-        <span class="tagline">מנהל בשבילך את כל מה שקורה סביב <span class="cmdtag">/compact</span></span>
+        <span class="tagline">Handles everything around <span class="cmdtag">/compact</span> for you</span>
       </h1>
-      <p class="lede">פתאום אתם על 98% קונטקסט, וכל הודעה שורפת usage. קומפאקט פותר את זה, אבל קל לשכוח אותו, והסיכום שלו לא יודע מה חשוב לכם. <b>Smart PreCompact מזכיר לכם בזמן, אומר לסיכום מה אסור לאבד, ומחזיר את זה אחרי.</b></p>
+      <p class="lede">Suddenly you're at 98% context, and every message burns usage. Compact fixes that, but it's easy to forget, and its summary doesn't know what matters to you. <b>Smart PreCompact reminds you in time, tells the summary what it must keep, and brings it back right after.</b></p>
       <div class="cta-row">
-        <a class="btn primary" href="#install">התקן את Smart PreCompact</a>
-        <a class="btn ghost" href="#loop">איך זה עובד</a>
+        <a class="btn primary" href="#install">Install Smart PreCompact</a>
+        <a class="btn ghost" href="#loop">How it works</a>
       </div>
-      <p class="cta-note">חינמי. התקנה של כדקה, הסרה בפקודה אחת. לא כותב לתוך הפרויקט שלך בלי שתבקש.</p>
+      <p class="cta-note">Free. About a minute to install, one command to remove. Never writes into your project unless you ask.</p>
     </div>
 
     <div>
-      <div class="console" role="img" aria-label="הדגמה: הקונטקסט גדל, ב-60% Smart PreCompact מזכיר ומכין את הקומפאקט, הפרטים החשובים נשמרים והשגרתיים נדחסים, וההקשר חוזר לבד">
+      <div class="console" role="img" aria-label="Demo: the context grows, at 60% Smart PreCompact reminds you and prepares the compact, the important details are kept and the routine ones compressed, and the context comes back by itself">
         <div class="console-top"><div class="dots"><i></i><i></i><i></i></div><span>claude code · session</span></div>
         <div class="console-body">
           <div class="stages" id="stages">
-            <span>הקונטקסט גדל</span><span>תזכורת</span><span>מכין את ההמשך</span><span class="ltr">/compact</span><span>ההקשר חזר</span>
+            <span>Context grows</span><span>Reminder</span><span>Prepares the handoff</span><span class="ltr">/compact</span><span>Context back</span>
           </div>
-          <div class="meter-row"><span>קונטקסט</span><span class="pct" id="pct">8%</span></div>
+          <div class="meter-row"><span>Context</span><span class="pct" id="pct">8%</span></div>
           <div class="meter">
             <div class="meter-fill" id="fill"></div>
             <div class="tick" style="inset-inline-start:60%"><span>60%</span></div>
             <div class="tick" style="inset-inline-start:80%"><span>80%</span></div>
           </div>
           <div class="chips" id="chips">
-            <span class="chip routine">קריאת קבצים</span>
-            <span class="chip key">נכשל: הגישה הראשונה</span>
-            <span class="chip routine">סבב תיקונים</span>
-            <span class="chip key">הוחלט: הדרך השנייה, והסיבה</span>
-            <span class="chip routine">עוד קריאת קבצים</span>
-            <span class="chip routine">ניסוח ביניים</span>
-            <span class="chip key">ביקשת: לא לגעת בזה</span>
-            <span class="chip routine">ls על התיקייה</span>
+            <span class="chip routine">Reading files</span>
+            <span class="chip key">Failed: the first approach</span>
+            <span class="chip routine">Fix round</span>
+            <span class="chip key">Decided: approach two, and why</span>
+            <span class="chip routine">More file reads</span>
+            <span class="chip routine">Draft wording</span>
+            <span class="chip key">You said: don't touch this</span>
+            <span class="chip routine">ls on the folder</span>
           </div>
           <div class="toast" id="toast">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
-            הקונטקסט עבר 60%. שורת ה-compact מוכנה.
+            Context passed 60%. The compact line is ready.
           </div>
           <div class="cmd" id="cmd"><span class="ltr pfx">/compact</span> <span id="cmdText"></span></div>
           <div class="restored" id="restored">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
-            ההקשר חזר לבד. ממשיכים לעבוד מאותה נקודה.
+            Context restored. Back to work from the same spot.
           </div>
         </div>
       </div>
-      <p class="console-caption"><b>מה שחשוב נשמר.</b> השגרתי נדחס.</p>
+      <p class="console-caption"><b>What matters is kept.</b> The routine gets compressed.</p>
     </div>
   </div>
 </header>
@@ -345,48 +345,48 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
 <section id="loop">
   <div class="wrap">
     <div class="kicker reveal">01 / the loop</div>
-    <h2 class="reveal">ככה זה רץ. <em>ברקע.</em></h2>
-    <p class="sub reveal d1">אתה עובד כרגיל. Smart PreCompact מתערב רק כשצריך, ומבקש ממך פעולה אחת.</p>
+    <h2 class="reveal">This is how it runs. <em>In the background.</em></h2>
+    <p class="sub reveal d1">You work as usual. Smart PreCompact steps in only when needed, and asks you for one action.</p>
 
     <ol class="flow" id="flow">
-      <li class="node reveal"><span class="i">1</span><h3>הקונטקסט גדל</h3><p>אתה עובד כרגיל, כמו תמיד.</p></li>
-      <li class="node reveal d1"><span class="badge">hook</span><span class="i">2</span><h3>תזכורת ב-60%</h3><p>Claude קודם עונה לך כרגיל, ואז מזכיר.</p></li>
-      <li class="node reveal d2"><span class="i">3</span><h3>Smart PreCompact מכין את ההמשך</h3><p>שורת <span class="cmdtag">/compact</span> מוכנה, וקובץ המשך קטן בצד.</p></li>
-      <li class="node reveal"><span class="badge you">אתה</span><span class="i">4</span><h3>אתה שולח את השורה</h3><p>מעתיקים את השורה המוכנה ושולחים. זה הצעד הידני היחיד.</p></li>
-      <li class="node reveal d1"><span class="badge">hook</span><span class="i">5</span><h3>ההקשר חוזר לבד</h3><p>מיד אחרי הקומפאקט, גם אם הוא רץ לבד.</p></li>
-      <li class="node reveal d2"><span class="i">6</span><h3>ממשיכים לעבוד</h3><p>מאותה נקודה, עם אותן החלטות.</p></li>
+      <li class="node reveal"><span class="i">1</span><h3>Context grows</h3><p>You work as usual.</p></li>
+      <li class="node reveal d1"><span class="badge">hook</span><span class="i">2</span><h3>Reminder at 60%</h3><p>Claude answers you first, then reminds you.</p></li>
+      <li class="node reveal d2"><span class="i">3</span><h3>Smart PreCompact prepares the handoff</h3><p>A ready <span class="cmdtag">/compact</span> line, plus a small handoff file on the side.</p></li>
+      <li class="node reveal"><span class="badge you">you</span><span class="i">4</span><h3>You send the line</h3><p>Copy the ready line and send it. That's the only manual step.</p></li>
+      <li class="node reveal d1"><span class="badge">hook</span><span class="i">5</span><h3>Context comes back</h3><p>Right after the compact, even if it ran by itself.</p></li>
+      <li class="node reveal d2"><span class="i">6</span><h3>Keep working</h3><p>Same spot, same decisions.</p></li>
     </ol>
     <div class="loopback reveal"><span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-      וחוזר חלילה, בכל פעם שהקונטקסט מתמלא</span></div>
+      And again, every time the context fills up</span></div>
 
-    <p class="sub reveal loop-note">לא מחליף את <span class="cmdtag">/compact</span> ולא משנה את הדרך שבה אתה עובד. 60% ו-80% הם הספים של Smart PreCompact, ואפשר לשנות אותם.</p>
+    <p class="sub reveal loop-note">It doesn't replace <span class="cmdtag">/compact</span> or change how you work. 60% and 80% are Smart PreCompact's thresholds, and you can change them.</p>
   </div>
 </section>
 
 <section id="problem">
   <div class="wrap">
     <div class="kicker reveal">02 / the problem</div>
-    <h2 class="reveal">קומפאקט רגיל. <em>שתי בעיות.</em></h2>
-    <p class="sub reveal d1">בשיחה ארוכה כל הודעה שולחת ל-Claude מחדש את כל השיחה, וה-usage נשרף. קומפאקט מסכם את השיחה ומפנה מקום. אבל:</p>
+    <h2 class="reveal">Regular compact. <em>Two problems.</em></h2>
+    <p class="sub reveal d1">In a long conversation, every message sends the whole conversation to Claude again, and usage burns. Compact summarizes the conversation and frees up space. But:</p>
 
     <div class="moments reveal">
-      <div class="moment"><span class="lbl">1. שוכחים</span><p>לא שמים לב, ופתאום הקונטקסט על 98%. ואז הקומפאקט קורה לבד, בלי שום הוראה ממך.</p></div>
-      <div class="moment"><span class="lbl">2. הסיכום מפספס</span><p>מה כבר ניסיתם, למה החלטתם, מה ביקשתם. אחרי הקומפאקט Claude חוזר על אותן טעויות.</p></div>
+      <div class="moment"><span class="lbl">1. You forget</span><p>You don't notice, and suddenly the context is at 98%. Then compact runs on its own, without any instructions from you.</p></div>
+      <div class="moment"><span class="lbl">2. The summary misses things</span><p>What you already tried, why you decided, what you asked for. After the compact, Claude repeats the same mistakes.</p></div>
     </div>
 
     <div class="ba">
       <div class="chat reveal">
-        <div class="chat-label">אחרי קומפאקט רגיל <span class="tag">/compact</span></div>
-        <div class="divider">השיחה סוכמה</div>
-        <div class="msg user">תמשיך מאיפה שעצרנו</div>
-        <div class="msg ai">בטח. בוא ננסה שוב את הגישה הראשונה.</div>
+        <div class="chat-label">After a regular compact <span class="tag">/compact</span></div>
+        <div class="divider">Conversation summarized</div>
+        <div class="msg user">Continue where we left off</div>
+        <div class="msg ai">Sure. Let's try the first approach again.</div>
       </div>
       <div class="chat good reveal d2">
-        <div class="chat-label">עם Smart PreCompact <span class="tag">/compact</span></div>
-        <div class="divider">השיחה סוכמה, וההקשר חזר</div>
-        <div class="msg user">תמשיך מאיפה שעצרנו</div>
-        <div class="msg ai">ממשיך מאותה נקודה. את הגישה הראשונה כבר פסלנו, ולמה שביקשת לא לגעת אני לא נוגע.</div>
+        <div class="chat-label">With Smart PreCompact <span class="tag">/compact</span></div>
+        <div class="divider">Conversation summarized, context restored</div>
+        <div class="msg user">Continue where we left off</div>
+        <div class="msg ai">Picking up from the same spot. We already ruled out the first approach, and I'm leaving alone what you asked me not to touch.</div>
       </div>
     </div>
   </div>
@@ -395,22 +395,22 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
 <section id="remembers">
   <div class="wrap">
     <div class="kicker reveal">03 / carried forward</div>
-    <h2 class="reveal">מה Claude <em>זוכר</em> אחרי הקומפאקט.</h2>
-    <p class="sub reveal d1">לכל פרט בשיחה Smart PreCompact שואל שאלה אחת: אם זה ייעלם, מה יישבר אחר כך?</p>
+    <h2 class="reveal">What Claude <em>remembers</em> after the compact.</h2>
+    <p class="sub reveal d1">For every detail in the conversation, Smart PreCompact asks one question: if this disappears, what breaks later?</p>
 
     <div class="rem">
       <div class="reveal d1">
         <div class="note-card">
-          <div class="note-head">ההמשך ש-Smart PreCompact שומר <span>וחוזר לבד אחרי הקומפאקט</span></div>
-<pre>המשך מאיפה שעצרנו.
+          <div class="note-head">The handoff Smart PreCompact saves <span>and brings back after the compact</span></div>
+<pre>Continue where we left off.
 
-<span class="k">בונים:</span> מה הפרויקט, ומה המטרה.
-<span class="k">מצב:</span> מה גמור, מה באמצע, ומה עוד לא נבדק.
-<span class="k">החלטות:</span> מה הוחלט, ולמה.
-<span class="k">נכשל, אל תנסה שוב:</span> מה כבר נוסה, ולמה זה לא עבד.
-<span class="k">חוקים שנקבעו:</span> מה ביקשת, במילים שלך.
-<span class="k">הבא בתור:</span> עד שלושה צעדים, לפי הסדר.</pre>
-          <div class="note-foot">ובנוסף, שורת <span class="cmdtag">/compact</span> שאומרת לסיכום של Claude Code מה הוא חייב לשמור.</div>
+<span class="k">Building:</span> what the project is, and the goal.
+<span class="k">State:</span> what's done, what's in progress, and what isn't tested yet.
+<span class="k">Decisions:</span> what was decided, and why.
+<span class="k">Failed, don't retry:</span> what was already tried, and why it didn't work.
+<span class="k">Rules set:</span> what you asked for, in your own words.
+<span class="k">Next up:</span> up to three steps, in order.</pre>
+          <div class="note-foot">Plus a <span class="cmdtag">/compact</span> line that tells Claude Code's summary what it must keep.</div>
         </div>
       </div>
     </div>
@@ -420,74 +420,74 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
 <section id="install">
   <div class="wrap">
     <div class="kicker reveal">04 / install</div>
-    <h2 class="reveal">התקן את <em>Smart PreCompact.</em></h2>
-    <p class="sub reveal d1">פרומפט אחד. מדביקים אותו ב-Claude Code, והוא עושה את השאר.</p>
+    <h2 class="reveal">Install <em>Smart PreCompact.</em></h2>
+    <p class="sub reveal d1">One prompt. Paste it into Claude Code, and it does the rest.</p>
 
     <div class="install-box reveal">
       <!-- When the page and the zip go live, the URL below must point at the real file. -->
-<pre id="ip">תתקין לי את Smart PreCompact. תוריד את הקובץ:
-<span class="url">https://jaygptpro.com/smart-precompact/smart-precompact.zip</span>תחלץ אותו לתיקייה זמנית, ותבצע את ההוראות שבקובץ install-prompt.he.txt שבתוכו.</pre>
+<pre id="ip">Install Smart PreCompact for me. Download the file:
+<span class="url">https://jaygptpro.com/smart-precompact/smart-precompact.zip</span>Unzip it to a temporary folder, and follow the instructions in the install-prompt.txt inside it.</pre>
       <div class="install-row">
         <button class="btn primary" id="copyInstall" type="button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-          <span>העתק את פרומפט ההתקנה</span>
+          <span>Copy the install prompt</span>
         </button>
-        <span class="meta">התקנה של כדקה. עם ה-hook הוא מזכיר ומכין לבד, ואתה רק שולח את השורה.</span>
+        <span class="meta">About a minute to install. With the hook, it reminds and prepares on its own, and you just send the line.</span>
       </div>
       <ol class="what-happens">
-        <li><b>בודק</b>שיש לך Python, בשביל ה-hook</li>
-        <li><b>מתקין</b>את הסקיל אצלך במחשב</li>
-        <li><b>מריץ בדיקה</b>ומספר לך שהכל עבר</li>
-        <li><b>שואל</b>אם להפעיל את ה-hook</li>
+        <li><b>Checks</b>that you have Python, for the hook</li>
+        <li><b>Installs</b>the skill on your computer</li>
+        <li><b>Runs a test</b>and tells you everything passed</li>
+        <li><b>Asks</b>whether to turn on the hook</li>
       </ol>
     </div>
-    <p class="manual reveal">מעדיף ידנית? <a href="smart-precompact.zip" download>הורד את הקובץ</a>, גרור את התיקייה לפרויקט, והדבק ל-Claude את התוכן של install-prompt.he.txt.</p>
+    <p class="manual reveal">Prefer manual? <a href="smart-precompact.zip" download>Download the file</a>, drag the folder into your project, and paste the contents of install-prompt.txt into Claude.</p>
   </div>
 </section>
 
 <section id="faq">
   <div class="wrap">
     <div class="kicker reveal">05 / faq</div>
-    <h2 class="reveal">שאלות שכבר שאלו.</h2>
+    <h2 class="reveal">Questions people already asked.</h2>
     <div class="faq">
-      <details class="reveal"><summary>מה ההבדל מ-/compact הרגיל? <span class="plus">+</span></summary>
-        <p>הקומפאקט הרגיל מסכם את כל השיחה, בלי לדעת מה הכי חשוב לך. Smart PreCompact נותן לו הוראות מה אסור לאבד, שומר את ההמשך בקובץ, ומחזיר אותו לשיחה מיד אחרי. הקומפאקט עצמו נשאר אותו <span class="cmdtag">/compact</span> של Claude Code.</p></details>
-      <details class="reveal"><summary>מה אני עושה אחרי ההתקנה? <span class="plus">+</span></summary>
-        <p>ממשיכים לעבוד כרגיל. כשהקונטקסט עובר 60%, Claude עונה לך, ובסוף התשובה מוסיף שורת <span class="cmdtag">/compact</span> מוכנה. מעתיקים אותה ושולחים. זה הכל.</p></details>
-      <details class="reveal"><summary>מה נשמר אצלי במחשב, ולכמה זמן? <span class="plus">+</span></summary>
-        <p>קובץ המשך קטן אחד לכל שיחה, בתיקייה <span class="cmdtag">~/.claude/handoffs</span> מחוץ לפרויקט. עם ה-hook, קובץ שלא נגעו בו 14 יום נמחק לבד. אין שרת ואין שליחה לשום מקום חדש. לתוך הפרויקט נכתב משהו רק אם ביקשת <span class="cmdtag">save</span> במפורש.</p>
-        <p>מפתחות וסיסמאות שעלו בשיחה מוחלפים ב-<span class="cmdtag">[REDACTED]</span> לפני שהוא כותב משהו. זו הנחיה ל-Claude, לא מסנן, אז הכי בטוח לא להדביק סודות לשיחה.</p></details>
-      <details class="reveal"><summary>למה דווקא 60%? <span class="plus">+</span></summary>
-        <p>מספיק מוקדם כדי שיישאר מקום לסיכום טוב. הקומפאקט האוטומטי של Claude Code קורה רק כשהקונטקסט כמעט מלא, ואז כבר מאוחר. אפשר לשנות את הסף בשורה אחת.</p></details>
-      <details class="reveal"><summary>אפשר להפעיל אותו ידנית? <span class="plus">+</span></summary>
-        <p>כן, בכל רגע. יש ארבעה מצבים:</p>
+      <details class="reveal"><summary>How is this different from regular /compact? <span class="plus">+</span></summary>
+        <p>A regular compact summarizes the whole conversation without knowing what matters most to you. Smart PreCompact tells it what it must keep, saves the handoff to a file, and brings it back into the conversation right after. The compact itself is still Claude Code's own <span class="cmdtag">/compact</span>.</p></details>
+      <details class="reveal"><summary>What do I do after installing? <span class="plus">+</span></summary>
+        <p>Keep working as usual. When the context passes 60%, Claude answers you, and at the end of the reply adds a ready <span class="cmdtag">/compact</span> line. Copy it and send it. That's it.</p></details>
+      <details class="reveal"><summary>What's saved on my computer, and for how long? <span class="plus">+</span></summary>
+        <p>One small handoff file per conversation, in <span class="cmdtag">~/.claude/handoffs</span>, outside your project. With the hook, a file nobody touched for 14 days is deleted automatically. No server, and nothing is sent anywhere new. Nothing is written into your project unless you explicitly ask for <span class="cmdtag">save</span>.</p>
+        <p>Keys and passwords that came up in the conversation are replaced with <span class="cmdtag">[REDACTED]</span> before anything is written. That's an instruction to Claude, not a filter, so the safest move is not to paste secrets into the chat.</p></details>
+      <details class="reveal"><summary>Why 60%? <span class="plus">+</span></summary>
+        <p>Early enough to leave room for a good summary. Claude Code's automatic compact only runs when the context is almost full, and by then it's too late. You can change the threshold in one line.</p></details>
+      <details class="reveal"><summary>Can I run it manually? <span class="plus">+</span></summary>
+        <p>Yes, any time. There are four modes:</p>
         <div class="modes">
-          <div class="mode"><code>/smart-precompact</code><p>מכין את השורות להדבקה. לא נכתב כלום לדיסק.</p></div>
-          <div class="mode"><code>/smart-precompact handoff</code><p>שומר גם את ההמשך לקובץ, כדי להמשיך מחר בשיחה חדשה.</p></div>
-          <div class="mode"><code>/smart-precompact save</code><p>מוסיף החלטות ומשימות לקבצי התיעוד שכבר קיימים בפרויקט.</p></div>
-          <div class="mode"><code>/smart-precompact save notes</code><p>כמו save, וגם לתיקיית הפתקים שהגדרת ב-config.md (Obsidian וכדומה).</p></div>
+          <div class="mode"><code>/smart-precompact</code><p>Prepares the lines to paste. Nothing is written to disk.</p></div>
+          <div class="mode"><code>/smart-precompact handoff</code><p>Also saves the handoff to a file, so you can continue tomorrow in a new conversation.</p></div>
+          <div class="mode"><code>/smart-precompact save</code><p>Adds decisions and tasks to the docs files that already exist in your project.</p></div>
+          <div class="mode"><code>/smart-precompact save notes</code><p>Like save, plus your notes folder set in config.md (Obsidian or similar).</p></div>
         </div>
-        <p>אפשר גם במילים: "תכין אותי לקומפאקט".</p></details>
-      <details class="reveal"><summary>חייבים את ה-hook? <span class="plus">+</span></summary>
-        <p>לא. בלי ה-hook מפעילים ידנית. ה-hook מוסיף את התזכורת ב-60% ואת ההחזרה האוטומטית של ההקשר.</p></details>
-      <details class="reveal"><summary>קומפאקט לא שורף לי usage? <span class="plus">+</span></summary>
-        <p>הוא עולה פעם אחת. להישאר באחוזים גבוהים עולה בכל הודעה, כי כל הודעה שולחת מחדש את כל השיחה. אחרי קומפאקט חוזרים לשיחה קטנה, והוא מחזיר את עצמו תוך הודעה או שתיים.</p>
-        <p>שני טיפים: עושים קומפאקט מיד בסוף שלב, לא אחרי הפסקה ארוכה. ואם עוברים למשימה אחרת לגמרי, <span class="cmdtag">/clear</span> זול יותר.</p></details>
-      <details class="reveal"><summary>איך יודעים שהוא באמת עובד? <span class="plus">+</span></summary>
-        <p>בסוף ההתקנה בדיקה אחת מראה לך שה-hook פועל וכמה הקונטקסט מלא. מאחוריו 55 טסטים אוטומטיים.</p></details>
-      <details class="reveal"><summary>זה עובד עם כל המודלים? ובווינדוס? <span class="plus">+</span></summary>
-        <p>כן, בכל מקום שבו Claude Code רץ. ה-hook צריך Python 3.8 ומעלה, ופרומפט ההתקנה בודק את זה בשבילך. נבדק על Mac. בווינדוס ובלינוקס הוא אמור לעבוד, אבל עוד לא נבדק בפועל.</p></details>
-      <details class="reveal"><summary>זה מוצר של Anthropic? <span class="plus">+</span></summary>
-        <p>לא. זה סקיל עצמאי של JayGPTPro, שבנוי סביב <span class="cmdtag">/compact</span> של Claude Code, ולא קשור ל-Anthropic.</p></details>
+        <p>You can also just say it: "prep me for compact".</p></details>
+      <details class="reveal"><summary>Do I need the hook? <span class="plus">+</span></summary>
+        <p>No. Without the hook you run it manually. The hook adds the 60% reminder and the automatic context restore.</p></details>
+      <details class="reveal"><summary>Doesn't compact burn my usage? <span class="plus">+</span></summary>
+        <p>It costs once. Staying at high context costs on every message, because every message resends the whole conversation. After a compact you're back to a small conversation, and it pays for itself within a message or two.</p>
+        <p>Two tips: compact right at the end of a stage, not after a long break. And if you're switching to a completely different task, <span class="cmdtag">/clear</span> is cheaper.</p></details>
+      <details class="reveal"><summary>How do I know it actually works? <span class="plus">+</span></summary>
+        <p>At the end of the install, one check shows you the hook is running and how full your context is. Behind it: 55 automated tests.</p></details>
+      <details class="reveal"><summary>Does it work with every model? On Windows? <span class="plus">+</span></summary>
+        <p>Yes, anywhere Claude Code runs. The hook needs Python 3.8 or newer, and the install prompt checks that for you. Tested on Mac. It should work on Windows and Linux, but it hasn't been tested there yet.</p></details>
+      <details class="reveal"><summary>Is this an Anthropic product? <span class="plus">+</span></summary>
+        <p>No. It's an independent skill by JayGPTPro, built around Claude Code's <span class="cmdtag">/compact</span>, and not affiliated with Anthropic.</p></details>
     </div>
   </div>
 </section>
 
 <section class="final">
   <div class="wrap">
-    <h2 class="reveal">ממשיכים מאיפה שעצרתם. <em>גם אחרי קומפאקט.</em></h2>
-    <p class="sub reveal d1">פרומפט אחד, דקה של התקנה, ואתה מפסיק להסביר ל-Claude שוב את מה שכבר הסברת.</p>
-    <a class="btn primary reveal d2" href="#install">התקן את Smart PreCompact</a>
+    <h2 class="reveal">Pick up where you left off. <em>Even after a compact.</em></h2>
+    <p class="sub reveal d1">One prompt, a minute to install, and you stop re-explaining to Claude what you already explained.</p>
+    <a class="btn primary reveal d2" href="#install">Install Smart PreCompact</a>
   </div>
 </section>
 
@@ -495,8 +495,8 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
 
 <footer>
   <div class="wrap foot">
-    <span>Smart PreCompact · סקיל עצמאי, לא מוצר של Anthropic</span>
-    <span>JayGPTPro · נבנה עם skill-skiller</span>
+    <span>Smart PreCompact · An independent skill, not an Anthropic product</span>
+    <span>JayGPTPro · Built with the-skill-skiller</span>
   </div>
 </footer>
 
@@ -541,8 +541,8 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
       var text = document.getElementById('ip').innerText;
       var label = copyBtn.querySelector('span');
       var done = function () {
-        label.textContent = 'הועתק. עכשיו הדבק ב-Claude Code'; copyBtn.classList.add('done');
-        setTimeout(function () { label.textContent = 'העתק את פרומפט ההתקנה'; copyBtn.classList.remove('done'); }, 2600);
+        label.textContent = 'Copied. Now paste it into Claude Code'; copyBtn.classList.add('done');
+        setTimeout(function () { label.textContent = 'Copy the install prompt'; copyBtn.classList.remove('done'); }, 2600);
       };
       if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, done); }
       else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (err) {} t.remove(); done(); }
@@ -563,7 +563,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);f
     var chips = [].slice.call(document.querySelectorAll('#chips .chip'));
     var stages = [].slice.call(document.querySelectorAll('#stages span'));
     var toast = document.getElementById('toast'), cmd = document.getElementById('cmd'), cmdText = document.getElementById('cmdText'), restored = document.getElementById('restored');
-    var line = 'שמור: מה כבר נכשל ולמה, מה הוחלט ולמה, ומה ביקשתי. אפשר לדחוס את סבבי התיקונים.';
+    var line = 'Keep: what already failed and why, what was decided and why, and what I asked for. Okay to compress the fix rounds.';
     var timers = [];
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function stage(n) { stages.forEach(function (s, i) { s.classList.toggle('now', i === n); s.classList.toggle('done', i < n); }); }
