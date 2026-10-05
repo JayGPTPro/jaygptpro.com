@@ -1,9 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@17?target=deno";
-// Wonka's weekly cohort calendar, the same file the sales page and the portal load, so
-// the three can never disagree about a date. Bundled at deploy: push the file first.
-import "https://jaygptpro.com/wonka-bootcamp/cohort-calendar.js";
+// Wonka's weekly cohort calendar. cohort-calendar.js beside this file is a COPY of
+// wonka-bootcamp/cohort-calendar.js, the file the sales page and the portal load: the
+// Supabase bundler refuses imports from jaygptpro.com, so it cannot be fetched by URL.
+// test/run_test.ts fails if the two ever differ. Edit the site file, then copy it here.
+import "./cohort-calendar.js";
 const WonkaCalendar = (globalThis as any).WonkaCalendar;
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

@@ -34,6 +34,13 @@ await import("./index.ts");
 // Wonka is evergreen from 12.10.2026: every Wonka purchase joins the coming Monday's
 // cohort, computed by the same cohort-calendar.js the webhook imports.
 await import("../../../../wonka-bootcamp/cohort-calendar.js");   // also when testing an older index.ts
+// The webhook bundles a COPY of the calendar (the Supabase bundler will not fetch it by
+// URL). The copy and the site file must be byte for byte the same.
+{
+  const site = await Deno.readTextFile(new URL("../../../../wonka-bootcamp/cohort-calendar.js", import.meta.url));
+  const copy = await Deno.readTextFile(new URL("../cohort-calendar.js", import.meta.url));
+  if (site !== copy) { console.error("cohort-calendar.js beside the webhook differs from wonka-bootcamp/. Copy it over."); Deno.exit(1); }
+}
 const WC = (globalThis as any).WonkaCalendar;
 const WONKA_NOW: string = WC.cohortId(WC.nextCohortStart(new Date()));
 
