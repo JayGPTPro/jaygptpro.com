@@ -3531,6 +3531,7 @@ header.portal-header{gap:0 16px;padding:8px 18px 7px;min-height:52px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="dictionary.js?v=ca8a3eec"></script>
+<script src="cohort-calendar.js?v=1"></script>
 <!-- three.js for the 3D factory map (map3d.js). Pinned exact version; resolved lazily
      via dynamic import() inside initMapEngine(), so the sign-in gate never downloads it. -->
 <script type="importmap">
@@ -4004,6 +4005,22 @@ function paintPurchaseCard(){
     else wa.style.display = 'none';   // no link yet: hide it rather than ship a dead button
   }
   var when = document.getElementById('ph-when');
+  /* Signed out (the usual case straight after Stripe), we do not know the buyer's row
+     yet, and the default round is a finished one: this line once told a round 2 buyer
+     "1 September". Since 12.10.2026 every purchase joins the coming Monday's cohort, so
+     that is the honest answer until sign-in tells us more. */
+  if (when && !(userRound && CONFIG.ROUNDS && CONFIG.ROUNDS[userRound]) && window.WonkaCalendar) {
+    var nextId = window.WonkaCalendar.cohortId(window.WonkaCalendar.nextCohortStart(new Date()));
+    var heldRound = userRound;
+    userRound = nextId;
+    ensureEvergreenCfg(nextId);
+    try {
+      when.textContent = 'Day 1 opens ' + dayUnlockTime(1).toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/New_York'
+      }) + ' at 9:00 AM New York time.';
+    } finally { userRound = heldRound; }
+    when = null;
+  }
   if (when) {
     var rcNow = roundCfg();
     var d = new Date(((rcNow && rcNow.start) || CONFIG.FALLBACK_START_DATE || '') + 'T12:00:00Z');
@@ -4163,7 +4180,19 @@ function nyOffsetMinutes(dateUtc) {
 /* The round the CURRENT viewer is in. Signed out, or a round we do not know,
    falls back to the default so the locked view still renders something honest. */
 function roundCfg() {
+  ensureEvergreenCfg(userRound);
   return (CONFIG.ROUNDS && (CONFIG.ROUNDS[userRound] || CONFIG.ROUNDS[CONFIG.DEFAULT_ROUND])) || null;
+}
+/* Wonka is EVERGREEN from 12.10.2026: a cohort starts every Monday, id wonka_wk_YYYY_MM_DD.
+   Nobody adds those to CONFIG.ROUNDS by hand. The first time a weekly id is seen, its
+   calendar is built from the id by cohort-calendar.js, the same file the sales page and
+   the webhook use, so the portal opens exactly the days the buyer was promised. After
+   that every date-shaped function below treats it like round 1 or round 2. */
+function ensureEvergreenCfg(id) {
+  var C = window.WonkaCalendar;
+  if (!id || !CONFIG.ROUNDS || CONFIG.ROUNDS[id] || !C || !C.isEvergreenId(id)) return;
+  var start = C.startFromId(id);
+  CONFIG.ROUNDS[id] = { label: 'Week of ' + start, start: start, days: C.days(start) };
 }
 /* The certificate serial. 'wonka_r2' prints WCB-R2. An all-access pass, an
    admin, or an id with no round number prints plain WCB rather than the
@@ -4184,6 +4213,7 @@ function activeRound() {
      not a cohort, and an id we have no calendar for must not end up stamped on
      progress rows: the gate refuses those anyway, so the default is the honest
      answer and it keeps this in step with roundCfg(). */
+  ensureEvergreenCfg(userRound);
   return (userRound && CONFIG.ROUNDS && CONFIG.ROUNDS[userRound]) ? userRound : CONFIG.DEFAULT_ROUND;
 }
 /* Two moments per day, deliberately different.
@@ -4441,6 +4471,7 @@ async function checkAllowed(email, isRequery) {
      four Donna insiders a Wonka ticket (caught by Jay on the 20.7 setup run),
      so Wonka accepts only its own values: this round's id, 'wonka_all' (the
      Wonka-specific all-access), or an admin address. */
+  ensureEvergreenCfg(round);   // a weekly cohort is a known round too
   const knownRound = !!(CONFIG.ROUNDS && CONFIG.ROUNDS[round]);
   if (!knownRound && round !== 'wonka_all' && !CONFIG.ADMIN_EMAILS.includes(email.toLowerCase())) {
     // same reason as the revoked branch: a refusal must not leave a usable offline pass
