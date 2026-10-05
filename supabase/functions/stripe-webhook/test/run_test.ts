@@ -31,6 +31,11 @@ globalThis.fetch = (async (input: any, init?: any) => {
 }) as any;
 
 await import("./index.ts");
+// Wonka is evergreen from 12.10.2026: every Wonka purchase joins the coming Monday's
+// cohort, computed by the same cohort-calendar.js the webhook imports.
+await import("../../../../wonka-bootcamp/cohort-calendar.js");   // also when testing an older index.ts
+const WC = (globalThis as any).WonkaCalendar;
+const WONKA_NOW: string = WC.cohortId(WC.nextCohortStart(new Date()));
 
 const GOLDEN = 'prod_UxhJATVn8CEfCT';
 const PLINK_GOLDEN = 'plink_1U1vCERqcDuiISNTjqJvj1P5';
@@ -81,7 +86,7 @@ reset();
 let res = await post(session('new@buyer.com'));
 let row = DB.allowed_emails.find(r => r.email === 'new@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check("round = wonka_r1", row?.round === 'wonka_r1', JSON.stringify(row));
+check("round = the current cohort", row?.round === WONKA_NOW, JSON.stringify(row));
 check('welcome sent once', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'));
 
 // ---------------------------------------------------------------
@@ -92,7 +97,7 @@ DB.allowed_emails.push({ email: 'donna@alum.com', round: 'round1', addon_donna: 
 res = await post(session('donna@alum.com'));
 row = DB.allowed_emails.find(r => r.email === 'donna@alum.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('moved to wonka_r1 (portal would otherwise refuse them)', row?.round === 'wonka_r1', JSON.stringify(row));
+check('moved to the current cohort (portal would otherwise refuse them)', row?.round === WONKA_NOW, JSON.stringify(row));
 check('Donna access preserved via addon_donna', row?.addon_donna === true, JSON.stringify(row));
 check('welcome email actually sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 check('welcome timestamp re-stamped', !!row?.welcome_email_sent_at);
@@ -130,7 +135,7 @@ res = await post(orphan);
 row = DB.allowed_emails.find(r => r.email === 'orphan@buyer.com');
 // the product fallback should RESCUE this, so resolving to wonka_r1 is the good outcome;
 // refusing is the acceptable one. Landing in a Donna cohort is the failure.
-check('rescued by the product route, or refused', row?.round === 'wonka_r1' || res.status === 500, `status=${res.status} row=${JSON.stringify(row)}`);
+check('rescued by the product route, or refused', row?.round === WONKA_NOW || res.status === 500, `status=${res.status} row=${JSON.stringify(row)}`);
 check('never written into a wk_ Donna cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 console.log('\n5b. Same, but the Stripe line-items call also fails (plink route must carry it)');
@@ -144,7 +149,7 @@ row = DB.allowed_emails.find(r => r.email === 'orphan2@buyer.com');
 // row had lost its plinks and whose product Stripe would not return. Every Wonka
 // plink now lives in FALLBACK_PLINK_TO_ROUND, so this resolves outright and the
 // buyer is in immediately rather than waiting on a Stripe retry. Strictly better.
-check('rescued by the plink map, not refused', res.status === 200 && row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
+check('rescued by the plink map, not refused', res.status === 200 && row?.round === WONKA_NOW, `status=${res.status} row=${JSON.stringify(row)}`);
 check('never written into a wk_ Donna cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 console.log('\n5c. A real Donna evergreen buyer must still work (no regression)');
@@ -162,7 +167,7 @@ reset();
 DB.allowed_emails.push({ email: 'unk@buyer.com', round: 'unknown', addon_donna: false, welcome_email_sent_at: null, stripe_payment_id: null });
 await post(session('unk@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'unk@buyer.com');
-check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('round = the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('addon_donna stays false', row?.addon_donna !== true, JSON.stringify(row));
 
 
@@ -185,10 +190,10 @@ sendState.stripeLineItems = [PRIVATE];
 res = await post(tourSession('tour@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'tour@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('round = wonka_r1 (via the discounted column)', row?.round === 'wonka_r1', JSON.stringify(row));
+check('round = the current cohort (via the discounted column)', row?.round === WONKA_NOW, JSON.stringify(row));
 check('marked paid', row?.customer_type === 'paid' || row?.stripe_payment_id, JSON.stringify(row));
 check('Wonka welcome sent, not a Donna one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
-check('payment recorded at $2,999', DB.stripe_customers.some(c => c.email === 'tour@buyer.com' && c.amount_paid === 299900 && c.round === 'wonka_r1'), JSON.stringify(DB.stripe_customers));
+check('payment recorded at $2,999', DB.stripe_customers.some(c => c.email === 'tour@buyer.com' && c.amount_paid === 299900 && c.round === WONKA_NOW), JSON.stringify(DB.stripe_customers));
 check('not labelled TEST (that would revoke access)', !DB.stripe_customers.some(c => c.email === 'tour@buyer.com' && String(c.coupon_used).toUpperCase() === 'TEST'));
 check('access not revoked', (row?.access_revoked_at ?? null) === null, JSON.stringify(row));
 
@@ -197,7 +202,7 @@ reset();
 sendState.stripeLineItems = [];
 res = await post(tourSession('tour2@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'tour2@buyer.com');
-check('still resolves to wonka_r1', row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
+check('still resolves to the current cohort', row?.round === WONKA_NOW, `status=${res.status} row=${JSON.stringify(row)}`);
 check('never dropped into a Donna wk_ cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 console.log('\n7c. Private Tour bought by a RETURNING Donna member');
@@ -207,7 +212,7 @@ DB.allowed_emails.push({ email: 'tour3@alum.com', round: 'round1', addon_donna: 
   welcome_email_sent_at: '2026-04-02T00:00:00Z', stripe_payment_id: 'pi_old_donna' });
 res = await post(tourSession('tour3@alum.com'));
 row = DB.allowed_emails.find(r => r.email === 'tour3@alum.com');
-check('moved to wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('moved to the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('keeps Donna via addon_donna', row?.addon_donna === true, JSON.stringify(row));
 check('welcome actually sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
@@ -217,7 +222,7 @@ sendState.stripeLineItems = [PRIVATE];
 DB.rounds = [{ id: 'wonka_r1', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: null, stripe_plink_discounted: null, stripe_product_id: null, start_date: '2026-09-01' }];
 res = await post(tourSession('tour4@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'tour4@buyer.com');
-check('rescued by FALLBACK_PRODUCT_TO_ROUND', row?.round === 'wonka_r1', `status=${res.status} row=${JSON.stringify(row)}`);
+check('rescued by FALLBACK_PRODUCT_TO_ROUND', row?.round === WONKA_NOW, `status=${res.status} row=${JSON.stringify(row)}`);
 check('never dropped into a Donna wk_ cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 
@@ -228,7 +233,7 @@ const bundle: any = tourSession('tour5@buyer.com');
 bundle.data.object.amount_total = 324900;             // 2999 + 250
 res = await post(bundle);
 row = DB.allowed_emails.find(r => r.email === 'tour5@buyer.com');
-check('still round = wonka_r1, the add-on never decides the round', row?.round === 'wonka_r1', JSON.stringify(row));
+check('still round = the current cohort, the add-on never decides the round', row?.round === WONKA_NOW, JSON.stringify(row));
 check('Donna add-on granted', row?.addon_donna === true, JSON.stringify(row));
 check('Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')) && !sendState.calls.some(c => c.url.includes('send-welcome-english')), JSON.stringify(sendState.calls.map(c => c.url)));
 // this buyer DID pay for the cross-sell, so the second email is correct, not a leak
@@ -250,9 +255,9 @@ res = await post(session('alias@buyer.com'));
 const aliasRow = DB.allowed_emails.find(r => r.email === 'alias@buyer.com');
 const primaryRow = DB.allowed_emails.find(r => r.email === 'primary@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('the row the GATE reads is on wonka_r1', primaryRow?.round === 'wonka_r1', JSON.stringify(primaryRow));
+check('the row the GATE reads is on the current cohort', primaryRow?.round === WONKA_NOW, JSON.stringify(primaryRow));
 check('its Donna access is preserved', primaryRow?.addon_donna === true, JSON.stringify(primaryRow));
-check('the alias row is upgraded too', aliasRow?.round === 'wonka_r1', JSON.stringify(aliasRow));
+check('the alias row is upgraded too', aliasRow?.round === WONKA_NOW, JSON.stringify(aliasRow));
 check('alias still points at the primary', aliasRow?.primary_email === 'primary@buyer.com', JSON.stringify(aliasRow));
 check('welcome sent once', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
@@ -269,7 +274,7 @@ DB.allowed_emails.push({ email: 'orphanalias@buyer.com', round: 'round2', addon_
 res = await post(session('orphanalias@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'orphanalias@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('their own row is valid, which is all the gate reads', row?.round === 'wonka_r1', JSON.stringify(row));
+check('their own row is valid, which is all the gate reads', row?.round === WONKA_NOW, JSON.stringify(row));
 check('Donna access preserved', row?.addon_donna === true, JSON.stringify(row));
 check('welcome sent', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
@@ -277,7 +282,7 @@ console.log('\n8c. A normal buyer with no alias is untouched');
 reset();
 res = await post(session('plain@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'plain@buyer.com');
-check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('round = the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('no stray addon_donna', row?.addon_donna !== true, JSON.stringify(row));
 
 
@@ -296,8 +301,8 @@ res = await post(session('payer@buyer.com'));
 let payerRow = DB.allowed_emails.find(r => r.email === 'payer@buyer.com');
 let signinRow = DB.allowed_emails.find(r => r.email === 'signin@gmail.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('the row that paid is on wonka_r1', payerRow?.round === 'wonka_r1', JSON.stringify(payerRow));
-check('the row they SIGN IN with is on wonka_r1', signinRow?.round === 'wonka_r1', JSON.stringify(signinRow));
+check('the row that paid is on the current cohort', payerRow?.round === WONKA_NOW, JSON.stringify(payerRow));
+check('the row they SIGN IN with is on the current cohort', signinRow?.round === WONKA_NOW, JSON.stringify(signinRow));
 check('the linked row keeps its Donna access', signinRow?.addon_donna === true, JSON.stringify(signinRow));
 check('the linked row keeps its pointer', signinRow?.primary_email === 'payer@buyer.com', JSON.stringify(signinRow));
 check('no welcome claim stolen from the linked row', (signinRow?.welcome_email_sent_at ?? null) === null, JSON.stringify(signinRow));
@@ -310,7 +315,7 @@ DB.allowed_emails.push({ email: 'a2@gmail.com', round: 'round1', addon_donna: fa
 res = await post(session('a1@gmail.com'));
 for (const e of ['hub@buyer.com', 'a1@gmail.com', 'a2@gmail.com']) {
   const r = DB.allowed_emails.find(x => x.email === e);
-  check(`${e} enters`, r?.round === 'wonka_r1', JSON.stringify(r));
+  check(`${e} enters`, r?.round === WONKA_NOW, JSON.stringify(r));
   check(`${e} keeps Donna`, r?.addon_donna === true, JSON.stringify(r));
 }
 
@@ -329,7 +334,7 @@ DB.allowed_emails.push({ email: 'signin2@gmail.com', round: 'unknown', addon_don
   primary_email: 'payer2@buyer.com', welcome_email_sent_at: null });
 res = await post(session('payer2@buyer.com'));
 let unknownAlias = DB.allowed_emails.find(r => r.email === 'signin2@gmail.com');
-check('the alias enters Wonka', unknownAlias?.round === 'wonka_r1', JSON.stringify(unknownAlias));
+check('the alias enters Wonka', unknownAlias?.round === WONKA_NOW, JSON.stringify(unknownAlias));
 check('and keeps the Donna the paying row has', unknownAlias?.addon_donna === true, JSON.stringify(unknownAlias));
 
 console.log('\n9b3. Donna is NOT invented for a cluster that never bought it');
@@ -341,7 +346,7 @@ DB.allowed_emails.push({ email: 'nodonna2@gmail.com', round: 'unknown', addon_do
 res = await post(session('nodonna@buyer.com'));
 for (const e of ['nodonna@buyer.com', 'nodonna2@gmail.com']) {
   const r = DB.allowed_emails.find(x => x.email === e);
-  check(`${e} enters Wonka`, r?.round === 'wonka_r1', JSON.stringify(r));
+  check(`${e} enters Wonka`, r?.round === WONKA_NOW, JSON.stringify(r));
   check(`${e} gets no free Donna`, r?.addon_donna !== true, JSON.stringify(r));
 }
 
@@ -349,14 +354,14 @@ console.log('\n9c. A brand new buyer who happens to be somebody\'s alias target'
 reset();
 DB.allowed_emails.push({ email: 'ghost@gmail.com', round: 'round2', addon_donna: false, primary_email: 'fresh@buyer.com', welcome_email_sent_at: null });
 res = await post(session('fresh@buyer.com'));
-check('the new buyer is in', DB.allowed_emails.find(r => r.email === 'fresh@buyer.com')?.round === 'wonka_r1');
-check('and so is the row pointing at them', DB.allowed_emails.find(r => r.email === 'ghost@gmail.com')?.round === 'wonka_r1');
+check('the new buyer is in', DB.allowed_emails.find(r => r.email === 'fresh@buyer.com')?.round === WONKA_NOW);
+check('and so is the row pointing at them', DB.allowed_emails.find(r => r.email === 'ghost@gmail.com')?.round === WONKA_NOW);
 
 console.log('\n9d. A lone buyer with no links is untouched by any of this');
 reset();
 res = await post(session('lonely@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'lonely@buyer.com');
-check('round = wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('round = the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('no stray Donna access', row?.addon_donna !== true, JSON.stringify(row));
 check('exactly one row written', DB.allowed_emails.length === 1, JSON.stringify(DB.allowed_emails));
 
@@ -407,7 +412,7 @@ const before = DB.stripe_customers.find(r => r.id === 'pi_test_1');
 res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_test_1', amount: 69700, currency: 'usd', customer: 'cus_test' } } });
 const after = DB.stripe_customers.find(r => r.id === 'pi_test_1');
 check('email survives', after?.email === 'thin@buyer.com', JSON.stringify(after));
-check('round survives', after?.round === 'wonka_r1', JSON.stringify(after));
+check('round survives', after?.round === WONKA_NOW, JSON.stringify(after));
 
 console.log('\n10e. Refunding Wonka revokes Wonka even when an old Donna payment exists');
 reset();
@@ -475,7 +480,7 @@ cleared.type = 'checkout.session.async_payment_succeeded';
 cleared.data.object.payment_status = 'paid';
 res = await post(cleared);
 row = DB.allowed_emails.find(r => r.email === 'slow@buyer.com');
-check('granted once it clears', row?.round === 'wonka_r1', JSON.stringify(row));
+check('granted once it clears', row?.round === WONKA_NOW, JSON.stringify(row));
 check('and the welcome goes out', sendState.calls.length === 1, JSON.stringify(sendState.calls));
 
 console.log('\n10k. A failed delayed payment grants nothing and says so');
@@ -539,7 +544,7 @@ delete (noLink.data.object as any).payment_link;
 res = await post(noLink);
 row = DB.allowed_emails.find(r => r.email === 'nolink@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('lands on wonka_r1 from the product alone', row?.round === 'wonka_r1', JSON.stringify(row));
+check('lands on the current cohort from the product alone', row?.round === WONKA_NOW, JSON.stringify(row));
 check('gets the Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 check('and no Donna welcome', !sendState.calls.some(c => c.url.includes('send-welcome-donna') && !c.url.includes('addon')), JSON.stringify(sendState.calls.map(c => c.url)));
 
@@ -550,12 +555,13 @@ console.log('\n13. Every Wonka link resolves with BOTH lookups blind');
 // code, because which round a fixed link sells is a fixed fact and does not belong
 // in a table with two columns and three links competing for them.
 const ALL_WONKA_LINKS: Array<[string, string]> = [
-  [PLINK_GOLDEN,   'wonka_r1'],
-  [PLINK_FLAT_R1,  'wonka_r1'],
-  ['plink_1TxmiPRqcDuiISNTKsKrn7Lz', 'wonka_r1'],   // Private Tour
-  [PLINK_R2,       'wonka_r2'],
-  [PLINK_R2_FLAT,  'wonka_r2'],
-  [PLINK_R2_FLAT_497, 'wonka_r2'],
+  [PLINK_GOLDEN,   WONKA_NOW],
+  [PLINK_FLAT_R1,  WONKA_NOW],
+  ['plink_1TxmiPRqcDuiISNTKsKrn7Lz', WONKA_NOW],   // Private Tour
+  [PLINK_R2,       WONKA_NOW],
+  [PLINK_R2_FLAT,  WONKA_NOW],
+  [PLINK_R2_FLAT_497, WONKA_NOW],
+  ['plink_1U6RqpRqcDuiISNTB4MR4CO6', WONKA_NOW],   // 3-payment plan
 ];
 for (const [plink, want] of ALL_WONKA_LINKS) {
   reset();
@@ -585,7 +591,7 @@ const r2 = session('r2buyer@buyer.com', 69700);
 res = await post(r2);
 row = DB.allowed_emails.find(r => r.email === 'r2buyer@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('lands on wonka_r2, not wonka_r1', row?.round === 'wonka_r2', JSON.stringify(row));
+check('lands on the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('gets the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
 console.log('\n14b. The flat $697 round 2 link resolves the same way');
@@ -595,7 +601,7 @@ const r2f = session('r2flat@buyer.com', 69700);
 (r2f.data.object as any).payment_link = PLINK_R2_FLAT;
 res = await post(r2f);
 row = DB.allowed_emails.find(r => r.email === 'r2flat@buyer.com');
-check('lands on wonka_r2', row?.round === 'wonka_r2', JSON.stringify(row));
+check('lands on the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 
 console.log('\n14b2. The flat $497 round 2 link (Vault fallback) resolves the same way');
 // The link a Vault member gets when VAULT500 cannot convert to their currency. They
@@ -607,7 +613,7 @@ const r2f497 = session('r2vault@buyer.com', 49700);
 (r2f497.data.object as any).payment_link = PLINK_R2_FLAT_497;
 res = await post(r2f497);
 row = DB.allowed_emails.find(r => r.email === 'r2vault@buyer.com');
-check('lands on wonka_r2', row?.round === 'wonka_r2', JSON.stringify(row));
+check('lands on the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('not wonka_r1 on the $497 amount', row?.round !== 'wonka_r1', JSON.stringify(row));
 check('gets the Wonka welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
@@ -624,7 +630,7 @@ const r2blind = session('r2blind@buyer.com', 69700);
 res = await post(r2blind);
 row = DB.allowed_emails.find(r => r.email === 'r2blind@buyer.com');
 check('http 200, no retry needed', res.status === 200, `got ${res.status}`);
-check('lands on wonka_r2 from the plink alone', row?.round === 'wonka_r2', JSON.stringify(row));
+check('lands on the current cohort from the plink alone', row?.round === WONKA_NOW, JSON.stringify(row));
 check('never a Donna cohort', String(row?.round || '').startsWith('wonka'), JSON.stringify(row));
 check('and the Wonka welcome, not a Donna one', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
@@ -641,7 +647,7 @@ const r2dark = session('r2dark@buyer.com', 69700);
 (r2dark.data.object as any).payment_link = PLINK_R2;
 res = await post(r2dark);
 row = DB.allowed_emails.find(r => r.email === 'r2dark@buyer.com');
-check('the round still resolves to wonka_r2', row?.round === 'wonka_r2' || res.status === 500, `status=${res.status} ${JSON.stringify(row)}`);
+check('the round still resolves to the current cohort', row?.round === WONKA_NOW || res.status === 500, `status=${res.status} ${JSON.stringify(row)}`);
 check('never a Donna cohort', !String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 console.log('\n14d. A round 1 buyer is untouched by any of this');
@@ -649,7 +655,7 @@ reset();
 sendState.stripeLineItems = [GOLDEN];
 res = await post(session('stillr1@buyer.com'));
 row = DB.allowed_emails.find(r => r.email === 'stillr1@buyer.com');
-check('still wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('still the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 
 console.log('\n15. The $497 flat link always joins the CURRENT round, whenever it is bought');
 // Jay hands this link out one to one now that round 1 is off the page, and asked
@@ -663,7 +669,7 @@ const flatToday = session('flat.today@buyer.com', 49700);
 res = await post(flatToday);
 row = DB.allowed_emails.find(r => r.email === 'flat.today@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('lands on wonka_r1', row?.round === 'wonka_r1', JSON.stringify(row));
+check('lands on the current cohort', row?.round === WONKA_NOW, JSON.stringify(row));
 check('Wonka welcome, not Donna', sendState.calls.some(c => c.url.includes('send-welcome-wonka')), JSON.stringify(sendState.calls.map(c => c.url)));
 
 console.log('\n15b. And with the product lookup blind, it now resolves instead of refusing');
@@ -676,7 +682,59 @@ const flatBlind = session('flat.blind@buyer.com', 49700);
 res = await post(flatBlind);
 row = DB.allowed_emails.find(r => r.email === 'flat.blind@buyer.com');
 check('http 200, no retry needed', res.status === 200, `got ${res.status}`);
-check('lands on wonka_r1 from the rounds row alone', row?.round === 'wonka_r1', JSON.stringify(row));
+check('lands on the current cohort from the rounds row alone', row?.round === WONKA_NOW, JSON.stringify(row));
+
+// ---------------------------------------------------------------
+// EVERGREEN (12.10.2026). Every Wonka purchase joins the coming Monday's cohort, decided
+// by WHEN THE BUYER PAID (event.created), not when this handler happens to run.
+const paidAt = (email: string, created: number, plink = PLINK_FLAT_R1) => {
+  const s: any = session(email, 49700);
+  s.created = created; s.data.object.payment_link = plink;
+  return s;
+};
+
+console.log('\n16a. Paid Sunday 23:59 New York: that Monday, even when processed later');
+reset();
+res = await post(paidAt('sunday.night@buyer.com', 1792382370));
+row = DB.allowed_emails.find(r => r.email === 'sunday.night@buyer.com');
+check('joins wonka_wk_2026_10_19', row?.round === 'wonka_wk_2026_10_19', JSON.stringify(row));
+check('the welcome names that cohort', sendState.calls.some(c => c.url.includes('send-welcome-wonka') && c.body.round === 'wonka_wk_2026_10_19'), JSON.stringify(sendState.calls));
+const made: any = DB.rounds.find((r: any) => r.id === 'wonka_wk_2026_10_19');
+check('the cohort row is written with its slug and dates', made?.welcome_email_fn_slug === 'send-welcome-wonka'
+  && made?.start_date === '2026-10-19' && made?.end_date === '2026-11-04' && !made?.stripe_plink_full_price, JSON.stringify(made));
+
+console.log('\n16b. Paid Monday 00:00 New York: the Monday after');
+reset();
+res = await post(paidAt('monday.morning@buyer.com', 1792382430));
+row = DB.allowed_emails.find(r => r.email === 'monday.morning@buyer.com');
+check('joins wonka_wk_2026_10_26', row?.round === 'wonka_wk_2026_10_26', JSON.stringify(row));
+
+console.log('\n16c. The cohort row cannot be written: 500, so Stripe retries, and no Donna welcome');
+reset();
+(DB as any).failUpsertOn = 'rounds';
+res = await post(paidAt('rowfail@buyer.com', 1792382370));
+(DB as any).failUpsertOn = null;
+check('http 500', res.status === 500, `got ${res.status}`);
+check('no welcome of any kind went out', sendState.calls.length === 0, JSON.stringify(sendState.calls));
+
+console.log('\n16d. A weekly row typed in by hand without the slug still gets the WONKA welcome');
+reset();
+DB.rounds.push({ id: 'wonka_wk_2026_10_19', start_date: '2026-10-19' });
+res = await post(paidAt('handrow@buyer.com', 1792382370));
+check('Wonka welcome, never the Donna legacy one', sendState.calls.length === 1 && sendState.calls[0].url.includes('send-welcome-wonka'), JSON.stringify(sendState.calls));
+
+console.log('\n16e. Memorial Day takes the Monday: start_date is the Tuesday, the id keeps the Monday');
+reset();
+res = await post(paidAt('holiday@buyer.com', 1811433600));
+const hol: any = DB.rounds.find((r: any) => r.id === 'wonka_wk_2027_05_31');
+check('row exists with start_date 2027-06-01', hol?.start_date === '2027-06-01', JSON.stringify(hol));
+
+console.log('\n16f. The Donna evergreen link with a paid time is still Donna');
+reset();
+sendState.stripeLineItems = ['prod_UdyoNBZgnpQwan'];
+res = await post(paidAt('donna.weekly@buyer.com', 1792382370, 'plink_1TevFWRqcDuiISNTHnwIfuLq'));
+row = DB.allowed_emails.find(r => r.email === 'donna.weekly@buyer.com');
+check('lands in a Donna wk_ cohort', String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

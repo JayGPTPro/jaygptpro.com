@@ -50,19 +50,23 @@ const WA = 'https://chat.whatsapp.com/Kw459iL73jV4zSTSxd18tS';
 // were about to be told to finish Donna before a day that had already passed. The date
 // now comes from the buyer's own round row. When it cannot be found the sentence is
 // dropped rather than guessed, the same rule the Wonka welcome uses for missing links.
+// A factory that has ALREADY opened drops the sentence too: a team seat added on round 2's
+// day 4 (26.9.2026) was about to be told to finish before 22 September, four days gone.
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-async function wonkaOpensFor(supabase: any, email: string): Promise<string> {
+async function wonkaOpensFor(supabase: any, email: string): Promise<{ date: string; open: boolean }> {
+  const unknown = { date: '', open: false };
   try {
     const { data: row } = await supabase.from('allowed_emails')
       .select('round').eq('email', email.toLowerCase()).maybeSingle();
     const round = String(row?.round || '');
-    if (!round.startsWith('wonka')) return '';
+    if (!round.startsWith('wonka')) return unknown;
     const { data: r } = await supabase.from('rounds').select('start_date').eq('id', round).maybeSingle();
     const iso = String(r?.start_date || '');                 // YYYY-MM-DD
     const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return '';
-    return `${parseInt(m[3], 10)} ${MONTHS[parseInt(m[2], 10) - 1]}`;
-  } catch (e) { console.error('wonkaOpensFor failed, omitting the date:', e); return ''; }
+    if (!m) return unknown;
+    const open = iso <= new Date().toISOString().slice(0, 10);
+    return { date: `${parseInt(m[3], 10)} ${MONTHS[parseInt(m[2], 10) - 1]}`, open };
+  } catch (e) { console.error('wonkaOpensFor failed, omitting the date:', e); return unknown; }
 }
 
 function corsHeaders() {
@@ -98,11 +102,13 @@ const S = {
 // unlock schedule the entire subject of a mail announcing a course about hiring an
 // AI Chief of Staff. All-days-open is a logistical detail, so it sits in a note near
 // the bottom where a logistical detail belongs.
-function buildEmail(wonkaOpens: string): { subject: string; html: string } {
+function buildEmail(wonkaOpens: { date: string; open: boolean }): { subject: string; html: string } {
   const subject = `You're in. Now go hire Donna.`;
-  // The deadline clause exists only when we know the buyer's own factory date.
-  const finishBy = wonkaOpens
-    ? ` Try to finish before <span style="${S.strong}">${wonkaOpens}</span>, when the factory opens, so you walk into Wonka with Donna already running.`
+  // The deadline clause exists only when we know the buyer's own factory date, and only
+  // while that date is still ahead of them.
+  const finishBy = wonkaOpens.open ? ''
+    : wonkaOpens.date
+    ? ` Try to finish before <span style="${S.strong}">${wonkaOpens.date}</span>, when the factory opens, so you walk into Wonka with Donna already running.`
     : ` Finish it before your factory opens and you walk into Wonka with Donna already running.`;
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>

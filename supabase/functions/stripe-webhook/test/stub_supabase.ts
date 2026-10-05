@@ -43,6 +43,7 @@ class Query {
       return { data: [row], error: null };
     }
     if (this.op === 'upsert') {
+      if ((DB as any).failUpsertOn === this.table) return { data: null, error: { message: 'injected upsert failure' } };
       const row = this.payload; const ck = this.conflict || 'id';
       const i = t.findIndex(r => r[ck] === row[ck]);
       if (i >= 0) { t[i] = { ...t[i], ...row }; LOG.push(`upsert ${this.table} update ${row[ck]}`); }

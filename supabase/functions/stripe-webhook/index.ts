@@ -1,6 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@17?target=deno";
+// Wonka's weekly cohort calendar, the same file the sales page and the portal load, so
+// the three can never disagree about a date. Bundled at deploy: push the file first.
+import "https://jaygptpro.com/wonka-bootcamp/cohort-calendar.js";
+const WonkaCalendar = (globalThis as any).WonkaCalendar;
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -99,7 +103,10 @@ const FALLBACK_PRODUCT_TO_ROUND: Record<string, string> = {
 // guard leaned on that alone it would go blind in exactly the failure it exists to catch
 // (proven in the harness: with no Stripe key the buyer still landed in a wk_ cohort).
 // The plink arrives on the webhook payload itself and needs no API call.
-const WONKA_PRODUCTS = new Set(['prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q', 'prod_VB9jlkEBHv4Ddh']);
+const WONKA_PRODUCTS = new Set([
+  'prod_UxhJATVn8CEfCT', 'prod_UxhOUOpgTAGC7q', 'prod_VB9jlkEBHv4Ddh',
+  'prod_V6fAKCdkh1T3Ca', // the invite-only 3-payment plan: it is a Wonka seat too
+]);
 const WONKA_PLINKS = new Set([
   'plink_1U1vCERqcDuiISNTjqJvj1P5', // Golden Ticket, $697 less WONKA200
   'plink_1TxmiPRqcDuiISNTKsKrn7Lz', // The Private Tour
@@ -115,6 +122,8 @@ const WONKA_PLINKS = new Set([
   // a fixed-USD coupon under Adaptive Pricing.
   'plink_1UAnQfRqcDuiISNTLrxgGeIg',
   'plink_1UAnSIRqcDuiISNT7A1vPRac',
+  'plink_1UDNMERqcDuiISNTF5stng8V', // round 2 $497 flat (Vault fallback), was missing here
+  'plink_1U6RqpRqcDuiISNTB4MR4CO6', // the 3-payment plan
 ]);
 function isWonkaRound(round: string): boolean {
   return !!round && round.startsWith('wonka');
@@ -194,6 +203,47 @@ async function ensureEvergreenRound(supabase: SupabaseClient): Promise<string> {
   };
   const { error } = await supabase.from('rounds').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
   if (error) console.error('ensureEvergreenRound upsert error:', error);
+  return id;
+}
+
+/* Wonka is EVERGREEN from 12.10.2026 (Jay, 5.10): a cohort starts every Monday and EVERY
+   Wonka purchase, through any Wonka link or product, joins the coming Monday's cohort. The
+   fixed rounds (wonka_r1, wonka_r2) are finished, so a buyer resolved to one of them would
+   walk into a cohort that has already ended and get none of its emails.
+   The id starts with 'wonka' so isWonkaRound() protects the buyer everywhere, and never
+   with 'wk_', which is Donna's evergreen prefix and would route the Donna welcome.
+   The date rule (Sunday 23:59 New York joins tomorrow, Monday joins next week) and the
+   ten lesson days both come from cohort-calendar.js. No plink columns on the row: the
+   blind roundFromPlink lookup would otherwise return whichever cohort it met first. */
+const WONKA_WA = 'https://chat.whatsapp.com/CLWGlcWYIeK2kyJAG2oSkU';   // one group for every round
+const WONKA_PORTAL = 'https://jaygptpro.com/wonka-bootcamp/';
+const WONKA_EVERGREEN_PRODUCT = 'prod_UxhJATVn8CEfCT';                    // the generic Golden Ticket
+/* `at` is when the buyer PAID (the Stripe event's own timestamp), never when this runs:
+   a Sunday 23:59 purchase whose welcome failed is retried after midnight, and must
+   still join that Monday. Throws if the row cannot be written, so the handler answers
+   500 and Stripe retries: the row is what names the Wonka welcome and its dates. */
+async function ensureWonkaRound(supabase: SupabaseClient, at: Date): Promise<string> {
+  const start: string = WonkaCalendar.nextCohortStart(at);
+  const days: string[] = WonkaCalendar.days(start);
+  const id: string = WonkaCalendar.cohortId(start);
+  const [, m, d] = start.split('-').map(Number);
+  const row = {
+    id,
+    name: `Wonka Creative Bootcamp . week of ${MONTHS[m - 1]} ${d}`,
+    start_date: days[0],                 // the Tuesday when a holiday takes the Monday; the id keeps the Monday
+    end_date: days[days.length - 1],
+    language: 'en',
+    status: 'upcoming',
+    currency: 'usd',
+    whatsapp_link: WONKA_WA,
+    welcome_dates_display: WonkaCalendar.display(start),
+    stripe_product_id: WONKA_EVERGREEN_PRODUCT,
+    portal_url: WONKA_PORTAL,
+    welcome_email_fn_slug: 'send-welcome-wonka',
+    notes: `Auto-created Wonka evergreen cohort (webhook). Lesson days: ${days.join(', ')}.`,
+  };
+  const { error } = await supabase.from('rounds').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
+  if (error) throw new Error(`ensureWonkaRound upsert failed for ${id}: ${error.message || error}`);
   return id;
 }
 
@@ -670,7 +720,17 @@ Deno.serve(async (req: Request) => {
     }
 
     let canonicalRound: string | null = null;
-    if (paymentLinkId) canonicalRound = await roundFromPlink(supabase, paymentLinkId);
+    // Wonka first, before any lookup that could land on a finished round. Either route
+    // is enough: the plink needs no API call, the product survives a link nobody listed.
+    // A known Donna evergreen link is never Wonka, whatever the line items say.
+    const isWonkaPurchase = !(paymentLinkId && EVERGREEN_PLINKS.has(paymentLinkId))
+      && (sessionProductIds.some(id => WONKA_PRODUCTS.has(id))
+        || (!!paymentLinkId && WONKA_PLINKS.has(paymentLinkId)));
+    if (isWonkaPurchase) {
+      const paidAt = new Date(typeof event.created === 'number' ? event.created * 1000 : Date.now());
+      canonicalRound = await ensureWonkaRound(supabase, paidAt);
+    }
+    if (!canonicalRound && paymentLinkId) canonicalRound = await roundFromPlink(supabase, paymentLinkId);
     // Known evergreen plinks resolve directly, no STRIPE_SECRET_KEY needed.
     if (!canonicalRound && paymentLinkId && EVERGREEN_PLINKS.has(paymentLinkId)) {
       canonicalRound = await ensureEvergreenRound(supabase);
@@ -880,7 +940,10 @@ Deno.serve(async (req: Request) => {
             // Looked up BEFORE claiming the welcome so a lookup failure cannot burn the claim.
             // Deliberately consulted LAST, below, so every path that already works keeps working
             // byte for byte. This only replaces the legacy generic fallback.
-            const customSlug = await welcomeFnSlugFor(supabase, englishRound);
+            // A Wonka round always gets the Wonka welcome. Asking the rounds row is right for
+            // everything else, but a weekly cohort row typed in by hand without the slug would
+            // otherwise send a paying Wonka buyer Donna's legacy welcome, with a green 200.
+            const customSlug = isWonkaRound(englishRound) ? 'send-welcome-wonka' : await welcomeFnSlugFor(supabase, englishRound);
             if (customSlug === UNKNOWN_SLUG) {
               // Do not guess which product's welcome to send. Stripe retries.
               console.error('Cannot resolve the welcome function, refusing to send the wrong one:', { round: englishRound, email: customerEmail.toLowerCase() });

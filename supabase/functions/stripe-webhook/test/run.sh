@@ -14,5 +14,6 @@ fi
 sed -e 's|import "jsr:@supabase/functions-js/edge-runtime.d.ts";||' \
     -e 's|import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";|import { createClient } from "./stub_supabase.ts";\ntype SupabaseClient = any;|' \
     -e 's|import Stripe from "https://esm.sh/stripe@17?target=deno";|import Stripe from "./stub_stripe.ts";|' \
+    -e 's|import "https://jaygptpro.com/wonka-bootcamp/cohort-calendar.js";|import "../../../../wonka-bootcamp/cohort-calendar.js";|' \
     "$SRC" > index.ts
 deno run --allow-net --allow-env --no-check run_test.ts

@@ -137,6 +137,14 @@ Deno.serve(async (req: Request) => {
   const results: any[] = [];
   for (const r of rounds) {
     if (!r.start_date) continue;
+    // This is DONNA's Vault email ("You built Donna in 5 days"). Wonka rounds are English
+    // and upcoming too, so without this it went to 70 Wonka round 1 buyers on 4.9.2026 and
+    // 19 round 2 buyers on 25.9, on their day 4. Wonka sends its own Vault email
+    // (14-vault, send-wonka-daily). From 12.10 every weekly Wonka cohort would get it too.
+    if (String(r.id).startsWith('wonka')) {
+      results.push({ round: r.id, action: 'skipped_wonka_round' });
+      continue;
+    }
     const dayNum = daysBetween(r.start_date, todayNY) + 1;
     if (dayNum !== TRIGGER_DAY_OF_ROUND) {
       results.push({ round: r.id, day: dayNum, action: 'not_day_4' });
