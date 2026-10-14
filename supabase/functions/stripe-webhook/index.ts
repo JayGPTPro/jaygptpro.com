@@ -42,6 +42,7 @@ const EVERGREEN_PORTAL = 'https://jaygptpro.com/donna-challenge/';
 const EVERGREEN_PLINKS = new Set([
   'plink_1TevFWRqcDuiISNTHnwIfuLq', // landing-page buy button (full price)
   'plink_1TegrRRqcDuiISNTTajV9LLO', // discounted link
+  'plink_1UQ7stRqcDuiISNTOAn9pMGj', // jaygptpro.com/ai-employee, Tom Mays affiliate link ($497, no promo codes)
 ]);
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
