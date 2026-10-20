@@ -13,7 +13,7 @@ export const SEND_TO_TYPES = ["paid", "family", "admin", "free"];
 // The old filter was `!primary_email`, i.e. "keep only canonical rows". That is
 // wrong in one specific way that cost two PAYING customers their mail:
 //
-//   tc@besttopbuysonline.com -> 9269233@gmail.com -> tpcgolfer@sbcglobal.net
+//   address A -> address B -> address C
 //
 // primary_email chains, and the address at the END of that chain has no row in
 // wonka_r1 at all. So every row in the chain was dropped as "an alias", and the
@@ -36,7 +36,7 @@ export // Grouping addresses into people is a CONNECTED COMPONENTS problem, not 
 // tail feeding a cycle (a -> b -> c -> b) is worse, because the answer then
 // depends on where you entered. Union-find gives every address in a component
 // the same root no matter which one you start from, and a target with no row of
-// its own (tpcgolfer@sbcglobal.net) still joins the component that points at it.
+// its own (address C above) still joins the component that points at it.
 class Union {
   private parent = new Map<string, string>();
   find(x: string): string {
@@ -74,9 +74,9 @@ function buildUnion(rows: Row[]): Union {
 // One person, the address we will mail them on, and EVERY address they own.
 //
 // `addresses` exists because the guard table records the address that was
-// actually mailed, while `pick` can legitimately move between runs: Ted Cheron
+// actually mailed, while `pick` can legitimately move between runs: one customer
 // has no canonical row today so he is mailed on an alias, and the moment anyone
-// adds tpcgolfer@sbcglobal.net as a real row the canonical branch starts winning.
+// adds his canonical address as a real row the canonical branch starts winning.
 // A guard lookup on `pick` alone would then miss, and he would receive a second
 // copy of an email he already has. Checking every address he owns cannot miss.
 export type Person = { pick: Row; addresses: string[]; all: Row[] };
@@ -131,7 +131,7 @@ export function resolveRecipients(rows: Row[]): Row[] {
 // pick. A buyer whose welcome fired on their paying address must not receive
 // the preparation email before it, and the pick is not always that address.
 //
-// A row whose welcome never fired at all (kim@fun.delivery is one) would
+// A row whose welcome never fired at all (one customer had one) would
 // otherwise wait forever, so fall back to when the row was created.
 export function readyAtGroup(p: Person): number {
   const welcomes = p.all
