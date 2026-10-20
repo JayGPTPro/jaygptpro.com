@@ -1,6 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// The same 53-bit hash in every page that keeps a per-customer list, so the list holds no addresses.
+function emailHash(email: string): string {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < email.length; i++) {
+    const ch = email.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const resendKey = Deno.env.get('RESEND_API_KEY_BINA') || Deno.env.get('RESEND_API_KEY')!;
@@ -151,7 +164,7 @@ Deno.serve(async (req) => {
         || notes.includes('מנדי')
         || notes.includes('family/team')
         || notes.includes('family member (jay added)')
-        || email === 'mendikoritz@gmail.com';
+        || emailHash(email) === 'xr4sml6h5k'; // one customer, kept by hash so the code holds no address
     }).map((r: any) => ({ email: r.email }));
 
     const { data: alreadySent } = await supabase
