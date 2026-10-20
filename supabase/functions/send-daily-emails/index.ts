@@ -219,8 +219,8 @@ Deno.serve(async (req: Request) => {
     // round1 and round2. Under the weekly evergreen model it matches EVERY new wk_
     // cohort, and the guard rows are keyed per round, so a fresh round id always
     // looks unsent. Five people have therefore been receiving the whole 5 day course
-    // again every single week: srulyb@steelstone.com has 76 sends on record,
-    // info@jaygptpro.com has 89. Honour 'both' only for the two rounds it was built
+    // again every single week: one of them has 76 sends on record,
+    // another has 89. Honour 'both' only for the two rounds it was built
     // for (fixed 12.8.2026).
     const audience = (roundId === 'round1' || roundId === 'round2') ? [roundId, 'both'] : [roundId];
     const { data: participants } = await supabase
