@@ -5312,7 +5312,20 @@ const VAULT_BANNER_MIN_HOURS_BETWEEN_SHOWS = 24;  // once per day max, even with
 const VAULT_BANNER_ADMIN_EMAILS = ['info@jaygptpro.com','smargaliot1@gmail.com'];
 // Per-customer opt-out: these emails never see the Vault banner, regardless of round.
 // Added for customers who asked to stop seeing Vault promotion.
-const VAULT_BANNER_EXCLUDE_EMAILS = ['andy@pictureswords.com'];
+// Stored as emailHash() of the lowercased address, so the page holds no customer email.
+const VAULT_BANNER_EXCLUDE_HASHES = ['7jhhat43b6'];
+// The same 53-bit hash in every page that keeps a per-customer list, so the list holds no addresses.
+function emailHash(email) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < email.length; i++) {
+    const ch = email.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
 
 // Returns true if the current user has reached Day 4 of their round (or is admin / past round).
 // Used to gate the Vault VSL banner so R4/R5 customers don't see it before Day 4.
@@ -5347,7 +5360,7 @@ function showVaultBannerIfEligible() {
     const isAdmin = VAULT_BANNER_ADMIN_EMAILS.indexOf(email) >= 0;
 
     // Per-customer opt-out: never show the Vault banner to excluded emails.
-    if (VAULT_BANNER_EXCLUDE_EMAILS.indexOf(email) >= 0) return;
+    if (VAULT_BANNER_EXCLUDE_HASHES.indexOf(emailHash(email)) >= 0) return;
 
     // Private B2B cohorts (e.g. Direct Promotions) never see the Vault upsell.
     const round = localStorage.getItem('donna-challenge-round') || '';
