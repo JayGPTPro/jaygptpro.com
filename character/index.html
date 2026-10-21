@@ -60,8 +60,7 @@
   .btn:hover { background: var(--accent-vivid); transform: translateY(-1px); }
   .btn svg { width: 20px; height: 20px; }
 
-  #gift { display: none; }
-  #gift.unlocked { display: block; animation: rise 0.6s ease; }
+  #gift { display: block; }
   @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
   .codebox { display: flex; align-items: center; justify-content: space-between; gap: 14px; background: #0a0a0c; border-radius: 12px; padding: 16px 18px; margin-top: 20px; }
@@ -79,7 +78,7 @@
   .gotfile .tree { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); line-height: 1.7; background: var(--bg-page); border: 1px solid var(--border-soft); border-radius: 10px; padding: 16px 18px; margin-top: 12px; white-space: pre; overflow-x: auto; }
 
   /* evergreen / challenge section */
-  .cta { display: none; margin-top: 40px; background: var(--bg-card); border: 1px solid var(--border-soft); border-top: 3px solid var(--accent-orange); border-radius: 16px; padding: 38px 36px; text-align: center; }
+  .cta { display: block; margin-top: 40px; background: var(--bg-card); border: 1px solid var(--border-soft); border-top: 3px solid var(--accent-orange); border-radius: 16px; padding: 38px 36px; text-align: center; }
   .cta.revealed { display: block; animation: rise 0.6s ease; }
   .cta .eyebrow { margin-bottom: 14px; }
   .cta h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 14px; }
@@ -153,20 +152,9 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     </div>
   </section>
 
-  <!-- STEP 1 . the gate -->
-  <section class="step" id="gate">
-    <div class="step-label">Step 1</div>
-    <h2>Join the free WhatsApp group</h2>
-    <p>That's where I share tips, insights, and updates on AI for eCommerce. Join, and your gift unlocks right below.</p>
-    <button class="btn" id="join-btn">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
-      <span>Join on WhatsApp</span>
-    </button>
-  </section>
-
-  <!-- STEP 2 . the gift (locked) -->
+  <!-- the gift, open to everyone (no WhatsApp step, Jay 21.10) -->
   <section class="step" id="gift">
-    <div class="step-label">Step 2 . your gift</div>
+    <div class="step-label">Your gift</div>
     <h2>Install the /character skill</h2>
     <p>Paste this into your terminal, or straight into Claude Code on desktop. It installs globally, so it's available in every folder.</p>
 
@@ -193,7 +181,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="eyebrow">Going further</div>
     <h2>Want the full employee,<br/>not just the personality?</h2>
     <p>The /character skill is one small, fun layer. If you want to build an AI Chief of Staff that actually runs your day, I teach the whole thing, step by step, in a 5-day challenge.</p>
-    <a class="btn" href="https://jaygptpro.com/claude-code-challenge-launch/" target="_blank" rel="noopener">See the 5-day challenge →</a>
+    <a class="btn" href="https://jaygptpro.com/ai-employee/" target="_blank" rel="noopener">See the 5-day challenge →</a>
   </section>
 
 </div>
@@ -203,19 +191,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 </footer>
 
 <script>
-  var WHATSAPP_URL = 'https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs';
-
   function initGate() {
-    var joinBtn = document.getElementById('join-btn');
-    var gift = document.getElementById('gift');
-    joinBtn.addEventListener('click', function () {
-      window.open(WHATSAPP_URL, '_blank', 'noopener');
-      gift.classList.add('unlocked');
-      var cta = document.querySelector('.cta');
-      if (cta) cta.classList.add('revealed');
-      setTimeout(function () { gift.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
-    });
-
     var copyBtn = document.getElementById('copy-btn');
     copyBtn.addEventListener('click', function () {
       var text = document.getElementById('cmd').textContent;
