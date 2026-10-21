@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everything from the Claude Code Webinar | Jay Margaliot</title>
+<meta name="description" content="Everything from the Claude Code webinar with Jay and Tom on one page: the install guide, three free skills, the prompts from the live demos, and the 5-day Challenge.">
+<meta property="og:title" content="Everything from the webinar. One page.">
+<meta property="og:description" content="Install Claude Code, grab three free skills, and copy the prompts from the live demos.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jaygptpro.com/build/">
+<meta property="og:image" content="https://jaygptpro.com/assets/jay-hero.jpg">
+<link rel="canonical" href="https://jaygptpro.com/build/">
+<link rel="icon" href="../assets/logo.png">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-M4RK6H5NMH');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f4f1ea;--paper-2:#ebe6dc;--card:#fffdf8;
+  --ink:#141519;--ink-2:#4b4d57;--ink-3:#8b8d97;--line:#dcd6ca;--line-2:#c9c2b3;
+  --blue:#2340ff;--blue-deep:#1a2fc4;--blue-soft:#e6e9ff;
+  --coral:#ff5a3c;--coral-soft:#ffe6df;
+  --mint:#0f9d76;--mint-soft:#dff5ec;
+  --amber:#b8770a;--amber-soft:#fff1cf;
+  --violet:#7c3aed;--violet-soft:#ede6ff;
+  --clay:#d97757;--clay-soft:#fbe9e1;
+  --disp:'Bricolage Grotesque','DM Sans',system-ui,sans-serif;
+  --sans:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--blue);color:#fff}
+b,strong{font-weight:700;color:var(--ink)}
+
+/* paper texture and grid */
+.grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(20,21,25,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(20,21,25,.045) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(120% 70% at 50% 0%,#000 30%,transparent 80%);-webkit-mask-image:radial-gradient(120% 70% at 50% 0%,#000 30%,transparent 80%)}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.progress{position:fixed;top:0;left:0;right:0;height:4px;z-index:100}
+.progress span{display:block;height:100%;width:0;background:var(--blue);transition:width .1s linear}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:22px 24px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.top .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--coral);margin-right:8px;vertical-align:1px;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,60,.45)}50%{box-shadow:0 0 0 6px rgba(255,90,60,0)}}
+.top a{border-bottom:1px solid var(--line-2);white-space:nowrap}
+.top a:hover{color:var(--blue);border-color:var(--blue)}
+
+/* layout: one narrow column, like a link hub */
+.wrap{position:relative;z-index:1;max-width:660px;margin:0 auto;padding:22px 20px 56px}
+
+/* head */
+.head{text-align:center;padding:14px 0 8px}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);background:var(--card);border:1px solid var(--line-2);padding:8px 16px;border-radius:999px}
+.kicker i{width:7px;height:7px;border-radius:50%;background:var(--coral);display:block;box-shadow:0 0 0 3px var(--coral-soft)}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(40px,8.4vw,64px);line-height:.98;letter-spacing:-.045em;margin-top:24px;text-wrap:balance}
+h1 .bl{color:var(--blue);position:relative;display:inline-block}
+h1 .bl::after{content:'';position:absolute;left:2%;right:2%;bottom:-.08em;height:.12em;border-radius:99px;background:var(--coral);transform:scaleX(0);transform-origin:left;animation:draw .9s .7s var(--ease) forwards}
+html.no-js h1 .bl::after{transform:none}
+@keyframes draw{to{transform:scaleX(1)}}
+.sub{font-size:17px;color:var(--ink-2);max-width:500px;margin:20px auto 0;line-height:1.55;text-wrap:pretty}
+.sub b{color:var(--ink)}
+.jump{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:22px}
+.jump a{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;padding:7px 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);transition:border-color .2s,color .2s,transform .25s var(--ease)}
+.jump a:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px)}
+.jump a.go{background:var(--ink);color:#fff;border-color:var(--ink)}
+.jump a.go:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.js .head>*{opacity:0;transform:translateY(16px);animation:rise .8s var(--ease) forwards}
+.js .head>*:nth-child(2){animation-delay:.08s}.js .head>*:nth-child(3){animation-delay:.16s}.js .head>*:nth-child(4){animation-delay:.24s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* group labels */
+.label{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin:40px 0 12px;scroll-margin-top:24px}
+.label .n{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.04em}
+.label::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* link card (install guide) */
+.links{display:flex;flex-direction:column;gap:12px}
+.link{position:relative;display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;color:var(--ink);transition:transform .3s var(--ease),border-color .25s,box-shadow .3s var(--ease);overflow:hidden}
+.link:hover{transform:translate(-2px,-2px)}
+.link-ic{flex:none;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft,var(--blue-soft));color:var(--accent,var(--blue));transition:transform .3s var(--ease)}
+.link:hover .link-ic,.gift:hover .link-ic{transform:rotate(-6deg) scale(1.04)}
+.link-ic svg{width:26px;height:26px}
+.link-txt{flex:1;min-width:0}
+.t{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.02em;line-height:1.2;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.d{display:block;font-size:14.5px;color:var(--ink-2);line-height:1.5;margin-top:4px}
+.badge{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--accent-soft,var(--blue-soft));color:var(--accent,var(--blue))}
+.link-arrow{flex:none;color:var(--ink-3);transition:transform .25s var(--ease),color .2s}
+.link:hover .link-arrow{transform:translateX(4px);color:var(--accent,var(--blue))}
+.link.feat{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--blue)}
+.link.feat:hover{box-shadow:8px 8px 0 var(--blue)}
+.hint{font-size:13px;color:var(--ink-3);margin-top:10px;padding-left:4px}
+.hint a{color:var(--ink-2);border-bottom:1px solid var(--line-2)}
+.hint a:hover{color:var(--blue);border-color:var(--blue)}
+
+/* accent themes */
+.a-blue{--accent:#2340ff;--accent-soft:#e6e9ff}
+.a-coral{--accent:#ff5a3c;--accent-soft:#ffe6df}
+.a-violet{--accent:#7c3aed;--accent-soft:#ede6ff}
+.a-mint{--accent:#0f9d76;--accent-soft:#dff5ec}
+.a-amber{--accent:#b8770a;--accent-soft:#fff1cf}
+.a-clay{--accent:#c2603f;--accent-soft:#fbe9e1}
+
+/* gift cards: install command lives on the card */
+.gifts{display:flex;flex-direction:column;gap:14px}
+.gift{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 20px 18px;transition:transform .3s var(--ease),border-color .25s,box-shadow .3s var(--ease)}
+.gift:hover{border-color:var(--accent);box-shadow:6px 6px 0 var(--accent-soft);transform:translate(-2px,-2px)}
+.gift-top{display:flex;gap:16px;align-items:flex-start}
+.gift .num{position:absolute;top:16px;right:18px;font-family:var(--disp);font-weight:800;font-size:15px;color:var(--line-2);letter-spacing:-.02em}
+.gift.star{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--accent)}
+.gift.star:hover{border-color:var(--ink);box-shadow:8px 8px 0 var(--accent)}
+.cmd{display:flex;align-items:center;gap:10px;margin-top:16px;background:var(--ink);color:#e9e8e3;border-radius:12px;padding:6px 6px 6px 14px;font-family:var(--mono);font-size:13px;overflow:hidden}
+.cmd .p{color:var(--accent-on-ink,#8f9bff);flex:none;user-select:none}
+.cmd code{flex:1;min-width:0;white-space:nowrap;overflow-x:auto;scrollbar-width:none;padding:6px 0}
+.cmd code::-webkit-scrollbar{display:none}
+.copy{flex:none;display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:9px;background:#fff;color:var(--ink);transition:background .2s,color .2s,transform .15s}
+.copy:hover{background:var(--accent-soft)}
+.copy:active{transform:scale(.96)}
+.copy.ok{background:var(--mint);color:#fff}
+.copy svg{width:14px;height:14px}
+.run{display:flex;gap:10px;align-items:baseline;margin-top:12px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.run .k{flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.run code,.step code,.tip code{font-family:var(--mono);font-size:.9em;background:var(--accent-soft,var(--blue-soft));color:var(--accent,var(--blue-deep));padding:1px 6px;border-radius:5px;white-space:nowrap}
+.more{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:700;color:var(--accent)}
+.more:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* no-node fallback */
+.tip{margin-top:14px;border:1px dashed var(--line-2);border-radius:14px;background:rgba(255,253,248,.6)}
+.tip summary{list-style:none;cursor:pointer;padding:13px 16px;font-size:13.5px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.tip summary::-webkit-details-marker{display:none}
+.tip summary .chev{transition:transform .25s var(--ease);display:inline-block}
+.tip[open] summary .chev{transform:rotate(90deg)}
+.tip .body{padding:0 16px 16px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.tip .body p+p{margin-top:8px}
+
+/* how this works */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card)}
+.step{padding:20px 18px;border-right:1px solid var(--line)}
+.step:last-child{border-right:0}
+.step .sn{font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.04em;color:var(--coral);line-height:1;margin-bottom:8px}
+.step h3{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.02em;margin-bottom:4px;line-height:1.2}
+.step p{font-size:13px;color:var(--ink-2);line-height:1.5}
+
+/* prompts from the live demo */
+.prompts{display:flex;flex-direction:column;gap:10px}
+.pr{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .25s,box-shadow .3s var(--ease)}
+.pr[open]{border-color:var(--accent);box-shadow:5px 5px 0 var(--accent-soft)}
+.pr summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:15px 16px}
+.pr summary::-webkit-details-marker{display:none}
+.pr .link-ic{width:42px;height:42px;border-radius:12px}
+.pr .link-ic svg{width:21px;height:21px}
+.pr .t{font-size:16.5px}
+.pr .d{font-size:13.5px;margin-top:2px}
+.pr .chev{flex:none;color:var(--ink-3);transition:transform .3s var(--ease)}
+.pr[open] .chev{transform:rotate(90deg);color:var(--accent)}
+.pr-body{padding:0 16px 16px}
+.ptext{position:relative;background:var(--ink);color:#e9e8e3;border-radius:12px;padding:16px 16px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.ptext .copy{position:absolute;top:10px;right:10px}
+.ptext pre{font:inherit;white-space:pre-wrap;padding-right:78px}
+.pr-note{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* the challenge: the one paid offer, at the bottom */
+.ch{position:relative;margin-top:14px;border-radius:24px;background:#121318;color:#eeede8;padding:34px 28px 28px;overflow:hidden;isolation:isolate}
+.ch::before{content:'';position:absolute;z-index:-1;width:420px;height:420px;right:-160px;top:-180px;border-radius:50%;background:radial-gradient(circle,rgba(217,119,87,.55),transparent 65%);filter:blur(10px);animation:drift 12s ease-in-out infinite alternate}
+.ch::after{content:'';position:absolute;z-index:-1;width:360px;height:360px;left:-170px;bottom:-200px;border-radius:50%;background:radial-gradient(circle,rgba(35,64,255,.42),transparent 65%);filter:blur(10px);animation:drift 14s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(-30px,30px) scale(1.08)}}
+.ch .eb{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#f0a987;display:flex;align-items:center;gap:10px}
+.ch .eb::before{content:'';width:22px;height:2px;background:#f0a987}
+.ch h2{font-family:var(--disp);font-weight:800;font-size:clamp(32px,6.4vw,46px);line-height:1;letter-spacing:-.04em;margin-top:14px;color:#fff;text-wrap:balance}
+.ch h2 em{font-style:normal;color:#f0a987}
+.ch .lead{font-size:15.5px;color:rgba(238,237,232,.74);margin-top:14px;max-width:520px;line-height:1.55}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:22px}
+.day{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 10px 11px;background:rgba(255,255,255,.035)}
+.day .dn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(238,237,232,.5)}
+.day .dt{font-size:12.5px;font-weight:600;color:#fff;line-height:1.3;margin-top:4px}
+.offer{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:24px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12)}
+.price{display:flex;align-items:baseline;gap:12px}
+.price .now{font-family:var(--disp);font-weight:800;font-size:54px;letter-spacing:-.05em;line-height:.9;color:#fff}
+.price .was{font-family:var(--disp);font-weight:500;font-size:22px;color:rgba(238,237,232,.45);text-decoration:line-through;text-decoration-thickness:2px}
+.when{font-size:13.5px;color:rgba(238,237,232,.7);margin-top:8px}
+.when b{color:#fff}
+.cd{display:flex;gap:6px}
+.cd div{min-width:58px;text-align:center;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);padding:8px 6px 7px}
+.cd b{display:block;font-family:var(--disp);font-weight:700;font-size:24px;line-height:1;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.cd span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(238,237,232,.5);margin-top:5px}
+.cd-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(238,237,232,.5);margin-bottom:7px}
+.bonus{display:flex;gap:12px;align-items:center;margin-top:20px;padding:13px 15px;border-radius:14px;background:rgba(240,169,135,.1);border:1px solid rgba(240,169,135,.3);font-size:14px;color:#f7d6c6;line-height:1.45}
+.bonus b{color:#fff}
+.bonus .bi{flex:none;font-size:20px;line-height:1}
+.cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:16px;padding:16px 26px;border-radius:14px;background:#fff;color:#121318;transition:transform .25s var(--ease),box-shadow .3s var(--ease),background .2s}
+.btn:hover{transform:translateY(-3px);box-shadow:0 18px 36px -16px rgba(240,169,135,.75);background:#ffe9de}
+.btn svg{transition:transform .25s var(--ease)}
+.btn:hover svg{transform:translateX(4px)}
+.btn-2{font-size:14px;font-weight:600;color:rgba(238,237,232,.78);padding:10px 8px;border-bottom:1px solid rgba(238,237,232,.25)}
+.btn-2:hover{color:#fff;border-color:#fff}
+.fine{font-size:12.5px;color:rgba(238,237,232,.48);margin-top:14px}
+
+/* footer */
+.foot{text-align:center;margin-top:44px;color:var(--ink-3);font-size:13px;font-family:var(--mono);line-height:1.7}
+.foot .line{color:var(--ink-2);font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:-.02em;margin-bottom:8px}
+.foot .line span{color:var(--blue)}
+.foot a{color:var(--ink);font-weight:600;border-bottom:1px solid var(--line-2)}
+.foot a:hover{color:var(--blue);border-color:var(--blue)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:11px 18px;border-radius:999px;box-shadow:0 18px 40px -18px rgba(0,0,0,.6);transition:opacity .25s,transform .35s var(--ease);z-index:200}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0s);will-change:opacity,transform}
+.reveal.in{opacity:1;transform:none}
+html.no-js .reveal{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1!important;transform:none!important}
+  .js .head>*{animation:none!important;opacity:1;transform:none}
+  h1 .bl::after{animation:none;transform:none}
+  .ch::before,.ch::after,.top .dot{animation:none}
+}
+@media (max-width:640px){
+  .wrap{padding:14px 16px 48px}
+  .top{padding:18px 16px;font-size:11px}
+  .link{padding:15px 14px;gap:13px;border-radius:16px}
+  .link-ic{width:46px;height:46px;border-radius:12px}
+  .link-ic svg{width:23px;height:23px}
+  .t{font-size:17.5px}
+  .gift{padding:17px 15px 15px}
+  .gift .num{display:none}
+  .hide-sm{display:none}
+  .gift-top{gap:13px}
+  .cmd{font-size:12px;padding-left:12px}
+  .copy{padding:8px 10px}
+  .steps{grid-template-columns:1fr}
+  .step{border-right:0;border-bottom:1px solid var(--line)}
+  .step:last-child{border-bottom:0}
+  .link.feat,.gift.star{box-shadow:5px 5px 0 var(--accent,var(--blue))}
+  .ch{padding:28px 18px 22px;border-radius:20px}
+  .week{grid-template-columns:repeat(2,1fr)}
+  .week .day:last-child{grid-column:span 2}
+  .offer{flex-direction:column;align-items:flex-start}
+  .cd div{min-width:52px}
+  .btn{width:100%}
+  .cta{flex-direction:column;align-items:stretch}
+  .btn-2{text-align:center;align-self:center}
+  .ptext pre{padding-right:0;padding-top:34px}
+}
+</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1392254213967766');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+</head>
+<body>
+
+<div class="progress"><span id="bar"></span></div>
+<div class="grid"></div>
+<div class="grain"></div>
+
+<div class="top"><span><span class="dot"></span><span class="hide-sm">Claude Code </span>webinar &middot; with Tom</span><a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">by Jay Margaliot</a></div>
+
+<main class="wrap">
+
+  <!-- HEAD -->
+  <div class="head">
+    <div class="kicker"><i></i>Free &middot; Everything from the webinar</div>
+    <h1>Everything I promised you.<br><span class="bl">One page.</span></h1>
+    <p class="sub">Install Claude Code, grab the <b>three free skills</b>, and copy the prompts from the live demos. Each skill installs with one line.</p>
+    <nav class="jump" aria-label="Jump to a section">
+      <a href="#install">1 &middot; Install</a>
+      <a href="#gifts">2 &middot; Free skills</a>
+      <a href="#demos">3 &middot; Live demo prompts</a>
+      <a href="#challenge" class="go">The Challenge &rarr;</a>
+    </nav>
+  </div>
+
+  <!-- 1. INSTALL -->
+  <div class="label reveal" id="install"><span class="n">01</span>Start here</div>
+  <div class="links">
+    <a class="link feat a-blue reveal" href="https://jaygptpro.com/claude-code-install-en.html" target="_blank" rel="noopener" data-ev="install_guide">
+      <span class="link-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+      </span>
+      <span class="link-txt">
+        <span class="t">Install Claude Code <span class="badge">Free guide</span></span>
+        <span class="d">Step by step, Mac or Windows. Everything below runs inside it.</span>
+      </span>
+      <span class="link-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+    </a>
+  </div>
+  <p class="hint reveal">Already have it? <a href="#gifts">Skip to the free skills</a>.</p>
+
+  <!-- 2. THE THREE GIFTS -->
+  <div class="label reveal" id="gifts"><span class="n">02</span>Your three free skills</div>
+  <div class="gifts">
+
+    <div class="gift star a-mint reveal">
+      <span class="num">01</span>
+      <div class="gift-top">
+        <span class="link-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M13 9.2c-.4-.5-1.1-.8-2-.8-1.1 0-2 .6-2 1.4 0 1.9 4 1 4 2.9 0 .8-.9 1.4-2 1.4-.9 0-1.6-.3-2-.8"/></svg>
+        </span>
+        <div class="link-txt">
+          <span class="t">Subscription Hunter <span class="badge">From the live demo</span></span>
+          <span class="d">Finds every subscription and recurring charge in your bank and card statements, and tells you how much you can get back this year. It never cancels anything. You do.</span>
+        </div>
+      </div>
+      <div class="cmd" style="--accent-on-ink:#5fe0b5"><span class="p">$</span><code>npx skills add JayGPTPro/subscription-hunter -g</code><button class="copy" data-copy="npx skills add JayGPTPro/subscription-hunter -g" data-ev="copy_subscription_hunter" aria-label="Copy the Subscription Hunter install command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button></div>
+      <div class="run"><span class="k">Run</span><span>Put 12 months of bank and card CSV files in one folder. Open Claude Code there and type <code>/subscription-hunter</code></span></div>
+      <a class="more" href="https://jaygptpro.com/subscription-hunter/" target="_blank" rel="noopener" data-ev="page_subscription_hunter">Full guide &rarr;</a>
+    </div>
+
+    <div class="gift a-blue reveal" style="--d:.05s">
+      <span class="num">02</span>
+      <div class="gift-top">
+        <span class="link-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.3-.6-.6-2.3 2.4-2.6z"/></svg>
+        </span>
+        <div class="link-txt">
+          <span class="t">The Skill Skiller <span class="badge">Builds skills</span></span>
+          <span class="d">The skill that builds skills. Tell it the task you do every week and hate. It asks a few questions, builds the skill and tests it.</span>
+        </div>
+      </div>
+      <div class="cmd"><span class="p">$</span><code>npx skills add JayGPTPro/the-skill-skiller -g</code><button class="copy" data-copy="npx skills add JayGPTPro/the-skill-skiller -g" data-ev="copy_skill_skiller" aria-label="Copy the Skill Skiller install command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button></div>
+      <div class="run"><span class="k">Run</span><span>Type <code>/the-skill-skiller</code> and your idea, for example: a skill that turns meeting transcripts into a task list</span></div>
+      <a class="more" href="https://jaygptpro.com/the-skill-skiller/" target="_blank" rel="noopener" data-ev="page_skill_skiller">Full guide &rarr;</a>
+    </div>
+
+    <div class="gift a-violet reveal" style="--d:.1s">
+      <span class="num">03</span>
+      <div class="gift-top">
+        <span class="link-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+        </span>
+        <div class="link-txt">
+          <span class="t">Character <span class="badge">Personality</span></span>
+          <span class="d">Gives your AI employee a personality: how it talks to you, its humor, its energy, and how hard it pushes back. It remembers who it is every time you open the folder.</span>
+        </div>
+      </div>
+      <div class="cmd" style="--accent-on-ink:#b79bff"><span class="p">$</span><code>npx skills add JayGPTPro/character -g</code><button class="copy" data-copy="npx skills add JayGPTPro/character -g" data-ev="copy_character" aria-label="Copy the Character install command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button></div>
+      <div class="run"><span class="k">Run</span><span>Open Claude Code in your employee's folder, type <code>/character</code> and answer a few quick questions</span></div>
+    </div>
+
+  </div>
+
+  <details class="tip reveal">
+    <summary><span class="chev">&rsaquo;</span> The command won't run? Open this</summary>
+    <div class="body">
+      <p>The command needs Node.js, which comes with Claude Code on most setups. If it still won't run, skip it and paste this into Claude Code instead (swap in the skill name):</p>
+      <div class="cmd a-blue" style="margin-top:10px"><code style="white-space:normal">Install the skill from github.com/JayGPTPro/subscription-hunter into my global skills folder (~/.claude/skills). Fetch the files yourself.</code><button class="copy" data-copy="Install the skill from github.com/JayGPTPro/subscription-hunter into my global skills folder (~/.claude/skills). Fetch the files yourself." data-ev="copy_no_node" aria-label="Copy the install-without-Node prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button></div>
+      <p>The other two: <code>JayGPTPro/the-skill-skiller</code> and <code>JayGPTPro/character</code>.</p>
+    </div>
+  </details>
+
+  <div class="steps reveal" style="--d:.05s">
+    <div class="step"><div class="sn">01</div><h3>Copy the line</h3><p>Tap Copy on the skill you want.</p></div>
+    <div class="step"><div class="sn">02</div><h3>Paste it into Claude Code</h3><p>Claude runs it. Restart the session once so it picks up the new skill.</p></div>
+    <div class="step"><div class="sn">03</div><h3>Type the command</h3><p>Press Enter. The command is the whole prompt.</p></div>
+  </div>
+
+  <!-- 3. FROM THE LIVE DEMO -->
+  <div class="label reveal" id="demos"><span class="n">03</span>From the live demo</div>
+  <div class="prompts">
+
+    <details class="pr a-coral reveal">
+      <summary>
+        <span class="link-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/><path d="M7 13h6M7 16h10"/></svg></span>
+        <span class="link-txt"><span class="t">The landing page skill <span class="badge">Skill</span></span><span class="d">An Amazon product link in, a full landing page out.</span></span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+      </summary>
+      <div class="pr-body">
+        <div class="cmd" style="margin-top:0;--accent-on-ink:#ff9a85"><span class="p">$</span><code>npx skills add JayGPTPro/amazon-landing-page -g</code><button class="copy" data-copy="npx skills add JayGPTPro/amazon-landing-page -g" data-ev="copy_landing_page" aria-label="Copy the landing page skill install command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button></div>
+        <div class="run"><span class="k">Run</span><span><code>/amazon-landing-page</code> followed by the product link</span></div>
+        <a class="more" href="https://jaygptpro.com/amazon-landing-page-skill.html" target="_blank" rel="noopener" data-ev="page_landing_page">Full guide &rarr;</a>
+      </div>
+    </details>
+
+    <details class="pr a-mint reveal" style="--d:.04s">
+      <summary>
+        <span class="link-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span>
+        <span class="link-txt"><span class="t">The family money dashboard <span class="badge">Prompt</span></span><span class="d">Works in an empty folder. It makes up the data itself.</span></span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+      </summary>
+      <div class="pr-body">
+        <div class="ptext"><button class="copy" data-copy-from="p-dash" data-ev="copy_prompt_dashboard" aria-label="Copy the money dashboard prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button><pre id="p-dash">Make up a year of bank and credit card data for a typical American family.
+Turn it into a money dashboard that looks like Apple and Stripe built it together: dark mode, animations and icons.
+It shows:
+1. How much came in, how much went out, and what's left
+2. Where the money goes, and how much budget is left in each category
+3. Next month: what goes out and when
+4. Subscription, with a button that shows the yearly savings
+Use the frontend-design skill.
+When you're done, take a screenshot, critique it like a senior designer, and improve it. Then open it for me.</pre></div>
+      </div>
+    </details>
+
+    <details class="pr a-amber reveal" style="--d:.08s">
+      <summary>
+        <span class="link-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.3l-4.8 2.6.9-5.4L4.2 7.7l5.4-.8z"/><path d="M5 21h14"/></svg></span>
+        <span class="link-txt"><span class="t">20 logos for a pizza shop <span class="badge">Prompt</span></span><span class="d">Swap Opus Pizza for your own business.</span></span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+      </summary>
+      <div class="pr-body">
+        <div class="ptext"><button class="copy" data-copy-from="p-logos" data-ev="copy_prompt_logos" aria-label="Copy the logos prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button><pre id="p-logos">Make 20 logo options for Opus Pizza, an Italian pizzeria in Miami.
+Mix styles: classic Italian, modern minimal, retro badge, hand-drawn.
+In a few, hide a subtle nod to Claude's orange starburst, like the slice lines.
+Simple enough to read small on a pizza box. Plain background.
+Show them all on one page so I can pick.</pre></div>
+      </div>
+    </details>
+
+    <details class="pr a-clay reveal" style="--d:.12s">
+      <summary>
+        <span class="link-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L2.5 19.5h19z"/><path d="M8.5 13.5h.01M12.5 10.5h.01M13 15.5h.01"/></svg></span>
+        <span class="link-txt"><span class="t">The pizza shop website <span class="badge">Prompt</span></span><span class="d">Put your logo and a few photos in the folder first.</span></span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+      </summary>
+      <div class="pr-body">
+        <div class="ptext"><button class="copy" data-copy-from="p-site" data-ev="copy_prompt_site" aria-label="Copy the website prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg><span>Copy</span></button><pre id="p-site">Build a one-page website for Opus Pizza, an Italian pizzeria in Miami. The logo and photos are in this folder.
+Sizes are named after Claude models: Haiku (small), Sonnet (medium), Opus (large). A real pizzeria first, the nod stays subtle.
+Signature moment: as I scroll, a slice lifts off the pie and the cheese stretches with the scroll.
+Design it like a top agency: one bold direction, type with character, colors from the logo and photos, grain and soft light, no two sections alike. No stat counters, no equal cards.
+Every section stays visible after its animation.
+Then screenshot it, critique it like a senior designer, raise it two levels, and open it.</pre></div>
+      </div>
+    </details>
+
+  </div>
+
+  <!-- 4. THE CHALLENGE -->
+  <div class="label reveal" id="challenge"><span class="n">04</span>Want your own AI employee?</div>
+  <section class="ch reveal">
+    <div class="eb">The Claude Code Challenge</div>
+    <h2>Build your first AI employee <em>in 5 days.</em></h2>
+    <p class="lead">You saw what one skill does. In the Challenge you build Donna, a Chief of Staff who reads your email, preps your meetings and runs your morning. 30 to 60 minutes a day. No code.</p>
+
+    <div class="week">
+      <div class="day"><div class="dn">Day 1</div><div class="dt">Meet your employee</div></div>
+      <div class="day"><div class="dn">Day 2</div><div class="dt">She learns who you are</div></div>
+      <div class="day"><div class="dn">Day 3</div><div class="dt">Give her the keys</div></div>
+      <div class="day"><div class="dn">Day 4</div><div class="dt">Training day</div></div>
+      <div class="day"><div class="dn">Day 5</div><div class="dt">She works while you sleep</div></div>
+    </div>
+
+    <div class="offer">
+      <div>
+        <div class="price"><span class="now">$497</span><span class="was">$997</span></div>
+        <div class="when">Starts <b>Monday, October 26</b>. Day 0 opens the moment you register.</div>
+      </div>
+      <div id="cdWrap">
+        <div class="cd-label">Round starts in</div>
+        <div class="cd" aria-live="off">
+          <div><b id="cdD">0</b><span>days</span></div>
+          <div><b id="cdH">00</b><span>hrs</span></div>
+          <div><b id="cdM">00</b><span>min</span></div>
+          <div><b id="cdS">00</b><span>sec</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn" href="https://jaygptpro.com/ai-employee/" target="_blank" rel="noopener" data-ev="challenge_page">Reserve my spot <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn-2" href="https://buy.stripe.com/dRmcN79fH7wC8ZMcQubwk0n" target="_blank" rel="noopener" data-ev="challenge_checkout">Or go straight to checkout</a>
+    </div>
+    <p class="fine">Pre-recorded, at your own pace. Lifetime access.</p>
+  </section>
+
+  <footer class="foot reveal">
+    <div class="line">Stop using AI. <span>Start hiring it.</span></div>
+    Built for Tom's community &middot; <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener">Jay Margaliot</a>
+  </footer>
+
+</main>
+
+<div class="toast" id="toast" role="status">Copied. Now paste it into Claude Code.</div>
+
+<script>
+function init(){
+  var bar=document.getElementById('bar');
+  function onScroll(){ var st=window.scrollY||0, h=document.documentElement.scrollHeight-window.innerHeight; if(bar) bar.style.width=(h>0?st/h*100:0)+'%'; }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  var els=document.querySelectorAll('.reveal');
+  try{
+    if(!('IntersectionObserver' in window)){ els.forEach(function(e){e.classList.add('in');}); }
+    else{
+      var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }); },{rootMargin:'0px 0px -6% 0px',threshold:.08});
+      els.forEach(function(el){ io.observe(el); });
+      setTimeout(function(){ els.forEach(function(e){e.classList.add('in');}); },3500);
+    }
+  }catch(err){ els.forEach(function(e){e.classList.add('in');}); }
+
+  function track(label){ if(typeof gtag==='function') gtag('event','link_click',{event_category:'webinar_tom',event_label:label}); }
+  document.querySelectorAll('a[data-ev]').forEach(function(a){
+    a.addEventListener('click',function(){ track(a.getAttribute('data-ev')); });
+  });
+
+  /* copy buttons */
+  var toast=document.getElementById('toast'), tt;
+  function showToast(){ if(!toast) return; toast.classList.add('on'); clearTimeout(tt); tt=setTimeout(function(){ toast.classList.remove('on'); },2200); }
+  function fallbackCopy(text){
+    var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.top='-1000px'; document.body.appendChild(ta); ta.select();
+    var ok=false; try{ ok=document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); return ok;
+  }
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var src=btn.getAttribute('data-copy-from');
+      var text=src ? (document.getElementById(src)||{}).textContent : btn.getAttribute('data-copy');
+      if(!text) return;
+      var label=btn.querySelector('span');
+      function done(){ btn.classList.add('ok'); if(label) label.textContent='Copied'; showToast(); setTimeout(function(){ btn.classList.remove('ok'); if(label) label.textContent='Copy'; },1800); }
+      if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(done,function(){ if(fallbackCopy(text)) done(); }); }
+      else if(fallbackCopy(text)) done();
+      track(btn.getAttribute('data-ev')||'copy');
+    });
+  });
+
+  /* countdown to the round start: Monday Oct 26, 2pm ET */
+  var target=new Date('2026-10-26T14:00:00-04:00').getTime();
+  var wrap=document.getElementById('cdWrap');
+  var dE=document.getElementById('cdD'),hE=document.getElementById('cdH'),mE=document.getElementById('cdM'),sE=document.getElementById('cdS');
+  function pad(n){ return (n<10?'0':'')+n; }
+  function tick(){
+    var left=target-Date.now();
+    if(left<=0){ if(wrap) wrap.style.display='none'; return false; }
+    var s=Math.floor(left/1000);
+    dE.textContent=Math.floor(s/86400); hE.textContent=pad(Math.floor(s%86400/3600)); mE.textContent=pad(Math.floor(s%3600/60)); sE.textContent=pad(s%60);
+    return true;
+  }
+  if(tick()){ var iv=setInterval(function(){ if(!tick()) clearInterval(iv); },1000); }
+}
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
+</script>
+</body>
+</html>
