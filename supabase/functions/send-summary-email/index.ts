@@ -35,7 +35,9 @@ function daysBetween(startIsoDate: string, endIsoDate: string): number {
 
 // Evergreen (wk_) cohorts get a trimmed email: no Graduates WhatsApp section, no video-feedback ask.
 // Legacy rounds (round4, round5, etc.) keep the original full version.
-function renderSummaryEmail(isEvergreen: boolean): { subject: string; html: string } {
+// noVault: buyers who came through a partner (Tom Mays) are never pitched the Vault.
+// Jay, 22.10.2026. Marked by sold_by='tom' or "[no-vault]" in notes.
+function renderSummaryEmail(isEvergreen: boolean, noVault = false): { subject: string; html: string } {
   const subject = 'You did it. A few things from me.';
   const gradAndFeedback = isEvergreen ? '' : `
   <p style="margin:24px 0 0;font-size:18px;color:#1a1a2e;font-weight:700;line-height:1.4">2. Join the Graduates WhatsApp group</p>
@@ -61,11 +63,11 @@ function renderSummaryEmail(isEvergreen: boolean): { subject: string; html: stri
   <p style="margin:14px 0 0;font-size:16px;color:#333;line-height:1.75">So before anything else, <strong>thank you</strong>. For the trust, the hours, the willingness to try something new with me. That’s the part nobody talks about, and it’s the part that means the most.</p>
   <p style="margin:24px 0 0;font-size:18px;color:#1a1a2e;font-weight:700;line-height:1.4">1. Use Donna for real, every day</p>
   <p style="margin:14px 0 0;font-size:16px;color:#333;line-height:1.75">The skills you trained Day 4 only get sharp from use. Run the morning briefing tomorrow. Use draft-reply on a real email today. The muscle memory builds fast once you actually keep using her.</p>${gradAndFeedback}
-  <p style="margin:24px 0 0;font-size:18px;color:#1a1a2e;font-weight:700;line-height:1.4">${vaultNum}. The Vault, this is genuinely your last call</p>
+${noVault ? '' : `  <p style="margin:24px 0 0;font-size:18px;color:#1a1a2e;font-weight:700;line-height:1.4">${vaultNum}. The Vault, this is genuinely your last call</p>
   <p style="margin:14px 0 0;font-size:16px;color:#333;line-height:1.75">Your graduate window closes tonight. After that, the price goes back to <strong>$100/month</strong>, full stop. If you were waiting to decide, this is the decision moment.</p>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px 0"><a href="${VAULT_OFFER_URL}" target="_blank" style="display:inline-block;background:#e87040;color:#fff;text-decoration:none;font-size:15px;font-weight:700;padding:16px 36px;border-radius:50px;letter-spacing:0.3px">Jump into the Vault →</a></td></tr></table>
-  <p style="margin:18px 0 0;font-size:16px;color:#333;line-height:1.75">Thank you again. For the trust, for the week, for going on this with me.</p>
-  <p style="margin:14px 0 0;font-size:16px;color:#333;line-height:1.75">See you in the Vault ❤️</p>
+`}  <p style="margin:18px 0 0;font-size:16px;color:#333;line-height:1.75">Thank you again. For the trust, for the week, for going on this with me.</p>
+  <p style="margin:14px 0 0;font-size:16px;color:#333;line-height:1.75">${noVault ? 'See you around ❤️' : 'See you in the Vault ❤️'}</p>
 </td></tr>
 <tr><td style="padding:36px 48px 36px">
   <div style="height:2px;background:linear-gradient(90deg,transparent,#e87040,transparent);margin-bottom:20px"></div>
@@ -80,8 +82,8 @@ function corsHeaders() {
   return { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-form-secret', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 }
 
-async function sendOne(email: string, isEvergreen: boolean): Promise<{ ok: boolean; id?: string; error?: string }> {
-  const { subject, html } = renderSummaryEmail(isEvergreen);
+async function sendOne(email: string, isEvergreen: boolean, noVault = false): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const { subject, html } = renderSummaryEmail(isEvergreen, noVault);
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
@@ -150,7 +152,7 @@ Deno.serve(async (req: Request) => {
     const audience = (r.id === 'round1' || r.id === 'round2') ? [r.id, 'both'] : [r.id];
     const { data: participants } = await supabase
       .from('allowed_emails')
-      .select('email, customer_type, primary_email')
+      .select('email, customer_type, primary_email, notes, sold_by')
       .in('round', audience)
       .is('access_revoked_at', null);
     const list = (participants || [])
@@ -171,7 +173,7 @@ Deno.serve(async (req: Request) => {
       // sendOne had no try/catch here, so one network throw ended the run mid-list and
       // the guard row already written for the earlier names made it permanent.
       let send: { ok: boolean; id?: string; error?: string };
-      try { send = await sendOne(p.email, isEvergreen); }
+      try { send = await sendOne(p.email, isEvergreen, p.sold_by === 'tom' || (p.notes || '').toLowerCase().includes('[no-vault]')); }
       catch (e) { send = { ok: false, error: String(e) }; }
       if (send.ok) {
         ok++;

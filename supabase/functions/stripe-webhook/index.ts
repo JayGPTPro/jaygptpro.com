@@ -44,6 +44,7 @@ const EVERGREEN_PLINKS = new Set([
   'plink_1TegrRRqcDuiISNTTajV9LLO', // discounted link
   'plink_1UQ7stRqcDuiISNTOAn9pMGj', // jaygptpro.com/ai-employee, Tom Mays affiliate link ($497, no promo codes)
 ]);
+const TOM_PLINK = 'plink_1UQ7stRqcDuiISNTOAn9pMGj';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 // Cross-sell products. These ride along inside somebody else's checkout, so they must
@@ -829,7 +830,9 @@ Deno.serve(async (req: Request) => {
           const englishRound = canonicalRound || 'unknown';
           const allowedEmailsRound = canonicalToAllowedEmailsRound(englishRound);
           const lowerEmail = customerEmail.toLowerCase();
-          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: lowerEmail, name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, addon_donna: tookDonnaAddon, notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound}${tookDonnaAddon ? ', +donna addon' : ''})` });
+          // Tom Mays buyers: counted for his revenue share and never pitched the Vault (Jay, 22.10.2026).
+          const isTomBuyer = paymentLinkId === TOM_PLINK;
+          const { error: insertEmailErr } = await supabase.from('allowed_emails').insert({ email: lowerEmail, name: customerName, round: allowedEmailsRound, phone: customerPhone || null, stripe_payment_id: paymentId, addon_donna: tookDonnaAddon, ...(isTomBuyer ? { sold_by: 'tom' } : {}), notes: `Auto-added by Stripe webhook (payment_link: ${paymentLinkId || 'none'}, resolved: ${englishRound}${tookDonnaAddon ? ', +donna addon' : ''})${isTomBuyer ? ' [no-vault] Tom Mays buyer.' : ''}` });
           const wasDuplicate = !!insertEmailErr && String(insertEmailErr.message).includes('duplicate');
           if (insertEmailErr && !wasDuplicate) {
             // Do NOT swallow this. A 200 here means Stripe never retries and the buyer is

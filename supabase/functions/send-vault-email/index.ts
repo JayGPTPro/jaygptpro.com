@@ -158,10 +158,10 @@ Deno.serve(async (req: Request) => {
     }
     const { data: participants } = await supabase
       .from('allowed_emails')
-      .select('email, customer_type, primary_email, notes')
+      .select('email, customer_type, primary_email, notes, sold_by')
       .in('round', [r.id, 'both'])
       .is('access_revoked_at', null);
-    const list = (participants || []).filter(p => !p.primary_email && (p.customer_type === 'paid' || p.customer_type === 'family' || p.customer_type === 'admin' || !p.customer_type) && !((p.notes || '').toLowerCase().includes('[no-vault]')));
+    const list = (participants || []).filter(p => !p.primary_email && (p.customer_type === 'paid' || p.customer_type === 'family' || p.customer_type === 'admin' || !p.customer_type) && p.sold_by !== 'tom' && !((p.notes || '').toLowerCase().includes('[no-vault]')));
 
     if (!armed) {
       results.push({ round: r.id, day: dayNum, action: 'dry_run_not_armed', would_send_to: list.length });
