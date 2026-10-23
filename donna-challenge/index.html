@@ -4262,6 +4262,19 @@ async function checkAuth(){
   const roundCheck = btoa(allowed.round + ':donna2026');
   localStorage.setItem('donna-challenge-round-check', roundCheck);
   localStorage.setItem('donna-challenge-email', email);
+  // Partner buyers (Tom Mays) never see the Vault upsell (Jay, 22.10.2026). Read in its own
+  // query inside try/catch so a column the role cannot see can never break the login itself.
+  // Read from the login row: RLS lets a customer see only their own row, so aliases carry
+  // sold_by / [no-vault] themselves.
+  try {
+    const { data: vaultRow, error: vaultErr } = await sb
+      .from('allowed_emails')
+      .select('sold_by, notes')
+      .ilike('email', email.toLowerCase())
+      .maybeSingle();
+    const noVault = !vaultErr && !!vaultRow && (vaultRow.sold_by === 'tom' || String(vaultRow.notes || '').toLowerCase().indexOf('[no-vault]') >= 0);
+    if (noVault) localStorage.setItem('donna-no-vault', '1'); else localStorage.removeItem('donna-no-vault');
+  } catch (e) { /* banner gate only; never block login */ }
   // Early access: if user has been granted access to days 1..N before scheduled unlock, store it.
   // This is used by isDayUnlocked() to grant early access for special cases (international scheduling, comped accounts, etc.).
   const earlyDay = parseInt(allowed.early_access_max_day || 0, 10);
@@ -5365,6 +5378,8 @@ function showVaultBannerIfEligible() {
     // Private B2B cohorts (e.g. Direct Promotions) never see the Vault upsell.
     const round = localStorage.getItem('donna-challenge-round') || '';
     if (round.indexOf('wk_dp_') === 0) return;
+    // Partner buyers (Tom Mays): set at login from sold_by / [no-vault].
+    if (!isAdmin && localStorage.getItem('donna-no-vault') === '1') return;
 
     if (VAULT_BANNER_DAY_4_GATE && !isPastVaultGate()) return;
 
