@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>סושי זֶן · מסעדת סושי יוקרתית | טרי. מדויק. מהיום.</title>
+  <meta name="description" content="סושי זֶן — חוויית אומקאסה יוקרתית בלב העיר. דגים טריים שמגיעים מדי בוקר, שף שעבר הכשרה בטוקיו, והזמנת שולחן תוך שתי דקות.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            zen: {
+              ink:      '#0E0F12',
+              charcoal: '#16181D',
+              slate:    '#1F222A',
+              salmon:   '#FF6B5B',
+              coral:    '#FF8A6B',
+              gold:     '#E8B864',
+              cream:    '#F7F2EA',
+              sage:     '#7FA98C',
+              mist:     '#9AA0AC',
+            }
+          },
+          fontFamily: {
+            sans: ['Heebo', 'sans-serif'],
+            jp:   ['"Noto Serif JP"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Heebo', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:#0E0F12; }
+    .jp { font-family:'Noto Serif JP', serif; }
+
+    .reveal { opacity:0; transform:translateY(40px); transition:all .8s cubic-bezier(.16,1,.3,1); }
+    .reveal.active { opacity:1; transform:translateY(0); }
+    .reveal-r { opacity:0; transform:translateX(-50px); transition:all .9s cubic-bezier(.16,1,.3,1); }
+    .reveal-r.active { opacity:1; transform:translateX(0); }
+    .reveal-l { opacity:0; transform:translateX(50px); transition:all .9s cubic-bezier(.16,1,.3,1); }
+    .reveal-l.active { opacity:1; transform:translateX(0); }
+
+    .nav-glass { background:rgba(14,15,18,.72); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+    .grain { background-image:radial-gradient(circle at 1px 1px, rgba(232,184,100,.10) 1px, transparent 0); background-size:34px 34px; }
+    .gold-line { background:linear-gradient(90deg,transparent,#E8B864,transparent); }
+    .text-grad { background:linear-gradient(120deg,#FF6B5B,#E8B864); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-16px) rotate(3deg)} }
+    .float { animation:float 6s ease-in-out infinite; }
+    .float-d { animation:float 7s ease-in-out 1.2s infinite; }
+
+    @keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,91,.45)} 50%{box-shadow:0 0 34px 6px rgba(255,107,91,.18)} }
+    .cta-glow { animation:glow 2.6s ease-in-out infinite; }
+
+    .card-hover { transition:transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s, border-color .4s; }
+    .card-hover:hover { transform:translateY(-8px); box-shadow:0 24px 60px -20px rgba(255,107,91,.30); border-color:rgba(232,184,100,.5); }
+
+    .faq-a { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+    .faq-a.open { max-height:340px; }
+    .faq-q .chev { transition:transform .35s ease; }
+    .faq-q.open .chev { transform:rotate(180deg); }
+
+    .menu-price { font-variant-numeric:tabular-nums; }
+    ::selection { background:#FF6B5B; color:#0E0F12; }
+  </style>
+</head>
+<body class="bg-zen-ink text-zen-cream antialiased">
+
+  <!-- ===== NAV ===== -->
+  <nav id="nav" class="fixed top-0 inset-x-0 z-50 nav-glass border-b border-white/5 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full bg-zen-salmon/15 border border-zen-salmon/40 grid place-content-center text-zen-salmon jp text-lg">寿</span>
+        <span class="font-extrabold text-lg tracking-tight">סושי <span class="text-zen-gold">זֶן</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zen-mist">
+        <a href="#menu" class="hover:text-zen-cream transition">התפריט</a>
+        <a href="#why" class="hover:text-zen-cream transition">למה אנחנו</a>
+        <a href="#chef" class="hover:text-zen-cream transition">השף</a>
+        <a href="#reviews" class="hover:text-zen-cream transition">ביקורות</a>
+        <a href="#faq" class="hover:text-zen-cream transition">שאלות</a>
+      </div>
+      <a href="#reserve" class="bg-zen-salmon hover:bg-zen-coral text-zen-ink font-bold text-sm px-5 py-2.5 rounded-full transition-colors">
+        הזמנת שולחן
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <header id="top" class="relative pt-[68px] overflow-hidden">
+    <div class="absolute inset-0 grain opacity-60"></div>
+    <div class="absolute -top-32 -left-32 w-[34rem] h-[34rem] bg-zen-salmon/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-40 -right-40 w-[30rem] h-[30rem] bg-zen-gold/10 rounded-full blur-3xl"></div>
+
+    <div class="relative max-w-7xl mx-auto px-5 sm:px-8 py-16 md:py-24 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- copy -->
+      <div class="reveal-r">
+        <span class="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-zen-gold uppercase">
+          <span class="w-8 h-px gold-line"></span> אומקאסה · טוקיו בלב העיר
+        </span>
+        <h1 class="mt-5 text-4xl sm:text-5xl lg:text-6xl font-900 font-extrabold leading-[1.08]">
+          סושי שנחתך<br><span class="text-grad">ברגע שהזמנתם.</span>
+        </h1>
+        <p class="mt-6 text-lg text-zen-mist max-w-md leading-relaxed">
+          דגים שמגיעים טריים מדי בוקר, אורז מבושל באהבה, ושף שעבר חניכה בת עשור בטוקיו.
+          חוויית טעם שמתחילה ברגע שאתם מתיישבים.
+        </p>
+        <div class="mt-9 flex flex-wrap items-center gap-4">
+          <a href="#reserve" class="cta-glow bg-zen-salmon hover:bg-zen-coral text-zen-ink font-extrabold px-8 py-4 rounded-full text-base transition-colors">
+            הזמינו שולחן עכשיו →
+          </a>
+          <a href="#menu" class="px-7 py-4 rounded-full border border-white/15 hover:border-zen-gold/60 hover:text-zen-gold font-bold text-base transition-colors">
+            לצפייה בתפריט
+          </a>
+        </div>
+        <div class="mt-10 flex items-center gap-7 text-sm text-zen-mist">
+          <div><span class="block text-2xl font-extrabold text-zen-cream">4.9★</span>1,200+ ביקורות</div>
+          <div class="w-px h-10 bg-white/10"></div>
+          <div><span class="block text-2xl font-extrabold text-zen-cream">100%</span>דג טרי יומי</div>
+          <div class="w-px h-10 bg-white/10"></div>
+          <div><span class="block text-2xl font-extrabold text-zen-cream">2 דק׳</span>להזמנת שולחן</div>
+        </div>
+      </div>
+
+      <!-- sushi art -->
+      <div class="reveal-l relative">
+        <div class="relative mx-auto w-full max-w-lg aspect-square">
+          <div class="absolute inset-6 rounded-full bg-gradient-to-br from-zen-slate to-zen-charcoal border border-white/5 shadow-2xl"></div>
+          <!-- plate -->
+          <svg viewBox="0 0 400 400" class="relative w-full h-full drop-shadow-2xl">
+            <defs>
+              <radialGradient id="rice" cx="50%" cy="40%"><stop offset="0%" stop-color="#FFFDF7"/><stop offset="100%" stop-color="#EDE3D0"/></radialGradient>
+              <linearGradient id="salm" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8A6B"/><stop offset="100%" stop-color="#FF6B5B"/></linearGradient>
+              <linearGradient id="tuna" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#E5544B"/><stop offset="100%" stop-color="#B83A37"/></linearGradient>
+            </defs>
+            <circle cx="200" cy="200" r="172" fill="#101216" stroke="rgba(232,184,100,.25)" stroke-width="2"/>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+            <!-- nigiri salmon -->
+            <g class="float">
+              <ellipse cx="150" cy="235" rx="62" ry="34" fill="url(#rice)"/>
+              <path d="M92 230 q58 -34 116 0 q-12 -26 -58 -26 q-46 0 -58 26z" fill="url(#salm)"/>
+              <path d="M100 224 q50 -16 100 0" stroke="#FFF" stroke-opacity=".45" stroke-width="3" fill="none"/>
+              <rect x="138" y="248" width="24" height="9" rx="4" fill="#1B3A2A"/>
+            </g>
+            <!-- nigiri tuna -->
+            <g class="float-d">
+              <ellipse cx="258" cy="170" rx="58" ry="32" fill="url(#rice)"/>
+              <path d="M204 166 q54 -32 108 0 q-12 -24 -54 -24 q-42 0 -54 24z" fill="url(#tuna)"/>
+              <path d="M212 160 q46 -14 92 0" stroke="#FFF" stroke-opacity=".30" stroke-width="3" fill="none"/>
+              <rect x="248" y="182" width="22" height="8" rx="4" fill="#1B3A2A"/>
+            </g>
+            <!-- maki roll -->
+            <g class="float">
+              <circle cx="225" cy="278" r="36" fill="#0C0D10"/>
+              <circle cx="225" cy="278" r="29" fill="url(#rice)"/>
+              <circle cx="225" cy="278" r="13" fill="url(#salm)"/>
+              <circle cx="225" cy="278" r="13" fill="none" stroke="#1B5E20" stroke-width="3"/>
+            </g>
+            <!-- chopsticks -->
+            <g transform="rotate(-26 200 200)">
+              <rect x="300" y="60" width="9" height="250" rx="4" fill="#C99A5B"/>
+              <rect x="316" y="60" width="9" height="250" rx="4" fill="#B8884A"/>
+            </g>
+          </svg>
+          <div class="absolute -bottom-3 right-6 bg-zen-charcoal/90 border border-zen-gold/30 rounded-2xl px-5 py-3 backdrop-blur">
+            <p class="text-xs text-zen-mist">סלמון נגירי טרי</p>
+            <p class="font-extrabold text-zen-gold">היום בתפריט</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- marquee strip -->
+    <div class="relative border-y border-white/5 bg-zen-charcoal/60 py-4 overflow-hidden">
+      <div class="flex items-center gap-10 text-sm font-bold text-zen-mist whitespace-nowrap animate-[scroll_28s_linear_infinite]">
+        <span class="jp text-zen-gold">寿司</span><span>סלמון</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">刺身</span><span>סשימי</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">巻き</span><span>מאקי</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">天ぷら</span><span>טמפורה</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">うなぎ</span><span>אונאגי</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">寿司</span><span>סלמון</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">刺身</span><span>סשימי</span><span class="text-zen-salmon">●</span>
+        <span class="jp text-zen-gold">巻き</span><span>מאקי</span><span class="text-zen-salmon">●</span>
+      </div>
+    </div>
+    <style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>
+  </header>
+
+  <!-- ===== MENU ===== -->
+  <section id="menu" class="py-24 relative">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+      <div class="reveal text-center max-w-2xl mx-auto">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">התפריט</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold">המנות שעליהן <span class="text-grad">מדברים</span></h2>
+        <p class="mt-4 text-zen-mist">בחירה קטנה מתוך תפריט שמתחלף לפי מה שהגיע טרי הבוקר.</p>
+      </div>
+
+      <div class="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- item -->
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.05s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🍣</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪68</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">אומקאסה סלמון</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">חמש יחידות נגירי סלמון נורווגי, חיתוך יד, מוברש בסויה מתוקה.</p>
+        </div>
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.1s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🍱</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪92</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">דרגון רול מיוחד</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">לוטם קריספי, אבוקדו, ציפוי אונאגי, רוטב יוניאגי וזרעי שומשום קלוי.</p>
+        </div>
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.15s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🐟</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪78</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">סשימי טונה אדומה</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">תשע פרוסות אקאמי, חיתוך עבה, מוגש על קרח עם וואסבי טרי מגורר.</p>
+        </div>
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.2s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🍤</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪58</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">טמפורה שרימפס</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">חמישה שרימפס בציפוי טמפורה אוורירי, מוגש עם רוטב טנצויו חם.</p>
+        </div>
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.25s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🥢</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪120</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">מגש זוגי זֶן</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">24 יחידות מעורב, בחירת השף: נגירי, מאקי ורול חתימה. מושלם לשניים.</p>
+        </div>
+        <div class="reveal card-hover bg-zen-charcoal border border-white/5 rounded-3xl p-7" style="transition-delay:.3s">
+          <div class="flex items-start justify-between">
+            <span class="text-4xl">🍵</span>
+            <span class="menu-price text-zen-gold font-extrabold text-lg">₪36</span>
+          </div>
+          <h3 class="mt-5 text-xl font-extrabold">מוצ׳י תה ירוק</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">שלושה כדורי מוצ׳י עם גלידת מאצ׳ה יפנית אמיתית. סגירה מושלמת.</p>
+        </div>
+      </div>
+
+      <p class="reveal mt-10 text-center text-sm text-zen-mist">
+        רוצים את התפריט המלא? <a href="#reserve" class="text-zen-gold font-bold hover:underline">הזמינו שולחן</a> ונשלח אותו אליכם.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== WHY ===== -->
+  <section id="why" class="py-24 bg-zen-charcoal/40 border-y border-white/5">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+      <div class="reveal text-center max-w-2xl mx-auto">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">למה סושי זֶן</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold">לא עוד מסעדת סושי</h2>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="reveal text-center" style="transition-delay:.05s">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-zen-salmon/10 border border-zen-salmon/30 grid place-content-center text-3xl">🌊</div>
+          <h3 class="mt-5 font-extrabold text-lg">דג טרי כל בוקר</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">משלוח ישיר מהשוק כל יום ב-6:00. מה שלא נמכר היום — לא חוזר מחר.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:.1s">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-zen-gold/10 border border-zen-gold/30 grid place-content-center text-3xl">👨‍🍳</div>
+          <h3 class="mt-5 font-extrabold text-lg">שף בוגר טוקיו</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">עשר שנות חניכה במסעדת סושי מסורתית בשכונת גינזה.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:.15s">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-zen-sage/10 border border-zen-sage/30 grid place-content-center text-3xl">🍚</div>
+          <h3 class="mt-5 font-extrabold text-lg">אורז בטמפרטורת גוף</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">שמארי מתובל בחומץ אורז ומוגש בדיוק ב-37°, כמו שצריך.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:.2s">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-zen-coral/10 border border-zen-coral/30 grid place-content-center text-3xl">⚡</div>
+          <h3 class="mt-5 font-extrabold text-lg">הזמנה ב-2 דקות</h3>
+          <p class="mt-2 text-sm text-zen-mist leading-relaxed">בוחרים תאריך, מספר סועדים ושעה — ומקבלים אישור מיידי.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHEF ===== -->
+  <section id="chef" class="py-24">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+      <div class="reveal-r order-2 lg:order-1">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">השף שלנו</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold leading-tight">
+          כל פרוסה היא <span class="text-grad">חתימה.</span>
+        </h2>
+        <p class="mt-6 text-zen-mist leading-relaxed">
+          השף יותם הראל בילה עשור במטבחים של גינזה, טוקיו, לפני שחזר ארצה כדי להביא את
+          האומקאסה האמיתי הביתה. אצלו אין תפריט קבוע — יש מה שהים נתן הבוקר, ויש ידיים
+          שיודעות בדיוק מה לעשות איתו.
+        </p>
+        <ul class="mt-7 space-y-3 text-sm">
+          <li class="flex items-center gap-3"><span class="text-zen-salmon">✦</span> חיתוך יד בלבד — בלי מכונות, בלי קיצורי דרך</li>
+          <li class="flex items-center gap-3"><span class="text-zen-salmon">✦</span> בר אומקאסה ל-8 סועדים מול עיני השף</li>
+          <li class="flex items-center gap-3"><span class="text-zen-salmon">✦</span> תפריט מתחלף יומית לפי טריות הדג</li>
+        </ul>
+        <a href="#reserve" class="inline-block mt-8 bg-zen-salmon hover:bg-zen-coral text-zen-ink font-extrabold px-7 py-3.5 rounded-full transition-colors">
+          שמרו מקום בבר האומקאסה
+        </a>
+      </div>
+      <div class="reveal-l order-1 lg:order-2">
+        <div class="relative max-w-md mx-auto">
+          <div class="aspect-[4/5] rounded-[2rem] bg-gradient-to-br from-zen-slate to-zen-charcoal border border-white/5 overflow-hidden grid place-content-center">
+            <span class="text-[9rem] opacity-90">🍣</span>
+          </div>
+          <div class="absolute -bottom-5 -right-3 bg-zen-ink border border-zen-gold/30 rounded-2xl px-6 py-4">
+            <p class="jp text-zen-gold text-sm">板前</p>
+            <p class="font-extrabold text-lg">השף יותם הראל</p>
+            <p class="text-xs text-zen-mist">10 שנות גינזה, טוקיו</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REVIEWS ===== -->
+  <section id="reviews" class="py-24 bg-zen-charcoal/40 border-y border-white/5">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+      <div class="reveal text-center max-w-2xl mx-auto">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">מה אומרים עלינו</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold">4.9★ מתוך 1,200+ ביקורות</h2>
+      </div>
+      <div class="mt-14 grid md:grid-cols-3 gap-6">
+        <div class="reveal bg-zen-ink border border-white/5 rounded-3xl p-7" style="transition-delay:.05s">
+          <div class="text-zen-gold">★★★★★</div>
+          <p class="mt-4 text-zen-cream/90 leading-relaxed">"הסלמון פשוט נמס בפה. ישבנו בבר מול השף וזו הייתה הצגה שלמה. חוזרים בטוח."</p>
+          <p class="mt-5 text-sm font-bold">דנה ל. <span class="text-zen-mist font-normal">· תל אביב</span></p>
+        </div>
+        <div class="reveal bg-zen-ink border border-white/5 rounded-3xl p-7" style="transition-delay:.1s">
+          <div class="text-zen-gold">★★★★★</div>
+          <p class="mt-4 text-zen-cream/90 leading-relaxed">"הזמנתי שולחן ב-2 דקות מהנייד, קיבלתי אישור מיד. הסשימי הכי טרי שאכלתי בארץ."</p>
+          <p class="mt-5 text-sm font-bold">אורי מ. <span class="text-zen-mist font-normal">· הרצליה</span></p>
+        </div>
+        <div class="reveal bg-zen-ink border border-white/5 rounded-3xl p-7" style="transition-delay:.15s">
+          <div class="text-zen-gold">★★★★★</div>
+          <p class="mt-4 text-zen-cream/90 leading-relaxed">"חגגנו פה יום נישואין. השף הכין לנו מגש מיוחד שלא היה בתפריט. חוויה ברמה אחרת."</p>
+          <p class="mt-5 text-sm font-bold">נועה ושחר <span class="text-zen-mist font-normal">· רמת גן</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESERVE ===== -->
+  <section id="reserve" class="py-24 relative overflow-hidden">
+    <div class="absolute -top-24 right-1/2 w-[30rem] h-[30rem] bg-zen-salmon/10 rounded-full blur-3xl"></div>
+    <div class="relative max-w-3xl mx-auto px-5 sm:px-8">
+      <div class="reveal text-center">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">הזמנת שולחן</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold">השולחן שלכם <span class="text-grad">מחכה</span></h2>
+        <p class="mt-4 text-zen-mist">מלאו את הפרטים ונחזור אליכם עם אישור תוך דקות.</p>
+      </div>
+
+      <form id="resForm" class="reveal mt-12 bg-zen-charcoal border border-white/5 rounded-3xl p-7 sm:p-10 space-y-5" style="transition-delay:.1s">
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-bold mb-2">שם מלא</label>
+            <input required type="text" placeholder="ישראל ישראלי"
+              class="w-full bg-zen-ink border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zen-salmon transition">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-2">טלפון</label>
+            <input required type="tel" placeholder="050-0000000"
+              class="w-full bg-zen-ink border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zen-salmon transition">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-2">תאריך</label>
+            <input required type="date"
+              class="w-full bg-zen-ink border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zen-salmon transition [color-scheme:dark]">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-2">מספר סועדים</label>
+            <select class="w-full bg-zen-ink border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zen-salmon transition">
+              <option>1 סועד</option><option selected>2 סועדים</option><option>3 סועדים</option>
+              <option>4 סועדים</option><option>5 סועדים</option><option>6+ סועדים</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-2">בקשה מיוחדת (לא חובה)</label>
+          <textarea rows="3" placeholder="אלרגיות, חגיגה מיוחדת, בר אומקאסה..."
+            class="w-full bg-zen-ink border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zen-salmon transition resize-none"></textarea>
+        </div>
+        <button type="submit"
+          class="w-full cta-glow bg-zen-salmon hover:bg-zen-coral text-zen-ink font-extrabold py-4 rounded-full text-base transition-colors">
+          שריינו לי שולחן →
+        </button>
+        <p id="resMsg" class="hidden text-center text-zen-sage font-bold pt-1">
+          תודה! קיבלנו את הבקשה ונחזור אליכם תוך דקות לאישור 🎉
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section id="faq" class="py-24 bg-zen-charcoal/40 border-t border-white/5">
+    <div class="max-w-3xl mx-auto px-5 sm:px-8">
+      <div class="reveal text-center mb-12">
+        <span class="text-xs font-bold tracking-widest text-zen-gold uppercase">שאלות נפוצות</span>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold">כל מה שרציתם לדעת</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="reveal bg-zen-ink border border-white/5 rounded-2xl overflow-hidden" style="transition-delay:.05s">
+          <button class="faq-q w-full flex items-center justify-between gap-4 p-6 text-right font-bold">
+            <span>האם צריך להזמין שולחן מראש?</span>
+            <span class="chev text-zen-gold">▾</span>
+          </button>
+          <div class="faq-a"><p class="px-6 pb-6 text-sm text-zen-mist leading-relaxed">מומלץ בחום, במיוחד לבר האומקאסה שמוגבל ל-8 סועדים בלבד. הזמנה מראש מבטיחה לכם מקום ומאפשרת לשף להתכונן.</p></div>
+        </div>
+        <div class="reveal bg-zen-ink border border-white/5 rounded-2xl overflow-hidden" style="transition-delay:.1s">
+          <button class="faq-q w-full flex items-center justify-between gap-4 p-6 text-right font-bold">
+            <span>יש אפשרויות צמחוניות?</span>
+            <span class="chev text-zen-gold">▾</span>
+          </button>
+          <div class="faq-a"><p class="px-6 pb-6 text-sm text-zen-mist leading-relaxed">בהחלט. יש לנו מגוון רולים על בסיס ירקות, אבוקדו, מלפפון ובטטה, וגם מנות טמפורה צמחוניות. עדכנו אותנו מראש ונכין מגש מותאם.</p></div>
+        </div>
+        <div class="reveal bg-zen-ink border border-white/5 rounded-2xl overflow-hidden" style="transition-delay:.15s">
+          <button class="faq-q w-full flex items-center justify-between gap-4 p-6 text-right font-bold">
+            <span>מה זה בעצם אומקאסה?</span>
+            <span class="chev text-zen-gold">▾</span>
+          </button>
+          <div class="faq-a"><p class="px-6 pb-6 text-sm text-zen-mist leading-relaxed">אומקאסה (おまかせ) פירושו "אני סומך עליך" — אתם מפקידים את הארוחה בידי השף, והוא מגיש לכם רצף מנות לפי הטוב והטרי ביותר שיש באותו היום.</p></div>
+        </div>
+        <div class="reveal bg-zen-ink border border-white/5 rounded-2xl overflow-hidden" style="transition-delay:.2s">
+          <button class="faq-q w-full flex items-center justify-between gap-4 p-6 text-right font-bold">
+            <span>יש משלוחים?</span>
+            <span class="chev text-zen-gold">▾</span>
+          </button>
+          <div class="faq-a"><p class="px-6 pb-6 text-sm text-zen-mist leading-relaxed">אנחנו מתמחים בחוויה במקום, אבל מציעים איסוף עצמי מהמסעדה על כל התפריט. את האומקאסה אנו ממליצים לחוות רק בבר.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="bg-zen-ink border-t border-white/5 pt-16 pb-10">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-zen-salmon/15 border border-zen-salmon/40 grid place-content-center text-zen-salmon jp text-lg">寿</span>
+          <span class="font-extrabold text-lg">סושי <span class="text-zen-gold">זֶן</span></span>
+        </div>
+        <p class="mt-4 text-sm text-zen-mist leading-relaxed">חוויית אומקאסה יוקרתית בלב העיר. טרי. מדויק. מהיום.</p>
+      </div>
+      <div>
+        <h4 class="font-extrabold mb-4">שעות פתיחה</h4>
+        <ul class="space-y-2 text-sm text-zen-mist">
+          <li>א׳–ה׳ · 18:00–23:00</li>
+          <li>שישי · 12:00–15:00</li>
+          <li>מוצ״ש · 20:00–24:00</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-extrabold mb-4">צרו קשר</h4>
+        <ul class="space-y-2 text-sm text-zen-mist">
+          <li>רח׳ הים 12, תל אביב</li>
+          <li>03-000-0000</li>
+          <li>hello@sushi-zen.example</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-extrabold mb-4">ניווט</h4>
+        <ul class="space-y-2 text-sm text-zen-mist">
+          <li><a href="#menu" class="hover:text-zen-cream transition">התפריט</a></li>
+          <li><a href="#chef" class="hover:text-zen-cream transition">השף</a></li>
+          <li><a href="#reserve" class="hover:text-zen-cream transition">הזמנת שולחן</a></li>
+          <li><a href="#faq" class="hover:text-zen-cream transition">שאלות נפוצות</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zen-mist">
+      <p>© 2026 סושי זֶן · כל הזכויות שמורות</p>
+      <p class="jp text-zen-gold">いただきます · בתאבון</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('active'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal,.reveal-r,.reveal-l').forEach(el => io.observe(el));
+
+    // Nav shadow on scroll
+    const nav = document.getElementById('nav');
+    addEventListener('scroll', () => {
+      nav.classList.toggle('shadow-lg', scrollY > 20);
+      nav.classList.toggle('shadow-black/40', scrollY > 20);
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ans = btn.nextElementSibling;
+        const open = ans.classList.contains('open');
+        document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+        document.querySelectorAll('.faq-q').forEach(q => q.classList.remove('open'));
+        if (!open) { ans.classList.add('open'); btn.classList.add('open'); }
+      });
+    });
+
+    // Reservation form (front-end only demo)
+    document.getElementById('resForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      e.target.querySelector('button[type=submit]').textContent = 'נשלח ✓';
+      document.getElementById('resMsg').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
