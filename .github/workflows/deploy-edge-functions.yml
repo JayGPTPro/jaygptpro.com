@@ -56,7 +56,8 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # pinned: "latest" became CLI 3.0 on 5.11.2026, which fails here right after reading the project
+          version: 2.122.1
 
       - name: Deploy
         env:
@@ -65,7 +66,7 @@ jobs:
           for s in ${{ steps.pick.outputs.list }}; do
             echo "--- deploying $s"
             # --yes: newer CLIs stop to ask for confirmation, and a CI run cannot answer (5.11.2026)
-            supabase functions deploy "$s" --no-verify-jwt --yes --debug --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+            supabase functions deploy "$s" --no-verify-jwt --yes --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
           done
 
       # A deployed function that answers 401 to a garbage key is gated, which is
