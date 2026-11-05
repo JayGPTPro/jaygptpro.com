@@ -141,10 +141,14 @@ main { max-width: 860px; margin: 0 auto; padding: 6px 12px 96px; }
 .caption p:last-child { margin-bottom: 0; }
 .caption a { color: var(--link); text-decoration: none; }
 .caption a:hover { text-decoration: underline; }
-.caption.clamped { max-height: 11.6em; overflow: hidden; }
+.caption.clamped { max-height: 17em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
 .more { background: none; border: 0; padding: 0 7px; color: var(--link); font-size: 14px; font-weight: 500; cursor: pointer; }
 .time { display: flex; justify-content: flex-end; align-items: center; gap: 6px; font-size: 11px; color: var(--sub); padding: 2px 6px 1px; }
 .time .star { color: #f5b301; }
+.reply { margin-right: auto; display: inline-flex; align-items: center; gap: 4px; color: var(--link); font-size: 12.5px; font-weight: 500; text-decoration: none; padding: 3px 8px 3px 4px; border-radius: 999px; }
+.reply:hover { background: rgb(2 126 181 / .1); }
+.media-only .time { left: 10px; }
+.media-only .reply { color: #fff; background: rgb(0 0 0 / .35); }
 .media-only .time { position: absolute; right: 10px; bottom: 9px; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .6); padding: 0; }
 .reacts { position: absolute; left: 10px; bottom: -16px; display: flex; align-items: center; gap: 1px; background: var(--bubble); border-radius: 999px; padding: 1px 7px 1px 5px; font-size: 13px; box-shadow: 0 1px 3px rgb(11 20 26 / .2); border: 1px solid var(--wall); cursor: pointer; }
 .reacts.mine { background: var(--mine); }
@@ -327,7 +331,7 @@ let LIVE = { reactions: {}, decisions: {} };  // from the archive API: visitor r
 let HIDDEN = [];                              // admin only: posts the archive leaves out
 
 function el(tag, attrs = {}, ...children) {
-  const node = document.createElement(tag);
+  const node = tag === "svg" ? document.createElementNS("http://www.w3.org/2000/svg", "svg") : document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     if (v == null || v === false) continue;
     if (k.startsWith("on")) node.addEventListener(k.slice(2), v); else node.setAttribute(k, v === true ? "" : v);
@@ -473,14 +477,18 @@ function message(p) {
     highlight(cap, state.q);
     bubble.append(cap);
     if (!state.q) requestAnimationFrame(() => {
-      if (cap.scrollHeight > 260) {
+      if (cap.scrollHeight > 380) {
         cap.classList.add("clamped");
-        const more = el("button", { class: "more", onclick: () => { cap.classList.remove("clamped"); more.remove(); } }, "Read more");
+        const more = el("button", { class: "more", onclick: () => { cap.classList.remove("clamped"); more.remove(); track("read_more", { post: p.id }); } }, "Read more");
         cap.after(more);
       }
     });
   }
-  bubble.append(el("div", { class: "time" }, stars.has(p.id) ? el("span", { class: "star", "aria-label": "Starred" }, "★") : null, el("span", {}, timeFmt.format(d))));
+  const reply = el("a", { class: "reply", href: waLink(`About your post "${firstLine(p)}":\n\n`), target: "_blank", rel: "noopener",
+    title: "Reply to Jay on WhatsApp", onclick: () => track("reply_to_jay", { post: p.id, where: "bubble" }) },
+    el("svg", { viewBox: "0 0 24 24", width: 14, height: 14, fill: "none", stroke: "currentColor", "stroke-width": 2.2, "aria-hidden": "true" }), "Reply to Jay");
+  reply.querySelector("svg").innerHTML = '<path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>';
+  bubble.append(el("div", { class: "time" }, reply, stars.has(p.id) ? el("span", { class: "star", "aria-label": "Starred" }, "★") : null, el("span", {}, timeFmt.format(d))));
   const counts = reactionsOf(p);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   if (total) {
@@ -544,7 +552,7 @@ function render() {
   const first = POSTS.length ? POSTS.reduce((a, b) => a.date < b.date ? a : b) : null;
   document.getElementById("sub").textContent = `${CONFIG.members ? CONFIG.members.toLocaleString("en-US") + " members · " : ""}${visiblePosts().length} posts since ${first ? new Date(first.date).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""}`;
   const nodes = [el("div", { class: "system" }, el("div", {},
-    "🔒 This is everything posted in the group, from the beginning. Scroll up to go back in time, tap ⌄ on a message to react, star or reply to Jay."))];
+    "🔒 This is everything posted in the group, from the beginning. Scroll up to go back in time. Tap \"Reply to Jay\" on any post to message me on WhatsApp."))];
   if (!list.length) nodes.push(el("div", { class: "system" }, el("div", {}, "No posts match that. Try another word.")));
   const unreadFrom = lastVisit && !q && state.topic === "All" ? list.findIndex(p => p.date > lastVisit) : -1;
   // a promo card every 9 posts counting back from the newest, so readers meet them as they scroll up
