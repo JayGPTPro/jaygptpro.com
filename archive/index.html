@@ -120,10 +120,7 @@ main { max-width: 860px; margin: 0 auto; padding: 6px 12px 96px; }
 .system > div { background: var(--sys); color: var(--sys-ink); font-size: 12.8px; padding: 8px 14px; border-radius: 8px; box-shadow: var(--shadow); text-align: center; max-width: 540px; line-height: 1.45; }
 .unread { scroll-margin-top: calc(var(--bar-h, 150px) + 8px); display: flex; justify-content: center; margin: 14px -12px; background: rgb(0 0 0 / .05); padding: 6px 0; }
 .unread span { background: var(--unread); color: var(--name); font-size: 12.5px; font-weight: 600; padding: 5px 14px; border-radius: 999px; box-shadow: var(--shadow); text-transform: uppercase; }
-.msg { display: flex; margin: 3px 0 2px; scroll-margin-top: 170px; }
-.stack { display: flex; flex-direction: column; align-items: flex-end; max-width: min(560px, 88%); }
-.stack .bubble { max-width: 100%; }
-.msg.has-react .share-cta { margin-top: 22px; }
+.msg { display: flex; margin: 3px 0 24px; scroll-margin-top: 170px; }
 .msg.is-hidden .bubble { opacity: .45; outline: 2px dashed #e34948; }
 .bubble { position: relative; background: var(--bubble); border-radius: 8px; border-top-left-radius: 0; box-shadow: var(--shadow); max-width: min(560px, 88%); padding: 4px; }
 .bubble::before { content: ""; position: absolute; left: -8px; top: 0; width: 8px; height: 13px; background: var(--bubble); clip-path: polygon(100% 0, 0 0, 100% 100%); }
@@ -159,8 +156,9 @@ main { max-width: 860px; margin: 0 auto; padding: 6px 12px 96px; }
 .msg:hover .react-btn, .react-btn:focus-visible { opacity: 1; }
 @media (hover: none) { .react-btn { opacity: .85; } }
 /* not WhatsApp on purpose (Jay, 6.11.2026): passing a tip to a friend is what grows the group, so it has to catch the eye */
-.share-cta { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 10px; padding: 7px 14px; border: 0; border-radius: 999px; background: var(--green); color: var(--green-ink); font-size: 13.5px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); }
-.share-cta svg { width: 15px; height: 15px; }
+/* a hair right of centre so it clears the likes pill on a phone-width bubble */
+.share-cta { position: absolute; left: calc(50% + 12px); bottom: -15px; transform: translateX(-50%); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 5px 12px; border: 0; border-radius: 999px; background: var(--green); color: var(--green-ink); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); }
+.share-cta svg { width: 14px; height: 14px; }
 .share-cta:hover { filter: brightness(1.06); }
 mark { background: var(--mark); color: inherit; border-radius: 2px; }
 
@@ -228,7 +226,7 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 .lightbox img { max-width: 96vw; max-height: 92vh; }
 .toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; background: #111b21; color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
-@media (min-width: 700px) { .stack { max-width: 65%; } }
+@media (min-width: 700px) { .bubble { max-width: 65%; } }
 @media (prefers-reduced-motion: reduce) { .msg.flash .bubble, .info .panel { animation: none; } .pop button { transition: none; } }
 </style>
 </head>
@@ -508,9 +506,10 @@ function message(p) {
   }
   bubble.append(el("button", { class: "react-btn", "aria-label": "React", onclick: e => picker(p, e.currentTarget) }, "☺"));
   // a link straight to this post, the way readers pass a tip to a friend
-  const cta = el("button", { class: "share-cta", onclick: () => shareUrl(postUrl(p), firstLine(p), { post: p.id, where: "post-button" }) }, "Share with a friend");
+  const cta = el("button", { class: "share-cta", onclick: () => shareUrl(postUrl(p), firstLine(p), { post: p.id, where: "post-button" }) }, "Share this tip");
+  bubble.append(cta);
   cta.insertAdjacentHTML("afterbegin", '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 5v4C7 10 4 15 3 20c2.5-3.5 6-5.1 11-5.1V19l7-7-7-7z"/></svg>');
-  return el("div", { class: "msg" + (total ? " has-react" : "") + (isHidden(p) ? " is-hidden" : ""), id: "m" + p.id }, el("div", { class: "stack" }, bubble, cta));
+  return el("div", { class: "msg" + (total ? " has-react" : "") + (isHidden(p) ? " is-hidden" : ""), id: "m" + p.id }, bubble);
 }
 function refresh(p) {
   const old = document.getElementById("m" + p.id);
