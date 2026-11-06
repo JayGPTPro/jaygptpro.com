@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#008069" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#202c33" media="(prefers-color-scheme: dark)">
 <title>Jay GPT Archive</title>
-<meta name="description" content="Every AI tool and hack shared in the Jay GPT groups, from day one.">
+<meta name="description" content="The best AI tools and hacks from the Jay GPT WhatsApp group, since January 2026.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Jay GPT · The whole group, from day one">
-<meta property="og:description" content="Every AI tool and hack shared in the Jay GPT WhatsApp groups. Search it, react, and join the group.">
+<meta property="og:title" content="Jay GPT · The best of the group, in one place">
+<meta property="og:description" content="The best AI tools and hacks from the Jay GPT WhatsApp group. Search it, react, and join the group.">
 <meta property="og:image" content="https://jaygptpro.com/archive/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -120,8 +120,10 @@ main { max-width: 860px; margin: 0 auto; padding: 6px 12px 96px; }
 .system > div { background: var(--sys); color: var(--sys-ink); font-size: 12.8px; padding: 8px 14px; border-radius: 8px; box-shadow: var(--shadow); text-align: center; max-width: 540px; line-height: 1.45; }
 .unread { scroll-margin-top: calc(var(--bar-h, 150px) + 8px); display: flex; justify-content: center; margin: 14px -12px; background: rgb(0 0 0 / .05); padding: 6px 0; }
 .unread span { background: var(--unread); color: var(--name); font-size: 12.5px; font-weight: 600; padding: 5px 14px; border-radius: 999px; box-shadow: var(--shadow); text-transform: uppercase; }
-.msg { display: flex; align-items: flex-start; min-height: 72px; margin: 3px 0 2px; scroll-margin-top: 170px; }
-.msg.has-react { margin-bottom: 20px; }
+.msg { display: flex; margin: 3px 0 2px; scroll-margin-top: 170px; }
+.stack { display: flex; flex-direction: column; align-items: flex-end; max-width: min(560px, 88%); }
+.stack .bubble { max-width: 100%; }
+.msg.has-react .share-cta { margin-top: 22px; }
 .msg.is-hidden .bubble { opacity: .45; outline: 2px dashed #e34948; }
 .bubble { position: relative; background: var(--bubble); border-radius: 8px; border-top-left-radius: 0; box-shadow: var(--shadow); max-width: min(560px, 88%); padding: 4px; }
 .bubble::before { content: ""; position: absolute; left: -8px; top: 0; width: 8px; height: 13px; background: var(--bubble); clip-path: polygon(100% 0, 0 0, 100% 100%); }
@@ -153,11 +155,13 @@ main { max-width: 860px; margin: 0 auto; padding: 6px 12px 96px; }
 .reacts { position: absolute; left: 10px; bottom: -16px; display: flex; align-items: center; gap: 1px; background: var(--bubble); border-radius: 999px; padding: 1px 7px 1px 5px; font-size: 13px; box-shadow: 0 1px 3px rgb(11 20 26 / .2); border: 1px solid var(--wall); cursor: pointer; }
 .reacts.mine { background: var(--mine); }
 .reacts b { font-size: 11.5px; font-weight: 500; color: var(--sub); margin-left: 3px; }
-.react-btn, .fwd-btn { position: absolute; right: -40px; top: calc(50% - 17px); transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgb(0 0 0 / .12); color: #fff; font-size: 15px; cursor: pointer; opacity: 0; transition: opacity .15s; }
-.fwd-btn { top: calc(50% + 17px); display: grid; place-items: center; padding: 0; }
-.fwd-btn svg { width: 16px; height: 16px; }
-.msg:hover .react-btn, .react-btn:focus-visible, .msg:hover .fwd-btn, .fwd-btn:focus-visible { opacity: 1; }
-@media (hover: none) { .react-btn, .fwd-btn { opacity: .85; } }
+.react-btn { position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgb(0 0 0 / .12); color: #fff; font-size: 15px; cursor: pointer; opacity: 0; transition: opacity .15s; }
+.msg:hover .react-btn, .react-btn:focus-visible { opacity: 1; }
+@media (hover: none) { .react-btn { opacity: .85; } }
+/* not WhatsApp on purpose (Jay, 6.11.2026): passing a tip to a friend is what grows the group, so it has to catch the eye */
+.share-cta { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 10px; padding: 7px 14px; border: 0; border-radius: 999px; background: var(--green); color: var(--green-ink); font-size: 13.5px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); }
+.share-cta svg { width: 15px; height: 15px; }
+.share-cta:hover { filter: brightness(1.06); }
 mark { background: var(--mark); color: inherit; border-radius: 2px; }
 
 /* emoji picker and the per-message menu */
@@ -224,7 +228,7 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; }
 .lightbox img { max-width: 96vw; max-height: 92vh; }
 .toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; background: #111b21; color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
-@media (min-width: 700px) { .bubble { max-width: 65%; } }
+@media (min-width: 700px) { .stack { max-width: 65%; } }
 @media (prefers-reduced-motion: reduce) { .msg.flash .bubble, .info .panel { animation: none; } .pop button { transition: none; } }
 </style>
 </head>
@@ -445,8 +449,8 @@ function menu(p, anchor) {
     ["React", () => picker(p, anchor)],
     [stars.has(p.id) ? "Unstar" : "Star", () => { closePops(); stars.has(p.id) ? stars.delete(p.id) : stars.add(p.id); store.set("stars", [...stars]); toast(stars.has(p.id) ? "Starred" : "Unstarred");
       if (state.topic === "⭐ Starred") render(); else { refresh(p); renderChips(); } }],
-    ["Copy link", async () => { closePops(); try { await navigator.clipboard.writeText(postUrl(p)); toast("Link copied"); } catch { location.hash = "m" + p.id; } }],
-    ["Share", () => { closePops(); shareUrl(postUrl(p), firstLine(p)); }],
+    ["Copy link", async () => { closePops(); try { await navigator.clipboard.writeText(postUrl(p)); toast("Link copied"); track("share", { what: "post", how: "copy", post: p.id, where: "menu" }); } catch { location.hash = "m" + p.id; } }],
+    ["Share", () => { closePops(); shareUrl(postUrl(p), firstLine(p), { post: p.id, where: "menu" }); }],
   ];
   if (ADMIN) {
     const hidden = isHidden(p);
@@ -463,10 +467,10 @@ function menu(p, anchor) {
 }
 
 const waLink = text => CONFIG.phone ? `https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(text)}` : CONFIG.joinUrl;
-async function shareUrl(url, text) {
+async function shareUrl(url, text, extra = {}) {
   const what = url.includes("#m") ? "post" : "archive";
-  if (navigator.share) { try { await navigator.share({ title: "Jay GPT", text, url }); track("share", { what, how: "sheet" }); } catch {} return; }
-  try { await navigator.clipboard.writeText(url); toast("Link copied"); track("share", { what, how: "copy" }); } catch {}
+  if (navigator.share) { try { await navigator.share({ title: "Jay GPT", text, url }); track("share", { what, how: "sheet", ...extra }); } catch {} return; }
+  try { await navigator.clipboard.writeText(url); toast("Link copied. Paste it to a friend."); track("share", { what, how: "copy", ...extra }); } catch {}
 }
 
 function message(p) {
@@ -503,11 +507,10 @@ function message(p) {
     bubble.append(el("button", { class: "reacts" + (mine[p.id] ? " mine" : ""), "aria-label": `${total} reactions, add yours`, onclick: e => picker(p, e.currentTarget) }, ...top, total > 1 ? el("b", {}, String(total)) : null));
   }
   bubble.append(el("button", { class: "react-btn", "aria-label": "React", onclick: e => picker(p, e.currentTarget) }, "☺"));
-  // WhatsApp's forward arrow: sends a link straight to this post, the way readers pass a tip to a friend
-  const fwd = el("button", { class: "fwd-btn", "aria-label": "Share this post", title: "Share this post", onclick: () => shareUrl(postUrl(p), firstLine(p)) });
-  fwd.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 5v4C7 10 4 15 3 20c2.5-3.5 6-5.1 11-5.1V19l7-7-7-7z"/></svg>';
-  bubble.append(fwd);
-  return el("div", { class: "msg" + (total ? " has-react" : "") + (isHidden(p) ? " is-hidden" : ""), id: "m" + p.id }, bubble);
+  // a link straight to this post, the way readers pass a tip to a friend
+  const cta = el("button", { class: "share-cta", onclick: () => shareUrl(postUrl(p), firstLine(p), { post: p.id, where: "post-button" }) }, "Share with a friend");
+  cta.insertAdjacentHTML("afterbegin", '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 5v4C7 10 4 15 3 20c2.5-3.5 6-5.1 11-5.1V19l7-7-7-7z"/></svg>');
+  return el("div", { class: "msg" + (total ? " has-react" : "") + (isHidden(p) ? " is-hidden" : ""), id: "m" + p.id }, el("div", { class: "stack" }, bubble, cta));
 }
 function refresh(p) {
   const old = document.getElementById("m" + p.id);
@@ -591,13 +594,15 @@ document.getElementById("donna-link").href = tagged(CONFIG.donnaUrl, "group-info
 document.getElementById("wonka-link").href = tagged(CONFIG.wonkaUrl, "group-info");
 document.getElementById("donna-link").addEventListener("click", () => track("product_click", { product: "donna", where: "group-info" }));
 document.getElementById("wonka-link").addEventListener("click", () => track("product_click", { product: "wonka", where: "group-info" }));
-document.getElementById("share").addEventListener("click", () => shareUrl(location.origin + location.pathname, "Every AI tool and hack from the Jay GPT group"));
+document.getElementById("share").addEventListener("click", () => shareUrl(location.origin + location.pathname, "The best AI tools and hacks from the Jay GPT group"));
 document.getElementById("members").textContent = CONFIG.members ? `Group · ${CONFIG.members.toLocaleString("en-US")} members` : "Group";
 // the EmailOctopus form, embedded the way EmailOctopus gives it (it carries its own spam check)
 if (CONFIG.newsletterForm) {
   const box = document.getElementById("eo-form");
   box.append(el("script", { async: true, src: `https://eocampaign1.com/form/${CONFIG.newsletterForm}.js`, "data-form": CONFIG.newsletterForm }));
-  box.addEventListener("submit", () => { store.set("subscribed", true); track("newsletter_signup", { where: "group-info" }); }, true);
+  // a click on Subscribe is only an attempt; EmailOctopus fires form.success once its server took the address
+  box.addEventListener("submit", () => track("newsletter_submit", { where: "group-info" }), true);
+  document.addEventListener("emailoctopus:form.success", () => { store.set("subscribed", true); track("newsletter_signup", { where: "group-info" }); });
 } else {
   document.getElementById("news").remove();
 }
