@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyword Openers Setup</title>
+<meta name="description" content="Step-by-step setup for the free keyword-openers skill for Claude Code: from nothing to your first finished video.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF7F1;
+  --surface:#FFFFFF;
+  --ink:#22201C;
+  --mute:#6B645A;
+  --line:#E8E1D4;
+  --accent:#D8A848;
+  --accent-ink:#8A6216;
+  --accent-soft:#F7EEDA;
+  --orange:#CD763C;
+  --code-bg:#211F1B;
+  --code-ink:#F3EEE5;
+  --code-mute:#A9A195;
+  --ok:#2F7D4F;
+  --warn-bg:#FBF1E6;
+  --warn-line:#EBCFAE;
+  --shadow:0 1px 2px rgba(34,32,28,.04),0 6px 24px rgba(34,32,28,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#14120F;
+    --surface:#1C1A16;
+    --ink:#F1ECE3;
+    --mute:#A79F92;
+    --line:#2F2B25;
+    --accent:#D8A848;
+    --accent-ink:#E4BE6C;
+    --accent-soft:#2A2418;
+    --orange:#E08C55;
+    --code-bg:#0F0E0C;
+    --code-ink:#F3EEE5;
+    --code-mute:#8F887D;
+    --ok:#6BC493;
+    --warn-bg:#2A1F15;
+    --warn-line:#4A3522;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  overflow-x:hidden;
+}
+main{max-width:760px;margin:0 auto;padding:40px 16px 80px}
+h1,h2,h3{font-family:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em;line-height:1.2}
+h1{font-size:40px;font-weight:700;margin:6px 0 12px}
+h2{font-size:26px;font-weight:600;margin:0 0 12px}
+h3{font-size:18px;font-weight:600;margin:24px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--accent-ink);text-underline-offset:3px}
+a:hover{color:var(--orange)}
+strong{font-weight:650}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.lede{font-size:19px;color:var(--mute);max-width:60ch;margin-bottom:24px}
+
+/* contents */
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px;padding:0;list-style:none}
+.toc a{display:inline-block;font-size:14px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+.toc a:hover{border-color:var(--accent);color:var(--ink)}
+
+/* OS switch */
+.os-bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin:0 0 8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.os-bar span{font-size:14px;color:var(--mute)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{font:inherit;font-size:14px;font-weight:600;border:0;background:transparent;color:var(--mute);padding:6px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#2A1E07}
+.seg button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+body.os-mac [data-os="win"],body.os-win [data-os="mac"]{display:none}
+.os-label{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);margin:8px 0 2px}
+body.os-mac .os-label,body.os-win .os-label{display:none}
+
+/* sections */
+section{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px 24px;margin:0 0 18px;box-shadow:var(--shadow);scroll-margin-top:64px}
+.step-head{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+.step-head h2{margin:0}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#2A1E07;font:700 17px/34px "Outfit",sans-serif;text-align:center}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 2px}
+
+ul.plain,ol.plain{margin:0 0 14px;padding-left:22px}
+ul.plain li,ol.plain li{margin:0 0 8px}
+ul.need{list-style:none;margin:0;padding:0}
+ul.need li{position:relative;padding:12px 0 12px 34px;border-top:1px solid var(--line)}
+ul.need li:first-child{border-top:0}
+ul.need li::before{content:"";position:absolute;left:2px;top:16px;width:18px;height:18px;border:2px solid var(--accent);border-radius:5px}
+ul.need li span{display:block;color:var(--mute);font-size:15px;margin-top:2px}
+
+/* commands */
+.cmd{display:grid;grid-template-columns:1fr auto;align-items:start;gap:8px;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:12px 10px 12px 14px;margin:8px 0 14px}
+.cmd code{font:14.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;padding-top:3px}
+.cmd button{font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--code-ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+.cmd button:hover{background:rgba(216,168,72,.25);border-color:var(--accent)}
+.cmd button.done{background:var(--accent);color:#2A1E07;border-color:var(--accent)}
+.cmd.placeholder{background:transparent;color:var(--ink);border:2px dashed var(--orange)}
+.cmd.placeholder code{color:var(--orange);font-weight:700}
+.cmd.placeholder button{color:var(--ink);background:transparent;border-color:var(--line)}
+.cmd .nw{white-space:nowrap}
+code.in{font:15px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--accent-soft);color:var(--ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+.note code.in{background:var(--surface)}
+
+.expect{font-size:15px;color:var(--mute);margin:-6px 0 14px}
+.check{border-left:3px solid var(--ok);padding:2px 0 2px 14px;margin:18px 0 6px}
+.check h3{margin:0 0 6px;color:var(--ok);font-size:15px;letter-spacing:.04em;text-transform:uppercase}
+.note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;margin:16px 0 4px;font-size:16px}
+.note p:last-child{margin:0}
+.note .cmd{margin-bottom:4px}
+.warn{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:12px;padding:14px 16px;margin:16px 0 4px;font-size:16px}
+.warn p:last-child{margin:0}
+
+/* what you get: timeline picture */
+.tl{margin:20px 0 6px;display:grid;gap:8px}
+.tl-row{display:grid;grid-template-columns:172px 1fr;align-items:center;gap:10px;font-size:13px}
+.tl-row .lab{color:var(--mute);text-align:right;line-height:1.25}
+.bar{display:flex;height:30px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.bar .new{flex:0 0 22%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#2A1E07;background:var(--accent);white-space:nowrap;overflow:hidden;padding:0 4px}
+.bar .new.o{background:var(--orange);color:#fff}
+.bar .new.orig{background:var(--line);color:var(--mute);font-weight:600}
+.bar .rest{flex:1;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 34px),var(--bg);display:flex;align-items:center;padding-left:10px;color:var(--mute)}
+.bar.sound{height:22px}
+.bar.sound .wave{flex:1;background:repeating-linear-gradient(90deg,var(--mute) 0 2px,transparent 2px 5px);opacity:.35;-webkit-mask:linear-gradient(0deg,transparent 0 30%,#000 30% 70%,transparent 70%);mask:linear-gradient(0deg,transparent 0 30%,#000 30% 70%,transparent 70%)}
+.tl-cap{font-size:14px;color:var(--mute);margin:8px 0 0}
+
+ol.flow{list-style:none;counter-reset:f;margin:6px 0 14px;padding:0}
+ol.flow li{counter-increment:f;position:relative;padding:0 0 14px 40px}
+ol.flow li::before{content:counter(f);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);color:var(--accent-ink);font:700 13px/22px "Outfit",sans-serif;text-align:center}
+ol.flow li::after{content:"";position:absolute;left:12px;top:30px;bottom:2px;width:2px;background:var(--line)}
+ol.flow li:last-child::after{display:none}
+
+.spec{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0 14px}
+.spec th,.spec td{text-align:left;padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+.spec th{color:var(--mute);font-weight:600;width:34%}
+
+.tips{list-style:none;margin:0;padding:0}
+.tips li{padding:14px 0;border-top:1px solid var(--line)}
+.tips li:first-child{border-top:0;padding-top:4px}
+.tips strong{display:block;margin-bottom:2px}
+
+footer{color:var(--mute);font-size:14px;text-align:center;margin-top:28px}
+
+@media (max-width:560px){
+  body{font-size:16px}
+  main{padding-top:28px}
+  h1{font-size:31px}
+  h2{font-size:22px}
+  .lede{font-size:17px}
+  section{padding:20px 16px;border-radius:14px}
+  .tl{gap:4px}
+  .tl-row{grid-template-columns:1fr;gap:3px;font-size:12px;margin-bottom:4px}
+  .tl-row .lab{text-align:left}
+  .bar .new{flex-basis:30%;font-size:11px}
+  .cmd code{font-size:13.5px}
+}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="eyebrow">Free Claude Code skill · Setup guide</div>
+  <h1>Keyword openers</h1>
+  <p class="lede">From nothing to your first finished video in six steps. Most steps are one command you copy and paste.</p>
+</header>
+
+<ul class="toc" aria-label="Contents">
+  <li><a href="#get">What you get</a></li>
+  <li><a href="#need">What you need</a></li>
+  <li><a href="#step1">1. Claude Code</a></li>
+  <li><a href="#step2">2. ffmpeg + Python</a></li>
+  <li><a href="#step3">3. Genrupt</a></li>
+  <li><a href="#step4">4. The skill</a></li>
+  <li><a href="#step5">5. First run</a></li>
+  <li><a href="#step6">6. Amazon</a></li>
+  <li><a href="#tips">Tips and fixes</a></li>
+</ul>
+
+<div class="os-bar">
+  <span id="os-q">Show commands for</span>
+  <div class="seg" role="group" aria-labelledby="os-q">
+    <button type="button" data-pick="mac" aria-pressed="false">Mac</button>
+    <button type="button" data-pick="win" aria-pressed="false">Windows</button>
+  </div>
+</div>
+
+<!-- ============================================================ WHAT YOU GET -->
+<section id="get">
+  <h2>What you get</h2>
+  <p>You bring one finished product video and a list of search keywords. You get one version of the video per keyword. Only the picture of the first few seconds (about 4) changes: it becomes a short AI scene that shows what that keyword names, with the keyword on screen. The soundtrack stays exactly as it was, and every version is as long as your original.</p>
+  <p>Why the opening? Sponsored Brands video starts playing without sound. The first picture and the words on it are what the shopper actually gets.</p>
+
+  <div class="tl" aria-hidden="true">
+    <div class="tl-row"><div class="lab">Your video</div><div class="bar"><div class="new orig">marshmallow</div><div class="rest">the rest of your video</div></div></div>
+    <div class="tl-row"><div class="lab">hot dog roasting sticks</div><div class="bar"><div class="new">HOT DOG</div><div class="rest">same</div></div></div>
+    <div class="tl-row"><div class="lab">vegetable roasting sticks</div><div class="bar"><div class="new o">VEGETABLE</div><div class="rest">same</div></div></div>
+    <div class="tl-row"><div class="lab">Soundtrack</div><div class="bar sound"><div class="wave"></div></div></div>
+  </div>
+  <p class="tl-cap">New opening per keyword. Everything after the first cut, and the whole soundtrack, stays yours.</p>
+
+  <div class="note"><p><strong>Cost:</strong> each new 5-second scene costs about $1.50 in Genrupt credits. Claude shows you the exact price and waits for your yes before it spends anything. Building the versions is free.</p></div>
+</section>
+
+<!-- ============================================================ WHAT YOU NEED -->
+<section id="need">
+  <h2>What you need</h2>
+  <ul class="need">
+    <li><strong>Claude Code</strong><span>It needs a paid Claude plan, such as Pro (<a href="https://claude.com/pricing" target="_blank" rel="noopener">see plans</a>). Step 1 installs it.</span></li>
+    <li><strong>A Genrupt account with credits</strong><span>Genrupt is the AI video platform that makes the new scenes. No account yet? Apply for access at <a href="https://genrupt.com" target="_blank" rel="noopener">genrupt.com</a>.</span></li>
+    <li><strong>A finished product video</strong><span>mp4 or mov, 6 to 45 seconds, landscape (16:9) or vertical (9:16).</span></li>
+    <li><strong>Your ASIN</strong><span>So the new scenes show your real product.</span></li>
+    <li><strong>Your keywords, 3 to 10</strong><span>No list? Claude can suggest some from your listing.</span></li>
+  </ul>
+</section>
+
+<!-- ============================================================ STEP 1 -->
+<section id="step1">
+  <div class="step-head"><div class="num">1</div><h2>Install Claude Code</h2></div>
+
+  <p data-os="mac"><strong>Open Terminal.</strong> Press Cmd + Space, type <em>Terminal</em>, press Enter.</p>
+  <p data-os="win"><strong>Open PowerShell.</strong> Press the Windows key, type <em>PowerShell</em>, press Enter.</p>
+  <p>Never used one before? Anthropic's <a href="https://code.claude.com/docs/en/terminal-guide" target="_blank" rel="noopener">terminal guide</a> shows how to open it and paste a command.</p>
+
+  <p>Paste this and press Enter:</p>
+  <div data-os="mac">
+    <div class="os-label">Mac</div>
+    <div class="cmd"><code>curl -fsSL https://claude.ai/install.sh | bash</code><button type="button">Copy</button></div>
+  </div>
+  <div data-os="win">
+    <div class="os-label">Windows (PowerShell)</div>
+    <div class="cmd"><code>irm https://claude.ai/install.ps1 | iex</code><button type="button">Copy</button></div>
+  </div>
+  <p class="expect">It shows no progress while it downloads. Wait until you can type again.</p>
+
+  <p>These commands come from Anthropic's <a href="https://code.claude.com/docs/en/overview" target="_blank" rel="noopener">official install page</a>. If anything there looks different, follow that page.</p>
+
+  <div class="check">
+    <h3>Check it worked</h3>
+    <p>Close the window and open a new one. Then run:</p>
+    <div class="cmd"><code>claude --version</code><button type="button">Copy</button></div>
+    <p class="expect">You should see a version number. If it says <em>claude</em> is not found, see <a href="https://code.claude.com/docs/en/troubleshoot-install" target="_blank" rel="noopener">Troubleshoot installation</a>.</p>
+  </div>
+
+  <h3>Sign in</h3>
+  <div class="cmd"><code>claude</code><button type="button">Copy</button></div>
+  <p>The first time, Claude Code asks you to log in with your Claude account. Follow the steps it shows. When you are in, type <code class="in">/exit</code> and press Enter to close it for now.</p>
+
+  <p data-os="win"><strong>On Windows, also install <a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">Git for Windows</a>.</strong> Anthropic recommends it so Claude Code can run its usual commands.</p>
+</section>
+
+<!-- ============================================================ STEP 2 -->
+<section id="step2">
+  <div class="step-head"><div class="num">2</div><h2>Install ffmpeg and two Python packages</h2></div>
+  <p>ffmpeg is the free tool that cuts and joins the video. numpy and Pillow are two small Python packages the skill uses to check frames and draw the title.</p>
+
+  <div data-os="mac">
+    <div class="os-label">Mac</div>
+    <h3>a. Homebrew</h3>
+    <p>Homebrew installs tools on a Mac. Check if you already have it:</p>
+    <div class="cmd"><code>brew --version</code><button type="button">Copy</button></div>
+    <p>If you see a version number, skip to b. If not, install it (command from <a href="https://brew.sh" target="_blank" rel="noopener">brew.sh</a>):</p>
+    <div class="cmd"><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code><button type="button">Copy</button></div>
+    <p class="expect">It asks for your Mac password. Nothing shows while you type; that is normal. Press Enter when it asks you to. At the end it may show a <em>Next steps</em> section with a few commands: copy and run them too.</p>
+
+    <h3>b. ffmpeg</h3>
+    <div class="cmd"><code>brew install ffmpeg</code><button type="button">Copy</button></div>
+
+    <h3>c. numpy and Pillow</h3>
+    <div class="cmd"><code>python3 -m pip install numpy pillow</code><button type="button">Copy</button></div>
+    <p class="expect">If you see an error that says <em>externally-managed-environment</em>, run this instead:</p>
+    <div class="cmd"><code>python3 -m pip install --user --break-system-packages numpy pillow</code><button type="button">Copy</button></div>
+
+    <div class="check">
+      <h3>Check it worked</h3>
+      <div class="cmd"><code>ffmpeg -version</code><button type="button">Copy</button></div>
+      <p class="expect">The first line starts with <em>ffmpeg version</em>.</p>
+      <div class="cmd"><code>python3 -c "import numpy, PIL; print('ready')"</code><button type="button">Copy</button></div>
+      <p class="expect">It prints <em>ready</em>.</p>
+    </div>
+  </div>
+
+  <div data-os="win">
+    <div class="os-label">Windows</div>
+    <h3>a. ffmpeg</h3>
+    <div class="cmd"><code>winget install --id Gyan.FFmpeg -e</code><button type="button">Copy</button></div>
+
+    <h3>b. Python</h3>
+    <p>Already have Python 3? Skip this one.</p>
+    <div class="cmd"><code>winget install --id Python.Python.3.13 -e</code><button type="button">Copy</button></div>
+    <p class="expect">Now close PowerShell and open a new one, so it finds the new tools.</p>
+
+    <h3>c. numpy and Pillow</h3>
+    <div class="cmd"><code>python -m pip install numpy pillow</code><button type="button">Copy</button></div>
+
+    <div class="check">
+      <h3>Check it worked</h3>
+      <div class="cmd"><code>ffmpeg -version</code><button type="button">Copy</button></div>
+      <p class="expect">The first line starts with <em>ffmpeg version</em>.</p>
+      <div class="cmd"><code>python -c "import numpy, PIL; print('ready')"</code><button type="button">Copy</button></div>
+      <p class="expect">It prints <em>ready</em>.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <p><strong>Rather not type all this?</strong> Claude Code can do this step for you. Type <code class="in">claude</code>, press Enter, and paste:</p>
+    <div class="cmd"><code>Install ffmpeg, plus numpy and Pillow for Python 3, on this computer. Then check that both work.</code><button type="button">Copy</button></div>
+    <p>It asks before it runs each command. Choose Yes.</p>
+  </div>
+</section>
+
+<!-- ============================================================ STEP 3 -->
+<section id="step3">
+  <div class="step-head"><div class="num">3</div><h2>Connect Genrupt</h2></div>
+  <p>This connects Claude Code to your Genrupt account, so Claude can make the scenes for you. Paste this in your terminal, outside Claude Code (if Claude Code is open, type <code class="in">/exit</code> first):</p>
+  <div class="cmd"><code>claude mcp add --scope user --transport http genrupt https://genrupt.com/api/agent/mcp</code><button type="button">Copy</button></div>
+  <p class="expect"><code class="in">--scope user</code> makes Genrupt work in every folder. Without it, it only works in the folder you ran the command from.</p>
+
+  <h3>Sign in to Genrupt</h3>
+  <p>Start Claude Code:</p>
+  <div class="cmd"><code>claude</code><button type="button">Copy</button></div>
+  <p>Then type this and press Enter:</p>
+  <div class="cmd"><code>/mcp</code><button type="button">Copy</button></div>
+  <p>Pick <strong>genrupt</strong> from the list and follow the sign-in steps. Your browser opens. Sign in with your Genrupt account, then come back to the terminal. If the browser does not open, copy the link Claude Code shows and open it yourself.</p>
+
+  <div class="check">
+    <h3>Check it worked</h3>
+    <p>Type <code class="in">/mcp</code> again. Genrupt should show as connected. Or, outside Claude Code, run:</p>
+    <div class="cmd"><code>claude mcp list</code><button type="button">Copy</button></div>
+    <p class="expect">Look for the <em>genrupt</em> line ending in <em>✔ Connected</em>. If it says <em>Needs authentication</em>, do the sign-in again.</p>
+  </div>
+</section>
+
+<!-- ============================================================ STEP 4 -->
+<section id="step4">
+  <div class="step-head"><div class="num">4</div><h2>Install the skill</h2></div>
+  <p>Paste this in your terminal, outside Claude Code. It needs Node.js; if <code class="in">npx</code> is not found, install Node.js from nodejs.org first.</p>
+  <div class="cmd"><code>npx skills add JayGPTPro/keyword-openers -g</code><button type="button">Copy</button></div>
+  <p>If Claude Code was open, close it and start it again.</p>
+
+  <div class="check">
+    <h3>Check it worked</h3>
+    <p>In Claude Code, type <code class="in">/keyword</code>. You should see <strong>keyword-openers</strong> in the list.</p>
+  </div>
+</section>
+
+<!-- ============================================================ STEP 5 -->
+<section id="step5">
+  <div class="step-head"><div class="num">5</div><h2>Your first run</h2></div>
+
+  <h3>Get the video ready</h3>
+  <p>Put your video in a folder of its own, for example on your Desktop. Give it a simple name with no spaces, like <code class="in">my-video.mp4</code>.</p>
+
+  <h3>Open Claude Code in that folder</h3>
+  <p data-os="mac">In Terminal, type <code class="in">cd</code> and a space. Drag the folder from Finder into the Terminal window. Press Enter.</p>
+  <p data-os="win">Open the folder in File Explorer. Click the address bar at the top, type <code class="in">powershell</code> and press Enter. PowerShell opens in that folder.</p>
+  <p>Then start Claude Code:</p>
+  <div class="cmd"><code>claude</code><button type="button">Copy</button></div>
+
+  <h3>Type your request</h3>
+  <p>Copy this, then change three things: the file name, your ASIN, and your keywords. Put a semicolon between keywords.</p>
+  <div class="cmd"><code>/keyword-openers my-video.mp4, ASIN B0XXXXXXXX, keywords: hot dog roasting sticks; vegetable roasting sticks; s'mores roasting sticks</code><button type="button">Copy</button></div>
+  <p class="expect">Claude Code asks before it runs commands or saves files. Choose Yes.</p>
+
+  <h3>What happens next</h3>
+  <ol class="flow">
+    <li><strong>It reads your video.</strong> It finds your video's own cut nearest 4 seconds and checks what is in the frames it will replace. If a logo, a price or text sits there, it tells you and offers an earlier cut.</li>
+    <li><strong>It shows the scenes it will make,</strong> one line per keyword. For example: <em>hot dog roasting sticks: a dad and his son holding two hot dogs over the same campfire.</em> Say so if you want one changed.</li>
+    <li><strong>It shows the price and waits for your yes.</strong> Something like: <em>3 openings, 5 seconds each, Seedance 2.5 at 720p: 72 credits. Go?</em> Nothing is spent until you answer.</li>
+    <li><strong>Genrupt makes the scenes,</strong> using your product photos from the ASIN.</li>
+    <li><strong>It builds every version.</strong> Seconds per version, no credits. It checks each file: same length as your original, same soundtrack, the rest of the video untouched. Then it looks at each new opening to make sure the product is yours and the title is readable.</li>
+    <li><strong>It opens a review page</strong> with your original and every version side by side.</li>
+  </ol>
+  <p>Your finished videos are in a folder called <code class="in">keyword-openers/out</code> next to your video, one mp4 per keyword.</p>
+</section>
+
+<!-- ============================================================ STEP 6 -->
+<section id="step6">
+  <div class="step-head"><div class="num">6</div><h2>Upload to Amazon</h2></div>
+  <p>In Sponsored Brands video:</p>
+  <ol class="plain">
+    <li>Make one ad group per keyword.</li>
+    <li>Target that keyword on exact match, so the shopper who sees the hot dog opening is the one who typed "hot dog".</li>
+    <li>Upload that keyword's version as the ad group's video.</li>
+    <li>Keep your original video running on the same keywords. That is your control.</li>
+    <li>After 1 to 2 weeks, compare click-through rate per keyword. Keep the openings that get more clicks. Stop the rest.</li>
+  </ol>
+  <p>Amazon reviews every video ad before it runs.</p>
+
+  <h3>What Amazon asks of the file</h3>
+  <p>Your versions keep your original's size, frame rate and sound. If the original meets these, so do they.</p>
+  <table class="spec">
+    <tr><th>Length</th><td>6 to 45 seconds</td></tr>
+    <tr><th>Size</th><td>1280x720, 1920x1080 or 3840x2160, no black bars</td></tr>
+    <tr><th>Frame rate</th><td>23.976 to 30 frames per second</td></tr>
+    <tr><th>File</th><td>.mp4 or .mov, H.264 or H.265, up to 500 MB</td></tr>
+    <tr><th>Audio</th><td>AAC, PCM or MP3</td></tr>
+  </table>
+</section>
+
+<!-- ============================================================ TIPS -->
+<section id="tips">
+  <h2>Tips and fixes</h2>
+  <ul class="tips">
+    <li><strong>Pick keywords that change the picture.</strong> A food, a person, a place or a use: "hot dog", "for kids", "camping". Keywords that only reorder the same words get the same scene, so skip them.</li>
+    <li><strong>A moving feature needs a reference clip.</strong> For a keyword like "extendable" or "foldable", Claude asks for a short clip of the feature in use, or the AI invents how it works. A customer review video from your listing is ideal: 3 to 8 seconds, at least 300 px tall. It adds to the price, and Claude includes it in the price check.</li>
+    <li><strong>The title covers the product?</strong> Ask Claude to move the title to the top or the bottom. It rebuilds in seconds and costs nothing.</li>
+    <li><strong>A scene came back wrong?</strong> Tell Claude what is off. A new scene costs credits again, so it asks you first.</li>
+    <li><strong>Keyword not in Latin letters?</strong> Keywords in Hebrew, Chinese, Arabic and similar scripts need an English title on screen. Ask Claude to set an English <code class="in">title_text</code> for that keyword, or to turn the title off.</li>
+    <li><strong>Long keyword?</strong> More than 5 words is drawn small. Ask Claude for a shorter title for that one.</li>
+    <li><strong>Short video, or shot on a phone?</strong> Your video must be at least 6 seconds long (Amazon's minimum) and have a constant frame rate. Phone and screen recordings often do not. Claude warns you when it reads the video. Then ask it: <em>Convert my video to a constant frame rate first.</em></li>
+    <li><strong>No Genrupt?</strong> The skill still works. Drop in your own clip for each keyword (filmed, stock, or from another tool) and Claude builds the versions.</li>
+    <li><strong>Stuck on any step?</strong> Open Claude Code, paste the error you see, and ask what to do.</li>
+  </ul>
+</section>
+
+<footer>keyword-openers · a free Claude Code skill</footer>
+</main>
+
+<script>
+(function () {
+  // Mac / Windows switch. Without JS both sets of commands stay visible.
+  var KEY = "ko-guide-os";
+  function pick(os) {
+    document.body.classList.remove("os-mac", "os-win");
+    document.body.classList.add("os-" + os);
+    var btns = document.querySelectorAll(".seg button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-pick") === os ? "true" : "false");
+    }
+    try { localStorage.setItem(KEY, os); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  var guess = /Win/i.test(navigator.platform || "") || /Windows/i.test(navigator.userAgent || "") ? "win" : "mac";
+  pick(saved === "mac" || saved === "win" ? saved : guess);
+  var seg = document.querySelectorAll(".seg button");
+  for (var j = 0; j < seg.length; j++) {
+    seg[j].addEventListener("click", function () { pick(this.getAttribute("data-pick")); });
+  }
+
+  // Copy buttons
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function flash(btn, label) {
+    btn.textContent = label;
+    btn.classList.add("done");
+    setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("done"); }, 1600);
+  }
+  // Keep short words of a command (flags, file names) on one line when it wraps.
+  // The text itself does not change, so Copy still copies the exact command.
+  var codes = document.querySelectorAll(".cmd:not(.placeholder) code");
+  for (var c = 0; c < codes.length; c++) {
+    var parts = codes[c].textContent.split(/( +)/);
+    codes[c].textContent = "";
+    for (var q = 0; q < parts.length; q++) {
+      var part = parts[q];
+      if (!part) continue;
+      if (/^ +$/.test(part) || part.length > 24) {
+        codes[c].appendChild(document.createTextNode(part));
+      } else {
+        var s = document.createElement("span");
+        s.className = "nw";
+        s.textContent = part;
+        codes[c].appendChild(s);
+      }
+    }
+  }
+
+  var cmds = document.querySelectorAll(".cmd button");
+  for (var k = 0; k < cmds.length; k++) {
+    cmds[k].setAttribute("aria-label", "Copy command");
+    cmds[k].addEventListener("click", function () {
+      var btn = this;
+      var text = btn.parentNode.querySelector("code").textContent;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () { flash(btn, "Copied"); },
+          function () { flash(btn, fallbackCopy(text) ? "Copied" : "Select it"); });
+      } else {
+        flash(btn, fallbackCopy(text) ? "Copied" : "Select it");
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
