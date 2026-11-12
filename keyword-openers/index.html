@@ -257,6 +257,47 @@
   .sticky a { display:flex; width:100%; }
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
+
+  /* the bench: dark warm hero, taken from the film's "edit bench by the fire" */
+  .fire { --ink:#F3ECE1; --mute:#BDB2A2; --faint:#8F8576; --line:#3A3129; --orange-ink:#F09A5C;
+    --shadow:0 2px 0 rgba(0,0,0,.25), 0 34px 70px rgba(0,0,0,.5);
+    color:var(--ink); background:#16110D radial-gradient(120% 70% at 50% 108%, #4A2614 0%, #2A1810 38%, #16110D 72%); padding-bottom:84px; color-scheme:dark; }
+  .fire .brand { color:var(--mute); }
+  .wrap.wide, .fire .top { max-width:1240px; }
+  .fire .hero { text-align:left; padding-top:44px; }
+  .hero-grid { display:grid; grid-template-columns:minmax(0,1.75fr) minmax(0,1fr); gap:56px; align-items:end; }
+  .fire h1 { font-size:clamp(34px,4.5vw,62px); margin:0; max-width:none; }
+  .fire .eyebrow { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+  .fire .eyebrow::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--bar); flex:none; }
+  .fire .eyebrow .eb-dot { display:none; } .fire .eyebrow .eb-2::before { content:"/ "; color:var(--faint); }
+  .fire .sub { font-size:17.5px; margin:0; max-width:none; }
+  .fire .hero .btn { margin-top:24px; padding:16px 30px; }
+  .fire .small { color:var(--faint); }
+  .stage.bench { max-width:none; margin-top:56px; position:relative; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); column-gap:72px; row-gap:0; align-items:center; }
+  .bench .serp { z-index:2; border-radius:6px; border:none; }
+  .bench figcaption { grid-column:1 / -1; margin-top:22px; }
+  .loupe { position:relative; z-index:2; min-width:0; }
+  .lens { position:relative; aspect-ratio:810 / 456; background:#000 center / cover no-repeat; border:8px solid #F4EEE4; border-radius:6px; overflow:hidden; box-shadow:var(--shadow); }
+  .lens canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .lt { display:block; margin-top:14px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--mute); }
+  .lt b { color:var(--orange-ink); font-weight:500; }
+  .leader { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible; }
+  .leader polygon { fill:rgba(224,135,74,.10); stroke:#E0874A; stroke-width:1.2; stroke-linejoin:round; }
+  .blk .bench .lens { border-color:var(--surface); outline:1px solid var(--line); }
+  .kicker { display:flex; align-items:center; gap:10px; }
+  .kicker::before { content:""; width:22px; height:2px; background:var(--orange); flex:none; }
+  .night { background:#16110D radial-gradient(110% 60% at 50% 0%, #3A1F12 0%, #16110D 60%); }
+  @media (max-width:720px) {
+    .hero-grid { grid-template-columns:minmax(0,1fr); gap:18px; }
+    .fire h1 { font-size:33px; }
+    .fire .sub { font-size:16.5px; }
+    .fire { padding-bottom:56px; }
+    .fire .eyebrow { display:block; } .fire .eyebrow::before { display:inline-block; margin:0 8px 1px 0; }
+    .fire .eyebrow .eb-2::before { content:""; }
+    .stage.bench { grid-template-columns:minmax(0,1fr); gap:0; margin-top:30px; }
+    .bench .loupe, .bench .leader { display:none; }
+    .bench figcaption { margin-top:14px; }
+  }
   @media (max-width:900px) {
     .scenes { grid-template-columns:repeat(2,minmax(0,1fr)); }
   }
@@ -340,18 +381,24 @@
 </head>
 <body>
 
-<div class="top"><div class="brand"><i></i><span>Jay GPT</span></div><a href="#install">Get it free</a></div>
-
 <main>
-<div class="wrap">
+<div class="fire">
+<div class="top"><div class="brand"><i></i><span>Jay GPT</span></div><a href="#install">Get it free</a></div>
+<div class="wrap wide">
   <section class="hero">
+    <div class="hero-grid">
+    <div class="hero-copy">
     <div class="eyebrow">The Video Ad CTR Optimization Hack<span class="eb-dot"> · </span><span class="eb-2">a free Claude Code skill</span></div>
     <h1>You don't need to shoot ten different videos. You need one video, and <em>ten ways to start it.</em></h1>
+    </div>
+    <div class="hero-side">
     <p class="sub">Give it your product video and your search keywords. Each version opens on a scene that shows what the shopper typed. The sound and the rest of your video stay exactly as they were.</p>
     <a class="btn" href="#install" id="hero-cta">Get the skill free</a>
     <p class="small">Free skill. About $1.50 in Genrupt credits per opening.</p>
+    </div>
+    </div>
 
-    <figure class="stage">
+    <figure class="stage bench">
       <div class="serp" data-serp="match" aria-label="Demo: a search on Amazon, and the ad at the top opens on a scene that matches it">
         <div class="pg">
           <img class="pg-img" src="img/serp-hot-dog.webp" width="1500" height="800" alt="Amazon search results for hot dog roasting sticks, with the demo ad at the top">
@@ -364,9 +411,12 @@
         <div class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><span class="qt">hot dog roasting sticks</span><i class="caret"></i></div>
         <button class="pp" type="button" aria-label="Pause the demo"></button>
       </div>
+      <div class="loupe" aria-hidden="true"><div class="lens"><canvas width="810" height="456"></canvas></div><span class="lt">Demo ad &middot; <b>AI opening</b>, up close</span></div>
+      <svg class="leader" aria-hidden="true"><polygon/></svg>
       <figcaption><b>Six searches, six openings.</b> Real Amazon results pages with the demo ad placed in the top slot. Every opening is AI-generated.</figcaption>
     </figure>
   </section>
+</div>
 </div>
 
 <!-- THE PROBLEM -->
@@ -375,7 +425,7 @@
   <h2>One video for every search. And it plays muted.</h2>
   <p class="lead">Sponsored Brands video sits at the top of Amazon search and starts playing without sound. So the first seconds of picture are what the shopper actually gets.</p>
   <p class="lead">Someone searches <b>hot dog roasting sticks</b>, and your ad opens on a marshmallow. The next shopper searches vegetable roasting sticks and gets the same marshmallow.</p>
-  <figure class="stage">
+  <figure class="stage bench">
     <div class="serp" data-serp="same" aria-label="The same search pages, and the ad opens on the same marshmallow every time">
       <div class="pg">
         <img class="pg-img" src="img/serp-hot-dog.webp" width="1500" height="800" alt="Amazon search results for hot dog roasting sticks, with the original ad at the top" loading="lazy">
@@ -388,6 +438,8 @@
       <div class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><span class="qt">hot dog roasting sticks</span><i class="caret"></i></div>
       <button class="pp" type="button" aria-label="Pause the demo"></button>
     </div>
+      <div class="loupe" aria-hidden="true"><div class="lens"><canvas width="810" height="456"></canvas></div><span class="lt">Your video &middot; <b>today</b>, up close</span></div>
+      <svg class="leader" aria-hidden="true"><polygon/></svg>
     <figcaption><b>Different search, same opening.</b> The original product video, as every shopper meets it today.</figcaption>
   </figure>
 </div></section>
@@ -629,6 +681,31 @@
     draw();
   }
 
+
+  // The loupe: the ad in the results page, drawn again large beside it
+  function Loupe(root) {
+    var fig = root.parentNode, lp = fig.querySelector('.loupe'); if (!lp) return null;
+    var cv = lp.querySelector('canvas'), ctx = cv.getContext('2d'), lens = lp.querySelector('.lens');
+    var svg = fig.querySelector('.leader'), poly = svg && svg.querySelector('polygon'), raf = 0;
+    function active() { return root.querySelector('video.ad.on') || root.querySelector('video.ad'); }
+    function draw() {
+      var v = active();
+      if (v && v.readyState >= 2 && v.played.length) { try { ctx.drawImage(v, 0, 0, cv.width, cv.height); } catch (e) {} }
+      else if (v && v.poster) { ctx.clearRect(0, 0, cv.width, cv.height); lens.style.backgroundImage = 'url(' + v.getAttribute('poster') + ')'; }
+    }
+    function loop() { draw(); raf = requestAnimationFrame(loop); }
+    function layout() {
+      if (!poly || getComputedStyle(lp).display === 'none') return;
+      var f = fig.getBoundingClientRect(), a = root.querySelector('.adbox').getBoundingClientRect(), l = lens.getBoundingClientRect();
+      var pts = [[a.right, a.top], [l.left, l.top], [l.left, l.bottom], [a.right, a.bottom]];
+      poly.setAttribute('points', pts.map(function (p) { return (p[0] - f.left).toFixed(1) + ',' + (p[1] - f.top).toFixed(1); }).join(' '));
+    }
+    var v0 = active(); if (v0 && v0.getAttribute('poster')) lens.style.backgroundImage = 'url(' + v0.getAttribute('poster') + ')';
+    layout();
+    if ('ResizeObserver' in window) new ResizeObserver(layout).observe(fig); else addEventListener('resize', layout);
+    root.querySelectorAll('video.ad').forEach(function (v) { v.addEventListener('loadeddata', draw); v.addEventListener('seeked', draw); });
+    return { start: function () { layout(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }, stop: function () { cancelAnimationFrame(raf); draw(); } };
+  }
   // The search stage. "match": the ad changes with the search. "same": it never does.
   function Serp(root) {
     var mode = root.getAttribute('data-serp');
@@ -699,7 +776,8 @@
     }
 
     if (mode === 'same') vids[0].preload = 'auto';
-    watch(root, function () { inView = true; if (!ctl.paused && !busy) run(false); }, function () { inView = false; halt(); });
+    var lo = Loupe(root);
+    watch(root, function () { inView = true; if (lo) lo.start(); if (!ctl.paused && !busy) run(false); }, function () { inView = false; halt(); if (lo) lo.stop(); });
     ppButton(root.querySelector('.pp'), 'the demo', ctl);
   }
 
