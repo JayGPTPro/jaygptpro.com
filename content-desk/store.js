@@ -196,6 +196,7 @@ function demoStore() {
       guardStage(t, next, row);
       const onlyTranslation = Object.keys(patch).every((k) => k.endsWith("_he"));
       if ((t === "posts" || t === "notes") && !onlyTranslation) next.updated_at = now();
+      if (t === "posts" && !onlyTranslation) next.updated_by = as;
       Object.assign(row, next);
       save();
       return JSON.parse(JSON.stringify(row));

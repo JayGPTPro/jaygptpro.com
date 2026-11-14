@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=4";
-import { HE } from "./i18n.js?v=5";
+import { createStore } from "./store.js?v=6";
+import { HE } from "./i18n.js?v=6";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -27,7 +27,7 @@ const S = {
   busy: 0, toast: null, modal: null, urls: {},
   edit: null, // { postId, channel, mode } while a text is open for editing
   channel: {}, vsel: {}, diff: {}, view: {}, more: {},
-  cat: "all", only: "", col: "", showRejected: {},
+  cat: "all", only: "", col: "", q: "", showRejected: {},
   newMode: "idea", split: null, draftText: "",
   files: {}, translateError: "", lang: "en", langChosen: false,
 };
@@ -167,6 +167,57 @@ function displayTitle(p) {
   const h = headlineOf(p);
   // A headline that is not translated yet shows alone, not next to the working title's Hebrew.
   return biText(h.en || p.title, h.en && h.en !== p.title ? h.he || "" : h.he || p.title_he || "");
+}
+// What someone else did on a post since this browser last opened it.
+const SEEN = (() => {
+  try {
+    return JSON.parse(localStorage.getItem("desk:seen") || "{}");
+  } catch (_) {
+    return {};
+  }
+})();
+function saveSeen() {
+  try {
+    localStorage.setItem("desk:seen", JSON.stringify(SEEN));
+  } catch (_) {
+    /* only a convenience */
+  }
+}
+if (!SEEN._base) {
+  SEEN._base = new Date().toISOString();
+  saveSeen();
+}
+function lastTouch(p) {
+  let at = p.updated_by && p.updated_by !== S.me ? p.updated_at || "" : "";
+  for (const list of [S.d.notes, S.d.versions, S.d.assets]) {
+    for (const x of list) if (x.post_id === p.id && x.author !== S.me && (x.created_at || "") > at) at = x.created_at;
+  }
+  return at;
+}
+const isNew = (p) => {
+  const at = lastTouch(p);
+  return !!at && at > (SEEN[p.id] || SEEN._base);
+};
+function markSeen(p) {
+  if (!isNew(p)) return;
+  SEEN[p.id] = new Date().toISOString();
+  saveSeen();
+}
+// The order of a column on the board; the drawer walks the same order.
+function sortStage(c, list) {
+  if (c === "ready") return list.sort((a, b) => (a.pinned_date || "9").localeCompare(b.pinned_date || "9"));
+  if (c === "published") return list.sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
+  return list.sort((a, b) => (STATUS_ORDER[a.status] - STATUS_ORDER[b.status]) || (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
+}
+function siblings(p) {
+  return sortStage(p.stage, S.d.posts.filter((x) => x.id === p.id || (x.stage === p.stage && x.status !== "rejected" && (S.cat === "all" || x.category === S.cat))));
+}
+// The next post in the column that still waits for Jay, after this one.
+function nextWaiting(p) {
+  const sib = siblings(p);
+  const i = sib.findIndex((x) => x.id === p.id);
+  const hit = [...sib.slice(i + 1), ...sib.slice(0, i)].find((x) => x.status === "waiting");
+  return hit ? hit.id : null;
 }
 const openNotes = (pid) => notesOf(pid).filter((n) => n.kind === "note" && n.status === "open");
 const waitingCount = () => S.d.posts.filter((p) => ["idea", "draft", "final"].includes(p.stage) && p.status === "waiting").length;
@@ -395,22 +446,37 @@ document.addEventListener("focusout", () => {
 
 // ---------------- running actions ----------------
 let toastTimer;
-function toast(msg, err) {
-  S.toast = { msg: t(/^Only the owner|^Only Jay/.test(msg) ? "Only Jay can do this." : /^Jay already approved this post/.test(msg) ? "Jay already approved this post. Ask him to send it back before changing the text." : msg), err };
+function toast(msg, err, undo) {
+  S.toast = { undo, msg: t(/^Only the owner|^Only Jay/.test(msg) ? "Only Jay can do this." : /^Jay already approved this post/.test(msg) ? "Jay already approved this post. Ask him to send it back before changing the text." : msg), err };
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     S.toast = null;
     const el = document.querySelector(".toast");
     if (el) el.remove();
-  }, err ? 6000 : 2600);
+  }, err ? 6000 : undo ? 7000 : 2600);
   render();
 }
-async function run(fn, okMsg) {
+// Jay's answer on a post: save it, offer an undo, and move on to the next post that waits for him.
+function decide(p, patch, msg, extra) {
+  const before = { stage: p.stage, status: p.status, skip_reason: p.skip_reason || null };
+  const inDrawer = route().id === p.id;
+  const nextId = inDrawer ? nextWaiting(p) : null;
+  const base = baseOf();
+  return run(async () => {
+    if (extra) await extra();
+    await savePost(p, patch);
+    if (inDrawer) go(nextId ? `#/${base}/p/${nextId}` : `#/${base}`);
+  }, msg, () => run(async () => {
+    await savePost(p, before);
+    if (inDrawer) go(`#/${base}/p/${p.id}`);
+  }, "Undone"));
+}
+async function run(fn, okMsg, undo) {
   S.busy++;
   render();
   try {
     await fn();
-    if (okMsg) toast(okMsg);
+    if (okMsg) toast(okMsg, false, undo);
   } catch (e) {
     console.error(e);
     toast(e.message || String(e), true);
@@ -505,6 +571,20 @@ const A = {
   open(id) {
     go(`#/${baseOf()}/p/${id}`);
   },
+  nav(id, dir) {
+    const p = post(id);
+    if (!p) return;
+    const sib = siblings(p);
+    const to = sib[sib.findIndex((x) => x.id === id) + Number(dir)];
+    if (to) go(`#/${baseOf()}/p/${to.id}`);
+  },
+  undo() {
+    const u = S.toast && S.toast.undo;
+    S.toast = null;
+    if (u) u();
+    else render();
+  },
+  search() {},
   close() {
     S.edit = null;
     closeDrawer();
@@ -563,7 +643,7 @@ const A = {
   approve(id) {
     const p = post(id);
     if (p.stage === "final") return A.approveFinal(id);
-    run(() => savePost(p, { status: "approved" }), p.stage === "idea" ? "Approved. Next: the first draft." : "Approved. Next: the final version.");
+    decide(p, { status: "approved" }, p.stage === "idea" ? "Approved. Next: the first draft." : "Approved. Next: the final version.");
   },
   approveFinal(id, sure) {
     const p = post(id);
@@ -573,11 +653,10 @@ const A = {
     if (!coverOf(id) && !sure) {
       return openModal({ title: "Approve without a banner?", body: "This post has no image yet. It moves to Ready without one.", act: "approveFinalGo", args: [id], noText: true, confirm: "Approve without a banner" });
     }
-    run(async () => {
+    decide(p, { stage: "ready", status: "approved" }, p.pinned_date ? "Approved. It's in Ready." : "Approved. It's in Ready: pick a date.", async () => {
       if ((v.headlines || []).length === 1 && chosenIndex(v) < 0) await updateRow("versions", v, { chosen: 0 });
       for (const a of assetsOf(id)) if (isMedia(a) && a.status === "pending") await updateRow("assets", a, { status: "approved", stage: "final" });
-      await savePost(p, { stage: "ready", status: "approved" });
-    }, p.pinned_date ? "Approved. It's in Ready." : "Approved. It's in Ready: pick a date.");
+    });
   },
   approveFinalGo(id) {
     A.approveFinal(id, true);
@@ -587,20 +666,19 @@ const A = {
     if (!open.length) {
       return openModal({ title: "Send back for changes", body: "What should change? The writer sees it on the post.", act: "sendBackGo", args: [id], required: true, confirm: "Send back" });
     }
-    run(() => savePost(post(id), { status: "changes" }), plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
+    decide(post(id), { status: "changes" }, plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
   },
   async sendBackGo(id, text) {
-    await run(async () => {
+    await decide(post(id), { status: "changes" }, "Sent back with your note", async () => {
       await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
-      await savePost(post(id), { status: "changes" });
       translateMissing();
-    }, "Sent back with your note");
+    });
   },
   reject(id) {
     openModal({ title: "Reject", body: "Optional: why. It stays on the board under Rejected, so nobody pitches it again.", act: "rejectGo", args: [id], confirm: "Reject" });
   },
   rejectGo(id, reason) {
-    run(() => savePost(post(id), { status: "rejected", skip_reason: reason || null }), "Rejected");
+    decide(post(id), { status: "rejected", skip_reason: reason || null }, "Rejected");
   },
   revive(id) {
     run(() => savePost(post(id), { status: "waiting", skip_reason: null }), "Back on the board");
@@ -1176,20 +1254,23 @@ function card(p, opts = {}) {
     p.pinned_date && p.stage !== "ready" && p.stage !== "published" ? `<span>📅 ${esc(fmtDM(p.pinned_date))}</span>` : "",
   ].filter(Boolean).join("");
   let quick = "";
+  let footQuick = "";
+  const pitch = p.stage === "idea" && p.idea && p.status !== "rejected" ? biText(clip(p.idea, 200), clip(p.idea_he, 200)).main : "";
   if (isOwner() && p.stage === "idea" && p.status === "waiting") {
-    quick = `<div class="c-quick"><button class="btn sm go" data-act="approve" data-a="${p.id}">✓ ${T("Approve")}</button><button class="btn sm" data-act="reject" data-a="${p.id}">✕ ${T("Reject")}</button></div>`;
+    footQuick = `<span class="sp"></span><button class="qbtn ok" data-act="approve" data-a="${p.id}" title="${T("Approve")}" aria-label="${T("Approve")}">✓</button><button class="qbtn no" data-act="reject" data-a="${p.id}" title="${T("Reject")}" aria-label="${T("Reject")}">✕</button>`;
   } else if (p.stage === "ready") {
     quick = `<div class="c-quick">${!p.pinned_date ? `<button class="btn sm" data-act="nextFree" data-a="${p.id}">📅 ${esc(fmtDay(nextFreeDay(p.id)))}</button>` : ""}<button class="btn sm go" data-act="copyPost" data-a="${p.id}">${T("Copy")}</button>${cover ? `<button class="btn sm" data-act="downloadCover" data-a="${p.id}" title="${T("Download the banner")}">↓</button>` : ""}</div>`;
   }
   return `<div class="card st-${esc(p.status)} ${p.stage === "ready" && !p.pinned_date ? "needs-date" : ""} ${opts.big ? "big" : ""}" data-act="open" data-a="${p.id}" tabindex="0">
     ${coverHtml}
     <div class="c-body">
-      <div class="c-top">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
+      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
+      ${pitch ? `<div class="c-pitch" dir="auto">${esc(pitch)}</div>` : ""}
       ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
       ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(p.skip_reason)}</div>` : ""}
-      <div class="c-foot">${foot}</div>
+      <div class="c-foot ${footQuick ? "with-q" : ""}"><span class="c-meta">${foot}</span>${footQuick}</div>
       ${quick}
     </div>
   </div>`;
@@ -1201,18 +1282,19 @@ function viewBoard() {
     (S.only === "waiting" && p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage)) ||
     (S.only === "changes" && p.status === "changes" && ["idea", "draft", "final"].includes(p.stage)) ||
     (S.only === "nodate" && p.stage === "ready" && !p.pinned_date));
-  const ps = S.d.posts.filter(match);
+  const q = S.q.trim().toLowerCase();
+  const hay = (p) => {
+    const v = latest(p.id);
+    return [p.title, p.title_he, p.idea, p.idea_he, ...((v && v.headlines) || []).flatMap((h) => [h.en, h.he])].filter(Boolean).join(" ").toLowerCase();
+  };
+  const ps = S.d.posts.filter((p) => match(p) && (!q || hay(p).includes(q)));
   const all = S.d.posts.filter((p) => S.cat === "all" || p.category === S.cat);
   const count = (f) => all.filter(f).length;
   const nWait = count((p) => p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage));
   const nChg = count((p) => p.status === "changes" && ["idea", "draft", "final"].includes(p.stage));
   const nNoDate = count((p) => p.stage === "ready" && !p.pinned_date);
   const twoWeeks = Date.now() - 14 * DAY;
-  const sortCol = (c, list) => {
-    if (c === "ready") return list.sort((a, b) => (a.pinned_date || "9").localeCompare(b.pinned_date || "9"));
-    if (c === "published") return list.sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
-    return list.sort((a, b) => (STATUS_ORDER[a.status] - STATUS_ORDER[b.status]) || (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
-  };
+  const sortCol = sortStage;
   const colOf = (c) => {
     let list = ps.filter((p) => p.stage === c);
     if (c === "published") list = list.filter((p) => new Date(p.published_at || p.updated_at).getTime() > twoWeeks);
@@ -1225,10 +1307,11 @@ function viewBoard() {
   const chip = (key, n, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(label)}</button>`;
   return `<div class="boardbar">
       <div class="chips">${chip("waiting", nWait, "waiting for Jay", "c-wait")}${chip("changes", nChg, "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date", "c-date")}</div>
+      <form data-form="search" class="search"><input type="search" name="q" data-input="q" dir="auto" value="${esc(S.q)}" placeholder="${T("Search…")}" aria-label="${T("Search…")}"></form>
       <div class="chips cats">${["all", ...CATS].map((c) => `<button class="chip ${S.cat === c ? "on" : ""}" data-act="cat" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     </div>
     <div class="coltabs">${cols.map((x) => `<button class="${S.col === x.c ? "on" : ""}" data-act="col" data-a="${x.c}">${T(COL_KEYS[x.c])} <span>${x.live.length}</span></button>`).join("")}</div>
-    <div class="board">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
+    <div class="board" style="grid-template-columns:${cols.map((x) => (x.live.length + x.gone.length ? "minmax(250px,1fr)" : "minmax(170px,.5fr)")).join(" ")}">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
       <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
       <div class="col-body">
         ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
@@ -1566,14 +1649,17 @@ function drawerPost(p) {
     }
   }
 
+  const sib = siblings(p);
+  const si = sib.findIndex((x) => x.id === p.id);
+  const nav = sib.length > 1 ? `<span class="d-nav"><button class="iconbtn" data-act="nav" data-a="${p.id}" data-b="-1" ${si <= 0 ? "disabled" : ""} title="${T("Previous (K)")}">↑</button><span>${si + 1}/${sib.length}</span><button class="iconbtn" data-act="nav" data-a="${p.id}" data-b="1" ${si >= sib.length - 1 ? "disabled" : ""} title="${T("Next (J)")}">↓</button></span>` : "";
   const order = p.stage === "idea"
-    ? [ideaSec, textSec, notesSec, visuals]
+    ? [ideaSec, textSec, notesSec, assets.length ? visuals : ""]
     : p.stage === "ready" || p.stage === "published"
       ? [dateBox, visuals, textSec, notesSec, ideaSec]
       : [textSec, visuals, notesSec, ideaSec];
   return `<div class="scrim" data-act="close"></div>
   <aside class="drawer" role="dialog" aria-modal="true">
-    <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button>${steps(p)}</header>
+    <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button>${steps(p)}${nav}</header>
     <div class="d-body">
       <div class="d-meta">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
       <h1 class="d-title" dir="auto">${esc(tt.main)}</h1>${tt.sub ? `<div class="d-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
@@ -1705,6 +1791,7 @@ function render() {
     html = `${topBar(r)}<main class="wrap ${r.base === "board" ? "wide" : ""}">${body}</main>`;
     if (r.id) {
       const p = post(r.id);
+      if (p) markSeen(p);
       overlay = p ? drawerPost(p) : `<div class="scrim" data-act="close"></div><aside class="drawer narrow"><header class="d-head"><button class="iconbtn" data-act="close">✕</button></header><div class="d-body"><div class="empty">${T("This post doesn't exist anymore.")}</div></div></aside>`;
     } else if (r.isNew) overlay = drawerNew();
   }
@@ -1731,7 +1818,11 @@ function render() {
   const dEl = app.querySelector(".d-body");
   const dy = dEl ? dEl.scrollTop : 0;
   const colY = [...app.querySelectorAll(".col-body")].map((c) => c.scrollTop);
-  app.innerHTML = html + overlay + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}">${esc(S.toast.msg)}</div>` : "");
+  app.innerHTML = html + overlay + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}"><span>${esc(S.toast.msg)}</span>${S.toast.undo ? `<button data-act="undo">${T("Undo")}</button>` : ""}</div>` : "");
+  // A Hebrew line that opens with an English name (Claude, Amazon) still reads right to left.
+  app.querySelectorAll("[dir=auto]").forEach((el) => {
+    if (!/^(INPUT|TEXTAREA)$/.test(el.tagName) && !el.matches(".body-en, .bub") && /[\u0590-\u05FF]/.test(el.textContent)) el.dir = "rtl";
+  });
   if (keep.size) {
     app.querySelectorAll("form[data-form]").forEach((f) => {
       const fk = formKey(f);
@@ -1847,6 +1938,17 @@ document.addEventListener("keydown", (e) => {
     if (route().id || route().isNew) return A.close();
   }
   if (e.key === "Enter" && e.target.matches && e.target.matches(".card[data-act=open]")) A.open(e.target.dataset.a);
+  // J / K walk the column while a post is open (by key position, so a Hebrew keyboard works too)
+  if ((e.code === "KeyJ" || e.code === "KeyK") && route().id && !S.modal && !S.edit && !isTyping() && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    e.preventDefault();
+    A.nav(route().id, e.code === "KeyJ" ? 1 : -1);
+  }
+});
+document.addEventListener("input", (e) => {
+  if (e.target.dataset && e.target.dataset.input === "q") {
+    S.q = e.target.value;
+    render();
+  }
 });
 
 window.addEventListener("hashchange", () => {

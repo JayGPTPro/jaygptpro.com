@@ -270,5 +270,7 @@ export const HE = {
   "{x} already went out on {d}.": "ב{d} כבר יצא: {x}", "Only Jay can do this.": "רק ג'יי יכול לעשות את זה.",
   "Jay already approved this post. Ask him to send it back before changing the text.": "ג'יי כבר אישר את הפוסט הזה. צריך לבקש ממנו להחזיר אותו לפני שמשנים את הטקסט.",
   "Jay changed this post while you were writing. Your text is still here: copy it before closing.": "ג'יי שינה את הפוסט בזמן שכתבת. הטקסט שלך עדיין כאן: כדאי להעתיק אותו לפני שסוגרים.",
+  "Undo": "ביטול", "Undone": "בוטל", "Search…": "חיפוש…", "New since you last looked": "חדש מאז שהסתכלת",
+  "Previous (K)": "הקודם (K)", "Next (J)": "הבא (J)",
   "Saved as the final version": "נשמר כגרסה סופית", "Final version sent to Jay": "הגרסה הסופית נשלחה לג'יי",
 };
