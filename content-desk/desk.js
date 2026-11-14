@@ -1,5 +1,6 @@
 // Content Desk: one place where a post idea becomes an approved WhatsApp post.
 import { createStore } from "./store.js?v=2";
+import { HE } from "./i18n.js?v=3";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -7,8 +8,8 @@ const store = createStore(DEMO);
 const app = document.getElementById("app");
 
 const CATS = ["news", "tip", "skill", "deals", "other"];
-const CAT_LABEL = { news: "News", tip: "Tip", skill: "Skill", deals: "Deals", other: "Other" };
-const STAGE_LABEL = { idea: "Idea", writing: "Writing", review: "Waiting on Jay", ready: "Ready to publish", published: "Published", skipped: "Skipped", parked: "Not now" };
+const CAT_KEYS = { news: "News", tip: "Tip", skill: "Skill", deals: "Deals", other: "Other" };
+const STAGE_KEYS = { idea: "Idea", writing: "Writing", review: "Waiting on Jay", ready: "Ready to publish", published: "Published", skipped: "Skipped", parked: "Not now" };
 const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"], ["x", "X"]];
 const DAY = 86400000;
 const CAPTION_LIMIT = 1024;
@@ -20,11 +21,42 @@ const S = {
   busy: 0, toast: null, modal: null, urls: {},
   edit: null, // { postId, channel } while a draft is open for editing
   channel: {}, vsel: {}, diff: {}, filter: "all", newMode: "idea", split: null, showHe: null,
-  files: {}, translateError: "",
+  files: {}, translateError: "", lang: "en", langChosen: false,
 };
 
 // ---------------- helpers ----------------
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" }[c]));
+
+// ---------------- language ----------------
+// The desk's own words come in English and Hebrew. Posts stay in the language they were written in.
+(function initLang() {
+  let l = PARAMS.get("lang");
+  try {
+    if (l !== "he" && l !== "en") l = localStorage.getItem("desk:lang");
+  } catch (_) {
+    l = null;
+  }
+  S.langChosen = l === "he" || l === "en";
+  S.lang = S.langChosen ? l : (navigator.language || "").toLowerCase().startsWith("he") ? "he" : "en";
+})();
+const MISSING = new Set();
+if (DEMO) window.__deskMissing = MISSING;
+// t("English text", { n: 3 }): the English text is the key, Hebrew comes from i18n.js.
+function t(s, vars) {
+  let out = String(s ?? "");
+  if (S.lang === "he") {
+    if (HE[out] != null) out = HE[out];
+    else if (DEMO && /[A-Za-z]{3}/.test(out)) MISSING.add(out);
+  }
+  out = out.replace(/\|[a-z]+$/, ""); // "Published|nav": the part after | only tells two Hebrew meanings apart
+  return vars ? out.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : out;
+}
+const T = (s, vars) => esc(t(s, vars));
+const plural = (n, one, many) => (n === 1 ? t(one) : t(many, { n }));
+const locale = () => (S.lang === "he" ? "he-IL" : "en-GB");
+const catLabel = (c) => t(CAT_KEYS[c] || c);
+const stageLabel = (st) => t(STAGE_KEYS[st] || st);
+
 const isHttp = (u) => /^https?:\/\/[^\s"'<>]+$/i.test(String(u || ""));
 const todayStr = () => localDate(new Date());
 function localDate(d) {
@@ -37,16 +69,18 @@ function parseDate(s) {
 }
 function fmtDay(s) {
   if (!s) return "";
-  return parseDate(s).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  return parseDate(s).toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" });
 }
+const fmtDow = (s) => parseDate(s).toLocaleDateString(locale(), { weekday: "short" });
+const fmtDM = (s) => parseDate(s).toLocaleDateString(locale(), { day: "numeric", month: "short" });
 function ago(iso) {
   if (!iso) return "";
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  if (s < 7 * 86400) return `${Math.floor(s / 86400)}d ago`;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (s < 60) return t("just now");
+  if (s < 3600) return plural(Math.floor(s / 60), "1m ago", "{n}m ago");
+  if (s < 86400) return plural(Math.floor(s / 3600), "1h ago", "{n}h ago");
+  if (s < 7 * 86400) return plural(Math.floor(s / 86400), "1d ago", "{n}d ago");
+  return new Date(iso).toLocaleDateString(locale(), { day: "numeric", month: "short" });
 }
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 function member(email) {
@@ -59,7 +93,7 @@ function avatar(email) {
   return `<span class="av" style="background:${esc(m.color || "#857d6f")}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => S.member && S.member.role === "owner";
-const tag = (c) => `<span class="tag ${esc(c)}">${esc(CAT_LABEL[c] || c)}</span>`;
+const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
 function waHtml(text) {
   return esc(text).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_(?=\s|$)/g, "$1<i>$2</i>");
 }
@@ -98,7 +132,8 @@ function headlineOf(p, v = latest(p.id)) {
 }
 function displayTitle(p) {
   const h = headlineOf(p);
-  return { en: h.en || p.title, he: h.he || p.title_he || "" };
+  // A headline that is not translated yet shows alone, not next to the working title's Hebrew.
+  return { en: h.en || p.title, he: h.en && h.en !== p.title ? h.he || "" : h.he || p.title_he || "" };
 }
 const finalAsset = (pid) => assetsOf(pid).filter((a) => a.stage === "final" && a.status !== "replaced").pop();
 const approvedAsset = (pid) => assetsOf(pid).filter((a) => a.status === "approved").pop();
@@ -150,22 +185,22 @@ function checksFor(p, v) {
   const out = [];
   if (!v) return out;
   const n = (v.headlines || []).length;
-  out.push(n >= 3 ? { ok: true, t: `${n} headline options` } : { ok: false, t: `Headline options: ${n} of 3` });
+  out.push(n >= 3 ? { ok: true, t: t("{n} headline options", { n }) } : { ok: false, t: t("Headline options: {n} of 3", { n }) });
   const br = (v.body || "").match(/\[[^\]\n]{2,}\]/);
-  out.push(br ? { ok: false, t: `Brackets left in the text: ${br[0].slice(0, 60)}` } : { ok: true, t: "No [brackets] left" });
+  out.push(br ? { ok: false, t: t("Brackets left in the text: {x}", { x: br[0].slice(0, 60) }) } : { ok: true, t: t("No [brackets] left") });
   const cta = ((v.body || "").match(/drop an? [^\n]*/i) || [])[0];
   if (cta) {
     const narrow = /\bif you('| a)?(re| are)?\s*(planning|going|claiming|building|testing|trying|already|using|switching)/i.test(cta) && !/useful|more (updates|like this)|learned/i.test(cta);
-    out.push(narrow ? { ok: false, t: `Narrow reaction ask: “${cta.slice(0, 70)}”. Try “if you found this useful”.` } : { ok: true, t: "Easy reaction ask" });
+    out.push(narrow ? { ok: false, t: t("Narrow reaction ask: “{x}”. Try “if you found this useful”.", { x: cta.slice(0, 70) }) } : { ok: true, t: t("Easy reaction ask") });
   }
   const text = p.stage ? composeWhatsApp(p, v) : v.body;
   const hasImage = assetsOf(p.id).some((a) => (a.mime || "").startsWith("image/") && a.status !== "replaced");
-  if (text.length > CAPTION_LIMIT && hasImage) out.push({ ok: false, t: `${text.length.toLocaleString()} characters with an image. Desktop WhatsApp can cut a caption after ${CAPTION_LIMIT.toLocaleString()}.` });
-  else out.push({ ok: true, t: `${text.length.toLocaleString()} characters` });
+  if (text.length > CAPTION_LIMIT && hasImage) out.push({ ok: false, t: t("{n} characters with an image. Desktop WhatsApp can cut a caption after {max}.", { n: text.length.toLocaleString(), max: CAPTION_LIMIT.toLocaleString() }) });
+  else out.push({ ok: true, t: t("{n} characters", { n: text.length.toLocaleString() }) });
   if (p.tried_myself === false && !/(planning to try|haven['’]t tried|not tried it|will try this myself)/i.test(v.body || "")) {
-    out.push({ ok: false, t: "Jay has not tried it: add a personal line, e.g. “I'm planning to try this myself and I'll share what I find.”" });
+    out.push({ ok: false, t: t("Jay has not tried it: add a personal line, e.g. “I'm planning to try this myself and I'll share what I find.”") });
   }
-  if (p.category === "news" && !(v.sources || []).some((s) => s.official)) out.push({ ok: false, t: "News post without an official source" });
+  if (p.category === "news" && !(v.sources || []).some((s) => s.official)) out.push({ ok: false, t: t("News post without an official source") });
   return out;
 }
 
@@ -178,6 +213,8 @@ async function loadAll(silent) {
     S.loaded = true;
     S.loadError = "";
     if (S.showHe === null) S.showHe = readPref("showHe", isOwner());
+    // Owners read Hebrew by default, writers English. The switch in the top bar overrides it per browser.
+    if (!S.langChosen) S.lang = isOwner() ? "he" : "en";
   } catch (e) {
     if (!silent) S.loadError = e.message;
   }
@@ -313,7 +350,7 @@ document.addEventListener("focusout", () => {
 // ---------------- running actions ----------------
 let toastTimer;
 function toast(msg, err) {
-  S.toast = { msg, err };
+  S.toast = { msg: t(msg), err };
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     S.toast = null;
@@ -363,7 +400,7 @@ function openModal(m) {
 async function copyText(text, label = "Copied") {
   try {
     await navigator.clipboard.writeText(text);
-    toast(`${label} ✓`);
+    toast(`${t(label)} ✓`);
   } catch (_) {
     openModal({ title: "Copy this text", body: "Your browser blocked automatic copying. Select all and copy.", text, readonly: true });
   }
@@ -402,6 +439,20 @@ const A = {
   toggleHe() {
     S.showHe = !S.showHe;
     writePref("showHe", S.showHe);
+    render();
+  },
+  toggleMeta() {
+    S.metaOpen = !S.metaOpen;
+    render();
+  },
+  setLang(l) {
+    S.lang = l === "he" ? "he" : "en";
+    S.langChosen = true;
+    try {
+      localStorage.setItem("desk:lang", S.lang);
+    } catch (_) {
+      /* only a convenience */
+    }
     render();
   },
   filter(c) {
@@ -493,7 +544,7 @@ const A = {
       openModal({ title: "Request changes", body: "Write what should change. The writer sees it next to the text.", act: "changesGo", args: [id], required: true, confirm: "Send back" });
       return;
     }
-    run(() => savePost(p, { stage: "writing" }), `Sent back with ${open.length} note${open.length > 1 ? "s" : ""}`);
+    run(() => savePost(p, { stage: "writing" }), plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
     if (location.hash.startsWith("#/review")) setTimeout(nextReview, 400);
     void v;
   },
@@ -530,7 +581,7 @@ const A = {
     run(() => savePost(p, { email_too: !p.email_too }));
   },
   pin(id, date) {
-    run(() => savePost(post(id), { pinned_date: date || null }), date ? `Locked to ${fmtDay(date)}` : "Unlocked");
+    run(() => savePost(post(id), { pinned_date: date || null }), date ? t("Locked to {d}", { d: fmtDay(date) }) : "Unlocked");
   },
   move(id, dir) {
     const q = queueOrder().filter((p) => !p.pinned_date && !!p.hot === !!post(id).hot);
@@ -711,13 +762,13 @@ const A = {
     if (!files.length) return;
     await run(async () => {
       for (const f of files) {
-        if (f.size > MAX_UPLOAD) throw new Error(`${f.name} is over 50 MB. Upload it to Drive and paste the link in a note.`);
+        if (f.size > MAX_UPLOAD) throw new Error(t("{name} is over 50 MB. Upload it to Drive and paste the link in a note.", { name: f.name }));
         const safe = f.name.replace(/[^\w.\-]+/g, "-").slice(-80);
         const path = `${pid}/${uuid()}-${safe}`;
         await store.upload(path, f);
         await insertRow("assets", { post_id: pid, path, filename: f.name, mime: f.type || null, size: f.size, stage });
       }
-    }, files.length > 1 ? `${files.length} files uploaded` : "Uploaded");
+    }, files.length > 1 ? t("{n} files uploaded", { n: files.length }) : "Uploaded");
   },
   assetApprove(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
@@ -1022,62 +1073,73 @@ function topBar(r) {
   const myCount = isOwner()
     ? ownerQueue().length + S.d.posts.filter((p) => p.stage === "ready").length + openQuestions().length
     : S.d.posts.filter((p) => p.stage === "writing" && p.author === S.me).length;
-  const link = (name, href, label, extra = "") => `<a href="${href}" class="${r.name === name ? "on" : ""}">${label}${extra}</a>`;
+  const link = (name, href, label, extra = "") => `<a href="${href}" class="${r.name === name ? "on" : ""}">${T(label)}${extra}</a>`;
   return `<header class="top"><div class="top-in">
-    <a class="brand" href="#/">Content <em>Desk</em></a>
+    <a class="brand" href="#/"><i></i>Content Desk</a>
     <nav class="nav">
       ${link("home", "#/", isOwner() ? "Waiting on me" : "My turn", myCount ? `<span class="dot">${myCount}</span>` : "")}
       ${link("board", "#/board", "Board")}
       ${link("schedule", "#/schedule", "Schedule")}
-      ${link("published", "#/published", "Published")}
+      ${link("published", "#/published", "Published|nav")}
       ${link("rules", "#/rules", "House rules")}
-      ${link("new", "#/new", "+ New")}
       ${link("settings", "#/settings", "Settings")}
     </nav>
     <div class="me">${DEMO ? '<span class="demo-badge">DEMO</span>' : ""}
-      <button class="btn sm ghost" style="color:#eee6d6;border-color:#5b564c" data-act="toggleHe" title="Show Hebrew translations">${S.showHe ? "עברית ✓" : "עברית"}</button>
-      ${avatar(S.me)}<span class="nm">${esc(nameOf(S.me))}</span>
-      <button class="btn sm ghost" style="color:#cfc6b3;border-color:#5b564c" data-act="signOut">Sign out</button>
+      <a class="btn sm go" href="#/new">${T("+ New")}</a>
+      <button class="btn sm ghost" data-act="setLang" data-a="${S.lang === "he" ? "en" : "he"}">${S.lang === "he" ? "English" : "עברית"}</button>
+      ${avatar(S.me)}
+      <button class="btn sm ghost out" data-act="signOut">${T("Sign out")}</button>
     </div>
   </div></header>`;
 }
 
-function heLine(text, cls = "t-he") {
-  if (!S.showHe || !text) return "";
-  return `<div class="he ${cls}">${esc(text)}</div>`;
+// The reader's language first, the other language under it.
+const showsHe = () => S.lang === "he" || S.showHe;
+function biText(en, he) {
+  en = en || "";
+  he = he || "";
+  if (S.lang === "he") return he && he !== en ? { main: he, sub: en } : { main: he || en, sub: "" };
+  return { main: en, sub: S.showHe && he && he !== en ? he : "" };
 }
+function bi(en, he, mainCls = "", subCls = "t-sub") {
+  const b = biText(en, he);
+  return `<div class="${mainCls}" dir="auto">${esc(b.main)}</div>${b.sub ? `<div class="${subCls}" dir="auto">${esc(b.sub)}</div>` : ""}`;
+}
+const clip = (s, n = 260) => (s && s.length > n ? s.slice(0, n) + "…" : s || "");
 
 function postCard(p, opts = {}) {
-  const t = displayTitle(p);
+  const tt = displayTitle(p);
+  const title = biText(tt.en, tt.he);
   const v = latest(p.id);
   const openNotes = notesOf(p.id).filter((n) => n.kind === "note" && n.status === "open").length;
   const qs = notesOf(p.id).filter((n) => n.kind === "question" && n.status === "open").length;
   const fin = approvedAsset(p.id) || finalAsset(p.id);
   const pills = [];
-  if (p.hot) pills.push('<span class="pill hot">🔥 Hot</span>');
-  if (p.pinned_date) pills.push(`<span class="pill lock">🔒 ${fmtDay(p.pinned_date)}</span>`);
-  if (p.email_too) pills.push('<span class="pill blue">✉ Email</span>');
-  if (p.text_ok && p.stage === "writing") pills.push('<span class="pill go">Text ✓ · banner next</span>');
-  if (v && (v.headlines || []).length < 3 && ["review", "writing"].includes(p.stage)) pills.push(`<span class="pill wait">${(v.headlines || []).length} of 3 headlines</span>`);
-  if (qs) pills.push(`<span class="pill blue">${qs} question${qs > 1 ? "s" : ""}</span>`);
+  if (p.hot) pills.push(`<span class="pill hot">🔥 ${T("Hot")}</span>`);
+  if (p.pinned_date) pills.push(`<span class="pill lock">🔒 ${esc(fmtDay(p.pinned_date))}</span>`);
+  if (p.email_too) pills.push(`<span class="pill blue">✉ ${T("Email")}</span>`);
+  if (p.text_ok && p.stage === "writing") pills.push(`<span class="pill go">${T("Text ✓ · banner next")}</span>`);
+  if (v && (v.headlines || []).length < 3 && ["review", "writing"].includes(p.stage)) pills.push(`<span class="pill wait">${T("{n} of 3 headlines", { n: (v.headlines || []).length })}</span>`);
+  if (qs) pills.push(`<span class="pill blue">${esc(plural(qs, "1 question", "{n} questions"))}</span>`);
   const cls = ["card"];
   if (opts.turn) cls.push("turn");
   if (p.stage === "ready") cls.push("ready");
   if (opts.muted) cls.push("muted");
   const metaBits = [];
   if (v) metaBits.push(`v${v.n}`);
-  if (openNotes) metaBits.push(`${openNotes} open note${openNotes > 1 ? "s" : ""}`);
-  if (p.stage === "published" && p.published_at) metaBits.push(`published ${fmtDay(localDate(new Date(p.published_at)))}`);
-  if (p.reactions != null) metaBits.push(`${p.reactions} reactions`);
+  if (openNotes) metaBits.push(esc(plural(openNotes, "1 open note", "{n} open notes")));
+  if (p.stage === "published" && p.published_at) metaBits.push(T("published {d}", { d: fmtDay(localDate(new Date(p.published_at))) }));
+  if (p.reactions != null) metaBits.push(T("{n} reactions", { n: p.reactions }));
   if (p.skip_reason && ["skipped", "parked"].includes(p.stage)) metaBits.push(esc(p.skip_reason));
-  if (opts.slot) metaBits.push(`goes out ${fmtDay(opts.slot)}`);
+  if (opts.slot) metaBits.push(T("goes out {d}", { d: fmtDay(opts.slot) }));
+  const pitch = opts.pitch && p.idea ? biText(clip(p.idea), clip(p.idea_he)) : null;
   return `<div class="${cls.join(" ")}">
     <div class="r1">${tag(p.category)}${pills.join("")}</div>
-    <a class="t" href="#/post/${p.id}">${esc(t.en)}</a>
-    ${heLine(t.he)}
-    ${opts.pitch && p.idea ? `<div class="pitch pre">${esc(p.idea.length > 260 ? p.idea.slice(0, 260) + "…" : p.idea)}</div>${opts.pitch && S.showHe && p.idea_he ? `<div class="he t-he pre">${esc(p.idea_he.length > 260 ? p.idea_he.slice(0, 260) + "…" : p.idea_he)}</div>` : ""}` : ""}
+    <a class="t" dir="auto" href="#/post/${p.id}">${esc(title.main)}</a>
+    ${title.sub && !opts.compact ? `<div class="t-sub" dir="auto">${esc(title.sub)}</div>` : ""}
+    ${pitch ? `<div class="pitch pre" dir="auto">${esc(pitch.main)}</div>` : ""}
     ${opts.thumb && fin && (fin.mime || "").startsWith("image/") ? `<img class="thumb" alt="" src="${esc(cachedUrl(fin))}">` : ""}
-    <div class="meta">${avatar(p.author)}<span>${esc(nameOf(p.author))}</span><span>· ${ago(p.updated_at)}</span>${metaBits.map((b) => `<span>· ${b}</span>`).join("")}</div>
+    <div class="meta">${avatar(p.author)}<span>${esc(nameOf(p.author))}</span><span>· ${esc(ago(p.updated_at))}</span>${metaBits.map((b) => `<span>· ${b}</span>`).join("")}</div>
     ${opts.actions || ""}
   </div>`;
 }
@@ -1089,10 +1151,10 @@ function viewHome() {
   const cad = cadence();
   const doneThisWeek = thisWeek.reduce((n, d) => n + d.published.length, 0);
   const stock = `<div class="stock">
-    <span><b>${stockReady}</b> ready to publish</span>
-    <span><b>${doneThisWeek}</b> of ${cad.days.length} published this week</span>
-    <span><b>${S.d.posts.filter((p) => p.stage === "review").length}</b> drafts waiting on Jay</span>
-    <span><b>${S.d.posts.filter((p) => p.stage === "idea").length}</b> ideas</span>
+    <span><b>${stockReady}</b> ${T("ready to publish")}</span>
+    <span><b>${doneThisWeek}</b> ${T("of {n} published this week", { n: cad.days.length })}</span>
+    <span><b>${S.d.posts.filter((p) => p.stage === "review").length}</b> ${T("drafts waiting on Jay")}</span>
+    <span><b>${S.d.posts.filter((p) => p.stage === "idea").length}</b> ${T("ideas")}</span>
   </div>`;
 
   if (isOwner()) {
@@ -1109,30 +1171,30 @@ function viewHome() {
     const readyCards = ready.map((p) => {
       const a = approvedAsset(p.id);
       return postCard(p, { thumb: true, slot: sched.slotOf[p.id], actions: `<div class="btns">
-        <button class="btn go" data-act="copyPost" data-a="${p.id}">Copy for WhatsApp</button>
-        ${a ? `<button class="btn" data-act="download" data-a="${a.id}">Banner ↓</button>` : ""}
-        <button class="btn ghost" data-act="publish" data-a="${p.id}">Mark published</button></div>` });
+        <button class="btn go" data-act="copyPost" data-a="${p.id}">${T("Copy for WhatsApp")}</button>
+        ${a ? `<button class="btn" data-act="download" data-a="${a.id}">${T("Banner ↓")}</button>` : ""}
+        <button class="btn ghost" data-act="publish" data-a="${p.id}">${T("Mark published")}</button></div>` });
     });
     const qCards = qs.map((n) => {
       const p = post(n.post_id);
       return `<div class="card q">
-        <div class="r1"><span class="tag news">Quick question</span>${p ? tag(p.category) : ""}</div>
-        <div class="t">${esc(n.body)}</div>${heLine(n.body_he)}
-        <div class="meta">${avatar(n.author)}<span>${esc(nameOf(n.author))}</span>${p ? `<span>· on <a href="#/post/${p.id}">${esc(displayTitle(p).en)}</a></span>` : ""}</div>
-        <div class="btns"><button class="btn" data-act="answer" data-a="${n.id}" data-b="Yes">Yes</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="No">No</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="Didn't check yet">Didn't check</button><button class="btn ghost" data-act="answer" data-a="${n.id}">Write an answer</button></div>
+        <div class="r1"><span class="tag news">${T("Quick question")}</span>${p ? tag(p.category) : ""}</div>
+        ${bi(n.body, n.body_he, "t")}
+        <div class="meta">${avatar(n.author)}<span>${esc(nameOf(n.author))}</span>${p ? `<span>· ${T("on")} <a href="#/post/${p.id}" dir="auto">${esc(biText(displayTitle(p).en, displayTitle(p).he).main)}</a></span>` : ""}</div>
+        <div class="btns"><button class="btn" data-act="answer" data-a="${n.id}" data-b="Yes">${T("Yes")}</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="No">${T("No")}</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="Didn't check yet">${T("Didn't check")}</button><button class="btn ghost" data-act="answer" data-a="${n.id}">${T("Write an answer")}</button></div>
       </div>`;
     });
-    const reviewCards = review.map((p) => postCard(p, { turn: true, actions: `<div class="btns"><a class="btn dark" href="#/post/${p.id}">Open</a><button class="btn ghost" data-act="skip" data-a="${p.id}">Skip</button></div>` }));
+    const reviewCards = review.map((p) => postCard(p, { turn: true, actions: `<div class="btns"><a class="btn dark" href="#/post/${p.id}">${T("Open")}</a><button class="btn ghost" data-act="skip" data-a="${p.id}">${T("Skip")}</button></div>` }));
     const ideaCards = ideas.map((p) => postCard(p, { turn: true, pitch: true, actions: `<div class="btns">
-      <button class="btn go" data-act="ideaYes" data-a="${p.id}">Yes</button>
-      <button class="btn" data-act="ideaChange" data-a="${p.id}">Change</button>
-      <button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">Not now</button></div>` }));
+      <button class="btn go" data-act="ideaYes" data-a="${p.id}">${T("Yes")}</button>
+      <button class="btn" data-act="ideaChange" data-a="${p.id}">${T("Change")}</button>
+      <button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">${T("Not now")}</button></div>` }));
     const mineCards = mine.map((p) => postCard(p, { turn: true }));
-    return `<div class="headrow"><div><h1>Waiting on you <em>${total}</em></h1>
-      <p class="lead">Ready posts first, then quick questions, drafts and new ideas.</p></div>
-      ${review.length + ideas.length ? `<a class="btn dark" href="#/review/0">Review mode → ${review.length + ideas.length}</a>` : ""}</div>
+    return `<div class="headrow"><div><h1>${T("Waiting on you")} <em>${total}</em></h1>
+      <p class="lead">${T("Ready posts first, then quick questions, drafts and new ideas.")}</p></div>
+      ${review.length + ideas.length ? `<a class="btn dark" href="#/review/0">${T("Review one by one →")} ${review.length + ideas.length}</a>` : ""}</div>
       ${stock}
-      ${S.translateError ? `<p class="muted" style="margin-top:10px;font-size:13px">Hebrew translation paused: ${esc(S.translateError)}. It retries by itself.</p>` : ""}
+      ${S.translateError ? `<p class="muted small" style="margin-top:10px">${T("Hebrew translation paused: {e}. It retries by itself.", { e: S.translateError })}</p>` : ""}
       ${section("Ready to publish", readyCards, "Nothing approved is waiting.")}
       ${qCards.length ? section("Quick questions", qCards) : ""}
       ${section("Drafts to review", reviewCards, "No drafts are waiting.")}
@@ -1144,33 +1206,33 @@ function viewHome() {
   const others = S.d.posts.filter((p) => p.stage === "writing" && p.author !== S.me && member(p.author).role !== "owner");
   const answered = S.d.notes.filter((n) => n.kind === "question" && n.answer && n.author === S.me && Date.now() - new Date(n.updated_at || n.created_at).getTime() < 7 * DAY);
   const waiting = S.d.posts.filter((p) => ["idea", "review", "ready"].includes(p.stage) && p.author === S.me);
-  return `<h1>Your turn <em>${mine.length}</em></h1>
-    <p class="lead">Drafts and fixes that are yours. When a post is ready, send it to Jay from its page.</p>
+  return `<h1>${T("Your turn")} <em>${mine.length}</em></h1>
+    <p class="lead">${T("Drafts and fixes that are yours. When a post is ready, send it to Jay from its page.")}</p>
     ${stock}
     ${section("To write or fix", mine.map((p) => postCard(p, { turn: true, slot: buildSchedule(3).slotOf[p.id] })), "Nothing is waiting on you.")}
     ${answered.length ? section("Answers from Jay", answered.map((n) => {
       const p = post(n.post_id);
-      return `<div class="card q"><div class="t">${esc(n.body)}</div><div class="note"><div class="ans" style="flex:1"><b>${esc(nameOf(n.answered_by))}:</b> ${esc(n.answer)}</div></div>${p ? `<div class="meta">on <a href="#/post/${p.id}">${esc(displayTitle(p).en)}</a></div>` : ""}</div>`;
+      return `<div class="card q">${bi(n.body, n.body_he, "t")}<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(biText(n.answer, n.answer_he).main)}</span></div>${p ? `<div class="meta">${T("on")} <a href="#/post/${p.id}" dir="auto">${esc(biText(displayTitle(p).en, displayTitle(p).he).main)}</a></div>` : ""}</div>`;
     })) : ""}
     ${others.length ? section("Teammates are writing", others.map((p) => postCard(p, {}))) : ""}
     ${section("Waiting on Jay", waiting.map((p) => postCard(p, { pitch: p.stage === "idea" })), "Nothing of yours is waiting on Jay.")}`;
 }
 
 function section(title, cards, empty) {
-  return `<h2>${esc(title)} <span class="count">${cards.length}</span></h2>${cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${esc(empty || "")}</div>`}`;
+  return `<h2>${T(title)} <span class="count">${cards.length}</span></h2>${cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${T(empty || "")}</div>`}`;
 }
 
 function viewBoard() {
   const f = S.filter;
   const match = (p) => f === "all" || p.category === f;
-  const col = (title, cls, list, opts = {}) => `<div class="col ${cls}"><h3>${title}<span class="mono">${list.length}</span></h3>${list.length ? list.map((p) => postCard(p, opts)).join("") : '<div class="empty">Empty</div>'}</div>`;
+  const col = (title, cls, list, opts = {}) => `<div class="col ${cls}"><h3>${T(title)}<span class="count">${list.length}</span></h3>${list.length ? list.map((p) => postCard(p, { compact: true, ...opts })).join("") : `<div class="empty">${T("Empty")}</div>`}</div>`;
   const ps = S.d.posts.filter(match);
   const sorted = (st) => ps.filter((p) => p.stage === st).sort((a, b) => (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
   const twoWeeks = Date.now() - 14 * DAY;
   const pub = ps.filter((p) => p.stage === "published" && new Date(p.published_at || p.updated_at).getTime() > twoWeeks).sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
   const shelved = ps.filter((p) => ["parked", "skipped"].includes(p.stage)).sort((a, b) => b.updated_at.localeCompare(a.updated_at));
-  return `<div class="headrow"><h1>Board</h1><a class="btn dark" href="#/new">+ New idea or draft</a></div>
-    <div class="filters">${["all", ...CATS].map((c) => `<button class="chip ${f === c ? "on" : ""}" data-act="filter" data-a="${c}">${c === "all" ? "All" : CAT_LABEL[c]}</button>`).join("")}</div>
+  return `<div class="headrow"><h1>${T("Board")}</h1><a class="btn go" href="#/new">${T("+ New idea or draft")}</a></div>
+    <div class="filters">${["all", ...CATS].map((c) => `<button class="chip ${f === c ? "on" : ""}" data-act="filter" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     <div class="board">
       ${col("Ideas", "", sorted("idea"), { pitch: false })}
       ${col("Writing", "", sorted("writing"))}
@@ -1178,280 +1240,305 @@ function viewBoard() {
       ${col("Ready", "rdy", sorted("ready"))}
       ${col("Published · 14 days", "", pub)}
     </div>
-    <h2>Not now and skipped <span class="count">${shelved.length}</span></h2>
-    ${shelved.length ? `<div class="grid">${shelved.map((p) => postCard(p, { muted: true, actions: isOwner() ? `<div class="btns"><button class="btn sm ghost" data-act="revive" data-a="${p.id}">Back to ideas</button></div>` : "" })).join("")}</div>` : '<div class="empty">Nothing shelved.</div>'}`;
+    <h2>${T("Not now and skipped")} <span class="count">${shelved.length}</span></h2>
+    ${shelved.length ? `<div class="grid">${shelved.map((p) => postCard(p, { muted: true, actions: isOwner() ? `<div class="btns"><button class="btn sm ghost" data-act="revive" data-a="${p.id}">${T("Back to ideas")}</button></div>` : "" })).join("")}</div>` : `<div class="empty">${T("Nothing shelved.")}</div>`}`;
 }
 
 function viewSchedule() {
   const sch = buildSchedule(3);
   const cad = cadence();
   const owner = isOwner();
+  const name = (p) => esc(biText(displayTitle(p).en, displayTitle(p).he).main);
   const slotHtml = (p, d) => {
     const cls = p.pinned_date ? "lock" : p.hot ? "hotslot" : "";
     const ctl = `<div class="ctl">
-      ${!p.pinned_date ? `<button data-act="move" data-a="${p.id}" data-b="-1" title="Earlier">↑</button><button data-act="move" data-a="${p.id}" data-b="1" title="Later">↓</button>` : ""}
-      <button data-act="hot" data-a="${p.id}" title="Hot">${p.hot ? "🔥 on" : "🔥"}</button>
-      <button data-act="emailToo" data-a="${p.id}" title="Also email">${p.email_too ? "✉ on" : "✉"}</button>
-      <button data-act="pinPrompt" data-a="${p.id}" data-b="${d || ""}" title="Lock to a date">${p.pinned_date ? "🔒 unlock" : "🔒"}</button>
+      ${!p.pinned_date ? `<button data-act="move" data-a="${p.id}" data-b="-1" title="${T("Move earlier")}">↑</button><button data-act="move" data-a="${p.id}" data-b="1" title="${T("Move later")}">↓</button>` : ""}
+      <button class="${p.hot ? "on" : ""}" data-act="hot" data-a="${p.id}" title="${T("Hot: it takes the next free day")}">🔥</button>
+      <button class="${p.email_too ? "on" : ""}" data-act="emailToo" data-a="${p.id}" title="${T("Also email")}">✉</button>
+      <button class="${p.pinned_date ? "on" : ""}" data-act="pinPrompt" data-a="${p.id}" data-b="${d || ""}" title="${T("Lock to a date")}">🔒</button>
     </div>`;
-    return `<div class="slot ${cls}"><a href="#/post/${p.id}">${esc(displayTitle(p).en)}</a>
-      <span class="stg">${esc(STAGE_LABEL[p.stage])}${p.email_too ? ' · <span class="mail">✉ email</span>' : ""}</span>${ctl}</div>`;
+    return `<div class="slot ${cls}"><a href="#/post/${p.id}" dir="auto">${name(p)}</a>
+      <span class="stg">${esc(stageLabel(p.stage))}${p.email_too ? ` · ✉ ${T("email")}` : ""}</span>${ctl}</div>`;
   };
   const weekHtml = (days, w) => {
     const wa = days.reduce((n, d) => n + d.posts.length + d.published.length, 0);
     const em = days.reduce((n, d) => n + [...d.posts, ...d.published].filter((p) => p.email_too).length, 0);
-    const label = w === 0 ? "This week" : w === 1 ? "Next week" : `Week of ${fmtDay(days[0].date)}`;
+    const label = w === 0 ? T("This week") : w === 1 ? T("Next week") : T("Week of {d}", { d: fmtDM(days[0].date) });
     return `<div class="week"><div class="week-head"><b>${label}</b>
-      <span class="muted">WhatsApp ${wa} of ${cad.days.length} · Email ${em} of ${cad.email_per_week}</span></div>
+      <span class="muted small">${T("WhatsApp {a} of {b} · Email {c} of {d}", { a: wa, b: cad.days.length, c: em, d: cad.email_per_week })}</span></div>
       <div class="days">${days.map((d) => `<div class="day ${d.on ? "" : "off"} ${d.date === todayStr() ? "today" : ""}">
-        <div class="dn"><span>${fmtDay(d.date).split(" ")[0]}</span><span>${fmtDay(d.date).split(" ").slice(1).join(" ")}</span></div>
-        ${d.published.map((p) => `<div class="slot pub"><a href="#/post/${p.id}">✓ ${esc(displayTitle(p).en)}</a></div>`).join("")}
+        <div class="dn"><span>${esc(fmtDow(d.date))}</span><span>${esc(fmtDM(d.date))}</span></div>
+        ${d.published.map((p) => `<div class="slot pub"><a href="#/post/${p.id}" dir="auto">✓ ${name(p)}</a></div>`).join("")}
         ${d.posts.map((p) => slotHtml(p, d.date)).join("")}
-        ${!d.past && d.on && !d.posts.length && !d.published.length ? '<div class="slot-empty">open</div>' : ""}
+        ${!d.past && d.on && !d.posts.length && !d.published.length ? `<div class="slot-empty">${T("open")}</div>` : ""}
       </div>`).join("")}</div></div>`;
   };
-  return `<div class="headrow"><div><h1>Schedule</h1>
-    <p class="lead">One queue. Hot posts take the next free day, locked posts stay on their date, everything else moves forward in order. Ideas are not scheduled until Jay says yes.</p></div></div>
-    ${sch.overdue.length ? `<h2>Locked to a date that passed <span class="count">${sch.overdue.length}</span></h2><div class="days" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${sch.overdue.map((p) => `<div class="day">${slotHtml(p)}</div>`).join("")}</div>` : ""}
-    <div style="margin-top:16px">${sch.weeks.map(weekHtml).join("")}</div>
-    <h2>Later <span class="count">${sch.later.length}</span></h2>
-    ${sch.later.length ? `<div class="days" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${sch.later.map((p) => `<div class="day">${slotHtml(p)}</div>`).join("")}</div>` : '<div class="empty">Every post in the queue has a day.</div>'}
-    ${owner ? `<p class="muted" style="margin-top:14px">Publishing days and the weekly email count are in <a href="#/settings">Settings</a>.</p>` : ""}`;
+  const loose = (list) => `<div class="days loose">${list.map((p) => `<div class="day">${slotHtml(p)}</div>`).join("")}</div>`;
+  return `<div class="headrow"><div><h1>${T("Schedule")}</h1>
+    <p class="lead">${T("One queue. Hot posts take the next free day, locked posts stay on their date, everything else moves forward in order. Ideas are not scheduled until Jay says yes.")}</p></div></div>
+    ${sch.overdue.length ? `<h2>${T("Locked to a date that passed")} <span class="count">${sch.overdue.length}</span></h2>${loose(sch.overdue)}` : ""}
+    <div style="margin-top:18px">${sch.weeks.map(weekHtml).join("")}</div>
+    <h2>${T("Later")} <span class="count">${sch.later.length}</span></h2>
+    ${sch.later.length ? loose(sch.later) : `<div class="empty">${T("Every post in the queue has a day.")}</div>`}
+    ${owner ? `<p class="muted small" style="margin-top:14px">${T("Publishing days and the weekly email count are in")} <a href="#/settings">${T("Settings")}</a>.</p>` : ""}`;
 }
 
 function viewPublished() {
   const list = S.d.posts.filter((p) => p.stage === "published").sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
-  return `<h1>Published</h1><p class="lead">Newest first. Reactions are typed in by hand for now.</p>
-    ${list.length ? `<table style="margin-top:16px"><tr><th>Date</th><th>Post</th><th>By</th><th>Reactions</th></tr>
-    ${list.map((p) => `<tr><td class="mono">${p.published_at ? fmtDay(localDate(new Date(p.published_at))) : ""}</td>
-      <td>${tag(p.category)} <a href="#/post/${p.id}">${esc(displayTitle(p).en)}</a>${heLine(displayTitle(p).he)}</td>
+  return `<h1>${T("Published|nav")}</h1><p class="lead">${T("Newest first. Reactions are typed in by hand for now.")}</p>
+    ${list.length ? `<div class="tablewrap"><table><tr><th>${T("Date")}</th><th>${T("Post")}</th><th>${T("By")}</th><th>${T("Reactions")}</th></tr>
+    ${list.map((p) => {
+      const b = biText(displayTitle(p).en, displayTitle(p).he);
+      return `<tr><td class="nowrap muted">${p.published_at ? esc(fmtDay(localDate(new Date(p.published_at)))) : ""}</td>
+      <td>${tag(p.category)} <a href="#/post/${p.id}" dir="auto">${esc(b.main)}</a>${b.sub ? `<div class="t-sub" dir="auto">${esc(b.sub)}</div>` : ""}</td>
       <td>${esc(nameOf(p.author))}</td>
-      <td>${isOwner() ? `<input type="number" min="0" style="width:90px" value="${p.reactions ?? ""}" data-change="reactions" data-a="${p.id}">` : esc(p.reactions ?? "")}</td></tr>`).join("")}
-    </table>` : '<div class="empty" style="margin-top:16px">Nothing published yet.</div>'}`;
+      <td>${isOwner() ? `<input type="number" min="0" style="width:90px" value="${p.reactions ?? ""}" data-change="reactions" data-a="${p.id}">` : esc(p.reactions ?? "")}</td></tr>`;
+    }).join("")}
+    </table></div>` : `<div class="empty" style="margin-top:16px">${T("Nothing published yet.")}</div>`}`;
 }
 
 function viewRules() {
   const rules = [...S.d.rules].sort((a, b) => a.sort - b.sort || a.created_at.localeCompare(b.created_at));
   const owner = isOwner();
-  return `<div class="headrow"><div><h1>House rules</h1>
-    <p class="lead">Every note from Jay that is a rule and not a one-off fix. Copy them as a prompt for your own Claude, so the rules go in while you write.</p></div>
-    <div class="btns"><button class="btn dark" data-act="copyRules">Copy as a prompt</button>${owner ? '<button class="btn" data-act="addRule">+ Rule</button>' : ""}</div></div>
-    <table style="margin-top:16px"><tr><th>#</th><th>Rule</th><th>Where it came from</th>${owner ? "<th></th>" : ""}</tr>
-    ${rules.map((r, i) => `<tr style="${r.active ? "" : "opacity:.5"}"><td class="mono">${i + 1}</td>
-      <td><div>${esc(r.body)}</div>${heLine(r.body_he)}${r.check_key ? '<span class="pill go" style="margin-top:4px">checked automatically</span>' : ""}</td>
-      <td class="muted" style="font-size:13px">${esc(r.source || "")}</td>
-      ${owner ? `<td><div class="btns"><button class="btn sm ghost" data-act="editRule" data-a="${r.id}">Edit</button><button class="btn sm ghost" data-act="toggleRule" data-a="${r.id}">${r.active ? "Off" : "On"}</button><button class="btn sm ghost" data-act="deleteRule" data-a="${r.id}">Delete</button></div></td>` : ""}
-    </tr>`).join("")}</table>`;
+  return `<div class="headrow"><div><h1>${T("House rules")}</h1>
+    <p class="lead">${T("Every note from Jay that is a rule and not a one-off fix. Copy them as a prompt for your own Claude, so the rules go in while you write.")}</p></div>
+    <div class="btns"><button class="btn dark" data-act="copyRules">${T("Copy as a prompt")}</button>${owner ? `<button class="btn" data-act="addRule">${T("+ Rule")}</button>` : ""}</div></div>
+    <div class="tablewrap"><table><tr><th>#</th><th>${T("Rule")}</th><th>${T("Where it came from")}</th>${owner ? "<th></th>" : ""}</tr>
+    ${rules.map((r, i) => `<tr style="${r.active ? "" : "opacity:.5"}"><td class="muted">${i + 1}</td>
+      <td>${bi(r.body, r.body_he)}${r.check_key ? `<span class="pill go" style="margin-top:4px">${T("checked automatically")}</span>` : ""}</td>
+      <td class="muted small" dir="auto">${esc(r.source || "")}</td>
+      ${owner ? `<td><div class="btns"><button class="btn sm ghost" data-act="editRule" data-a="${r.id}">${T("Edit")}</button><button class="btn sm ghost" data-act="toggleRule" data-a="${r.id}">${r.active ? T("Switch off") : T("Switch on")}</button><button class="btn sm ghost" data-act="deleteRule" data-a="${r.id}">${T("Delete")}</button></div></td>` : ""}
+    </tr>`).join("")}</table></div>`;
 }
 
 function viewSettings() {
   const owner = isOwner();
   const cad = cadence();
   const sig = (setting("signature", {}) || {}).text || "";
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return `<h1>Settings</h1>
-    <h2>Team</h2>
-    <table><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr>
-    ${S.d.team_members.map((m) => `<tr><td>${avatar(m.email)} ${esc(m.name)}</td><td class="mono">${esc(m.email)}</td>
-      <td>${owner && m.email !== S.me ? `<select data-change="memberRole" data-a="${esc(m.email)}"><option value="writer" ${m.role === "writer" ? "selected" : ""}>Writer</option><option value="owner" ${m.role === "owner" ? "selected" : ""}>Owner</option></select>` : esc(m.role === "owner" ? "Owner" : "Writer")}</td>
-      <td>${owner && m.email !== S.me ? `<button class="btn sm ghost" data-act="memberActive" data-a="${esc(m.email)}">${m.active ? "Active · switch off" : "Off · switch on"}</button>` : m.active ? "Active" : "Off"}</td></tr>`).join("")}</table>
-    ${owner ? `<form data-form="addMember" class="panel" style="margin-top:12px"><h3>Add someone</h3>
-      <div class="row3"><div class="field"><label>Google email</label><input type="email" name="email" required placeholder="name@jaygptpro.com"></div>
-      <div class="field"><label>Name</label><input type="text" name="name"></div>
-      <div class="field"><label>Role</label><select name="role"><option value="writer">Writer</option><option value="owner">Owner</option></select></div></div>
-      <input type="hidden" name="color" value="#1e5f4b"><button class="btn dark">Add</button>
-      <p class="muted" style="margin-top:8px;font-size:13px">They sign in with that Google account. Anyone not on this list sees nothing.</p></form>` : ""}
-    <form data-form="saveSettings" class="panel" style="margin-top:22px"><h3>Publishing</h3>
-      <div class="field"><label>Publishing days (WhatsApp)</label><div class="btns">${dayNames.map((n, i) => `<label class="check"><input type="checkbox" name="day" value="${i}" ${cad.days.includes(i) ? "checked" : ""} ${owner ? "" : "disabled"}> ${n}</label>`).join("")}</div></div>
-      <div class="field" style="max-width:220px"><label>Emails per week</label><input type="number" min="0" max="7" name="email_per_week" value="${cad.email_per_week}" ${owner ? "" : "disabled"}></div>
-      <div class="field"><label>Signature added under every WhatsApp post</label><textarea name="signature" ${owner ? "" : "disabled"}>${esc(sig)}</textarea>
-      <span class="hint">Added only when the post text has no group link of its own.</span></div>
-      ${owner ? '<button class="btn dark">Save</button>' : ""}
-    </form>`;
+  const dayName = (i) => new Date(2026, 0, 4 + i).toLocaleDateString(locale(), { weekday: "short" });
+  return `<h1>${T("Settings")}</h1>
+    <div class="panel" style="margin-top:18px"><h3>${T("Display")}</h3>
+      <div class="field"><label>${T("Language")}</label><div><span class="seg"><button type="button" class="${S.lang === "en" ? "on" : ""}" data-act="setLang" data-a="en">English</button><button type="button" class="${S.lang === "he" ? "on" : ""}" data-act="setLang" data-a="he">עברית</button></span></div>
+      <span class="hint">${T("Only changes what you see. Everyone else keeps their own language.")}</span></div>
+      ${S.lang === "en" ? `<label class="check"><input type="checkbox" data-act="toggleHe" ${S.showHe ? "checked" : ""}> ${T("Show the Hebrew translation next to the English")}</label>` : ""}
+    </div>
+    <h2>${T("Team")}</h2>
+    <div class="tablewrap"><table><tr><th>${T("Name")}</th><th>${T("Email")}</th><th>${T("Role")}</th><th>${T("Status")}</th></tr>
+    ${S.d.team_members.map((m) => `<tr><td class="nowrap">${avatar(m.email)} ${esc(m.name)}</td><td class="mono" dir="ltr">${esc(m.email)}</td>
+      <td>${owner && m.email !== S.me ? `<select data-change="memberRole" data-a="${esc(m.email)}" style="width:auto"><option value="writer" ${m.role === "writer" ? "selected" : ""}>${T("Writer")}</option><option value="owner" ${m.role === "owner" ? "selected" : ""}>${T("Owner")}</option></select>` : m.role === "owner" ? T("Owner") : T("Writer")}</td>
+      <td>${owner && m.email !== S.me ? `<button class="btn sm ghost" data-act="memberActive" data-a="${esc(m.email)}">${m.active ? T("Active · switch off") : T("Off · switch on")}</button>` : m.active ? T("Active") : T("Off")}</td></tr>`).join("")}</table></div>
+    ${owner ? `<form data-form="addMember" class="panel" style="margin-top:12px"><h3>${T("Add someone")}</h3>
+      <div class="row3"><div class="field"><label>${T("Google email")}</label><input type="email" name="email" dir="ltr" required placeholder="name@jaygptpro.com"></div>
+      <div class="field"><label>${T("Name")}</label><input type="text" name="name" dir="auto"></div>
+      <div class="field"><label>${T("Role")}</label><select name="role"><option value="writer">${T("Writer")}</option><option value="owner">${T("Owner")}</option></select></div></div>
+      <input type="hidden" name="color" value="#0c8f6f"><button class="btn go">${T("Add")}</button>
+      <p class="muted small" style="margin-top:8px">${T("They sign in with that Google account. Anyone not on this list sees nothing.")}</p></form>` : ""}
+    <form data-form="saveSettings" class="panel" style="margin-top:22px"><h3>${T("Publishing")}</h3>
+      <div class="field"><label>${T("Publishing days (WhatsApp)")}</label><div class="btns">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<label class="check"><input type="checkbox" name="day" value="${i}" ${cad.days.includes(i) ? "checked" : ""} ${owner ? "" : "disabled"}> ${esc(dayName(i))}</label>`).join("")}</div></div>
+      <div class="field" style="max-width:220px"><label>${T("Emails per week")}</label><input type="number" min="0" max="7" name="email_per_week" value="${cad.email_per_week}" ${owner ? "" : "disabled"}></div>
+      <div class="field"><label>${T("Signature added under every WhatsApp post")}</label><textarea name="signature" dir="auto" ${owner ? "" : "disabled"}>${esc(sig)}</textarea>
+      <span class="hint">${T("Added only when the post text has no group link of its own.")}</span></div>
+      ${owner ? `<button class="btn go">${T("Save")}</button>` : ""}
+    </form>
+    <p style="margin-top:22px"><button class="btn ghost" data-act="signOut">${T("Sign out")}</button></p>`;
 }
 
 function viewNew() {
   const mode = S.newMode;
   const owner = isOwner();
-  const catSel = (val) => `<select name="category">${CATS.map((c) => `<option value="${c}" ${val === c ? "selected" : ""}>${CAT_LABEL[c]}</option>`).join("")}</select>`;
+  const catSel = (val) => `<select name="category">${CATS.map((c) => `<option value="${c}" ${val === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select>`;
   let body;
   if (mode === "idea") {
     body = `<form data-form="createIdea" class="panel">
-      <div class="row2"><div class="field"><label>Working title</label><input type="text" name="title" required placeholder="What the post is about, in one line"></div>
-      <div class="field"><label>Category</label>${catSel("tip")}</div></div>
-      <div class="field"><label>The pitch</label><textarea name="idea" placeholder="Hook, why now, what readers get. Two to five lines."></textarea></div>
-      <div class="row3"><div class="field"><label>When the news came out (if news)</label><input type="date" name="news_date"></div>
-      <div class="field"><label>Your score, 1 to 10</label><input type="number" name="score" min="1" max="10"></div>
-      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> Hot: it goes stale fast</label></div></div>
-      <div class="field"><label>Covered before?</label><input type="text" name="covered_before" placeholder="e.g. a similar post went out on 29 Mar"></div>
-      <div class="field"><label>Sources, one per line</label><textarea name="sources" placeholder="https://..."></textarea></div>
-      <button class="btn dark">Add idea</button></form>`;
+      <div class="row2"><div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
+      <div class="field"><label>${T("Category")}</label>${catSel("tip")}</div></div>
+      <div class="field"><label>${T("The pitch")}</label><textarea name="idea" dir="auto" placeholder="${T("Hook, why now, what readers get. Two to five lines.")}"></textarea></div>
+      <div class="row3"><div class="field"><label>${T("When the news came out (if news)")}</label><input type="date" name="news_date"></div>
+      <div class="field"><label>${T("Your score, 1 to 10")}</label><input type="number" name="score" min="1" max="10"></div>
+      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> ${T("Hot: it goes stale fast")}</label></div></div>
+      <div class="field"><label>${T("Covered before?")}</label><input type="text" name="covered_before" dir="auto" placeholder="${T("e.g. a similar post went out on 29 Mar")}"></div>
+      <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" placeholder="https://..."></textarea></div>
+      <button class="btn go">${T("Add idea")}</button></form>`;
   } else if (!S.split) {
     body = `<form data-form="splitDraft" class="panel">
-      <div class="field"><label>Paste the full draft</label><textarea class="big" name="draft" placeholder="Headline options, the post, sources and notes for Jay, in one block. The desk splits it into fields.">${esc(S.draftText || "")}</textarea></div>
-      <button class="btn dark">Split it into fields →</button>
-      <p class="muted" style="margin-top:8px;font-size:13px">Nothing is saved until you check the fields and press Create.</p></form>`;
+      <div class="field"><label>${T("Paste the full draft")}</label><textarea class="big" name="draft" dir="auto" placeholder="${T("Headline options, the post, sources and notes for Jay, in one block. The desk splits it into fields.")}">${esc(S.draftText || "")}</textarea></div>
+      <button class="btn go">${T("Split it into fields →")}</button>
+      <p class="muted small" style="margin-top:8px">${T("Nothing is saved until you check the fields and press Create.")}</p></form>`;
   } else {
     const sp = S.split;
     body = `<form data-form="createDraft" class="panel">
-      <div class="row3"><div class="field"><label>Working title</label><input type="text" name="title" value="${esc((sp.headlines[0] || {}).en || "")}"></div>
-      <div class="field"><label>Category</label>${catSel(sp.category)}</div>
-      <div class="field"><label>When the news came out</label><input type="date" name="news_date"></div></div>
-      <div class="field"><label>Headline options, one per line</label><textarea name="headlines">${esc(sp.headlines.map((h) => h.en).join("\n"))}</textarea>
-      ${sp.headlines.some((h) => h.pick) ? `<span class="hint">The writer's pick: ${esc(sp.headlines.find((h) => h.pick).en)}</span>` : ""}</div>
-      <div class="field"><label>Post text (WhatsApp format, no headline, no signature)</label><textarea class="big" name="body">${esc(sp.body)}</textarea></div>
-      <div class="row2"><div class="field"><label>Sources, one per line</label><textarea name="sources">${esc(sp.sources.map((s) => `${s.url} ${s.label}`).join("\n"))}</textarea></div>
-      <div class="field"><label>Notes for Jay</label><textarea name="notes">${esc(sp.notes)}</textarea></div></div>
-      <div class="field"><label>The idea in a line (optional)</label><input type="text" name="idea"></div>
-      <label class="check" style="margin-bottom:12px"><input type="checkbox" name="hot"> Hot: it goes stale fast</label><br>
-      <div class="btns"><button class="btn dark">${owner ? "Create draft" : "Create and send to Jay"}</button><button type="button" class="btn ghost" data-act="newMode" data-a="draft">Start over</button></div></form>`;
+      <div class="row3"><div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" value="${esc((sp.headlines[0] || {}).en || "")}"></div>
+      <div class="field"><label>${T("Category")}</label>${catSel(sp.category)}</div>
+      <div class="field"><label>${T("When the news came out")}</label><input type="date" name="news_date"></div></div>
+      <div class="field"><label>${T("Headline options, one per line")}</label><textarea name="headlines" dir="auto">${esc(sp.headlines.map((h) => h.en).join("\n"))}</textarea>
+      ${sp.headlines.some((h) => h.pick) ? `<span class="hint">${T("The writer's pick: {x}", { x: sp.headlines.find((h) => h.pick).en })}</span>` : ""}</div>
+      <div class="field"><label>${T("Post text (WhatsApp format, no headline, no signature)")}</label><textarea class="big" name="body" dir="auto">${esc(sp.body)}</textarea></div>
+      <div class="row2"><div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr">${esc(sp.sources.map((s) => `${s.url} ${s.label}`).join("\n"))}</textarea></div>
+      <div class="field"><label>${T("Notes for Jay")}</label><textarea name="notes" dir="auto">${esc(sp.notes)}</textarea></div></div>
+      <div class="field"><label>${T("The idea in a line (optional)")}</label><input type="text" name="idea" dir="auto"></div>
+      <label class="check" style="margin-bottom:12px"><input type="checkbox" name="hot"> ${T("Hot: it goes stale fast")}</label><br>
+      <div class="btns"><button class="btn go">${owner ? T("Create draft") : T("Create and send to Jay")}</button><button type="button" class="btn ghost" data-act="newMode" data-a="draft">${T("Start over")}</button></div></form>`;
   }
-  return `<h1>New</h1><p class="lead">${owner ? "Your own idea or post. It stays with you until you mark it ready." : "Start with an idea for Jay to say yes to. For hot news, paste the full draft and Jay answers both at once."}</p>
-    <div class="seg" style="margin:16px 0"><button class="${mode === "idea" ? "on" : ""}" data-act="newMode" data-a="idea">Idea</button><button class="${mode === "draft" ? "on" : ""}" data-act="newMode" data-a="draft">Paste a full draft</button></div>
+  return `<h1>${T("New")}</h1><p class="lead">${owner ? T("Your own idea or post. It stays with you until you mark it ready.") : T("Start with an idea for Jay to say yes to. For hot news, paste the full draft and Jay answers both at once.")}</p>
+    <div style="margin:16px 0"><span class="seg"><button class="${mode === "idea" ? "on" : ""}" data-act="newMode" data-a="idea">${T("Idea")}</button><button class="${mode === "draft" ? "on" : ""}" data-act="newMode" data-a="draft">${T("Paste a full draft")}</button></span></div>
     ${body}`;
 }
 
 function viewPost(id, reviewIdx) {
   const p = post(id);
-  if (!p) return `<div class="empty" style="margin-top:30px">This post doesn't exist anymore. <a href="#/board">Back to the board</a></div>`;
+  if (!p) return `<div class="empty" style="margin-top:30px">${T("This post doesn't exist anymore.")} <a href="#/board">${T("Back to the board")}</a></div>`;
   const owner = isOwner();
   const mine = p.author === S.me;
   const canEdit = owner || mine || member(p.author).role !== "owner";
   const ch = S.channel[p.id] || "whatsapp";
+  const chName = t(CHANNELS.find((c) => c[0] === ch)[1]);
   const v = shownVersion(p.id, ch);
   const vs = versionsOf(p.id, ch);
   const isLatest = v && vs.length && v.n === vs[vs.length - 1].n;
   const notes = notesOf(p.id);
   const assets = assetsOf(p.id);
   ensureUrls(assets.filter((a) => a.status !== "replaced" || assets.length < 6));
-  const t = displayTitle(p);
+  const tt = displayTitle(p);
+  const title = biText(tt.en, tt.he);
   const sched = buildSchedule(3);
   const editing = S.edit && S.edit.postId === p.id && S.edit.channel === ch;
 
   const q = reviewIdx != null ? ownerQueue() : null;
-  const reviewBar = q ? `<div class="review-bar"><span>Review mode · ${Math.min(reviewIdx + 1, q.length)} of ${q.length}</span>
-    <span class="btns">${reviewIdx > 0 ? `<a class="btn sm" href="#/review/${reviewIdx - 1}">← Prev</a>` : ""}${reviewIdx < q.length - 1 ? `<a class="btn sm" href="#/review/${reviewIdx + 1}">Next →</a>` : ""}<a class="btn sm ghost" style="color:#eee6d6" href="#/">Exit</a></span></div>` : "";
+  const reviewBar = q ? `<div class="review-bar"><span>${T("Review · {a} of {b}", { a: Math.min(reviewIdx + 1, q.length), b: q.length })}</span>
+    <span class="btns">${reviewIdx > 0 ? `<a class="btn sm" href="#/review/${reviewIdx - 1}">${T("← Prev")}</a>` : ""}${reviewIdx < q.length - 1 ? `<a class="btn sm" href="#/review/${reviewIdx + 1}">${T("Next →")}</a>` : ""}<a class="btn sm ghost" href="#/">${T("Exit")}</a></span></div>` : "";
 
-  const head = `${reviewBar}<div class="post-head"><a class="btn sm ghost" href="#/board">← Board</a>${tag(p.category)}
-      <span class="pill ${p.stage === "ready" ? "go" : p.stage === "review" || p.stage === "idea" ? "hot" : "mute"}">${esc(STAGE_LABEL[p.stage])}</span>
-      ${p.hot ? '<span class="pill hot">🔥 Hot</span>' : ""}${p.text_ok && p.stage === "writing" ? '<span class="pill go">Text approved · banner next</span>' : ""}
-      ${sched.slotOf[p.id] ? `<span class="pill blue">Goes out ${fmtDay(sched.slotOf[p.id])}</span>` : ""}
-      <span class="muted" style="font-size:13px">${avatar(p.author)} ${esc(nameOf(p.author))} · ${ago(p.created_at)}</span></div>
-    <div class="post-title">${esc(t.en)}</div>${S.showHe && t.he ? `<div class="he post-title-he">${esc(t.he)}</div>` : ""}
-    <details class="meta-details" ${window.innerWidth > 640 ? "open" : ""}><summary>Details: category, date, hot, email</summary><div class="meta-row">
-      ${canEdit ? `<button class="btn sm ghost" data-act="renameTitle" data-a="${p.id}">Working title: ${esc(p.title.slice(0, 50))}${p.title.length > 50 ? "…" : ""}</button>` : ""}
-      <label>Category <select data-change="meta" data-a="${p.id}" data-b="category">${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${CAT_LABEL[c]}</option>`).join("")}</select></label>
-      <label>Jay tried it <select data-change="meta" data-a="${p.id}" data-b="tried"><option value="" ${p.tried_myself == null ? "selected" : ""}>Not set</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>Yes</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>Not yet</option></select></label>
-      ${p.category === "news" ? `<label>News date <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date"></label>` : ""}
-      <button class="btn sm ${p.hot ? "hot" : "ghost"}" data-act="hot" data-a="${p.id}">🔥 ${p.hot ? "Hot" : "Make hot"}</button>
-      <button class="btn sm ${p.email_too ? "dark" : "ghost"}" data-act="emailToo" data-a="${p.id}">✉ ${p.email_too ? "Also email" : "Email too?"}</button>
-      <label>🔒 Lock to <input type="date" value="${esc(p.pinned_date || "")}" data-change="pin" data-a="${p.id}"></label>
-    </div></details>`;
+  const head = `${reviewBar}<div class="post-head"><a class="btn sm ghost" href="#/board">${T("← Board")}</a>${tag(p.category)}
+      <span class="pill ${p.stage === "ready" ? "go" : p.stage === "review" || p.stage === "idea" ? "wait" : "mute"}">${esc(stageLabel(p.stage))}</span>
+      ${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${p.text_ok && p.stage === "writing" ? `<span class="pill go">${T("Text approved · banner next")}</span>` : ""}
+      ${sched.slotOf[p.id] ? `<span class="pill blue">${T("Goes out {d}", { d: fmtDay(sched.slotOf[p.id]) })}</span>` : ""}
+      <span class="by">${avatar(p.author)} ${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
+    <h1 class="post-title" dir="auto">${esc(title.main)}</h1>${title.sub ? `<div class="post-title-sub" dir="auto">${esc(title.sub)}</div>` : ""}
+    <div><button class="linkbtn metabtn" data-act="toggleMeta">${T("Details: category, date, hot, email")} ${S.metaOpen ? "▴" : "▾"}</button></div>${S.metaOpen ? `<div class="meta-row">
+      ${canEdit ? `<button class="btn sm ghost" data-act="renameTitle" data-a="${p.id}">${T("Working title")}: <span dir="auto">${esc(p.title.slice(0, 50))}${p.title.length > 50 ? "…" : ""}</span></button>` : ""}
+      <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category">${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
+      <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried"><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
+      ${p.category === "news" ? `<label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date"></label>` : ""}
+      <button class="btn sm ${p.hot ? "hot" : "ghost"}" data-act="hot" data-a="${p.id}">🔥 ${p.hot ? T("Hot") : T("Make hot")}</button>
+      <button class="btn sm ${p.email_too ? "dark" : "ghost"}" data-act="emailToo" data-a="${p.id}">✉ ${p.email_too ? T("Also email") : T("Email too?")}</button>
+      <label>🔒 ${T("Lock to")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="pin" data-a="${p.id}"></label>
+    </div>` : ""}`;
 
   // idea block
-  const ideaBlock = p.idea || p.stage === "idea" ? `<div class="panel" style="margin-top:14px"><h3>The idea${canEdit ? ` <button class="btn sm ghost" data-act="editIdea" data-a="${p.id}">Edit</button>` : ""}</h3>
-      <div class="two">
-        <div class="pre">${esc(p.idea || "No pitch written.")}</div>
-        ${S.showHe ? `<div class="he pre body-he">${esc(p.idea_he || (p.idea ? "…מתרגם" : ""))}</div>` : ""}
+  const ib = biText(p.idea, p.idea_he);
+  const ideaBlock = p.idea || p.stage === "idea" ? `<div class="panel" style="margin-top:14px"><h3>${T("The idea")}${canEdit ? ` <button class="btn sm ghost" data-act="editIdea" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
+      <div class="${ib.sub ? "two" : ""}">
+        <div class="pre" dir="auto">${p.idea ? esc(ib.main) : T("No pitch written.")}</div>
+        ${ib.sub ? `<div class="pre muted" dir="auto">${esc(ib.sub)}</div>` : ""}
       </div>
-      <div class="meta-row">${p.score ? `<span class="pill blue">Score ${p.score}/10</span>` : ""}${p.covered_before ? `<span>Covered before: ${esc(p.covered_before)}</span>` : ""}${p.news_date ? `<span>News from ${fmtDay(p.news_date)}</span>` : ""}</div>
+      <div class="meta-row">${p.score ? `<span class="pill blue">${T("Score {n}/10", { n: p.score })}</span>` : ""}${p.covered_before ? `<span>${T("Covered before:")} <span dir="auto">${esc(p.covered_before)}</span></span>` : ""}${p.news_date ? `<span>${T("News from {d}", { d: fmtDay(p.news_date) })}</span>` : ""}</div>
     </div>` : "";
 
-  // left: headlines + text
-  let left;
+  // first column: headlines and the text in the reader's language. Second column: the other language.
+  let colA;
+  let colB = "";
   if (editing) {
     const seed = S.edit.seed || {};
     const base = v || {};
     const openNotes = notes.filter((n) => n.kind === "note" && n.status === "open");
-    left = `<form data-form="saveEdit" class="panel"><h3>${ch === "whatsapp" ? "Edit the post" : `Edit the ${esc(CHANNELS.find((c) => c[0] === ch)[1])} version`} · saves as v${(vs.length ? vs[vs.length - 1].n : 0) + 1}</h3>
-      <div class="field"><label>${ch === "email" ? "Subject line options" : "Headline options"}, one per line</label><textarea name="headlines" style="min-height:96px">${esc(seed.headlines ?? (base.headlines || []).map((h) => h.en).join("\n"))}</textarea></div>
-      <div class="field"><label>${ch === "whatsapp" ? "Post text, WhatsApp format (*bold*). No headline, no signature." : "Text"}</label><textarea class="big" name="body">${esc(seed.body ?? base.body ?? "")}</textarea></div>
-      <div class="field"><label>Sources, one per line</label><textarea name="sources" style="min-height:70px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
-      ${!owner ? `<div class="field"><label>What changed (for Jay)</label><input type="text" name="writer_note" placeholder="e.g. new headline, added the source"></div>` : ""}
-      ${openNotes.length ? `<div class="field"><label>Notes this version fixes</label>${openNotes.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> ${esc(n.body.slice(0, 120))}</label>`).join("<br>")}</div>` : ""}
-      <div class="btns"><button class="btn dark">Save as new version</button><button type="button" class="btn ghost" data-act="cancelEdit">Cancel</button></div></form>`;
+    colA = `<form data-form="saveEdit" class="panel"><h3>${ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: chName })} · ${T("saves as v{n}", { n: (vs.length ? vs[vs.length - 1].n : 0) + 1 })}</h3>
+      <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? (base.headlines || []).map((h) => h.en).join("\n"))}</textarea></div>
+      <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : T("Text")}</label><textarea class="big" name="body" dir="auto">${esc(seed.body ?? base.body ?? "")}</textarea></div>
+      <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" style="min-height:70px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
+      ${!owner ? `<div class="field"><label>${T("What changed (for Jay)")}</label><input type="text" name="writer_note" dir="auto" placeholder="${T("e.g. new headline, added the source")}"></div>` : ""}
+      ${openNotes.length ? `<div class="field"><label>${T("Notes this version fixes")}</label>${openNotes.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> <span dir="auto">${esc(n.body.slice(0, 120))}</span></label>`).join("<br>")}</div>` : ""}
+      <div class="btns"><button class="btn go">${T("Save as new version")}</button><button type="button" class="btn ghost" data-act="cancelEdit">${T("Cancel")}</button></div></form>`;
   } else if (!v) {
-    left = `<div class="panel"><h3>${ch === "whatsapp" ? "The post" : esc(CHANNELS.find((c) => c[0] === ch)[1])}</h3>
-      <div class="empty">${ch === "whatsapp" ? "No text yet." : "No version for this channel yet."}</div>
-      ${canEdit ? `<div class="btns" style="margin-top:10px"><button class="btn dark" data-act="startEdit" data-a="${p.id}" data-b="${ch}">Write it</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">Start from the WhatsApp text</button>` : ""}</div>` : ""}</div>`;
+    colA = `<div class="panel"><h3>${ch === "whatsapp" ? T("The post") : esc(chName)}</h3>
+      <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
+      ${canEdit ? `<div class="btns" style="margin-top:10px"><button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</div>`;
   } else {
     const ci = chosenIndex(v);
-    const hl = (v.headlines || []).map((h, i) => `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${isLatest && (owner || canEdit) ? "" : "disabled"}>
-        <span class="rad"></span><span>${esc(h.en)}${S.showHe && h.he ? `<small class="he">${esc(h.he)}</small>` : ""}</span>${h.pick ? '<span class="wp">writer’s pick</span>' : ""}</button>`).join("");
+    const nH = (v.headlines || []).length;
+    const hl = (v.headlines || []).map((h, i) => {
+      const hb = biText(h.en, h.he);
+      return `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${isLatest && (owner || canEdit) ? "" : "disabled"}>
+        <span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span>${h.pick ? `<span class="wp">${T("writer’s pick")}</span>` : ""}</button>`;
+    }).join("");
     const prev = vs.find((x) => x.n === v.n - 1);
     const showDiff = S.diff[p.id] && prev;
-    left = `<div class="panel">
-      <h3><span>${ch === "email" ? "Subject lines" : "Headline options"}</span><span style="color:${(v.headlines || []).length >= 3 ? "var(--go)" : "var(--hot)"}">${(v.headlines || []).length} of 3${ci >= 0 ? " · picked" : owner && (v.headlines || []).length > 1 ? " · pick one" : ""}</span></h3>
-      ${hl || '<div class="empty">No headline options.</div>'}
-      ${isLatest && canEdit && (owner || !(p.stage === "ready" || p.text_ok)) ? `<div class="btns"><button class="btn sm ghost" data-act="addHeadline" data-a="${v.id}">+ Option</button>${(v.headlines || []).length ? `<button class="btn sm ghost" data-act="removeHeadlinePrompt" data-a="${v.id}">− Remove one</button>` : ""}</div>` : ""}
-      <h3 style="margin-top:18px"><span>${ch === "whatsapp" ? "Post" : "Text"} · English</span>
-        <span class="vtabs">${vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("")}${prev ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">diff</button>` : ""}</span></h3>
-      ${showDiff ? `<div class="body-en pre diff">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre">${markNumbers(v.body)}</div>`}
-      ${v.writer_note ? `<div class="note" style="margin-top:10px"><div><b>${esc(nameOf(v.author))}:</b> ${esc(v.writer_note)}${heLine(v.writer_note_he, "")}</div></div>` : ""}
-      <div class="meta" style="margin-top:8px">v${v.n} by ${esc(nameOf(v.author))} · ${ago(v.created_at)}${!isLatest ? " · an older version" : ""}</div>
-      ${canEdit && isLatest ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${owner && !mine ? "Edit the text myself" : "New version"}</button>${!owner && (p.stage === "ready" || p.text_ok) && ch === "whatsapp" ? '<span class="muted" style="font-size:12.5px">Jay approved this text. A new version goes back to him.</span>' : ""}</div>` : ""}
-    </div>`;
+    const headlines = `<h3><span>${ch === "email" ? T("Subject lines") : T("Headline options")}</span><span style="color:${nH >= 3 ? "var(--go)" : "var(--hot)"}">${T("{n} of 3", { n: nH })}${ci >= 0 ? ` · ${T("picked")}` : owner && nH > 1 ? ` · ${T("pick one")}` : ""}</span></h3>
+      ${hl || `<div class="empty">${T("No headline options.")}</div>`}
+      ${isLatest && canEdit && (owner || !(p.stage === "ready" || p.text_ok)) ? `<div class="btns"><button class="btn sm ghost" data-act="addHeadline" data-a="${v.id}">${T("+ Option")}</button>${nH ? `<button class="btn sm ghost" data-act="removeHeadlinePrompt" data-a="${v.id}">${T("− Remove one")}</button>` : ""}</div>` : ""}`;
+    const enBlock = `<h3><span>${S.lang === "he" ? T("The English text · this is what goes out") : ch === "whatsapp" ? T("Post · English") : T("Text · English")}</span>
+        <span class="vtabs">${vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("")}${prev ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("changes")}</button>` : ""}</span></h3>
+      ${showDiff ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`}
+      ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> ${bi(v.writer_note, v.writer_note_he)}</div>` : ""}
+      <div class="meta" style="margin-top:8px">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · ${T("an older version")}` : ""}</div>
+      ${canEdit && isLatest ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${owner && !mine ? T("Edit the text myself") : T("New version")}</button>${!owner && (p.stage === "ready" || p.text_ok) && ch === "whatsapp" ? `<span class="muted small">${T("Jay approved this text. A new version goes back to him.")}</span>` : ""}</div>` : ""}`;
+    const heBlock = `<h3><span>${T("Hebrew · literal translation")}</span><span class="pill blue">${T("auto")}</span></h3>
+      <div class="body-he pre" dir="rtl">${esc(v.body_he || t("Translating…"))}</div>`;
+    if (S.lang === "he") {
+      colA = `<div class="panel">${headlines}<div class="gap"></div>${heBlock}</div>`;
+      colB = `<div class="panel">${enBlock}</div>`;
+    } else {
+      colA = `<div class="panel">${headlines}<div class="gap"></div>${enBlock}</div>`;
+      colB = S.showHe ? `<div class="panel">${heBlock}</div>` : "";
+    }
   }
-
-  const mid = S.showHe && v && !editing ? `<div class="panel"><h3><span>עברית · תרגום מילולי</span><span class="pill blue" style="font-size:10px">auto</span></h3>
-      <div class="he body-he pre">${esc(v.body_he || "…מתרגם")}</div></div>` : "";
 
   // WhatsApp preview
   const fin = approvedAsset(p.id) || finalAsset(p.id);
   const finUrl = fin ? cachedUrl(fin) : "";
-  const preview = ch === "whatsapp" && v && !editing ? `<div class="panel"><h3>WhatsApp preview</h3><div class="wa"><div class="bub">${fin && finUrl ? ((fin.mime || "").startsWith("video/") ? `<video src="${esc(finUrl)}" muted playsinline></video>` : `<img alt="" src="${esc(finUrl)}">`) : ""}${waHtml(composeWhatsApp(p, v))}<div class="tm">${new Date().toTimeString().slice(0, 5)}</div></div></div></div>` : "";
+  const preview = ch === "whatsapp" && v && !editing ? `<div class="panel"><h3>${T("WhatsApp preview")}</h3><div class="wa" dir="ltr"><div class="bub" dir="auto">${fin && finUrl ? ((fin.mime || "").startsWith("video/") ? `<video src="${esc(finUrl)}" muted playsinline></video>` : `<img alt="" src="${esc(finUrl)}">`) : ""}${waHtml(composeWhatsApp(p, v))}<div class="tm">${new Date().toTimeString().slice(0, 5)}</div></div></div></div>` : "";
 
-  // right: notes, questions, sources, checks
+  // third column: notes, questions, sources, checks
   const noteRow = (n) => {
     const closed = n.status === "closed";
     const canToggle = n.kind !== "question" && (owner || canEdit);
-    const ck = n.kind === "question" ? `<span class="ck q">${n.answer ? "✓" : "?"}</span>` : `<button class="ck ${closed ? "done" : ""}" data-act="toggleNote" data-a="${n.id}" ${canToggle ? "" : "disabled"} title="${closed ? "Reopen" : "Mark fixed"}">${closed ? "✓" : ""}</button>`;
+    const ck = n.kind === "question" ? `<span class="ck q">${n.answer ? "✓" : "?"}</span>` : `<button class="ck ${closed ? "done" : ""}" data-act="toggleNote" data-a="${n.id}" ${canToggle ? "" : "disabled"} title="${closed ? T("Reopen") : T("Mark fixed")}">${closed ? "✓" : ""}</button>`;
+    const nb = biText(n.body, n.body_he);
+    const ab = biText(n.answer, n.answer_he);
     return `<div class="note ${n.kind}">${ck}<div style="flex:1;min-width:0">
-      <div class="pre">${n.kind === "question" ? "<b>Question:</b> " : n.kind === "team" ? "<b>Team:</b> " : ""}${esc(n.body)}</div>${heLine(n.body_he, "")}
-      ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> ${esc(n.answer)}${heLine(n.answer_he, "")}</div>` : ""}
-      <div class="who">${esc(nameOf(n.author))} · ${ago(n.created_at)}${n.version_n ? ` · on v${n.version_n}` : ""}${closed && n.closed_in ? `<span class="fix">fixed in v${n.closed_in}</span>` : ""}
-        ${n.kind === "question" && !n.answer && owner ? `<button class="btn sm" data-act="answer" data-a="${n.id}" data-b="Yes">Yes</button><button class="btn sm" data-act="answer" data-a="${n.id}" data-b="No">No</button><button class="btn sm ghost" data-act="answer" data-a="${n.id}">Answer</button>` : ""}
-        ${owner && n.kind === "note" && !n.is_rule ? `<button class="btn sm ghost" data-act="noteToRule" data-a="${n.id}" title="Add to house rules">→ rule</button>` : ""}${n.is_rule ? '<span class="pill go">rule</span>' : ""}
-        ${n.author === S.me || owner ? `<button class="btn sm ghost" data-act="deleteNote" data-a="${n.id}">delete</button>` : ""}</div>
+      <div class="pre" dir="auto">${n.kind === "question" ? `<b>${T("Question:")}</b> ` : n.kind === "team" ? `<b>${T("Team:")}</b> ` : ""}${esc(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${esc(nb.sub)}</div>` : ""}
+      ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(ab.main)}</span>${ab.sub ? `<div class="t-sub" dir="auto">${esc(ab.sub)}</div>` : ""}</div>` : ""}
+      <div class="who">${esc(nameOf(n.author))} · ${esc(ago(n.created_at))}${n.version_n ? ` · ${T("on v{n}", { n: n.version_n })}` : ""}${closed && n.closed_in ? `<span class="fix">${T("fixed in v{n}", { n: n.closed_in })}</span>` : ""}
+        ${n.kind === "question" && !n.answer && owner ? `<button class="btn sm" data-act="answer" data-a="${n.id}" data-b="Yes">${T("Yes")}</button><button class="btn sm" data-act="answer" data-a="${n.id}" data-b="No">${T("No")}</button><button class="btn sm ghost" data-act="answer" data-a="${n.id}">${T("Answer")}</button>` : ""}
+        ${owner && n.kind === "note" && !n.is_rule ? `<button class="btn sm ghost" data-act="noteToRule" data-a="${n.id}" title="${T("Add to house rules")}">${T("Make it a rule")}</button>` : ""}${n.is_rule ? `<span class="pill go">${T("rule")}</span>` : ""}
+        ${n.author === S.me || owner ? `<button class="btn sm ghost" data-act="deleteNote" data-a="${n.id}">${T("delete")}</button>` : ""}</div>
     </div></div>`;
   };
   const jayNotes = notes.filter((n) => n.kind === "note");
   const otherNotes = notes.filter((n) => n.kind !== "note");
   const openCount = jayNotes.filter((n) => n.status === "open").length;
   const checks = ch === "whatsapp" && v ? checksFor(p, latest(p.id)) : [];
-  const right = `<div class="panel"><h3><span>Jay's notes</span><span style="color:${openCount ? "var(--hot)" : "var(--go)"}">${jayNotes.length - openCount} / ${jayNotes.length} closed</span></h3>
-      ${jayNotes.map(noteRow).join("") || '<div class="muted" style="font-size:13px">No notes yet.</div>'}
-      ${otherNotes.length ? `<h3>Questions and team</h3>${otherNotes.map(noteRow).join("")}` : ""}
+  const right = `<div class="panel"><h3><span>${T("Jay's notes")}</span><span style="color:${openCount ? "var(--hot)" : "var(--go)"}">${T("{a} of {b} closed", { a: jayNotes.length - openCount, b: jayNotes.length })}</span></h3>
+      ${jayNotes.map(noteRow).join("") || `<div class="muted small">${T("No notes yet.")}</div>`}
+      ${otherNotes.length ? `<h3>${T("Questions and team")}</h3>${otherNotes.map(noteRow).join("")}` : ""}
       <form data-form="addNote" data-post="${p.id}" style="margin-top:10px">
-        <textarea name="note" style="min-height:64px" placeholder="${owner ? "Add a note for the writer" : "A note for the team, or a question for Jay"}"></textarea>
-        <div class="btns" style="margin-top:6px">${owner ? `<input type="hidden" name="kind" value="note">` : `<select name="kind" style="width:auto"><option value="team">Team note</option><option value="question">Question for Jay</option></select>`}<button class="btn sm dark">Add</button></div>
+        <textarea name="note" dir="auto" style="min-height:64px" placeholder="${owner ? T("Add a note for the writer") : T("A note for the team, or a question for Jay")}"></textarea>
+        <div class="btns" style="margin-top:6px">${owner ? `<input type="hidden" name="kind" value="note">` : `<select name="kind" style="width:auto"><option value="team">${T("Team note")}</option><option value="question">${T("Question for Jay")}</option></select>`}<button class="btn sm dark">${T("Add")}</button></div>
       </form></div>
-    ${v && (v.sources || []).length ? `<div class="panel"><h3>Sources</h3>${v.sources.map((s) => `<div class="src">${s.official ? '<span class="pill go">official</span>' : '<span class="pill mute">other</span>'}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}</div>` : ""}
-    ${checks.length ? `<div class="panel"><h3>House rules check</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span>${esc(c.t)}</span></div>`).join("")}</div>` : ""}`;
+    ${v && (v.sources || []).length ? `<div class="panel"><h3>${T("Sources")}</h3>${v.sources.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}</div>` : ""}
+    ${checks.length ? `<div class="panel"><h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}</div>` : ""}`;
 
   // visuals
   const visCard = (a) => {
     const url = cachedUrl(a);
     const isImg = (a.mime || "").startsWith("image/");
     const isVid = (a.mime || "").startsWith("video/");
-    const media = url ? (isImg ? `<img alt="" src="${esc(url)}" loading="lazy">` : isVid ? `<video src="${esc(url)}" controls muted playsinline preload="metadata"></video>` : `<span class="mono">${esc(a.filename)}</span>`) : '<span class="muted">loading…</span>';
-    return `<div class="vcard ${a.status}"><div class="im">${media}<span class="v">${a.stage === "final" ? "final" : "sketch"}${a.status === "approved" ? " · approved" : a.status === "replaced" ? " · replaced" : ""}</span></div>
-      <div class="bd"><div><b>${esc(a.filename)}</b> <span class="muted">${a.size ? (a.size / 1048576).toFixed(1) + " MB" : ""}</span></div>
-      <div class="muted">${esc(nameOf(a.author))} · ${ago(a.created_at)}</div>
+    const media = url ? (isImg ? `<img alt="" src="${esc(url)}" loading="lazy">` : isVid ? `<video src="${esc(url)}" controls muted playsinline preload="metadata"></video>` : `<span class="mono">${esc(a.filename)}</span>`) : `<span class="muted">${T("loading…")}</span>`;
+    return `<div class="vcard ${a.status}"><div class="im">${media}<span class="v">${a.stage === "final" ? T("final") : T("sketch")}${a.status === "approved" ? ` · ${T("approved")}` : a.status === "replaced" ? ` · ${T("replaced")}` : ""}</span></div>
+      <div class="bd"><div><b dir="auto">${esc(a.filename)}</b> <span class="muted">${a.size ? (a.size / 1048576).toFixed(1) + " MB" : ""}</span></div>
+      <div class="muted">${esc(nameOf(a.author))} · ${esc(ago(a.created_at))}</div>
       <div class="btns">
-        <button class="btn sm dark" data-act="download" data-a="${a.id}">Download original ↓</button>
-        ${isImg ? `<button class="btn sm" data-act="copyImage" data-a="${a.id}">Copy image</button>` : ""}
-        ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">Share / save</button>` : ""}
-        ${owner && a.status !== "approved" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">Approve</button>` : ""}
-        ${a.status === "replaced" ? `<button class="btn sm ghost" data-act="assetRestore" data-a="${a.id}">Restore</button>` : `<button class="btn sm ghost" data-act="assetReplace" data-a="${a.id}">Mark replaced</button>`}
-        ${a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetFinal" data-a="${a.id}">${a.stage === "final" ? "→ sketch" : "→ final"}</button>` : ""}
-        ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetDelete" data-a="${a.id}">Delete</button>` : ""}
+        <button class="btn sm dark" data-act="download" data-a="${a.id}">${T("Download original ↓")}</button>
+        ${isImg ? `<button class="btn sm" data-act="copyImage" data-a="${a.id}">${T("Copy image")}</button>` : ""}
+        ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">${T("Share / save")}</button>` : ""}
+        ${owner && a.status !== "approved" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>` : ""}
+        ${a.status === "replaced" ? `<button class="btn sm ghost" data-act="assetRestore" data-a="${a.id}">${T("Restore")}</button>` : `<button class="btn sm ghost" data-act="assetReplace" data-a="${a.id}">${T("Mark replaced")}</button>`}
+        ${a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetFinal" data-a="${a.id}">${a.stage === "final" ? T("Make it a sketch") : T("Make it final")}</button>` : ""}
+        ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetDelete" data-a="${a.id}">${T("Delete")}</button>` : ""}
       </div></div></div>`;
   };
-  const visuals = `<h2>Visuals <span class="count">${assets.filter((a) => a.status !== "replaced").length}</span></h2>
+  const visuals = `<h2>${T("Visuals")} <span class="count">${assets.filter((a) => a.status !== "replaced").length}</span></h2>
     <div class="vis">${assets.map(visCard).join("")}
-      <label class="drop" data-drop="${p.id}"><b>Upload a banner, image or video</b><span>Drop files here or choose. Up to 50 MB each, the original file is kept. Bigger videos: a Drive link in a note.</span>
-        <span class="btns"><select data-upstage="${p.id}" style="width:auto"><option value="sketch">Sketch</option><option value="final">Final</option></select>
+      <label class="drop" data-drop="${p.id}"><b>${T("Upload a banner, image or video")}</b><span>${T("Drop files here or choose. Up to 50 MB each, the original file is kept. Bigger videos: a Drive link in a note.")}</span>
+        <span class="btns"><select data-upstage="${p.id}" style="width:auto"><option value="sketch">${T("Sketch")}</option><option value="final">${T("Final")}</option></select>
         <input type="file" multiple accept="image/*,video/*,application/pdf" data-upload="${p.id}" style="max-width:210px"></span></label>
     </div>`;
 
@@ -1461,50 +1548,50 @@ function viewPost(id, reviewIdx) {
   let why = "";
   if (owner) {
     if (p.stage === "idea") {
-      why = "An idea. Say yes and it moves to writing.";
-      acts.push(`<button class="btn go" data-act="ideaYes" data-a="${p.id}">Yes</button><button class="btn" data-act="ideaChange" data-a="${p.id}">Yes, with a change</button><button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">Not now</button>`);
-      if (!latest(p.id)) acts.push(`<button class="btn ghost" data-act="addDraftToIdea" data-a="${p.id}">Write it myself</button>`);
+      why = T("An idea. Say yes and it moves to writing.");
+      acts.push(`<button class="btn go" data-act="ideaYes" data-a="${p.id}">${T("Yes")}</button><button class="btn" data-act="ideaChange" data-a="${p.id}">${T("Yes, with a change")}</button><button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">${T("Not now")}</button>`);
+      if (!latest(p.id)) acts.push(`<button class="btn ghost" data-act="addDraftToIdea" data-a="${p.id}">${T("Write it myself")}</button>`);
     } else if (p.stage === "review") {
-      why = openCount ? `${openCount} open note${openCount > 1 ? "s" : ""}. Send back, or approve anyway.` : "Your call: approve, or add notes and send back.";
-      acts.push(`<button class="btn" data-act="requestChanges" data-a="${p.id}">Send back${openCount ? ` with ${openCount}` : ""}</button>`);
-      if (fa) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="withBanner">Approve text + banner</button>`);
-      else acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="textOnly">Approve text, banner next</button><button class="btn ghost" data-act="approve" data-a="${p.id}" data-b="noBanner">Approve, no banner</button>`);
+      why = openCount ? esc(plural(openCount, "1 open note. Send back, or approve anyway.", "{n} open notes. Send back, or approve anyway.")) : T("Your call: approve, or add notes and send back.");
+      acts.push(`<button class="btn" data-act="requestChanges" data-a="${p.id}">${openCount ? T("Send back with {n}", { n: openCount }) : T("Send back")}</button>`);
+      if (fa) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="withBanner">${T("Approve text + banner")}</button>`);
+      else acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="textOnly">${T("Approve text, banner next")}</button><button class="btn ghost" data-act="approve" data-a="${p.id}" data-b="noBanner">${T("Approve, no banner")}</button>`);
     } else if (p.stage === "ready") {
-      why = "Approved. Copy it, attach the banner, send, then mark it published.";
-      acts.push(`<button class="btn ghost" data-act="backToReview" data-a="${p.id}">Back to review</button><button class="btn ghost" data-act="publish" data-a="${p.id}">Mark published</button>`);
+      why = T("Approved. Copy it, attach the banner, send, then mark it published.");
+      acts.push(`<button class="btn ghost" data-act="backToReview" data-a="${p.id}">${T("Back to review")}</button><button class="btn" data-act="publish" data-a="${p.id}">${T("Mark published")}</button>`);
     } else if (p.stage === "writing") {
-      why = mine ? "Your own draft." : `${esc(nameOf(p.author))} is on it.`;
-      if (mine || p.text_ok) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="${fa ? "withBanner" : "noBanner"}">Mark ready</button>`);
+      why = mine ? T("Your own draft.") : T("{name} is on it.", { name: nameOf(p.author) });
+      if (mine || p.text_ok) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="${fa ? "withBanner" : "noBanner"}">${T("Mark ready")}</button>`);
     } else if (p.stage === "published") {
-      why = `Published ${p.published_at ? fmtDay(localDate(new Date(p.published_at))) : ""}.`;
-      acts.push(`<button class="btn ghost" data-act="unpublish" data-a="${p.id}">Not published after all</button>`);
+      why = T("Published {d}.", { d: p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "" });
+      acts.push(`<button class="btn ghost" data-act="unpublish" data-a="${p.id}">${T("Not published after all")}</button>`);
     } else {
-      why = `${STAGE_LABEL[p.stage]}${p.skip_reason ? `: ${esc(p.skip_reason)}` : ""}`;
-      acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">Back to ideas</button>`);
+      why = `${esc(stageLabel(p.stage))}${p.skip_reason ? `: <span dir="auto">${esc(p.skip_reason)}</span>` : ""}`;
+      acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Back to ideas")}</button>`);
     }
-    if (!["skipped", "parked", "published"].includes(p.stage)) acts.push(`<button class="btn ghost" data-act="skip" data-a="${p.id}">Skip</button>`);
-    acts.push(`<button class="btn ghost" data-act="deletePost" data-a="${p.id}">Delete</button>`);
+    if (!["skipped", "parked", "published"].includes(p.stage)) acts.push(`<button class="btn ghost" data-act="skip" data-a="${p.id}">${T("Skip")}</button>`);
+    acts.push(`<button class="btn ghost" data-act="deletePost" data-a="${p.id}">${T("Delete")}</button>`);
   } else {
     if (p.stage === "writing" && (mine || member(p.author).role !== "owner")) {
-      why = p.text_ok ? "Jay approved the text. Upload the final banner, then send it back." : openCount ? `${openCount} note${openCount > 1 ? "s" : ""} to fix.` : "When it's ready, send it to Jay.";
-      acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">Send to Jay</button>`);
+      why = p.text_ok ? T("Jay approved the text. Upload the final banner, then send it back.") : openCount ? esc(plural(openCount, "1 note to fix.", "{n} notes to fix.")) : T("When it's ready, send it to Jay.");
+      acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">${T("Send to Jay")}</button>`);
     } else if (p.stage === "idea") {
-      why = "Waiting for Jay's yes. For hot news, add the full draft now.";
-      if (!latest(p.id)) acts.push(`<button class="btn" data-act="addDraftToIdea" data-a="${p.id}">Add the draft now</button>`);
-      else acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">Send idea + draft to Jay</button>`);
-    } else why = STAGE_LABEL[p.stage];
+      why = T("Waiting for Jay's yes. For hot news, add the full draft now.");
+      if (!latest(p.id)) acts.push(`<button class="btn" data-act="addDraftToIdea" data-a="${p.id}">${T("Add the draft now")}</button>`);
+      else acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">${T("Send idea + draft to Jay")}</button>`);
+    } else why = esc(stageLabel(p.stage));
   }
-  const copyBtn = v || latest(p.id, "whatsapp") ? `<button class="btn dark" data-act="copyPost" data-a="${p.id}" data-b="${ch}">Copy for ${esc(CHANNELS.find((c) => c[0] === ch)[1])}</button>` : "";
+  const copyBtn = v || latest(p.id, "whatsapp") ? `<button class="btn ${p.stage === "ready" ? "go" : "dark"}" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: chName })}</button>` : "";
   const bar = `<div class="actionbar"><span class="why">${why}</span><span class="sp"></span>${acts.join("")}${copyBtn}</div>
     <div class="morebar"><span class="why">${why}</span>${acts.join("")}</div>`;
 
-  const chtabs = `<div class="chtabs" style="margin-top:16px">${CHANNELS.map(([k, label]) => {
+  const chtabs = `<div class="chtabs" style="margin-top:18px">${CHANNELS.map(([k, label]) => {
     const n = versionsOf(p.id, k).length;
-    return `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${label}${n ? ` · v${n}` : ""}${k === "email" && p.email_too ? " ✉" : ""}</button>`;
+    return `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${n ? ` · v${n}` : ""}${k === "email" && p.email_too ? " ✉" : ""}</button>`;
   }).join("")}</div>`;
 
   return `${head}${ideaBlock}${chtabs}
-    <div class="cols">${editing ? `<div style="grid-column:1/-1">${left}</div>` : `<div>${left}</div><div>${mid}${preview}</div><div>${right}</div>`}</div>
+    <div class="cols">${editing ? `<div style="grid-column:1/-1">${colA}</div>` : `<div>${colA}</div><div>${colB}${preview}</div><div>${right}</div>`}</div>
     ${visuals}${bar}`;
 }
 
@@ -1530,34 +1617,40 @@ function diffHtml(a, b) {
   return out;
 }
 
+const langLink = () => `<button class="linkbtn" data-act="setLang" data-a="${S.lang === "he" ? "en" : "he"}">${S.lang === "he" ? "English" : "עברית"}</button>`;
+
 function viewLogin() {
-  return `<div class="login"><h1>Content <em style="color:var(--hot);font-style:normal">Desk</em></h1>
-    <p>Post ideas, drafts, banners and the schedule for the Jay GPT groups. For the team only.</p>
-    <button class="gbtn" data-act="signIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.4-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>Sign in with Google</button>
-    ${DEMO ? '<p class="muted" style="font-size:13px">Demo mode: nothing leaves this browser.</p>' : ""}</div>`;
+  return `<div class="login"><div class="logo"><i></i>Content Desk</div>
+    <p>${T("Post ideas, drafts, banners and the schedule for the Jay GPT groups. For the team only.")}</p>
+    <button class="gbtn" data-act="signIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.4-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>${T("Sign in with Google")}</button>
+    ${DEMO ? `<p class="muted small">${T("Demo mode: nothing leaves this browser.")}</p>` : ""}
+    <p class="small">${langLink()}</p></div>`;
 }
 
 function viewNotMember() {
-  return `<div class="login"><h1>Not on the team yet</h1>
-    <p>You're signed in as <b>${esc(S.me)}</b>, and that account isn't on the Content Desk team. Ask Jay to add it, or sign in with your work account.</p>
-    <button class="btn dark" data-act="signOut">Sign out</button></div>`;
+  return `<div class="login"><h1>${T("Not on the team yet")}</h1>
+    <p>${T("You're signed in as {me}, and that account isn't on the Content Desk team. Ask Jay to add it, or sign in with your work account.", { me: S.me })}</p>
+    <button class="btn go" data-act="signOut">${T("Sign out")}</button>
+    <p class="small">${langLink()}</p></div>`;
 }
 
 function modalHtml() {
   const m = S.modal;
   if (!m) return "";
-  const field = m.noText ? "" : m.readonly ? `<textarea readonly class="big">${esc(m.text)}</textarea>` : m.input ? `<input type="text" name="v" value="${esc(m.value || "")}">` : `<textarea name="v" class="${m.big ? "big" : ""}">${esc(m.value || "")}</textarea>`;
+  const field = m.noText ? "" : m.readonly ? `<textarea readonly class="big" dir="auto">${esc(m.text)}</textarea>` : m.input ? `<input type="text" name="v" dir="auto" value="${esc(m.value || "")}">` : `<textarea name="v" dir="auto" class="${m.big ? "big" : ""}">${esc(m.value || "")}</textarea>`;
   return `<div class="modal-bg" data-act="closeModalBg"><form class="modal" data-form="modal">
-    <h4>${esc(m.title)}</h4>${m.body ? `<p>${esc(m.body)}</p>` : ""}${field}
-    <div class="btns" style="margin-top:12px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">${m.readonly ? "Close" : "Cancel"}</button>
-    ${m.readonly ? "" : `<button class="btn ${m.danger ? "hot" : "dark"}">${esc(m.confirm || "OK")}</button>`}</div></form></div>`;
+    <h4>${T(m.title)}</h4>${m.body ? `<p dir="auto">${T(m.body)}</p>` : ""}${field}
+    <div class="btns" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">${m.readonly ? T("Close") : T("Cancel")}</button>
+    ${m.readonly ? "" : `<button class="btn ${m.danger ? "danger" : "go"}">${T(m.confirm || "OK")}</button>`}</div></form></div>`;
 }
 
 function render() {
+  document.documentElement.lang = S.lang;
+  document.documentElement.dir = S.lang === "he" ? "rtl" : "ltr";
   const r = route();
   let html;
   if (!S.session) html = S.loaded || S.authChecked ? viewLogin() : "";
-  else if (!S.loaded) html = S.loadError ? `<div class="login"><h1>Couldn't load</h1><p>${esc(S.loadError)}</p><button class="btn dark" data-act="refresh">Try again</button></div>` : `<div class="login"><p>Loading…</p></div>`;
+  else if (!S.loaded) html = S.loadError ? `<div class="login"><h1>${T("Couldn't load")}</h1><p>${esc(S.loadError)}</p><button class="btn go" data-act="refresh">${T("Try again")}</button></div>` : `<div class="login"><p>${T("Loading…")}</p></div>`;
   else if (!S.member) html = viewNotMember();
   else {
     let body;
@@ -1571,7 +1664,7 @@ function render() {
     else if (r.name === "review") {
       const q = ownerQueue();
       const i = Math.max(0, Math.min(Number(r.id) || 0, q.length - 1));
-      body = q.length ? viewPost(q[i].id, i) : `<h1>All clear</h1><p class="lead">Nothing waits for review. <a href="#/">Back</a></p>`;
+      body = q.length ? viewPost(q[i].id, i) : `<h1>${T("All clear")}</h1><p class="lead">${T("Nothing waits for review.")} <a href="#/">${T("Back")}</a></p>`;
     } else body = viewHome();
     html = `${topBar(r)}<main class="wrap">${body}</main>`;
   }
