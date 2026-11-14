@@ -2,7 +2,7 @@
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
 import { createStore } from "./store.js?v=6";
-import { HE } from "./i18n.js?v=6";
+import { HE } from "./i18n.js?v=7";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -187,17 +187,32 @@ if (!SEEN._base) {
   SEEN._base = new Date().toISOString();
   saveSeen();
 }
+// { at, what, who }: the latest thing someone else did on the post.
 function lastTouch(p) {
-  let at = p.updated_by && p.updated_by !== S.me ? p.updated_at || "" : "";
-  for (const list of [S.d.notes, S.d.versions, S.d.assets]) {
-    for (const x of list) if (x.post_id === p.id && x.author !== S.me && (x.created_at || "") > at) at = x.created_at;
+  let hit = p.updated_by && p.updated_by !== S.me ? { at: p.updated_at || "", what: "update", who: p.updated_by } : { at: "" };
+  for (const [what, list] of [["note", S.d.notes], ["version", S.d.versions], ["file", S.d.assets]]) {
+    for (const x of list) if (x.post_id === p.id && x.author !== S.me && (x.created_at || "") >= hit.at) hit = { at: x.created_at, what, who: x.author };
   }
-  return at;
+  return hit;
 }
 const isNew = (p) => {
-  const at = lastTouch(p);
+  const { at } = lastTouch(p);
   return !!at && at > (SEEN[p.id] || SEEN._base);
 };
+// "New note from Denisa", for the card.
+function newLine(p) {
+  const h = lastTouch(p);
+  const key = { note: "New note from {who}", version: "New version from {who}", file: "New file from {who}", update: "Updated by {who}" }[h.what];
+  return key ? t(key, { who: nameOf(h.who) }) : "";
+}
+function markAllSeen() {
+  for (const k of Object.keys(SEEN)) if (k !== "_base") delete SEEN[k];
+  SEEN._base = new Date().toISOString();
+  saveSeen();
+}
+const subjectsOf = (v) => ((v && v.headlines) || []).filter((h) => !h.kind);
+const previewsOf = (v) => ((v && v.headlines) || []).filter((h) => h.kind === "preview");
+const looksHtml = (s) => /<[a-z!][\s\S]*>/i.test(String(s || ""));
 function markSeen(p) {
   if (!isNew(p)) return;
   SEEN[p.id] = new Date().toISOString();
@@ -357,7 +372,7 @@ async function translateMissing() {
         if (p.idea && !p.idea_he) add("posts", p.id, "idea_he", p.idea, p.author);
       }
       for (const v of S.d.versions) {
-        if (v.body && !v.body_he) add("versions", v.id, "body_he", v.body, v.author);
+        if (v.body && !v.body_he && v.channel !== "email") add("versions", v.id, "body_he", v.body, v.author);
         if (v.writer_note && !v.writer_note_he) add("versions", v.id, "writer_note_he", v.writer_note, v.author);
         (v.headlines || []).forEach((h, i) => {
           if (h.en && !h.he) add("versions", v.id, `headline:${h.en}`, h.en, v.author);
@@ -585,6 +600,30 @@ const A = {
     else render();
   },
   search() {},
+  seenAll() {
+    markAllSeen();
+    if (S.only === "new") S.only = "";
+    render();
+  },
+  pickPreview(vid, i) {
+    const v = S.d.versions.find((x) => x.id === vid);
+    if (!v) return;
+    const hl = v.headlines.map((h, k) => (h.kind === "preview" ? { ...h, sel: k === Number(i) ? !h.sel : false } : { ...h }));
+    run(() => updateRow("versions", v, { headlines: hl }));
+  },
+  copyLine(vid, i) {
+    const v = S.d.versions.find((x) => x.id === vid);
+    if (v && v.headlines[Number(i)]) copyText(v.headlines[Number(i)].en);
+  },
+  copyHtml(pid) {
+    const v = latest(pid, "email");
+    if (!v || !v.body) return toast("There is no HTML yet.", true);
+    copyText(v.body, "HTML copied");
+  },
+  mailView(pid, m) {
+    S.view[`mail:${pid}`] = m;
+    render();
+  },
   close() {
     S.edit = null;
     closeDrawer();
@@ -872,12 +911,18 @@ const A = {
     const headlines = form.headlines.value.split("\n").map((s) => s.trim()).filter(Boolean);
     const sources = form.sources.value.split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
     const note = form.writer_note ? form.writer_note.value.trim() : "";
-    if (!body.trim()) return toast("The text is empty.", true);
+    if (!body.trim() && !(channel === "email" && headlines.length)) return toast("The text is empty.", true);
     const prevH = prev ? prev.headlines || [] : [];
     const hl = headlines.map((en) => {
-      const old = prevH.find((h) => h.en === en);
+      const old = prevH.find((h) => !h.kind && h.en === en);
       return old ? { ...old } : { en };
     });
+    // an email also carries preview-text options, kept after the subject lines
+    const pv = form.previews ? form.previews.value.split("\n").map((s) => s.trim()).filter(Boolean) : [];
+    for (const en of pv) {
+      const old = prevH.find((h) => h.kind === "preview" && h.en === en);
+      hl.push(old ? { ...old } : { en, kind: "preview" });
+    }
     let chosen = null;
     if (prev && chosenIndex(prev) >= 0) {
       const k = hl.findIndex((h) => h.en === prevH[chosenIndex(prev)].en);
@@ -917,6 +962,7 @@ const A = {
         if (n) await updateRow("notes", n, { status: "closed", closed_in: v.n });
       }
       if (patch) await savePost(p, patch);
+      if (channel === "email" && !p.email_too) await savePost(p, { email_too: true });
       S.edit = null;
       translateMissing();
     }, msg);
@@ -1267,6 +1313,7 @@ function card(p, opts = {}) {
       <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
+      ${isNew(p) ? `<div class="c-new">${esc(newLine(p))} · ${esc(ago(lastTouch(p).at))}</div>` : ""}
       ${pitch ? `<div class="c-pitch" dir="auto">${esc(pitch)}</div>` : ""}
       ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
       ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(p.skip_reason)}</div>` : ""}
@@ -1281,7 +1328,8 @@ function viewBoard() {
     !S.only ||
     (S.only === "waiting" && p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage)) ||
     (S.only === "changes" && p.status === "changes" && ["idea", "draft", "final"].includes(p.stage)) ||
-    (S.only === "nodate" && p.stage === "ready" && !p.pinned_date));
+    (S.only === "nodate" && p.stage === "ready" && !p.pinned_date) ||
+    (S.only === "new" && isNew(p)));
   const q = S.q.trim().toLowerCase();
   const hay = (p) => {
     const v = latest(p.id);
@@ -1293,6 +1341,7 @@ function viewBoard() {
   const nWait = count((p) => p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage));
   const nChg = count((p) => p.status === "changes" && ["idea", "draft", "final"].includes(p.stage));
   const nNoDate = count((p) => p.stage === "ready" && !p.pinned_date);
+  const nNew = count(isNew);
   const twoWeeks = Date.now() - 14 * DAY;
   const sortCol = sortStage;
   const colOf = (c) => {
@@ -1306,7 +1355,7 @@ function viewBoard() {
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
   const chip = (key, n, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(label)}</button>`;
   return `<div class="boardbar">
-      <div class="chips">${chip("waiting", nWait, "waiting for Jay", "c-wait")}${chip("changes", nChg, "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date", "c-date")}</div>
+      <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waiting for Jay", "c-wait")}${chip("changes", nChg, "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date", "c-date")}</div>
       <form data-form="search" class="search"><input type="search" name="q" data-input="q" dir="auto" value="${esc(S.q)}" placeholder="${T("Search…")}" aria-label="${T("Search…")}"></form>
       <div class="chips cats">${["all", ...CATS].map((c) => `<button class="chip ${S.cat === c ? "on" : ""}" data-act="cat" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     </div>
@@ -1521,8 +1570,9 @@ function drawerPost(p) {
     const open = openNotes(p.id);
     const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) });
     textSec = `<form data-form="saveEdit" class="sec editbox"><h3>${title} <span class="muted">· v${(vs.length ? vs[vs.length - 1].n : 0) + 1}</span></h3>
-      <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? (base.headlines || []).map((h) => h.en).join("\n"))}</textarea></div>
-      <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : T("Text")}</label><textarea class="big" name="body" dir="auto">${esc(seed.body ?? base.body ?? "")}</textarea></div>
+      <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? subjectsOf(base).map((h) => h.en).join("\n"))}</textarea></div>
+      ${ch === "email" ? `<div class="field"><label>${T("Preview text options, one per line")}</label><textarea name="previews" dir="auto" style="min-height:80px">${esc(previewsOf(base).map((h) => h.en).join("\n"))}</textarea><span class="hint">${T("The grey line an inbox shows after the subject.")}</span></div>` : ""}
+      <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : ch === "email" ? T("The email's HTML. Paste it as it is.") : T("Text")}</label><textarea class="big ${ch === "email" ? "code" : ""}" name="body" dir="${ch === "email" ? "ltr" : "auto"}" ${ch === "email" ? 'spellcheck="false"' : ""}>${esc(seed.body ?? base.body ?? "")}</textarea></div>
       <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" style="min-height:64px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
       ${!owner ? `<div class="field"><label>${T("What changed (for Jay)")}</label><input type="text" name="writer_note" dir="auto" placeholder="${T("e.g. new headline, added the source")}"></div>` : ""}
       ${open.length ? `<div class="field"><label>${T("Notes this version fixes")}</label>${open.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> <span dir="auto">${esc(biText(n.body, n.body_he).main.slice(0, 140))}</span></label>`).join("")}</div>` : ""}
@@ -1564,6 +1614,36 @@ function drawerPost(p) {
     textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(t(CHANNELS.find((c) => c[0] === ch)[1]))}</h3>
       <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
       ${canWrite ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
+  }
+
+  // ---- email: subject and preview options, the HTML as it will look, one-click copies ----
+  if (!editing && v && ch === "email") {
+    const ci = chosenIndex(v);
+    const row = (h, i, picked, act) => {
+      const hb = biText(h.en, h.he);
+      return `<div class="mrow2 ${picked ? "pick" : ""}"><button class="hl" data-act="${act}" data-a="${v.id}" data-b="${i}" ${isLatest && canWrite ? "" : "disabled"}><span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span></button><button class="btn sm" data-act="copyLine" data-a="${v.id}" data-b="${i}">${T("Copy")}</button></div>`;
+    };
+    const all = v.headlines || [];
+    const subs = all.map((h, i) => (!h.kind ? row(h, i, ci === i, "pickHeadline") : "")).join("");
+    const pvs = all.map((h, i) => (h.kind === "preview" ? row(h, i, !!h.sel, "pickPreview") : "")).join("");
+    const subj = (all[ci >= 0 ? ci : all.findIndex((h) => !h.kind)] || {}).en || "";
+    const prevw = (previewsOf(v).find((h) => h.sel) || previewsOf(v)[0] || {}).en || "";
+    const mv = S.view[`mail:${p.id}`] || "look";
+    const html = v.body || "";
+    textSec = `<section class="sec"><h3>${T("Subject lines")} <span class="count">${subjectsOf(v).length}</span></h3>${subs || `<div class="muted small">${T("No subject lines yet.")}</div>`}
+        <h3 style="margin-top:16px">${T("Preview text")} <span class="count">${previewsOf(v).length}</span></h3>${pvs || `<div class="muted small">${T("No preview text yet.")}</div>`}</section>
+      <section class="sec"><h3>${T("The email")}<span class="sp"></span>${html ? `<span class="seg sm"><button class="${mv === "look" ? "on" : ""}" data-act="mailView" data-a="${p.id}" data-b="look">${T("How it looks")}</button><button class="${mv === "code" ? "on" : ""}" data-act="mailView" data-a="${p.id}" data-b="code">HTML</button></span>` : ""}</h3>
+        ${html ? `<div class="inbox"><b dir="auto">${esc(subj || t("(no subject)"))}</b><span dir="auto">${esc(prevw)}</span></div>
+          ${mv === "code" ? `<pre class="codebox" dir="ltr">${esc(html)}</pre>` : looksHtml(html) ? `<iframe class="mailframe" sandbox="" title="${T("The email")}" srcdoc="${esc(html)}"></iframe>` : `<div class="pre" dir="auto">${esc(html)}</div>`}`
+          : `<div class="empty">${T("No HTML yet. Subject and preview options can come first.")}</div>`}
+        <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}<span class="sp"></span>
+          ${html ? `<button class="btn sm go" data-act="copyHtml" data-a="${p.id}">${T("Copy the HTML")}</button>` : ""}
+          ${canWrite && isLatest ? `<button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="email">✎ ${html ? T("Edit") : T("Add the HTML")}</button>` : ""}</div>
+      </section>`;
+  }
+  if (p.stage !== "idea" || latest(p.id, "email")) {
+    const nE = versionsOf(p.id, "email").length;
+    textSec = `<div class="chanbar"><span class="seg"><button class="${ch === "whatsapp" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="whatsapp">${T("WhatsApp")}</button><button class="${ch === "email" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="email">✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}</button></span></div>${textSec}`;
   }
 
   // ---- notes ----
