@@ -2,7 +2,7 @@
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
 import { createStore } from "./store.js?v=4";
-import { HE } from "./i18n.js?v=4";
+import { HE } from "./i18n.js?v=5";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -1188,6 +1188,7 @@ function card(p, opts = {}) {
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
+      ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(p.skip_reason)}</div>` : ""}
       <div class="c-foot">${foot}</div>
       ${quick}
     </div>
@@ -1216,7 +1217,7 @@ function viewBoard() {
     let list = ps.filter((p) => p.stage === c);
     if (c === "published") list = list.filter((p) => new Date(p.published_at || p.updated_at).getTime() > twoWeeks);
     const live = sortCol(c, list.filter((p) => p.status !== "rejected"));
-    const gone = list.filter((p) => p.status === "rejected");
+    const gone = list.filter((p) => p.status === "rejected").sort((a, b) => b.updated_at.localeCompare(a.updated_at));
     return { live, gone };
   };
   const cols = COLS.map((c) => ({ c, ...colOf(c) }));
@@ -1231,7 +1232,7 @@ function viewBoard() {
       <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
       <div class="col-body">
         ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
-        ${x.gone.length ? `<button class="linkbtn rej" data-act="toggleRejected" data-a="${x.c}">${S.showRejected[x.c] ? "▾" : "▸"} ${T("Rejected")} (${x.gone.length})</button>${S.showRejected[x.c] ? x.gone.map((p) => card(p)).join("") : ""}` : ""}
+        ${x.gone.length ? `<div class="rej-head">${T("Rejected|col")} <span class="count">${x.gone.length}</span></div>${x.gone.map((p) => card(p)).join("")}` : ""}
         ${x.c === "published" ? `<a class="linkbtn" href="#/published">${T("All published →")}</a>` : ""}
       </div></section>`).join("")}
     </div>`;

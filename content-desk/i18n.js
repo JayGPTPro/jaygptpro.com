@@ -214,7 +214,7 @@ export const HE = {
 
   // ---- the board model (v4) ----
   "Ideas": "רעיונות", "First draft": "טיוטה ראשונה", "Final version": "גרסה סופית", "Ready": "מוכנים",
-  "Waiting for Jay": "מחכה לג'יי", "Approved": "אושר", "Needs changes": "לתיקון", "Rejected": "נפסל",
+  "Waiting for Jay": "מחכה לג'יי", "Approved": "אושר", "Needs changes": "לתיקון", "Rejected": "נפסל", "Rejected|col": "נפסלו",
   "waiting for Jay": "מחכים לג'יי", "need changes": "לתיקון", "ready without a date": "מוכנים בלי תאריך",
   "Today": "היום", "Tomorrow": "מחר", "No date yet": "בלי תאריך", "Notes": "הערות",
   "Next: pick a date": "עכשיו: לבחור תאריך", "Next: the first draft": "עכשיו: טיוטה ראשונה", "Next: the final version": "עכשיו: גרסה סופית",
