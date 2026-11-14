@@ -1,6 +1,8 @@
-// Content Desk: one place where a post idea becomes an approved WhatsApp post.
-import { createStore } from "./store.js?v=2";
-import { HE } from "./i18n.js?v=3";
+// Content Desk: one shared board where a post idea becomes a published WhatsApp post.
+// Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
+// Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
+import { createStore } from "./store.js?v=4";
+import { HE } from "./i18n.js?v=4";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -9,8 +11,12 @@ const app = document.getElementById("app");
 
 const CATS = ["news", "tip", "skill", "deals", "other"];
 const CAT_KEYS = { news: "News", tip: "Tip", skill: "Skill", deals: "Deals", other: "Other" };
-const STAGE_KEYS = { idea: "Idea", writing: "Writing", review: "Waiting on Jay", ready: "Ready to publish", published: "Published", skipped: "Skipped", parked: "Not now" };
-const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"], ["x", "X"]];
+const COLS = ["idea", "draft", "final", "ready", "published"];
+const COL_KEYS = { idea: "Ideas", draft: "First draft", final: "Final version", ready: "Ready", published: "Published" };
+const COL_ONE = { idea: "Idea", draft: "First draft", final: "Final version", ready: "Ready", published: "Published" };
+const STATUS_KEYS = { waiting: "Waiting for Jay", approved: "Approved", changes: "Needs changes", rejected: "Rejected" };
+const STATUS_ORDER = { waiting: 0, changes: 1, approved: 2, rejected: 3 };
+const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"]];
 const DAY = 86400000;
 const CAPTION_LIMIT = 1024;
 const MAX_UPLOAD = 50 * 1024 * 1024; // Supabase global limit while the spend cap is on
@@ -19,13 +25,12 @@ const S = {
   session: null, me: "", member: null, loaded: false, loadError: "",
   d: { team_members: [], posts: [], versions: [], notes: [], assets: [], rules: [], settings: [] },
   busy: 0, toast: null, modal: null, urls: {},
-  edit: null, // { postId, channel } while a draft is open for editing
-  channel: {}, vsel: {}, diff: {}, filter: "all", newMode: "idea", split: null, showHe: null,
+  edit: null, // { postId, channel, mode } while a text is open for editing
+  channel: {}, vsel: {}, diff: {}, view: {}, more: {},
+  cat: "all", only: "", col: "", showRejected: {},
+  newMode: "idea", split: null, draftText: "",
   files: {}, translateError: "", lang: "en", langChosen: false,
 };
-
-// ---------------- helpers ----------------
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" }[c]));
 
 // ---------------- language ----------------
 // The desk's own words come in English and Hebrew. Posts stay in the language they were written in.
@@ -51,12 +56,13 @@ function t(s, vars) {
   out = out.replace(/\|[a-z]+$/, ""); // "Published|nav": the part after | only tells two Hebrew meanings apart
   return vars ? out.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : out;
 }
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" }[c]));
 const T = (s, vars) => esc(t(s, vars));
 const plural = (n, one, many) => (n === 1 ? t(one) : t(many, { n }));
 const locale = () => (S.lang === "he" ? "he-IL" : "en-GB");
 const catLabel = (c) => t(CAT_KEYS[c] || c);
-const stageLabel = (st) => t(STAGE_KEYS[st] || st);
 
+// ---------------- helpers ----------------
 const isHttp = (u) => /^https?:\/\/[^\s"'<>]+$/i.test(String(u || ""));
 const todayStr = () => localDate(new Date());
 function localDate(d) {
@@ -67,12 +73,20 @@ function parseDate(s) {
   const [y, m, d] = String(s).slice(0, 10).split("-").map(Number);
   return new Date(y, m - 1, d);
 }
-function fmtDay(s) {
-  if (!s) return "";
-  return parseDate(s).toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" });
+function addDays(s, n) {
+  const d = parseDate(s);
+  return localDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n));
 }
-const fmtDow = (s) => parseDate(s).toLocaleDateString(locale(), { weekday: "short" });
+const fmtDay = (s) => (s ? parseDate(s).toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" }) : "");
+const fmtDow = (s) => parseDate(s).toLocaleDateString(locale(), { weekday: "long" });
 const fmtDM = (s) => parseDate(s).toLocaleDateString(locale(), { day: "numeric", month: "short" });
+function relDay(s) {
+  if (!s) return "";
+  const diff = Math.round((parseDate(s) - parseDate(todayStr())) / DAY);
+  if (diff === 0) return t("Today");
+  if (diff === 1) return t("Tomorrow");
+  return fmtDay(s);
+}
 function ago(iso) {
   if (!iso) return "";
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -84,15 +98,15 @@ function ago(iso) {
 }
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 function member(email) {
-  return S.d.team_members.find((m) => m.email === email) || { email, name: email ? email.split("@")[0] : "?", color: "#857d6f", role: "writer" };
+  return S.d.team_members.find((m) => m.email === email) || { email, name: email ? email.split("@")[0] : "?", color: "#8b94a3", role: "writer" };
 }
 const nameOf = (email) => member(email).name;
-function avatar(email) {
+function avatar(email, size = "") {
   const m = member(email);
   const ini = (m.name || "?").replace(/\(.*\)/, "").trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  return `<span class="av" style="background:${esc(m.color || "#857d6f")}" title="${esc(m.name)}">${esc(ini)}</span>`;
+  return `<span class="av ${size}" style="background:${esc(m.color || "#8b94a3")}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
-const isOwner = () => S.member && S.member.role === "owner";
+const isOwner = () => !!(S.member && S.member.role === "owner");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
 function waHtml(text) {
   return esc(text).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_(?=\s|$)/g, "$1<i>$2</i>");
@@ -101,7 +115,20 @@ function setting(key, fallback) {
   const r = S.d.settings.find((s) => s.key === key);
   return r ? r.value : fallback;
 }
-const cadence = () => ({ days: [0, 1, 2, 3, 4], email_per_week: 3, ...(setting("cadence", {}) || {}) });
+function cadence() {
+  const c = { days: [0, 1, 2, 3, 4], email_per_week: 3, ...(setting("cadence", {}) || {}) };
+  c.days = (Array.isArray(c.days) ? c.days : []).map(Number).filter((d) => d >= 0 && d <= 6);
+  return c;
+}
+
+// The reader's language first, the other language under it.
+function biText(en, he) {
+  en = en || "";
+  he = he || "";
+  if (S.lang === "he") return he && he !== en ? { main: he, sub: en } : { main: he || en, sub: "" };
+  return { main: en, sub: "" };
+}
+const clip = (s, n = 200) => (s && s.length > n ? s.slice(0, n) + "…" : s || "");
 
 // ---------------- data access ----------------
 const post = (id) => S.d.posts.find((p) => p.id === id);
@@ -119,6 +146,12 @@ function shownVersion(pid, ch) {
 }
 const notesOf = (pid) => S.d.notes.filter((n) => n.post_id === pid).sort((a, b) => a.created_at.localeCompare(b.created_at));
 const assetsOf = (pid) => S.d.assets.filter((a) => a.post_id === pid).sort((a, b) => a.created_at.localeCompare(b.created_at));
+const isMedia = (a) => /^(image|video)\//.test(a.mime || "");
+// The picture that represents a post on its card: the approved one, else the newest live one.
+function coverOf(pid) {
+  const live = assetsOf(pid).filter((a) => isMedia(a) && a.status !== "replaced");
+  return live.filter((a) => a.status === "approved").pop() || live.pop() || null;
+}
 function chosenIndex(v) {
   if (!v || !v.headlines || !v.headlines.length) return -1;
   if (v.chosen != null && v.headlines[v.chosen]) return v.chosen;
@@ -133,31 +166,14 @@ function headlineOf(p, v = latest(p.id)) {
 function displayTitle(p) {
   const h = headlineOf(p);
   // A headline that is not translated yet shows alone, not next to the working title's Hebrew.
-  return { en: h.en || p.title, he: h.en && h.en !== p.title ? h.he || "" : h.he || p.title_he || "" };
+  return biText(h.en || p.title, h.en && h.en !== p.title ? h.he || "" : h.he || p.title_he || "");
 }
-const finalAsset = (pid) => assetsOf(pid).filter((a) => a.stage === "final" && a.status !== "replaced").pop();
-const approvedAsset = (pid) => assetsOf(pid).filter((a) => a.status === "approved").pop();
-const openQuestions = () => S.d.notes.filter((n) => n.kind === "question" && n.status === "open");
+const openNotes = (pid) => notesOf(pid).filter((n) => n.kind === "note" && n.status === "open");
+const waitingCount = () => S.d.posts.filter((p) => ["idea", "draft", "final"].includes(p.stage) && p.status === "waiting").length;
 
-function turnOf(p) {
-  if (["idea", "review", "ready"].includes(p.stage)) return "owner";
-  if (p.stage === "writing") return p.author;
-  return null;
-}
-function isMyTurn(p) {
-  const t = turnOf(p);
-  if (t === "owner") return isOwner();
-  return t === S.me;
-}
-function ownerQueue() {
-  const rev = S.d.posts.filter((p) => p.stage === "review").sort((a, b) => (b.hot - a.hot) || a.updated_at.localeCompare(b.updated_at));
-  const ideas = S.d.posts.filter((p) => p.stage === "idea").sort((a, b) => (b.hot - a.hot) || a.created_at.localeCompare(b.created_at));
-  return [...rev, ...ideas];
-}
-
-// Text that goes to WhatsApp: "<emoji> *Headline*", body, then the signature unless the body already ends with one.
+// Text that goes to WhatsApp: "<emoji> *Headline*", body, then the signature unless the body already has a group link.
 function splitEmoji(h) {
-  const m = String(h || "").trim().match(/^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})[\uFE0F\u200D\u20E3\p{Extended_Pictographic}\p{Emoji_Modifier}]*)\s*(.*)$/u);
+  const m = String(h || "").trim().match(/^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})[️‍⃣\p{Extended_Pictographic}\p{Emoji_Modifier}]*)\s*(.*)$/u);
   return m ? [m[1], m[2]] : ["", String(h || "").trim()];
 }
 function composeWhatsApp(p, v = latest(p.id, "whatsapp")) {
@@ -193,7 +209,7 @@ function checksFor(p, v) {
     const narrow = /\bif you('| a)?(re| are)?\s*(planning|going|claiming|building|testing|trying|already|using|switching)/i.test(cta) && !/useful|more (updates|like this)|learned/i.test(cta);
     out.push(narrow ? { ok: false, t: t("Narrow reaction ask: “{x}”. Try “if you found this useful”.", { x: cta.slice(0, 70) }) } : { ok: true, t: t("Easy reaction ask") });
   }
-  const text = p.stage ? composeWhatsApp(p, v) : v.body;
+  const text = composeWhatsApp(p, v);
   const hasImage = assetsOf(p.id).some((a) => (a.mime || "").startsWith("image/") && a.status !== "replaced");
   if (text.length > CAPTION_LIMIT && hasImage) out.push({ ok: false, t: t("{n} characters with an image. Desktop WhatsApp can cut a caption after {max}.", { n: text.length.toLocaleString(), max: CAPTION_LIMIT.toLocaleString() }) });
   else out.push({ ok: true, t: t("{n} characters", { n: text.length.toLocaleString() }) });
@@ -204,6 +220,53 @@ function checksFor(p, v) {
   return out;
 }
 
+// ---------------- schedule ----------------
+const isCadenceDay = (ds) => cadence().days.includes(parseDate(ds).getDay());
+function nextCadence(ds) {
+  let d = addDays(ds, 1);
+  for (let i = 0; i < 7 && !isCadenceDay(d); i++) d = addDays(d, 1);
+  return d;
+}
+function prevCadence(ds) {
+  let d = addDays(ds, -1);
+  for (let i = 0; i < 7 && !isCadenceDay(d); i++) d = addDays(d, -1);
+  return d;
+}
+// Posts that hold a publishing day: dated, not published, not rejected.
+const dated = () => S.d.posts.filter((p) => p.pinned_date && p.stage !== "published" && p.status !== "rejected");
+const pubDay = (p) => (p.published_at ? localDate(new Date(p.published_at)) : p.pinned_date);
+const publishedOn = (ds) => S.d.posts.filter((p) => p.stage === "published" && pubDay(p) === ds);
+// Who holds a day: a planned post, or one that already went out that day.
+const onDay = (ds, except) => [...dated().filter((p) => p.pinned_date === ds && p.id !== except), ...publishedOn(ds)];
+// The next publishing day after ds that nothing went out on yet.
+function nextOpen(ds) {
+  let d = nextCadence(ds);
+  for (let i = 0; i < 400 && publishedOn(d).length; i++) d = nextCadence(d);
+  return d;
+}
+// The first publishing day from today that nobody holds.
+function nextFreeDay(except) {
+  let d = todayStr();
+  if (!isCadenceDay(d)) d = nextCadence(d);
+  for (let i = 0; i < 400 && onDay(d, except).length; i++) d = nextCadence(d);
+  return d;
+}
+// Put a post on a day and push whatever stands in its way one publishing day forward,
+// until the chain reaches a gap. Returns [[post, newDate], ...] for the posts that move.
+function pushPlan(ds, id) {
+  // a post someone put on a non-publishing day on purpose stays where it is
+  const later = dated()
+    .filter((p) => p.id !== id && p.pinned_date >= ds && isCadenceDay(p.pinned_date))
+    .sort((a, b) => a.pinned_date.localeCompare(b.pinned_date) || (a.queue_pos - b.queue_pos));
+  const moves = [];
+  let cur = ds;
+  for (const p of later) {
+    if (p.pinned_date > cur) break;
+    cur = nextOpen(cur);
+    moves.push([p, cur]);
+  }
+  return moves;
+}
 // ---------------- loading, auth, translation ----------------
 async function loadAll(silent) {
   try {
@@ -212,7 +275,6 @@ async function loadAll(silent) {
     S.member = d.team_members.find((m) => m.email === S.me && m.active) || null;
     S.loaded = true;
     S.loadError = "";
-    if (S.showHe === null) S.showHe = readPref("showHe", isOwner());
     // Owners read Hebrew by default, writers English. The switch in the top bar overrides it per browser.
     if (!S.langChosen) S.lang = isOwner() ? "he" : "en";
   } catch (e) {
@@ -220,22 +282,6 @@ async function loadAll(silent) {
   }
   render();
   translateMissing();
-}
-
-function readPref(k, def) {
-  try {
-    const v = localStorage.getItem(`desk:${k}`);
-    return v === null ? def : v === "1";
-  } catch (_) {
-    return def;
-  }
-}
-function writePref(k, v) {
-  try {
-    localStorage.setItem(`desk:${k}`, v ? "1" : "0");
-  } catch (_) {
-    /* only a convenience */
-  }
 }
 
 let translating = false;
@@ -350,7 +396,7 @@ document.addEventListener("focusout", () => {
 // ---------------- running actions ----------------
 let toastTimer;
 function toast(msg, err) {
-  S.toast = { msg: t(msg), err };
+  S.toast = { msg: t(/^Only the owner|^Only Jay/.test(msg) ? "Only Jay can do this." : /^Jay already approved this post/.test(msg) ? "Jay already approved this post. Ask him to send it back before changing the text." : msg), err };
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     S.toast = null;
@@ -405,20 +451,22 @@ async function copyText(text, label = "Copied") {
     openModal({ title: "Copy this text", body: "Your browser blocked automatic copying. Select all and copy.", text, readonly: true });
   }
 }
-async function urlFor(a, download) {
+async function urlFor(a, download, fresh) {
   if (download) return store.signedUrl(a.path, a.filename);
   const c = S.urls[a.path];
-  if (c && c.exp > Date.now()) return c.url;
+  if (!fresh && c && c.url && c.exp > Date.now()) return c.url;
   const url = await store.signedUrl(a.path);
   S.urls[a.path] = { url, exp: Date.now() + 50 * 60000 };
   return url;
 }
 async function ensureUrls(assets) {
-  const missing = assets.filter((a) => !(S.urls[a.path] && S.urls[a.path].exp > Date.now()));
+  const missing = assets.filter((a) => a && !(S.urls[a.path] && S.urls[a.path].exp > Date.now()));
   if (!missing.length) return;
+  // mark them as on the way, so the next render does not ask for the same links again
+  missing.forEach((a) => (S.urls[a.path] = { url: "", exp: Date.now() + 30000 }));
   await Promise.all(
     missing.map((a) =>
-      urlFor(a).catch(() => {
+      urlFor(a, false, true).catch(() => {
         // remember the failure for a minute so a broken file can't cause a render loop
         S.urls[a.path] = { url: "", exp: Date.now() + 60000 };
       }),
@@ -428,22 +476,21 @@ async function ensureUrls(assets) {
 }
 const cachedUrl = (a) => (S.urls[a.path] ? S.urls[a.path].url : "");
 
+
 // ---------------- actions ----------------
+function go(hash) {
+  if (location.hash === hash) render();
+  else location.hash = hash;
+}
+const baseOf = () => route().base;
+const closeDrawer = () => go(`#/${baseOf()}`);
+
 const A = {
   async signIn() {
     await store.signIn();
   },
   async signOut() {
     await store.signOut();
-  },
-  toggleHe() {
-    S.showHe = !S.showHe;
-    writePref("showHe", S.showHe);
-    render();
-  },
-  toggleMeta() {
-    S.metaOpen = !S.metaOpen;
-    render();
   },
   setLang(l) {
     S.lang = l === "he" ? "he" : "en";
@@ -455,8 +502,40 @@ const A = {
     }
     render();
   },
-  filter(c) {
-    S.filter = c;
+  open(id) {
+    go(`#/${baseOf()}/p/${id}`);
+  },
+  close() {
+    S.edit = null;
+    closeDrawer();
+  },
+  newPost(mode) {
+    S.newMode = mode || "idea";
+    S.split = null;
+    go(`#/${baseOf()}/new`);
+  },
+  cat(c) {
+    S.cat = c;
+    render();
+  },
+  only(f) {
+    S.only = S.only === f ? "" : f;
+    render();
+  },
+  col(c) {
+    S.col = c;
+    render();
+  },
+  toggleRejected(c) {
+    S.showRejected[c] = !S.showRejected[c];
+    render();
+  },
+  view(pid, v) {
+    S.view[pid] = v;
+    render();
+  },
+  more(pid) {
+    S.more[pid] = !S.more[pid];
     render();
   },
   channel(pid, ch) {
@@ -480,83 +559,62 @@ const A = {
     run(() => loadAll());
   },
 
-  // ideas
-  ideaYes(id) {
+  // ----- Jay's answers -----
+  approve(id) {
     const p = post(id);
-    run(() => savePost(p, { stage: "writing" }), "Approved. It's the writer's turn.");
+    if (p.stage === "final") return A.approveFinal(id);
+    run(() => savePost(p, { status: "approved" }), p.stage === "idea" ? "Approved. Next: the first draft." : "Approved. Next: the final version.");
   },
-  ideaChange(id) {
-    openModal({ title: "Yes, with a change", body: "What should change? The writer gets this note and the idea moves to writing.", act: "ideaChangeGo", args: [id], required: true, confirm: "Send" });
-  },
-  async ideaChangeGo(id, text) {
-    const p = post(id);
-    await run(async () => {
-      await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
-      await savePost(p, { stage: "writing" });
-    }, "Sent with your note");
-  },
-  ideaNotNow(id) {
-    openModal({ title: "Not now", body: "Optional: why, or when to come back to it.", act: "parkGo", args: [id], confirm: "Park it" });
-  },
-  parkGo(id, reason) {
-    run(() => savePost(post(id), { stage: "parked", skip_reason: reason || null }), "Parked");
-  },
-  skip(id) {
-    openModal({ title: "Skip this", body: "Optional: the reason. It stays visible so nobody pitches it again.", act: "skipGo", args: [id], confirm: "Skip" });
-  },
-  skipGo(id, reason) {
-    run(() => savePost(post(id), { stage: "skipped", skip_reason: reason || null }), "Skipped");
-  },
-  revive(id) {
-    run(() => savePost(post(id), { stage: "idea", skip_reason: null }), "Back in ideas");
-  },
-
-  // review
-  submit(id) {
-    const p = post(id);
-    if (!latest(id)) return toast("Write the WhatsApp text first.", true);
-    run(() => savePost(p, { stage: "review" }), "Sent to Jay");
-  },
-  approve(id, mode) {
+  approveFinal(id, sure) {
     const p = post(id);
     const v = latest(id);
     if (!v) return toast("There is no text yet.", true);
     if ((v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
+    if (!coverOf(id) && !sure) {
+      return openModal({ title: "Approve without a banner?", body: "This post has no image yet. It moves to Ready without one.", act: "approveFinalGo", args: [id], noText: true, confirm: "Approve without a banner" });
+    }
     run(async () => {
       if ((v.headlines || []).length === 1 && chosenIndex(v) < 0) await updateRow("versions", v, { chosen: 0 });
-      const fin = finalAsset(id);
-      if (mode === "withBanner" && fin) {
-        if (fin.status !== "approved") await updateRow("assets", fin, { status: "approved" });
-        await savePost(p, { stage: "ready", text_ok: true });
-      } else if (mode === "textOnly") {
-        await savePost(p, { stage: "writing", text_ok: true });
-      } else {
-        await savePost(p, { stage: "ready", text_ok: true });
-      }
-    }, mode === "textOnly" ? "Text approved. The banner is next." : "Approved. It's ready to publish.");
-    if (location.hash.startsWith("#/review")) setTimeout(nextReview, 400);
+      for (const a of assetsOf(id)) if (isMedia(a) && a.status === "pending") await updateRow("assets", a, { status: "approved", stage: "final" });
+      await savePost(p, { stage: "ready", status: "approved" });
+    }, p.pinned_date ? "Approved. It's in Ready." : "Approved. It's in Ready: pick a date.");
   },
-  requestChanges(id) {
-    const p = post(id);
-    const v = latest(id);
-    const open = notesOf(id).filter((n) => n.kind === "note" && n.status === "open");
+  approveFinalGo(id) {
+    A.approveFinal(id, true);
+  },
+  sendBack(id) {
+    const open = openNotes(id);
     if (!open.length) {
-      openModal({ title: "Request changes", body: "Write what should change. The writer sees it next to the text.", act: "changesGo", args: [id], required: true, confirm: "Send back" });
-      return;
+      return openModal({ title: "Send back for changes", body: "What should change? The writer sees it on the post.", act: "sendBackGo", args: [id], required: true, confirm: "Send back" });
     }
-    run(() => savePost(p, { stage: "writing" }), plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
-    if (location.hash.startsWith("#/review")) setTimeout(nextReview, 400);
-    void v;
+    run(() => savePost(post(id), { status: "changes" }), plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
   },
-  async changesGo(id, text) {
+  async sendBackGo(id, text) {
     await run(async () => {
       await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
-      await savePost(post(id), { stage: "writing" });
+      await savePost(post(id), { status: "changes" });
+      translateMissing();
     }, "Sent back with your note");
-    if (location.hash.startsWith("#/review")) setTimeout(nextReview, 400);
   },
-  backToReview(id) {
-    run(() => savePost(post(id), { stage: "review" }), "Moved back to review");
+  reject(id) {
+    openModal({ title: "Reject", body: "Optional: why. It stays on the board under Rejected, so nobody pitches it again.", act: "rejectGo", args: [id], confirm: "Reject" });
+  },
+  rejectGo(id, reason) {
+    run(() => savePost(post(id), { status: "rejected", skip_reason: reason || null }), "Rejected");
+  },
+  revive(id) {
+    run(() => savePost(post(id), { status: "waiting", skip_reason: null }), "Back on the board");
+  },
+  resubmit(id) {
+    run(() => savePost(post(id), { status: "waiting" }), "Sent to Jay");
+  },
+  moveTo(id, stage) {
+    const p = post(id);
+    if (!stage || stage === p.stage) return;
+    const patch = { stage, status: ["ready", "published"].includes(stage) ? "approved" : "waiting" };
+    if (stage === "published") patch.published_at = new Date().toISOString();
+    if (p.stage === "published") patch.published_at = null;
+    run(() => savePost(p, patch), t("Moved to {c}", { c: t(COL_ONE[stage]) }));
   },
   publish(id) {
     openModal({ title: "Mark as published", body: "Optional: paste the text you actually sent, so the writer sees your last edits.", act: "publishGo", args: [id], confirm: "Mark published", big: true, value: composeWhatsApp(post(id)) });
@@ -565,35 +623,102 @@ const A = {
     run(() => savePost(post(id), { stage: "published", published_at: new Date().toISOString(), published_text: text || null }), "Marked published");
   },
   unpublish(id) {
-    run(() => savePost(post(id), { stage: "ready", published_at: null }), "Back to ready");
+    run(() => savePost(post(id), { stage: "ready", status: "approved", published_at: null }), "Back in Ready");
   },
   reactions(id, n) {
     run(() => savePost(post(id), { reactions: n === "" ? null : Number(n) }));
   },
+  deletePost(id) {
+    openModal({ title: "Delete this post for good?", body: "Its versions, notes and files go too. Reject keeps it visible instead.", act: "deletePostGo", args: [id], confirm: "Delete", danger: true, noText: true });
+  },
+  deletePostGo(id) {
+    run(async () => {
+      for (const a of assetsOf(id)) await store.removeFile(a.path).catch(() => {});
+      await store.remove("posts", id);
+      S.d.posts = S.d.posts.filter((p) => p.id !== id);
+      S.d.versions = S.d.versions.filter((v) => v.post_id !== id);
+      S.d.notes = S.d.notes.filter((n) => n.post_id !== id);
+      S.d.assets = S.d.assets.filter((a) => a.post_id !== id);
+      closeDrawer();
+    }, "Deleted");
+  },
 
-  // queue
+  // ----- dates -----
+  // Put a post on a day. If the day is taken, ask whether to push the rest forward.
+  setDate(id, ds) {
+    const p = post(id);
+    if (!ds) return run(() => savePost(p, { pinned_date: null }), "Date removed");
+    const taken = onDay(ds, id);
+    if (taken.length) {
+      if (publishedOn(ds).length) {
+        return openModal({ pre: true, title: t("That day is taken"), body: t("{x} already went out on {d}.", { x: displayTitle(publishedOn(ds)[0]).main, d: fmtDay(ds) }), noText: true,
+          act: "setDateGo", args: [id, ds, "same"], confirm: t("Both on the same day") });
+      }
+      const moves = pushPlan(ds, id);
+      return openModal({
+        pre: true,
+        title: t("That day is taken"),
+        body: t("{x} is already on {d}.", { x: displayTitle(taken[0]).main, d: fmtDay(ds) }),
+        noText: true,
+        act: "setDateGo", args: [id, ds, "push"], confirm: plural(moves.length, "Push 1 post a day forward", "Push {n} posts a day forward"),
+        alt: { act: "setDateGo", args: [id, ds, "same"], label: t("Both on the same day") },
+      });
+    }
+    A.setDateGo(id, ds, "same");
+  },
+  setDateGo(id, ds, how) {
+    const p = post(id);
+    const moves = how === "push" ? pushPlan(ds, id) : [];
+    run(async () => {
+      await savePost(p, { pinned_date: ds });
+      for (const [q, d] of moves) await savePost(q, { pinned_date: d });
+    }, moves.length ? t("On {d}. {n} moved a day forward.", { d: fmtDay(ds), n: moves.length }) : t("On {d}", { d: fmtDay(ds) }));
+  },
+  nextFree(id) {
+    A.setDateGo(id, nextFreeDay(id), "same");
+  },
+  // Hot: the first publishing day from today, everything after it moves forward.
+  hotNow(id) {
+    let d = todayStr();
+    if (!isCadenceDay(d) || publishedOn(d).length) d = nextOpen(d);
+    const p = post(id);
+    const moves = pushPlan(d, id);
+    run(async () => {
+      await savePost(p, { pinned_date: d, hot: true });
+      for (const [q, nd] of moves) await savePost(q, { pinned_date: nd });
+    }, moves.length ? t("First in line: {d}. {n} moved a day forward.", { d: fmtDay(d), n: moves.length }) : t("First in line: {d}", { d: fmtDay(d) }));
+  },
+  // Arrows on the schedule: one publishing day earlier or later, swapping with whoever is there.
+  shift(id, dir) {
+    const p = post(id);
+    const to = Number(dir) > 0 ? nextCadence(p.pinned_date) : prevCadence(p.pinned_date);
+    if (to < todayStr()) return toast("That day has passed.", true);
+    const there = onDay(to, id);
+    run(async () => {
+      for (const q of there) await savePost(q, { pinned_date: p.pinned_date });
+      await savePost(p, { pinned_date: to });
+    });
+  },
+  pickForDay(ds) {
+    const ready = S.d.posts.filter((p) => ["ready", "final", "draft"].includes(p.stage) && p.status !== "rejected" && !p.pinned_date)
+      .sort((a, b) => COLS.indexOf(b.stage) - COLS.indexOf(a.stage));
+    if (!ready.length) return toast("No post without a date. Ready posts land here.", true);
+    openModal({
+      pre: true, title: t("What goes out on {d}?", { d: fmtDay(ds) }), noText: true, readonlyList: true,
+      list: ready.map((p) => ({ act: "pickGo", args: [p.id, ds], label: displayTitle(p).main, sub: t(COL_ONE[p.stage]) })),
+    });
+  },
+  pickGo(id, ds) {
+    S.modal = null;
+    A.setDateGo(id, ds, "same");
+  },
   hot(id) {
     const p = post(id);
-    run(() => savePost(p, { hot: !p.hot }), p.hot ? "No longer hot" : "Hot: it takes the next free day");
+    run(() => savePost(p, { hot: !p.hot }), p.hot ? "No longer hot" : "Marked hot");
   },
   emailToo(id) {
     const p = post(id);
     run(() => savePost(p, { email_too: !p.email_too }));
-  },
-  pin(id, date) {
-    run(() => savePost(post(id), { pinned_date: date || null }), date ? t("Locked to {d}", { d: fmtDay(date) }) : "Unlocked");
-  },
-  move(id, dir) {
-    const q = queueOrder().filter((p) => !p.pinned_date && !!p.hot === !!post(id).hot);
-    const i = q.findIndex((p) => p.id === id);
-    const j = i + Number(dir);
-    if (i < 0 || j < 0 || j >= q.length) return;
-    const a = q[i], b = q[j];
-    run(async () => {
-      const pa = a.queue_pos, pb = b.queue_pos === pa ? pa + Number(dir) * 0.001 : b.queue_pos;
-      await savePost(a, { queue_pos: pb });
-      await savePost(b, { queue_pos: pa });
-    });
   },
   meta(id, field, value) {
     const p = post(id);
@@ -616,7 +741,7 @@ const A = {
   },
   editIdea(id) {
     const p = post(id);
-    openModal({ title: "Edit the idea", body: "The pitch: what it is, why now, what readers get.", act: "editIdeaGo", args: [id], required: true, value: p.idea || "", big: true, confirm: "Save" });
+    openModal({ title: "Edit the idea", body: "What it is, why now, what readers get.", act: "editIdeaGo", args: [id], required: true, value: p.idea || "", big: true, confirm: "Save" });
   },
   editIdeaGo(id, text) {
     run(async () => {
@@ -625,7 +750,7 @@ const A = {
     });
   },
 
-  // headlines and versions
+  // ----- headlines and versions -----
   pickHeadline(vid, i) {
     const v = S.d.versions.find((x) => x.id === vid);
     if (!v) return;
@@ -646,27 +771,23 @@ const A = {
       translateMissing();
     });
   },
-  removeHeadline(vid, i) {
-    const v = S.d.versions.find((x) => x.id === vid);
-    const hl = v.headlines.filter((_, k) => k !== Number(i));
-    let chosen = v.chosen;
-    if (chosen != null) chosen = chosen === Number(i) ? null : chosen > Number(i) ? chosen - 1 : chosen;
-    run(() => updateRow("versions", v, { headlines: hl, chosen }));
-  },
-  startEdit(pid, ch) {
-    S.edit = { postId: pid, channel: ch };
+  // mode: "draft" (first draft of an approved idea), "final" (final version of an approved draft),
+  // "fix" (a new version after notes) or "edit" (same column, same status).
+  startEdit(pid, ch, mode) {
+    S.edit = { postId: pid, channel: ch || "whatsapp", mode: mode || "edit" };
+    S.channel[pid] = S.edit.channel;
     render();
     setTimeout(() => {
-      const t = document.querySelector("textarea[name=body]");
-      if (t) t.focus();
-    }, 30);
+      const el = document.querySelector(".drawer textarea[name=body]");
+      if (el) el.focus();
+    }, 40);
   },
   cancelEdit() {
     S.edit = null;
     render();
   },
   async saveEdit(form) {
-    const { postId, channel } = S.edit;
+    const { postId, channel, mode } = S.edit;
     const p = post(postId);
     const prev = latest(postId, channel);
     const body = form.body.value.replace(/\s+$/, "");
@@ -681,64 +802,69 @@ const A = {
     });
     let chosen = null;
     if (prev && chosenIndex(prev) >= 0) {
-      const was = prevH[chosenIndex(prev)].en;
-      const k = hl.findIndex((h) => h.en === was);
+      const k = hl.findIndex((h) => h.en === prevH[chosenIndex(prev)].en);
       chosen = k >= 0 ? k : null;
     }
+    const owner = isOwner();
+    let patch = null;
+    let msg = "Saved as a new version";
+    if (channel === "whatsapp") {
+      if (mode === "draft") {
+        patch = { stage: "draft", status: owner ? "approved" : "waiting" };
+        msg = owner ? "Saved as the first draft" : "First draft sent to Jay";
+      } else if (mode === "final") {
+        patch = { stage: "final", status: owner ? "approved" : "waiting" };
+        msg = owner ? "Saved as the final version" : "Final version sent to Jay";
+      } else if (!owner && p.status !== "waiting") {
+        patch = { status: "waiting" };
+        msg = "Sent to Jay";
+      }
+    }
     await run(async () => {
+      if (patch) {
+        const fresh = await store.getRow("posts", postId);
+        if (fresh && (fresh.stage !== p.stage || fresh.status !== p.status)) {
+          Object.assign(p, fresh);
+          throw new Error(t("Jay changed this post while you were writing. Your text is still here: copy it before closing."));
+        }
+      }
       const v = await insertRow("versions", {
         post_id: postId, channel, n: prev ? prev.n + 1 : 1, body, headlines: hl, chosen, sources,
-        writer_note: note || (isOwner() && p.author !== S.me ? "Edited by Jay" : null),
+        writer_note: note || (owner && p.author !== S.me ? "Edited by Jay" : null),
       });
       S.vsel[`${postId}:${channel}`] = v.n;
-      // Jay approved this text: a writer's new WhatsApp version goes back to him.
-      if (!isOwner() && channel === "whatsapp" && (p.stage === "ready" || p.text_ok)) {
-        await savePost(p, { stage: "review", text_ok: false });
-      }
-      // closing notes the writer ticked as fixed
       const ticks = [...form.querySelectorAll("input[name=fixed]:checked")].map((i) => i.value);
       for (const nid of ticks) {
         const n = S.d.notes.find((x) => x.id === nid);
         if (n) await updateRow("notes", n, { status: "closed", closed_in: v.n });
       }
+      if (patch) await savePost(p, patch);
       S.edit = null;
       translateMissing();
-    }, "Saved as a new version");
+    }, msg);
   },
   fromWhatsApp(pid, ch) {
     const wa = latest(pid, "whatsapp");
     if (!wa) return toast("There is no WhatsApp text to start from.", true);
-    S.edit = { postId: pid, channel: ch, seed: { body: wa.body, headlines: (wa.headlines || []).map((h) => h.en).join("\n") } };
+    S.edit = { postId: pid, channel: ch, mode: "edit", seed: { body: wa.body, headlines: (wa.headlines || []).map((h) => h.en).join("\n") } };
     render();
   },
 
-  // notes
+  // ----- notes -----
   async addNote(form) {
     const pid = form.dataset.post;
     const text = form.note.value.trim();
-    const kind = form.kind ? form.kind.value : isOwner() ? "note" : "team";
     if (!text) return;
     await run(async () => {
-      await insertRow("notes", { post_id: pid, kind, body: text, version_n: latest(pid) ? latest(pid).n : null });
-      form.note.value = "";
+      await insertRow("notes", { post_id: pid, kind: isOwner() ? "note" : "team", body: text, version_n: latest(pid) ? latest(pid).n : null });
+      app.querySelectorAll(`form[data-form=addNote][data-post="${pid}"] textarea[name=note]`).forEach((el) => (el.value = ""));
       translateMissing();
-    }, kind === "question" ? "Question sent to Jay" : "Note added");
+    }, "Note added");
   },
   toggleNote(nid) {
     const n = S.d.notes.find((x) => x.id === nid);
     const v = latest(n.post_id);
     run(() => updateRow("notes", n, n.status === "open" ? { status: "closed", closed_in: v ? v.n : null } : { status: "open", closed_in: null }));
-  },
-  answer(nid, preset) {
-    if (preset) return A.answerGo(nid, preset);
-    openModal({ title: "Answer", act: "answerGo", args: [nid], required: true, confirm: "Send" });
-  },
-  answerGo(nid, text) {
-    const n = S.d.notes.find((x) => x.id === nid);
-    run(async () => {
-      await updateRow("notes", n, { answer: text, answer_he: null, answered_by: S.me, status: "closed" });
-      translateMissing();
-    }, "Answered");
   },
   deleteNote(nid) {
     const n = S.d.notes.find((x) => x.id === nid);
@@ -756,17 +882,18 @@ const A = {
     }, "Added to house rules");
   },
 
-  // visuals
-  async upload(pid, files, stage) {
+  // ----- visuals -----
+  async upload(pid, files) {
     files = [...files];
     if (!files.length) return;
+    const p = post(pid);
     await run(async () => {
       for (const f of files) {
         if (f.size > MAX_UPLOAD) throw new Error(t("{name} is over 50 MB. Upload it to Drive and paste the link in a note.", { name: f.name }));
         const safe = f.name.replace(/[^\w.\-]+/g, "-").slice(-80);
         const path = `${pid}/${uuid()}-${safe}`;
         await store.upload(path, f);
-        await insertRow("assets", { post_id: pid, path, filename: f.name, mime: f.type || null, size: f.size, stage });
+        await insertRow("assets", { post_id: pid, path, filename: f.name, mime: f.type || null, size: f.size, stage: ["final", "ready", "published"].includes(p.stage) ? "final" : "sketch" });
       }
     }, files.length > 1 ? t("{n} files uploaded", { n: files.length }) : "Uploaded");
   },
@@ -776,15 +903,7 @@ const A = {
   },
   assetReplace(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
-    run(() => updateRow("assets", a, { status: "replaced" }));
-  },
-  assetRestore(aid) {
-    const a = S.d.assets.find((x) => x.id === aid);
-    run(() => updateRow("assets", a, { status: "pending" }));
-  },
-  assetFinal(aid) {
-    const a = S.d.assets.find((x) => x.id === aid);
-    run(() => updateRow("assets", a, { stage: a.stage === "final" ? "sketch" : "final" }));
+    run(() => updateRow("assets", a, { status: a.status === "replaced" ? "pending" : "replaced" }));
   },
   assetDelete(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
@@ -806,6 +925,10 @@ const A = {
       link.click();
       link.remove();
     });
+  },
+  downloadCover(pid) {
+    const a = coverOf(pid);
+    if (a) A.download(a.id);
   },
   share(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
@@ -854,7 +977,7 @@ const A = {
     copyText(text, ch === "whatsapp" ? "Copied for WhatsApp" : "Copied");
   },
 
-  // new posts
+  // ----- new posts -----
   newMode(m) {
     S.newMode = m;
     S.split = null;
@@ -865,14 +988,14 @@ const A = {
     if (!f.title.trim()) return toast("Give it a working title.", true);
     await run(async () => {
       const p = await insertRow("posts", {
-        title: f.title.trim(), category: f.category, idea: f.idea.trim() || null, stage: "idea",
+        title: f.title.trim(), category: f.category, idea: (f.idea || "").trim() || null, stage: "idea", status: "waiting",
         hot: f.hot === "on", score: f.score ? Number(f.score) : null, news_date: f.news_date || null,
-        covered_before: f.covered_before.trim() || null,
+        covered_before: (f.covered_before || "").trim() || null,
       });
-      const sources = f.sources.split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
+      const sources = (f.sources || "").split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
       if (sources.length) await insertRow("notes", { post_id: p.id, kind: "team", body: `Sources:\n${sources.map((s) => s.url).join("\n")}` });
       translateMissing();
-      location.hash = `#/post/${p.id}`;
+      go(`#/${baseOf()}/p/${p.id}`);
     }, "Idea added");
   },
   async splitDraft(form) {
@@ -891,10 +1014,9 @@ const A = {
     const pickIdx = S.split ? S.split.headlines.findIndex((h) => h.pick) : -1;
     const pickEn = pickIdx >= 0 ? S.split.headlines[pickIdx].en : null;
     await run(async () => {
-      const stage = isOwner() ? "writing" : "review";
       const p = await insertRow("posts", {
-        title: (f.title.trim() || headlines[0]).slice(0, 200), category: f.category, stage, hot: f.hot === "on",
-        idea: f.idea.trim() || null, news_date: f.news_date || null,
+        title: (f.title.trim() || headlines[0]).slice(0, 200), category: f.category, stage: "draft", status: isOwner() ? "approved" : "waiting",
+        hot: f.hot === "on", idea: (f.idea || "").trim() || null, news_date: f.news_date || null,
       });
       await insertRow("versions", {
         post_id: p.id, channel: "whatsapp", n: 1, body: f.body.trim(),
@@ -905,15 +1027,11 @@ const A = {
       S.split = null;
       S.draftText = "";
       translateMissing();
-      location.hash = `#/post/${p.id}`;
+      go(`#/${baseOf()}/p/${p.id}`);
     }, isOwner() ? "Draft saved" : "Sent to Jay");
   },
-  addDraftToIdea(pid) {
-    S.edit = { postId: pid, channel: "whatsapp" };
-    render();
-  },
 
-  // rules and settings
+  // ----- rules and settings -----
   addRule() {
     openModal({ title: "New house rule", body: "One rule, in plain words.", act: "addRuleGo", args: [], required: true, confirm: "Add" });
   },
@@ -967,11 +1085,11 @@ const A = {
     if (email === S.me) return toast("That's your own account. Change other members from the table.", true);
     if (S.d.team_members.some((m) => m.email === email)) return toast("That email is already on the team. Use the table above.", true);
     await run(async () => {
-      const saved = await store.upsert("team_members", { email, name: f.name.trim() || email.split("@")[0], role: f.role, color: f.color || "#2b4f86", active: true });
+      const saved = await store.upsert("team_members", { email, name: f.name.trim() || email.split("@")[0], role: f.role, color: f.color || "#2f68d8", active: true });
       const row = S.d.team_members.find((m) => m.email === email);
       if (row) Object.assign(row, saved);
       else S.d.team_members.push(saved);
-      form.reset();
+      app.querySelectorAll("form[data-form=addMember]").forEach((f) => f.reset());
     }, "Member saved");
   },
   memberActive(email) {
@@ -984,20 +1102,6 @@ const A = {
     if (m.email === S.me) return toast("You can't change your own role.", true);
     run(async () => Object.assign(m, await store.update("team_members", email, { role })));
   },
-  deletePost(id) {
-    openModal({ title: "Delete this post for good?", body: "Its versions, notes and files go too. Skip keeps it visible instead.", act: "deletePostGo", args: [id], confirm: "Delete", danger: true, noText: true });
-  },
-  deletePostGo(id) {
-    run(async () => {
-      for (const a of assetsOf(id)) await store.removeFile(a.path).catch(() => {});
-      await store.remove("posts", id);
-      S.d.posts = S.d.posts.filter((p) => p.id !== id);
-      S.d.versions = S.d.versions.filter((v) => v.post_id !== id);
-      S.d.notes = S.d.notes.filter((n) => n.post_id !== id);
-      S.d.assets = S.d.assets.filter((a) => a.post_id !== id);
-      location.hash = "#/board";
-    }, "Deleted");
-  },
 };
 
 function parseSource(line) {
@@ -1008,307 +1112,212 @@ function parseSource(line) {
   return { url, label, official };
 }
 
-function nextReview() {
-  const q = ownerQueue();
-  if (!q.length) {
-    location.hash = "#/";
-    toast("You're through the queue.");
-    return;
-  }
-  const m = location.hash.match(/^#\/review\/(\d+)/);
-  const i = Math.min(m ? Number(m[1]) : 0, q.length - 1);
-  location.hash = `#/review/${i}`;
-  render();
-}
-
-// ---------------- schedule ----------------
-function queueOrder() {
-  return S.d.posts
-    .filter((p) => ["writing", "review", "ready"].includes(p.stage))
-    .sort((a, b) => (b.hot - a.hot) || (a.queue_pos - b.queue_pos));
-}
-function buildSchedule(weeks = 3) {
-  const cad = cadence();
-  const start = parseDate(todayStr());
-  const sunday = start.getDate() - start.getDay(); // Sunday of this week
-  const days = [];
-  for (let i = 0; i < weeks * 7; i++) {
-    const d = new Date(start.getFullYear(), start.getMonth(), sunday + i);
-    const ds = localDate(d);
-    days.push({ date: ds, dow: d.getDay(), past: ds < todayStr(), on: cad.days.includes(d.getDay()), posts: [], published: [] });
-  }
-  const byDate = Object.fromEntries(days.map((d) => [d.date, d]));
-  for (const p of S.d.posts.filter((x) => x.stage === "published" && x.published_at)) {
-    const ds = localDate(new Date(p.published_at));
-    if (byDate[ds]) byDate[ds].published.push(p);
-  }
-  const queue = queueOrder();
-  const overdue = [];
-  const later = [];
-  for (const p of queue.filter((x) => x.pinned_date)) {
-    if (p.pinned_date < todayStr()) overdue.push(p);
-    else if (byDate[p.pinned_date]) byDate[p.pinned_date].posts.push(p);
-    else later.push(p);
-  }
-  const free = queue.filter((x) => !x.pinned_date);
-  for (const d of days) {
-    if (d.past || !d.on) continue;
-    if (d.posts.length || d.published.length) continue;
-    if (free.length) d.posts.push(free.shift());
-  }
-  later.push(...free);
-  const out = [];
-  for (let w = 0; w < weeks; w++) out.push(days.slice(w * 7, w * 7 + 7));
-  return { weeks: out, overdue, later, slotOf: Object.fromEntries(days.flatMap((d) => d.posts.map((p) => [p.id, d.date]))) };
-}
-
 // ---------------- views ----------------
+// #/board, #/schedule, #/published, #/settings; a post opens on top: #/board/p/<id>; new: #/board/new
 function route() {
-  const h = location.hash.replace(/^#/, "") || "/";
-  const parts = h.split("/").filter(Boolean);
-  return { name: parts[0] || "home", id: parts[1] };
+  const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  if (parts[0] === "post") return { base: "board", id: parts[1] };
+  const base = ["board", "schedule", "published", "settings"].includes(parts[0]) ? parts[0] : "board";
+  if (parts[1] === "p" && parts[2]) return { base, id: parts[2] };
+  if (parts[1] === "new") return { base, isNew: true };
+  return { base };
 }
 
 function topBar(r) {
-  const myCount = isOwner()
-    ? ownerQueue().length + S.d.posts.filter((p) => p.stage === "ready").length + openQuestions().length
-    : S.d.posts.filter((p) => p.stage === "writing" && p.author === S.me).length;
-  const link = (name, href, label, extra = "") => `<a href="${href}" class="${r.name === name ? "on" : ""}">${T(label)}${extra}</a>`;
+  const w = waitingCount();
+  const link = (name, label, extra = "") => `<a href="#/${name}" class="${r.base === name ? "on" : ""}">${T(label)}${extra}</a>`;
   return `<header class="top"><div class="top-in">
-    <a class="brand" href="#/"><i></i>Content Desk</a>
+    <a class="brand" href="#/board"><i></i>Content Desk</a>
     <nav class="nav">
-      ${link("home", "#/", isOwner() ? "Waiting on me" : "My turn", myCount ? `<span class="dot">${myCount}</span>` : "")}
-      ${link("board", "#/board", "Board")}
-      ${link("schedule", "#/schedule", "Schedule")}
-      ${link("published", "#/published", "Published|nav")}
-      ${link("rules", "#/rules", "House rules")}
-      ${link("settings", "#/settings", "Settings")}
+      ${link("board", "Board", w ? `<span class="dot" title="${T("Waiting for Jay")}">${w}</span>` : "")}
+      ${link("schedule", "Schedule")}
+      ${link("published", "Published|nav")}
     </nav>
     <div class="me">${DEMO ? '<span class="demo-badge">DEMO</span>' : ""}
-      <a class="btn sm go" href="#/new">${T("+ New")}</a>
+      <button class="btn sm go" data-act="newPost" data-a="idea">${T("+ New")}</button>
       <button class="btn sm ghost" data-act="setLang" data-a="${S.lang === "he" ? "en" : "he"}">${S.lang === "he" ? "English" : "עברית"}</button>
+      <a class="iconbtn ${r.base === "settings" ? "on" : ""}" href="#/settings" title="${T("Settings")}" aria-label="${T("Settings")}">⚙</a>
       ${avatar(S.me)}
-      <button class="btn sm ghost out" data-act="signOut">${T("Sign out")}</button>
     </div>
   </div></header>`;
 }
 
-// The reader's language first, the other language under it.
-const showsHe = () => S.lang === "he" || S.showHe;
-function biText(en, he) {
-  en = en || "";
-  he = he || "";
-  if (S.lang === "he") return he && he !== en ? { main: he, sub: en } : { main: he || en, sub: "" };
-  return { main: en, sub: S.showHe && he && he !== en ? he : "" };
+function statusPill(p) {
+  if (p.stage === "published") return `<span class="pill mute">✓ ${esc(p.published_at ? fmtDM(localDate(new Date(p.published_at))) : t("Published"))}</span>`;
+  if (p.status === "rejected") return `<span class="pill st-rejected">${T("Rejected")}</span>`;
+  if (p.stage === "ready") return p.pinned_date ? `<span class="pill go">📅 ${esc(relDay(p.pinned_date))}</span>` : `<span class="pill wait">📅 ${T("No date yet")}</span>`;
+  return `<span class="pill st-${esc(p.status)}">${T(STATUS_KEYS[p.status] || p.status)}</span>`;
 }
-function bi(en, he, mainCls = "", subCls = "t-sub") {
-  const b = biText(en, he);
-  return `<div class="${mainCls}" dir="auto">${esc(b.main)}</div>${b.sub ? `<div class="${subCls}" dir="auto">${esc(b.sub)}</div>` : ""}`;
+// One short line under the title: what has to happen next, and by whom.
+function nextStep(p) {
+  if (p.status === "rejected" || p.stage === "published") return "";
+  const n = openNotes(p.id).length;
+  if (p.stage === "ready") return p.pinned_date ? "" : t("Next: pick a date");
+  if (p.status === "approved") return p.stage === "idea" ? t("Next: the first draft") : p.stage === "draft" ? t("Next: the final version") : "";
+  if (p.status === "changes") return n ? plural(n, "Next: fix 1 note", "Next: fix {n} notes") : t("Next: fix and send again");
+  return "";
 }
-const clip = (s, n = 260) => (s && s.length > n ? s.slice(0, n) + "…" : s || "");
 
-function postCard(p, opts = {}) {
+function card(p, opts = {}) {
   const tt = displayTitle(p);
-  const title = biText(tt.en, tt.he);
+  const cover = coverOf(p.id);
+  if (cover) ensureUrls([cover]);
+  const url = cover ? cachedUrl(cover) : "";
+  const coverHtml = cover ? `<div class="c-cover">${url ? ((cover.mime || "").startsWith("video/") ? `<video src="${esc(url)}" muted playsinline preload="metadata"></video><span class="c-play">▶</span>` : `<img alt="" src="${esc(url)}" loading="lazy">`) : ""}</div>` : "";
+  const next = nextStep(p);
+  const nNotes = notesOf(p.id).length;
   const v = latest(p.id);
-  const openNotes = notesOf(p.id).filter((n) => n.kind === "note" && n.status === "open").length;
-  const qs = notesOf(p.id).filter((n) => n.kind === "question" && n.status === "open").length;
-  const fin = approvedAsset(p.id) || finalAsset(p.id);
-  const pills = [];
-  if (p.hot) pills.push(`<span class="pill hot">🔥 ${T("Hot")}</span>`);
-  if (p.pinned_date) pills.push(`<span class="pill lock">🔒 ${esc(fmtDay(p.pinned_date))}</span>`);
-  if (p.email_too) pills.push(`<span class="pill blue">✉ ${T("Email")}</span>`);
-  if (p.text_ok && p.stage === "writing") pills.push(`<span class="pill go">${T("Text ✓ · banner next")}</span>`);
-  if (v && (v.headlines || []).length < 3 && ["review", "writing"].includes(p.stage)) pills.push(`<span class="pill wait">${T("{n} of 3 headlines", { n: (v.headlines || []).length })}</span>`);
-  if (qs) pills.push(`<span class="pill blue">${esc(plural(qs, "1 question", "{n} questions"))}</span>`);
-  const cls = ["card"];
-  if (opts.turn) cls.push("turn");
-  if (p.stage === "ready") cls.push("ready");
-  if (opts.muted) cls.push("muted");
-  const metaBits = [];
-  if (v) metaBits.push(`v${v.n}`);
-  if (openNotes) metaBits.push(esc(plural(openNotes, "1 open note", "{n} open notes")));
-  if (p.stage === "published" && p.published_at) metaBits.push(T("published {d}", { d: fmtDay(localDate(new Date(p.published_at))) }));
-  if (p.reactions != null) metaBits.push(T("{n} reactions", { n: p.reactions }));
-  if (p.skip_reason && ["skipped", "parked"].includes(p.stage)) metaBits.push(esc(p.skip_reason));
-  if (opts.slot) metaBits.push(T("goes out {d}", { d: fmtDay(opts.slot) }));
-  const pitch = opts.pitch && p.idea ? biText(clip(p.idea), clip(p.idea_he)) : null;
-  return `<div class="${cls.join(" ")}">
-    <div class="r1">${tag(p.category)}${pills.join("")}</div>
-    <a class="t" dir="auto" href="#/post/${p.id}">${esc(title.main)}</a>
-    ${title.sub && !opts.compact ? `<div class="t-sub" dir="auto">${esc(title.sub)}</div>` : ""}
-    ${pitch ? `<div class="pitch pre" dir="auto">${esc(pitch.main)}</div>` : ""}
-    ${opts.thumb && fin && (fin.mime || "").startsWith("image/") ? `<img class="thumb" alt="" src="${esc(cachedUrl(fin))}">` : ""}
-    <div class="meta">${avatar(p.author)}<span>${esc(nameOf(p.author))}</span><span>· ${esc(ago(p.updated_at))}</span>${metaBits.map((b) => `<span>· ${b}</span>`).join("")}</div>
-    ${opts.actions || ""}
-  </div>`;
-}
-
-function viewHome() {
-  const sched = buildSchedule(2);
-  const stockReady = S.d.posts.filter((p) => p.stage === "ready").length;
-  const thisWeek = sched.weeks[0];
-  const cad = cadence();
-  const doneThisWeek = thisWeek.reduce((n, d) => n + d.published.length, 0);
-  const stock = `<div class="stock">
-    <span><b>${stockReady}</b> ${T("ready to publish")}</span>
-    <span><b>${doneThisWeek}</b> ${T("of {n} published this week", { n: cad.days.length })}</span>
-    <span><b>${S.d.posts.filter((p) => p.stage === "review").length}</b> ${T("drafts waiting on Jay")}</span>
-    <span><b>${S.d.posts.filter((p) => p.stage === "idea").length}</b> ${T("ideas")}</span>
-  </div>`;
-
-  if (isOwner()) {
-    const ready = S.d.posts.filter((p) => p.stage === "ready").sort((a, b) => (sched.slotOf[a.id] || "9").localeCompare(sched.slotOf[b.id] || "9"));
-    ready.forEach((p) => {
-      const a = approvedAsset(p.id);
-      if (a) ensureUrls([a]);
-    });
-    const review = S.d.posts.filter((p) => p.stage === "review").sort((a, b) => (b.hot - a.hot) || a.updated_at.localeCompare(b.updated_at));
-    const ideas = S.d.posts.filter((p) => p.stage === "idea").sort((a, b) => (b.hot - a.hot) || a.created_at.localeCompare(b.created_at));
-    const mine = S.d.posts.filter((p) => p.stage === "writing" && p.author === S.me);
-    const qs = openQuestions();
-    const total = ready.length + review.length + ideas.length + qs.length + mine.length;
-    const readyCards = ready.map((p) => {
-      const a = approvedAsset(p.id);
-      return postCard(p, { thumb: true, slot: sched.slotOf[p.id], actions: `<div class="btns">
-        <button class="btn go" data-act="copyPost" data-a="${p.id}">${T("Copy for WhatsApp")}</button>
-        ${a ? `<button class="btn" data-act="download" data-a="${a.id}">${T("Banner ↓")}</button>` : ""}
-        <button class="btn ghost" data-act="publish" data-a="${p.id}">${T("Mark published")}</button></div>` });
-    });
-    const qCards = qs.map((n) => {
-      const p = post(n.post_id);
-      return `<div class="card q">
-        <div class="r1"><span class="tag news">${T("Quick question")}</span>${p ? tag(p.category) : ""}</div>
-        ${bi(n.body, n.body_he, "t")}
-        <div class="meta">${avatar(n.author)}<span>${esc(nameOf(n.author))}</span>${p ? `<span>· ${T("on")} <a href="#/post/${p.id}" dir="auto">${esc(biText(displayTitle(p).en, displayTitle(p).he).main)}</a></span>` : ""}</div>
-        <div class="btns"><button class="btn" data-act="answer" data-a="${n.id}" data-b="Yes">${T("Yes")}</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="No">${T("No")}</button><button class="btn" data-act="answer" data-a="${n.id}" data-b="Didn't check yet">${T("Didn't check")}</button><button class="btn ghost" data-act="answer" data-a="${n.id}">${T("Write an answer")}</button></div>
-      </div>`;
-    });
-    const reviewCards = review.map((p) => postCard(p, { turn: true, actions: `<div class="btns"><a class="btn dark" href="#/post/${p.id}">${T("Open")}</a><button class="btn ghost" data-act="skip" data-a="${p.id}">${T("Skip")}</button></div>` }));
-    const ideaCards = ideas.map((p) => postCard(p, { turn: true, pitch: true, actions: `<div class="btns">
-      <button class="btn go" data-act="ideaYes" data-a="${p.id}">${T("Yes")}</button>
-      <button class="btn" data-act="ideaChange" data-a="${p.id}">${T("Change")}</button>
-      <button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">${T("Not now")}</button></div>` }));
-    const mineCards = mine.map((p) => postCard(p, { turn: true }));
-    return `<div class="headrow"><div><h1>${T("Waiting on you")} <em>${total}</em></h1>
-      <p class="lead">${T("Ready posts first, then quick questions, drafts and new ideas.")}</p></div>
-      ${review.length + ideas.length ? `<a class="btn dark" href="#/review/0">${T("Review one by one →")} ${review.length + ideas.length}</a>` : ""}</div>
-      ${stock}
-      ${S.translateError ? `<p class="muted small" style="margin-top:10px">${T("Hebrew translation paused: {e}. It retries by itself.", { e: S.translateError })}</p>` : ""}
-      ${section("Ready to publish", readyCards, "Nothing approved is waiting.")}
-      ${qCards.length ? section("Quick questions", qCards) : ""}
-      ${section("Drafts to review", reviewCards, "No drafts are waiting.")}
-      ${section("New ideas", ideaCards, "No new ideas.")}
-      ${mineCards.length ? section("Your own drafts", mineCards) : ""}`;
+  const foot = [
+    `${avatar(p.author, "sm")}<span>${esc(nameOf(p.author))}</span>`,
+    `<span>${esc(ago(p.updated_at))}</span>`,
+    v ? `<span>v${v.n}</span>` : "",
+    nNotes ? `<span title="${T("Notes")}">💬 ${nNotes}</span>` : "",
+    p.email_too ? `<span title="${T("Also email")}">✉</span>` : "",
+    p.pinned_date && p.stage !== "ready" && p.stage !== "published" ? `<span>📅 ${esc(fmtDM(p.pinned_date))}</span>` : "",
+  ].filter(Boolean).join("");
+  let quick = "";
+  if (isOwner() && p.stage === "idea" && p.status === "waiting") {
+    quick = `<div class="c-quick"><button class="btn sm go" data-act="approve" data-a="${p.id}">✓ ${T("Approve")}</button><button class="btn sm" data-act="reject" data-a="${p.id}">✕ ${T("Reject")}</button></div>`;
+  } else if (p.stage === "ready") {
+    quick = `<div class="c-quick">${!p.pinned_date ? `<button class="btn sm" data-act="nextFree" data-a="${p.id}">📅 ${esc(fmtDay(nextFreeDay(p.id)))}</button>` : ""}<button class="btn sm go" data-act="copyPost" data-a="${p.id}">${T("Copy")}</button>${cover ? `<button class="btn sm" data-act="downloadCover" data-a="${p.id}" title="${T("Download the banner")}">↓</button>` : ""}</div>`;
   }
-
-  const mine = S.d.posts.filter((p) => p.stage === "writing" && p.author === S.me).sort((a, b) => (b.hot - a.hot) || a.queue_pos - b.queue_pos);
-  const others = S.d.posts.filter((p) => p.stage === "writing" && p.author !== S.me && member(p.author).role !== "owner");
-  const answered = S.d.notes.filter((n) => n.kind === "question" && n.answer && n.author === S.me && Date.now() - new Date(n.updated_at || n.created_at).getTime() < 7 * DAY);
-  const waiting = S.d.posts.filter((p) => ["idea", "review", "ready"].includes(p.stage) && p.author === S.me);
-  return `<h1>${T("Your turn")} <em>${mine.length}</em></h1>
-    <p class="lead">${T("Drafts and fixes that are yours. When a post is ready, send it to Jay from its page.")}</p>
-    ${stock}
-    ${section("To write or fix", mine.map((p) => postCard(p, { turn: true, slot: buildSchedule(3).slotOf[p.id] })), "Nothing is waiting on you.")}
-    ${answered.length ? section("Answers from Jay", answered.map((n) => {
-      const p = post(n.post_id);
-      return `<div class="card q">${bi(n.body, n.body_he, "t")}<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(biText(n.answer, n.answer_he).main)}</span></div>${p ? `<div class="meta">${T("on")} <a href="#/post/${p.id}" dir="auto">${esc(biText(displayTitle(p).en, displayTitle(p).he).main)}</a></div>` : ""}</div>`;
-    })) : ""}
-    ${others.length ? section("Teammates are writing", others.map((p) => postCard(p, {}))) : ""}
-    ${section("Waiting on Jay", waiting.map((p) => postCard(p, { pitch: p.stage === "idea" })), "Nothing of yours is waiting on Jay.")}`;
-}
-
-function section(title, cards, empty) {
-  return `<h2>${T(title)} <span class="count">${cards.length}</span></h2>${cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${T(empty || "")}</div>`}`;
+  return `<div class="card st-${esc(p.status)} ${p.stage === "ready" && !p.pinned_date ? "needs-date" : ""} ${opts.big ? "big" : ""}" data-act="open" data-a="${p.id}" tabindex="0">
+    ${coverHtml}
+    <div class="c-body">
+      <div class="c-top">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
+      <div class="c-title" dir="auto">${esc(tt.main)}</div>
+      ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
+      ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
+      <div class="c-foot">${foot}</div>
+      ${quick}
+    </div>
+  </div>`;
 }
 
 function viewBoard() {
-  const f = S.filter;
-  const match = (p) => f === "all" || p.category === f;
-  const col = (title, cls, list, opts = {}) => `<div class="col ${cls}"><h3>${T(title)}<span class="count">${list.length}</span></h3>${list.length ? list.map((p) => postCard(p, { compact: true, ...opts })).join("") : `<div class="empty">${T("Empty")}</div>`}</div>`;
+  const match = (p) => (S.cat === "all" || p.category === S.cat) && (
+    !S.only ||
+    (S.only === "waiting" && p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage)) ||
+    (S.only === "changes" && p.status === "changes" && ["idea", "draft", "final"].includes(p.stage)) ||
+    (S.only === "nodate" && p.stage === "ready" && !p.pinned_date));
   const ps = S.d.posts.filter(match);
-  const sorted = (st) => ps.filter((p) => p.stage === st).sort((a, b) => (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
+  const all = S.d.posts.filter((p) => S.cat === "all" || p.category === S.cat);
+  const count = (f) => all.filter(f).length;
+  const nWait = count((p) => p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage));
+  const nChg = count((p) => p.status === "changes" && ["idea", "draft", "final"].includes(p.stage));
+  const nNoDate = count((p) => p.stage === "ready" && !p.pinned_date);
   const twoWeeks = Date.now() - 14 * DAY;
-  const pub = ps.filter((p) => p.stage === "published" && new Date(p.published_at || p.updated_at).getTime() > twoWeeks).sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
-  const shelved = ps.filter((p) => ["parked", "skipped"].includes(p.stage)).sort((a, b) => b.updated_at.localeCompare(a.updated_at));
-  return `<div class="headrow"><h1>${T("Board")}</h1><a class="btn go" href="#/new">${T("+ New idea or draft")}</a></div>
-    <div class="filters">${["all", ...CATS].map((c) => `<button class="chip ${f === c ? "on" : ""}" data-act="filter" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
-    <div class="board">
-      ${col("Ideas", "", sorted("idea"), { pitch: false })}
-      ${col("Writing", "", sorted("writing"))}
-      ${col("Waiting on Jay", "jay", sorted("review"))}
-      ${col("Ready", "rdy", sorted("ready"))}
-      ${col("Published · 14 days", "", pub)}
+  const sortCol = (c, list) => {
+    if (c === "ready") return list.sort((a, b) => (a.pinned_date || "9").localeCompare(b.pinned_date || "9"));
+    if (c === "published") return list.sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
+    return list.sort((a, b) => (STATUS_ORDER[a.status] - STATUS_ORDER[b.status]) || (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
+  };
+  const colOf = (c) => {
+    let list = ps.filter((p) => p.stage === c);
+    if (c === "published") list = list.filter((p) => new Date(p.published_at || p.updated_at).getTime() > twoWeeks);
+    const live = sortCol(c, list.filter((p) => p.status !== "rejected"));
+    const gone = list.filter((p) => p.status === "rejected");
+    return { live, gone };
+  };
+  const cols = COLS.map((c) => ({ c, ...colOf(c) }));
+  if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
+  const chip = (key, n, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(label)}</button>`;
+  return `<div class="boardbar">
+      <div class="chips">${chip("waiting", nWait, "waiting for Jay", "c-wait")}${chip("changes", nChg, "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date", "c-date")}</div>
+      <div class="chips cats">${["all", ...CATS].map((c) => `<button class="chip ${S.cat === c ? "on" : ""}" data-act="cat" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     </div>
-    <h2>${T("Not now and skipped")} <span class="count">${shelved.length}</span></h2>
-    ${shelved.length ? `<div class="grid">${shelved.map((p) => postCard(p, { muted: true, actions: isOwner() ? `<div class="btns"><button class="btn sm ghost" data-act="revive" data-a="${p.id}">${T("Back to ideas")}</button></div>` : "" })).join("")}</div>` : `<div class="empty">${T("Nothing shelved.")}</div>`}`;
+    <div class="coltabs">${cols.map((x) => `<button class="${S.col === x.c ? "on" : ""}" data-act="col" data-a="${x.c}">${T(COL_KEYS[x.c])} <span>${x.live.length}</span></button>`).join("")}</div>
+    <div class="board">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
+      <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
+      <div class="col-body">
+        ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
+        ${x.gone.length ? `<button class="linkbtn rej" data-act="toggleRejected" data-a="${x.c}">${S.showRejected[x.c] ? "▾" : "▸"} ${T("Rejected")} (${x.gone.length})</button>${S.showRejected[x.c] ? x.gone.map((p) => card(p)).join("") : ""}` : ""}
+        ${x.c === "published" ? `<a class="linkbtn" href="#/published">${T("All published →")}</a>` : ""}
+      </div></section>`).join("")}
+    </div>`;
 }
 
 function viewSchedule() {
-  const sch = buildSchedule(3);
   const cad = cadence();
-  const owner = isOwner();
-  const name = (p) => esc(biText(displayTitle(p).en, displayTitle(p).he).main);
-  const slotHtml = (p, d) => {
-    const cls = p.pinned_date ? "lock" : p.hot ? "hotslot" : "";
-    const ctl = `<div class="ctl">
-      ${!p.pinned_date ? `<button data-act="move" data-a="${p.id}" data-b="-1" title="${T("Move earlier")}">↑</button><button data-act="move" data-a="${p.id}" data-b="1" title="${T("Move later")}">↓</button>` : ""}
-      <button class="${p.hot ? "on" : ""}" data-act="hot" data-a="${p.id}" title="${T("Hot: it takes the next free day")}">🔥</button>
-      <button class="${p.email_too ? "on" : ""}" data-act="emailToo" data-a="${p.id}" title="${T("Also email")}">✉</button>
-      <button class="${p.pinned_date ? "on" : ""}" data-act="pinPrompt" data-a="${p.id}" data-b="${d || ""}" title="${T("Lock to a date")}">🔒</button>
+  const today = todayStr();
+  const start = parseDate(today);
+  const sunday = localDate(new Date(start.getFullYear(), start.getMonth(), start.getDate() - start.getDay()));
+  const weeks = 4;
+  const last = addDays(sunday, weeks * 7 - 1);
+  const live = dated();
+  const pubOn = (ds) => S.d.posts.filter((p) => p.stage === "published" && p.published_at && localDate(new Date(p.published_at)) === ds);
+  const he = S.lang === "he";
+  const item = (p, published) => {
+    const cover = coverOf(p.id);
+    if (cover) ensureUrls([cover]);
+    const url = cover ? cachedUrl(cover) : "";
+    const canMove = !published && p.pinned_date >= today;
+    return `<div class="s-item ${published ? "pub" : `stg-${p.stage}`}" data-act="open" data-a="${p.id}">
+      ${url && (cover.mime || "").startsWith("image/") ? `<img alt="" src="${esc(url)}" loading="lazy">` : ""}
+      <div class="s-t" dir="auto">${published ? "✓ " : ""}${esc(displayTitle(p).main)}</div>
+      <div class="s-meta">${published ? T("Published") : p.stage === "ready" ? `<span class="pill go">${T("Ready")}</span>` : `<span class="pill st-${esc(p.status)}">${T(COL_ONE[p.stage])}</span>`}${p.email_too ? " ✉" : ""}${p.hot ? " 🔥" : ""}</div>
+      ${canMove ? `<div class="s-ctl"><button data-act="shift" data-a="${p.id}" data-b="-1" title="${T("A publishing day earlier")}">${he ? "→" : "←"}</button><button data-act="shift" data-a="${p.id}" data-b="1" title="${T("A publishing day later")}">${he ? "←" : "→"}</button></div>` : ""}
     </div>`;
-    return `<div class="slot ${cls}"><a href="#/post/${p.id}" dir="auto">${name(p)}</a>
-      <span class="stg">${esc(stageLabel(p.stage))}${p.email_too ? ` · ✉ ${T("email")}` : ""}</span>${ctl}</div>`;
   };
-  const weekHtml = (days, w) => {
-    const wa = days.reduce((n, d) => n + d.posts.length + d.published.length, 0);
-    const em = days.reduce((n, d) => n + [...d.posts, ...d.published].filter((p) => p.email_too).length, 0);
-    const label = w === 0 ? T("This week") : w === 1 ? T("Next week") : T("Week of {d}", { d: fmtDM(days[0].date) });
-    return `<div class="week"><div class="week-head"><b>${label}</b>
-      <span class="muted small">${T("WhatsApp {a} of {b} · Email {c} of {d}", { a: wa, b: cad.days.length, c: em, d: cad.email_per_week })}</span></div>
-      <div class="days">${days.map((d) => `<div class="day ${d.on ? "" : "off"} ${d.date === todayStr() ? "today" : ""}">
-        <div class="dn"><span>${esc(fmtDow(d.date))}</span><span>${esc(fmtDM(d.date))}</span></div>
-        ${d.published.map((p) => `<div class="slot pub"><a href="#/post/${p.id}" dir="auto">✓ ${name(p)}</a></div>`).join("")}
-        ${d.posts.map((p) => slotHtml(p, d.date)).join("")}
-        ${!d.past && d.on && !d.posts.length && !d.published.length ? `<div class="slot-empty">${T("open")}</div>` : ""}
-      </div>`).join("")}</div></div>`;
+  const weekHtml = (w) => {
+    const days = Array.from({ length: 7 }, (_, i) => addDays(sunday, w * 7 + i));
+    const inWeek = (p) => p.pinned_date >= days[0] && p.pinned_date <= days[6];
+    const pubs = days.reduce((n, d) => n + pubOn(d).length, 0);
+    const wa = live.filter(inWeek).length + pubs;
+    const em = live.filter((p) => inWeek(p) && p.email_too).length + days.reduce((n, d) => n + pubOn(d).filter((p) => p.email_too).length, 0);
+    const label = w === 0 ? t("This week") : w === 1 ? t("Next week") : t("Week of {d}", { d: fmtDM(days[0]) });
+    return `<div class="week"><div class="week-head"><b>${esc(label)}</b><span class="muted small">${esc(fmtDM(days[0]))} – ${esc(fmtDM(days[6]))}</span>
+        <span class="sp"></span><span class="wk ${wa >= cad.days.length ? "ok" : ""}">${T("WhatsApp {a}/{b}", { a: wa, b: cad.days.length })}</span><span class="wk ${em >= cad.email_per_week ? "ok" : ""}">${T("Email {a}/{b}", { a: em, b: cad.email_per_week })}</span></div>
+      <div class="days">${days.map((ds) => {
+        const on = isCadenceDay(ds);
+        const items = live.filter((p) => p.pinned_date === ds);
+        const pub = pubOn(ds);
+        const past = ds < today;
+        return `<div class="day ${on ? "" : "off"} ${ds === today ? "today" : ""} ${past ? "past" : ""}">
+          <div class="dn"><b>${esc(fmtDow(ds))}</b><span>${esc(fmtDM(ds))}</span></div>
+          ${pub.map((p) => item(p, true)).join("")}${items.map((p) => item(p)).join("")}
+          ${!past && on && !items.length && !pub.length ? `<button class="slot-free" data-act="pickForDay" data-a="${ds}">+ ${T("free")}</button>` : ""}
+        </div>`;
+      }).join("")}</div></div>`;
   };
-  const loose = (list) => `<div class="days loose">${list.map((p) => `<div class="day">${slotHtml(p)}</div>`).join("")}</div>`;
+  const noDate = S.d.posts.filter((p) => p.stage === "ready" && !p.pinned_date);
+  const overdue = live.filter((p) => p.pinned_date < today);
+  const beyond = live.filter((p) => p.pinned_date > last).sort((a, b) => a.pinned_date.localeCompare(b.pinned_date));
+  const strip = (title, list, hint) => `<section class="strip"><h2>${T(title)} <span class="count">${list.length}</span></h2>${hint ? `<p class="muted small">${T(hint)}</p>` : ""}
+    <div class="strip-row">${list.map((p) => {
+      const cover = coverOf(p.id);
+      if (cover) ensureUrls([cover]);
+      const url = cover ? cachedUrl(cover) : "";
+      return `<div class="u-card" data-act="open" data-a="${p.id}">
+        ${url && (cover.mime || "").startsWith("image/") ? `<img alt="" src="${esc(url)}">` : ""}
+        <div class="u-t" dir="auto">${esc(displayTitle(p).main)}</div>
+        ${p.pinned_date ? `<div class="muted small">📅 ${esc(fmtDay(p.pinned_date))}</div>` : ""}
+        <div class="btns"><button class="btn sm go" data-act="nextFree" data-a="${p.id}">📅 ${esc(fmtDay(nextFreeDay(p.id)))}</button>
+        <input type="date" class="sm" min="${today}" data-change="date" data-a="${p.id}" title="${T("Pick a day")}">
+        <button class="btn sm" data-act="hotNow" data-a="${p.id}" title="${T("First publishing day from today; the rest move a day forward")}">🔥 ${T("First in line")}</button></div>
+      </div>`;
+    }).join("")}</div></section>`;
   return `<div class="headrow"><div><h1>${T("Schedule")}</h1>
-    <p class="lead">${T("One queue. Hot posts take the next free day, locked posts stay on their date, everything else moves forward in order. Ideas are not scheduled until Jay says yes.")}</p></div></div>
-    ${sch.overdue.length ? `<h2>${T("Locked to a date that passed")} <span class="count">${sch.overdue.length}</span></h2>${loose(sch.overdue)}` : ""}
-    <div style="margin-top:18px">${sch.weeks.map(weekHtml).join("")}</div>
-    <h2>${T("Later")} <span class="count">${sch.later.length}</span></h2>
-    ${sch.later.length ? loose(sch.later) : `<div class="empty">${T("Every post in the queue has a day.")}</div>`}
-    ${owner ? `<p class="muted small" style="margin-top:14px">${T("Publishing days and the weekly email count are in")} <a href="#/settings">${T("Settings")}</a>.</p>` : ""}`;
+      <p class="lead">${T("Ready posts get a day here. Hot news goes first in line and the rest move a publishing day forward. A free day: press it and pick a post.")}</p></div></div>
+    ${overdue.length ? strip("The date passed and it did not go out", overdue) : ""}
+    ${noDate.length ? strip("Ready, no date yet", noDate) : ""}
+    <div class="weeks">${Array.from({ length: weeks }, (_, w) => weekHtml(w)).join("")}</div>
+    ${beyond.length ? `<h2>${T("Further ahead")} <span class="count">${beyond.length}</span></h2><div class="days loose">${beyond.map((p) => `<div class="day"><div class="dn"><b>${esc(fmtDay(p.pinned_date))}</b></div>${item(p)}</div>`).join("")}</div>` : ""}
+    ${isOwner() ? `<p class="muted small" style="margin-top:16px">${T("Publishing days and the weekly email count are in")} <a href="#/settings">${T("Settings")}</a>.</p>` : ""}`;
 }
 
 function viewPublished() {
   const list = S.d.posts.filter((p) => p.stage === "published").sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
-  return `<h1>${T("Published|nav")}</h1><p class="lead">${T("Newest first. Reactions are typed in by hand for now.")}</p>
-    ${list.length ? `<div class="tablewrap"><table><tr><th>${T("Date")}</th><th>${T("Post")}</th><th>${T("By")}</th><th>${T("Reactions")}</th></tr>
-    ${list.map((p) => {
-      const b = biText(displayTitle(p).en, displayTitle(p).he);
-      return `<tr><td class="nowrap muted">${p.published_at ? esc(fmtDay(localDate(new Date(p.published_at)))) : ""}</td>
-      <td>${tag(p.category)} <a href="#/post/${p.id}" dir="auto">${esc(b.main)}</a>${b.sub ? `<div class="t-sub" dir="auto">${esc(b.sub)}</div>` : ""}</td>
-      <td>${esc(nameOf(p.author))}</td>
-      <td>${isOwner() ? `<input type="number" min="0" style="width:90px" value="${p.reactions ?? ""}" data-change="reactions" data-a="${p.id}">` : esc(p.reactions ?? "")}</td></tr>`;
-    }).join("")}
-    </table></div>` : `<div class="empty" style="margin-top:16px">${T("Nothing published yet.")}</div>`}`;
-}
-
-function viewRules() {
-  const rules = [...S.d.rules].sort((a, b) => a.sort - b.sort || a.created_at.localeCompare(b.created_at));
-  const owner = isOwner();
-  return `<div class="headrow"><div><h1>${T("House rules")}</h1>
-    <p class="lead">${T("Every note from Jay that is a rule and not a one-off fix. Copy them as a prompt for your own Claude, so the rules go in while you write.")}</p></div>
-    <div class="btns"><button class="btn dark" data-act="copyRules">${T("Copy as a prompt")}</button>${owner ? `<button class="btn" data-act="addRule">${T("+ Rule")}</button>` : ""}</div></div>
-    <div class="tablewrap"><table><tr><th>#</th><th>${T("Rule")}</th><th>${T("Where it came from")}</th>${owner ? "<th></th>" : ""}</tr>
-    ${rules.map((r, i) => `<tr style="${r.active ? "" : "opacity:.5"}"><td class="muted">${i + 1}</td>
-      <td>${bi(r.body, r.body_he)}${r.check_key ? `<span class="pill go" style="margin-top:4px">${T("checked automatically")}</span>` : ""}</td>
-      <td class="muted small" dir="auto">${esc(r.source || "")}</td>
-      ${owner ? `<td><div class="btns"><button class="btn sm ghost" data-act="editRule" data-a="${r.id}">${T("Edit")}</button><button class="btn sm ghost" data-act="toggleRule" data-a="${r.id}">${r.active ? T("Switch off") : T("Switch on")}</button><button class="btn sm ghost" data-act="deleteRule" data-a="${r.id}">${T("Delete")}</button></div></td>` : ""}
-    </tr>`).join("")}</table></div>`;
+  const groups = [];
+  for (const p of list) {
+    const d = new Date(p.published_at || p.updated_at);
+    const key = d.toLocaleDateString(locale(), { month: "long", year: "numeric" });
+    if (!groups.length || groups[groups.length - 1].key !== key) groups.push({ key, items: [] });
+    groups[groups.length - 1].items.push(p);
+  }
+  return `<div class="headrow"><div><h1>${T("Published|nav")}</h1><p class="lead">${T("Everything that went out, newest first, with its banner.")}</p></div></div>
+    ${groups.length ? groups.map((g) => `<h2>${esc(g.key)} <span class="count">${g.items.length}</span></h2>
+      <div class="pgrid">${g.items.map((p) => card(p, { big: true })).join("")}</div>`).join("") : `<div class="empty" style="margin-top:16px">${T("Nothing published yet.")}</div>`}`;
 }
 
 function viewSettings() {
@@ -1316,283 +1325,312 @@ function viewSettings() {
   const cad = cadence();
   const sig = (setting("signature", {}) || {}).text || "";
   const dayName = (i) => new Date(2026, 0, 4 + i).toLocaleDateString(locale(), { weekday: "short" });
+  const rules = [...S.d.rules].sort((a, b) => a.sort - b.sort || a.created_at.localeCompare(b.created_at));
   return `<h1>${T("Settings")}</h1>
-    <div class="panel" style="margin-top:18px"><h3>${T("Display")}</h3>
-      <div class="field"><label>${T("Language")}</label><div><span class="seg"><button type="button" class="${S.lang === "en" ? "on" : ""}" data-act="setLang" data-a="en">English</button><button type="button" class="${S.lang === "he" ? "on" : ""}" data-act="setLang" data-a="he">עברית</button></span></div>
-      <span class="hint">${T("Only changes what you see. Everyone else keeps their own language.")}</span></div>
-      ${S.lang === "en" ? `<label class="check"><input type="checkbox" data-act="toggleHe" ${S.showHe ? "checked" : ""}> ${T("Show the Hebrew translation next to the English")}</label>` : ""}
+    <div class="panel" style="margin-top:18px"><h3>${T("Language")}</h3>
+      <span class="seg"><button type="button" class="${S.lang === "en" ? "on" : ""}" data-act="setLang" data-a="en">English</button><button type="button" class="${S.lang === "he" ? "on" : ""}" data-act="setLang" data-a="he">עברית</button></span>
+      <p class="hint">${T("Only changes what you see. Everyone else keeps their own language.")}</p>
     </div>
-    <h2>${T("Team")}</h2>
-    <div class="tablewrap"><table><tr><th>${T("Name")}</th><th>${T("Email")}</th><th>${T("Role")}</th><th>${T("Status")}</th></tr>
-    ${S.d.team_members.map((m) => `<tr><td class="nowrap">${avatar(m.email)} ${esc(m.name)}</td><td class="mono" dir="ltr">${esc(m.email)}</td>
-      <td>${owner && m.email !== S.me ? `<select data-change="memberRole" data-a="${esc(m.email)}" style="width:auto"><option value="writer" ${m.role === "writer" ? "selected" : ""}>${T("Writer")}</option><option value="owner" ${m.role === "owner" ? "selected" : ""}>${T("Owner")}</option></select>` : m.role === "owner" ? T("Owner") : T("Writer")}</td>
-      <td>${owner && m.email !== S.me ? `<button class="btn sm ghost" data-act="memberActive" data-a="${esc(m.email)}">${m.active ? T("Active · switch off") : T("Off · switch on")}</button>` : m.active ? T("Active") : T("Off")}</td></tr>`).join("")}</table></div>
-    ${owner ? `<form data-form="addMember" class="panel" style="margin-top:12px"><h3>${T("Add someone")}</h3>
-      <div class="row3"><div class="field"><label>${T("Google email")}</label><input type="email" name="email" dir="ltr" required placeholder="name@jaygptpro.com"></div>
-      <div class="field"><label>${T("Name")}</label><input type="text" name="name" dir="auto"></div>
-      <div class="field"><label>${T("Role")}</label><select name="role"><option value="writer">${T("Writer")}</option><option value="owner">${T("Owner")}</option></select></div></div>
-      <input type="hidden" name="color" value="#0c8f6f"><button class="btn go">${T("Add")}</button>
-      <p class="muted small" style="margin-top:8px">${T("They sign in with that Google account. Anyone not on this list sees nothing.")}</p></form>` : ""}
-    <form data-form="saveSettings" class="panel" style="margin-top:22px"><h3>${T("Publishing")}</h3>
+    <div class="panel"><div class="headrow"><h3>${T("House rules")}</h3><div class="btns"><button class="btn sm" data-act="copyRules">${T("Copy as a prompt")}</button>${owner ? `<button class="btn sm" data-act="addRule">${T("+ Rule")}</button>` : ""}</div></div>
+      <p class="hint">${T("Every note from Jay that is a rule and not a one-off fix. Copy them as a prompt for your own Claude, so the rules go in while you write.")}</p>
+      <ol class="rules">${rules.map((r) => {
+        const b = biText(r.body, r.body_he);
+        return `<li class="${r.active ? "" : "off"}"><div dir="auto">${esc(b.main)}</div>${b.sub ? `<div class="t-sub" dir="auto">${esc(b.sub)}</div>` : ""}
+        <div class="who">${r.check_key ? `<span class="pill go">${T("checked automatically")}</span>` : ""}<span dir="auto">${esc(r.source || "")}</span>
+        ${owner ? `<button class="linkbtn" data-act="editRule" data-a="${r.id}">${T("Edit")}</button><button class="linkbtn" data-act="toggleRule" data-a="${r.id}">${r.active ? T("Switch off") : T("Switch on")}</button><button class="linkbtn" data-act="deleteRule" data-a="${r.id}">${T("Delete")}</button>` : ""}</div></li>`;
+      }).join("")}</ol>
+    </div>
+    <form data-form="saveSettings" class="panel"><h3>${T("Publishing")}</h3>
       <div class="field"><label>${T("Publishing days (WhatsApp)")}</label><div class="btns">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<label class="check"><input type="checkbox" name="day" value="${i}" ${cad.days.includes(i) ? "checked" : ""} ${owner ? "" : "disabled"}> ${esc(dayName(i))}</label>`).join("")}</div></div>
       <div class="field" style="max-width:220px"><label>${T("Emails per week")}</label><input type="number" min="0" max="7" name="email_per_week" value="${cad.email_per_week}" ${owner ? "" : "disabled"}></div>
       <div class="field"><label>${T("Signature added under every WhatsApp post")}</label><textarea name="signature" dir="auto" ${owner ? "" : "disabled"}>${esc(sig)}</textarea>
       <span class="hint">${T("Added only when the post text has no group link of its own.")}</span></div>
       ${owner ? `<button class="btn go">${T("Save")}</button>` : ""}
     </form>
-    <p style="margin-top:22px"><button class="btn ghost" data-act="signOut">${T("Sign out")}</button></p>`;
+    <div class="panel"><h3>${T("Team")}</h3>
+    <div class="tablewrap"><table><tr><th>${T("Name")}</th><th>${T("Email")}</th><th>${T("Role")}</th><th>${T("Status")}</th></tr>
+    ${S.d.team_members.map((m) => `<tr><td class="nowrap">${avatar(m.email, "sm")} ${esc(m.name)}</td><td class="mono" dir="ltr">${esc(m.email)}</td>
+      <td>${owner && m.email !== S.me ? `<select data-change="memberRole" data-a="${esc(m.email)}" style="width:auto"><option value="writer" ${m.role === "writer" ? "selected" : ""}>${T("Writer")}</option><option value="owner" ${m.role === "owner" ? "selected" : ""}>${T("Owner")}</option></select>` : m.role === "owner" ? T("Owner") : T("Writer")}</td>
+      <td>${owner && m.email !== S.me ? `<button class="btn sm ghost" data-act="memberActive" data-a="${esc(m.email)}">${m.active ? T("Active · switch off") : T("Off · switch on")}</button>` : m.active ? T("Active") : T("Off")}</td></tr>`).join("")}</table></div>
+    ${owner ? `<form data-form="addMember" style="margin-top:16px"><div class="row3"><div class="field"><label>${T("Google email")}</label><input type="email" name="email" dir="ltr" required placeholder="name@jaygptpro.com"></div>
+      <div class="field"><label>${T("Name")}</label><input type="text" name="name" dir="auto"></div>
+      <div class="field"><label>${T("Role")}</label><select name="role"><option value="writer">${T("Writer")}</option><option value="owner">${T("Owner")}</option></select></div></div>
+      <input type="hidden" name="color" value="#2f68d8"><button class="btn">${T("Add someone")}</button>
+      <p class="hint" style="margin-top:8px">${T("They sign in with that Google account. Anyone not on this list sees nothing.")}</p></form>` : ""}
+    </div>
+    <p style="margin-top:22px">${T("Signed in as {me}", { me: S.me })} · <button class="linkbtn" data-act="signOut">${T("Sign out")}</button></p>`;
 }
 
-function viewNew() {
+// ---------------- the post, opened over the board ----------------
+function steps(p) {
+  const at = COLS.indexOf(p.stage);
+  return `<ol class="steps">${COLS.map((c, i) => `<li class="${i < at ? "done" : i === at ? "now" : ""}"><i>${i < at ? "✓" : i + 1}</i><span>${T(COL_ONE[c])}</span></li>`).join("")}</ol>`;
+}
+
+function drawerPost(p) {
+  const owner = isOwner();
+  const mine = p.author === S.me;
+  const live = p.status !== "rejected";
+  const canWrite = owner || (live && ["idea", "draft", "final"].includes(p.stage));
+  const ch = S.channel[p.id] || "whatsapp";
+  const v = shownVersion(p.id, ch);
+  const vs = versionsOf(p.id, ch);
+  const isLatest = v && v.n === vs[vs.length - 1].n;
+  const notes = notesOf(p.id);
+  const assets = assetsOf(p.id);
+  ensureUrls(assets.filter(isMedia));
+  const tt = displayTitle(p);
+  const editing = S.edit && S.edit.postId === p.id ? S.edit : null;
+  const next = nextStep(p);
+
+  // ---- date box (ready and later) ----
+  let dateBox = "";
+  if (p.stage === "ready") {
+    dateBox = `<section class="sec datebox ${p.pinned_date ? "" : "need"}"><h3>${T("Publishing date")}</h3>
+      <div class="btns"><input type="date" min="${todayStr()}" value="${esc(p.pinned_date || "")}" data-change="date" data-a="${p.id}">
+      ${p.pinned_date ? `<b>${esc(fmtDow(p.pinned_date))}</b><button class="linkbtn" data-act="setDate" data-a="${p.id}" data-b="">${T("Remove the date")}</button>`
+        : `<button class="btn sm go" data-act="nextFree" data-a="${p.id}">${T("Next free day: {d}", { d: fmtDay(nextFreeDay(p.id)) })}</button>`}
+      <button class="btn sm" data-act="hotNow" data-a="${p.id}" title="${T("First publishing day from today; the rest move a day forward")}">🔥 ${T("First in line")}</button></div></section>`;
+  } else if (p.stage === "published") {
+    dateBox = `<section class="sec"><h3>${T("Published")}</h3><div class="btns"><b>${esc(p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "")}</b>
+      <label class="small muted">${T("Reactions")} ${owner ? `<input type="number" min="0" style="width:90px" value="${p.reactions ?? ""}" data-change="reactions" data-a="${p.id}">` : `<b>${esc(p.reactions ?? "–")}</b>`}</label></div></section>`;
+  }
+
+  // ---- visuals ----
+  const visCard = (a) => {
+    const url = cachedUrl(a);
+    const isImg = (a.mime || "").startsWith("image/");
+    const isVid = (a.mime || "").startsWith("video/");
+    const media = url ? (isImg ? `<img alt="" src="${esc(url)}" loading="lazy">` : isVid ? `<video src="${esc(url)}" controls muted playsinline preload="metadata"></video>` : `<span class="mono">${esc(a.filename)}</span>`) : isMedia(a) ? `<span class="muted small">${T("loading…")}</span>` : `<span class="mono small">${esc(a.filename)}</span>`;
+    return `<div class="vcard ${esc(a.status)}"><div class="im">${media}${a.status === "approved" ? `<span class="v ok">✓ ${T("approved")}</span>` : a.status === "replaced" ? `<span class="v">${T("replaced")}</span>` : ""}</div>
+      <div class="bd"><div class="fn" dir="auto" title="${esc(a.filename)}">${esc(a.filename)}</div>
+      <div class="btns">
+        <button class="btn sm" data-act="download" data-a="${a.id}">↓ ${T("Download")}</button>
+        ${isImg ? `<button class="btn sm" data-act="copyImage" data-a="${a.id}">${T("Copy image")}</button>` : ""}
+        ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">${T("Share / save")}</button>` : ""}
+        ${owner && a.status === "pending" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>` : ""}
+      </div>
+      <div class="lnk">${a.status !== "approved" ? `<button class="linkbtn" data-act="assetReplace" data-a="${a.id}">${a.status === "replaced" ? T("Bring back") : T("Mark replaced")}</button>` : ""}
+        ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="linkbtn" data-act="assetDelete" data-a="${a.id}">${T("Delete")}</button>` : ""}
+        <span class="muted">${esc(nameOf(a.author))} · ${esc(ago(a.created_at))}</span></div></div></div>`;
+  };
+  const shown = assets.filter((a) => a.status !== "replaced");
+  const old = assets.filter((a) => a.status === "replaced");
+  const visuals = `<section class="sec"><h3>${T("Banner and images")} <span class="count">${shown.length}</span></h3>
+    <div class="vis">${shown.map(visCard).join("")}
+      <label class="drop" data-drop="${p.id}"><b>+ ${T("Upload a banner, image or video")}</b><span>${T("Drop files here or choose. Up to 50 MB each, the original file is kept.")}</span>
+        <input type="file" multiple accept="image/*,video/*,application/pdf" data-upload="${p.id}"></label>
+    </div>
+    ${old.length ? `<details class="more-old"><summary>${T("Replaced")} (${old.length})</summary><div class="vis">${old.map(visCard).join("")}</div></details>` : ""}</section>`;
+
+  // ---- the idea ----
+  const ib = biText(p.idea, p.idea_he);
+  const ideaSec = `<section class="sec"><h3>${T("The idea")}${canWrite ? `<button class="linkbtn" data-act="editIdea" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
+    <div class="pre" dir="auto">${p.idea ? esc(ib.main) : `<span class="muted">${T("No pitch written.")}</span>`}</div>${ib.sub ? `<div class="pre t-sub" dir="auto">${esc(ib.sub)}</div>` : ""}
+    <div class="meta-row">${p.score ? `<span class="pill blue">${T("Score {n}/10", { n: p.score })}</span>` : ""}${p.news_date ? `<span>${T("News from {d}", { d: fmtDay(p.news_date) })}</span>` : ""}${p.covered_before ? `<span>${T("Covered before:")} <span dir="auto">${esc(p.covered_before)}</span></span>` : ""}</div></section>`;
+
+  // ---- headlines and text ----
+  let textSec = "";
+  if (editing) {
+    const seed = editing.seed || {};
+    const base = latest(p.id, ch) || {};
+    const open = openNotes(p.id);
+    const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) });
+    textSec = `<form data-form="saveEdit" class="sec editbox"><h3>${title} <span class="muted">· v${(vs.length ? vs[vs.length - 1].n : 0) + 1}</span></h3>
+      <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? (base.headlines || []).map((h) => h.en).join("\n"))}</textarea></div>
+      <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : T("Text")}</label><textarea class="big" name="body" dir="auto">${esc(seed.body ?? base.body ?? "")}</textarea></div>
+      <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" style="min-height:64px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
+      ${!owner ? `<div class="field"><label>${T("What changed (for Jay)")}</label><input type="text" name="writer_note" dir="auto" placeholder="${T("e.g. new headline, added the source")}"></div>` : ""}
+      ${open.length ? `<div class="field"><label>${T("Notes this version fixes")}</label>${open.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> <span dir="auto">${esc(biText(n.body, n.body_he).main.slice(0, 140))}</span></label>`).join("")}</div>` : ""}
+      <div class="btns"><button class="btn go">${owner || ch !== "whatsapp" ? T("Save") : T("Save and send to Jay")}</button><button type="button" class="btn ghost" data-act="cancelEdit">${T("Cancel")}</button></div></form>`;
+  } else if (v) {
+    const ci = chosenIndex(v);
+    const nH = (v.headlines || []).length;
+    const canPick = isLatest && (owner || canWrite);
+    const hl = (v.headlines || []).map((h, i) => {
+      const hb = biText(h.en, h.he);
+      return `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${canPick ? "" : "disabled"}>
+        <span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span>${h.pick ? `<span class="wp">${T("writer’s pick")}</span>` : ""}</button>`;
+    }).join("");
+    const mode = S.view[p.id] || (S.lang === "he" ? "he" : "en");
+    const prev = vs.find((x) => x.n === v.n - 1);
+    let body;
+    if (mode === "wa" && ch === "whatsapp") {
+      const cover = coverOf(p.id);
+      const cu = cover ? cachedUrl(cover) : "";
+      body = `<div class="wa" dir="ltr"><div class="bub" dir="auto">${cu ? ((cover.mime || "").startsWith("video/") ? `<video src="${esc(cu)}" muted playsinline></video>` : `<img alt="" src="${esc(cu)}">`) : ""}${waHtml(composeWhatsApp(p, v))}<div class="tm">${new Date().toTimeString().slice(0, 5)}</div></div></div>`;
+    } else if (mode === "he") {
+      body = `<div class="body-he pre" dir="rtl">${esc(v.body_he || t("Translating…"))}</div>`;
+    } else {
+      body = S.diff[p.id] && prev ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`;
+    }
+    const seg = (k, label) => `<button class="${mode === k ? "on" : ""}" data-act="view" data-a="${p.id}" data-b="${k}">${label}</button>`;
+    textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
+      ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
+      ${isLatest && canWrite ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
+      <section class="sec"><h3><span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span><span class="sp"></span>
+        <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("changes")}</button>` : ""}</span></h3>
+        ${mode === "he" ? `<p class="hint">${T("A literal translation for reading. What goes out is the English.")}</p>` : ""}
+        ${body}
+        ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> <span dir="auto">${esc(biText(v.writer_note, v.writer_note_he).main)}</span></div>` : ""}
+        <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · <b>${T("an older version")}</b>` : ""}
+          ${canWrite && isLatest ? `<span class="sp"></span><button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="${ch}" data-c="${!owner && p.status === "changes" ? "fix" : "edit"}">✎ ${T("Edit the text")}</button>` : ""}</div>
+      </section>`;
+  } else if (p.stage !== "idea") {
+    textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(t(CHANNELS.find((c) => c[0] === ch)[1]))}</h3>
+      <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
+      ${canWrite ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
+  }
+
+  // ---- notes ----
+  const noteRow = (n) => {
+    const closed = n.status === "closed";
+    const fixable = n.kind === "note";
+    const nb = biText(n.body, n.body_he);
+    const ab = biText(n.answer, n.answer_he);
+    return `<div class="note ${fixable ? "fixable" : ""} ${closed ? "closed" : ""}">${avatar(n.author, "sm")}<div class="n-body">
+      <div class="n-who"><b>${esc(nameOf(n.author))}</b> <span>${esc(ago(n.created_at))}${n.version_n ? ` · v${n.version_n}` : ""}</span>
+        ${fixable ? `<button class="tick ${closed ? "done" : ""}" data-act="toggleNote" data-a="${n.id}" ${owner || canWrite ? "" : "disabled"}>${closed ? `✓ ${T("fixed")}${n.closed_in ? ` v${n.closed_in}` : ""}` : T("Mark fixed")}</button>` : ""}</div>
+      <div class="pre" dir="auto">${esc(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${esc(nb.sub)}</div>` : ""}
+      ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(ab.main)}</span></div>` : ""}
+      <div class="n-act">${owner && fixable && !n.is_rule ? `<button class="linkbtn" data-act="noteToRule" data-a="${n.id}">${T("Make it a house rule")}</button>` : ""}${n.is_rule ? `<span class="pill go">${T("rule")}</span>` : ""}
+        ${n.author === S.me || owner ? `<button class="linkbtn" data-act="deleteNote" data-a="${n.id}">${T("delete")}</button>` : ""}</div>
+    </div></div>`;
+  };
+  const nOpen = openNotes(p.id).length;
+  const notesSec = `<section class="sec"><h3>${T("Notes")} <span class="count">${notes.length}</span>${nOpen ? `<span class="pill st-changes">${plural(nOpen, "1 open", "{n} open")}</span>` : ""}</h3>
+    ${notes.map(noteRow).join("")}
+    <form data-form="addNote" data-post="${p.id}" class="noteform"><textarea name="note" dir="auto" placeholder="${owner ? T("A note for the writer…") : T("A note or a question for Jay…")}"></textarea><button class="btn sm">${T("Add")}</button></form></section>`;
+
+  // ---- more details ----
+  const otherCh = CHANNELS.filter(([k]) => k !== "whatsapp");
+  const checks = latest(p.id) ? checksFor(p, latest(p.id)) : [];
+  const srcs = (latest(p.id) || {}).sources || [];
+  const moreSec = `<section class="sec more"><button class="linkbtn morebtn" data-act="more" data-a="${p.id}">${S.more[p.id] ? "▾" : "▸"} ${T("More: other channels, sources, rule checks, details")}</button>
+    ${S.more[p.id] ? `
+      <h3>${T("Channels")}</h3><div class="chips">${CHANNELS.map(([k, label]) => `<button class="chip ${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${versionsOf(p.id, k).length ? ` · v${versionsOf(p.id, k).length}` : ""}</button>`).join("")}</div>
+      <p class="hint">${T("Email and LinkedIn versions live here. The text above shows the channel you pick.")}${otherCh.some(([k]) => latest(p.id, k)) ? "" : ""}</p>
+      ${srcs.length ? `<h3>${T("Sources")}</h3>${srcs.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}` : ""}
+      ${checks.length ? `<h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}` : ""}
+      <h3>${T("Details")}</h3>
+      <div class="meta-row">
+        <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category">${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
+        <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried"><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
+        <label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date"></label>
+        ${p.stage !== "ready" && p.stage !== "published" ? `<label>📅 ${T("Planned date")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="date" data-a="${p.id}"></label>` : ""}
+        <button class="btn sm ${p.hot ? "hot" : ""}" data-act="hot" data-a="${p.id}">🔥 ${p.hot ? T("Hot") : T("Mark hot")}</button>
+        <button class="btn sm ${p.email_too ? "dark" : ""}" data-act="emailToo" data-a="${p.id}">✉ ${p.email_too ? T("Also email") : T("Email too?")}</button>
+        ${canWrite ? `<button class="btn sm" data-act="renameTitle" data-a="${p.id}">${T("Working title")}</button>` : ""}
+      </div>
+      ${owner ? `<h3>${T("Jay only")}</h3><div class="meta-row"><label>${T("Move to")} <select data-change="moveTo" data-a="${p.id}">${COLS.map((c) => `<option value="${c}" ${p.stage === c ? "selected" : ""}>${T(COL_ONE[c])}</option>`).join("")}</select></label>
+        <button class="btn sm ghost" data-act="deletePost" data-a="${p.id}">${T("Delete the post")}</button></div>` : ""}
+    ` : ""}</section>`;
+
+  // ---- the action bar at the bottom ----
+  const acts = [];
+  let say = "";
+  if (!live) {
+    say = p.skip_reason ? `${T("Rejected")}: <span dir="auto">${esc(p.skip_reason)}</span>` : T("Rejected");
+    if (owner) acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Bring it back")}</button>`);
+  } else if (p.stage === "ready") {
+    say = p.pinned_date ? T("Goes out {d}", { d: fmtDay(p.pinned_date) }) : T("Pick a date above.");
+    acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) })}</button>`);
+    if (coverOf(p.id)) acts.push(`<button class="btn" data-act="downloadCover" data-a="${p.id}">↓ ${T("Banner")}</button>`);
+    if (owner) acts.push(`<button class="btn" data-act="publish" data-a="${p.id}">✓ ${T("Mark published")}</button>`);
+  } else if (p.stage === "published") {
+    say = T("Published {d}.", { d: p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "" });
+    acts.push(`<button class="btn" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy the text")}</button>`);
+    if (owner) acts.push(`<button class="btn ghost" data-act="unpublish" data-a="${p.id}">${T("Not published after all")}</button>`);
+  } else if (owner) {
+    const label = p.stage === "idea" ? "Approve the idea" : p.stage === "draft" ? "Approve the draft" : "Approve · to Ready";
+    if (p.status !== "approved" || p.stage === "final") acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}">✓ ${T(label)}</button>`);
+    if (p.status === "approved" && p.stage === "idea") acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="draft">${T("Write the first draft")}</button>`);
+    if (p.status === "approved" && p.stage === "draft") acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Upload the final version")}</button>`);
+    if (p.status !== "changes") acts.push(`<button class="btn" data-act="sendBack" data-a="${p.id}">↩ ${T("Send back")}</button>`);
+    acts.push(`<button class="btn ghost" data-act="reject" data-a="${p.id}">✕ ${T("Reject")}</button>`);
+    say = p.status === "waiting" ? T("Your call.") : p.status === "changes" ? T("Sent back. Waiting for a new version.") : T("Approved.");
+  } else {
+    if (p.status === "approved" && p.stage === "idea") {
+      say = T("Jay approved the idea.");
+      acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="draft">${T("Write the first draft")}</button>`);
+    } else if (p.status === "approved" && p.stage === "draft") {
+      say = T("Jay approved the draft. Next: the final version with the banner.");
+      acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Upload the final version")}</button>`);
+    } else if (p.status === "changes") {
+      say = nOpen ? plural(nOpen, "Jay sent it back with 1 note.", "Jay sent it back with {n} notes.") : T("Jay sent it back.");
+      if (p.stage === "idea" || !latest(p.id)) acts.push(`<button class="btn go" data-act="resubmit" data-a="${p.id}">${T("Send to Jay again")}</button>`);
+      else acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="fix">${T("Fix and send again")}</button>`);
+    } else {
+      say = T("Waiting for Jay.");
+    }
+  }
+
+  const order = p.stage === "idea"
+    ? [ideaSec, textSec, notesSec, visuals]
+    : p.stage === "ready" || p.stage === "published"
+      ? [dateBox, visuals, textSec, notesSec, ideaSec]
+      : [textSec, visuals, notesSec, ideaSec];
+  return `<div class="scrim" data-act="close"></div>
+  <aside class="drawer" role="dialog" aria-modal="true">
+    <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button>${steps(p)}</header>
+    <div class="d-body">
+      <div class="d-meta">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
+      <h1 class="d-title" dir="auto">${esc(tt.main)}</h1>${tt.sub ? `<div class="d-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
+      ${next ? `<div class="nextbox">${esc(next)}</div>` : ""}
+      ${order.join("")}
+      ${moreSec}
+    </div>
+    <footer class="d-foot"><span class="say">${say}</span><span class="sp"></span>${acts.join("")}</footer>
+  </aside>`;
+}
+
+function drawerNew() {
   const mode = S.newMode;
   const owner = isOwner();
   const catSel = (val) => `<select name="category">${CATS.map((c) => `<option value="${c}" ${val === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select>`;
   let body;
   if (mode === "idea") {
-    body = `<form data-form="createIdea" class="panel">
-      <div class="row2"><div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
-      <div class="field"><label>${T("Category")}</label>${catSel("tip")}</div></div>
+    body = `<form data-form="createIdea">
+      <div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
       <div class="field"><label>${T("The pitch")}</label><textarea name="idea" dir="auto" placeholder="${T("Hook, why now, what readers get. Two to five lines.")}"></textarea></div>
-      <div class="row3"><div class="field"><label>${T("When the news came out (if news)")}</label><input type="date" name="news_date"></div>
-      <div class="field"><label>${T("Your score, 1 to 10")}</label><input type="number" name="score" min="1" max="10"></div>
-      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> ${T("Hot: it goes stale fast")}</label></div></div>
-      <div class="field"><label>${T("Covered before?")}</label><input type="text" name="covered_before" dir="auto" placeholder="${T("e.g. a similar post went out on 29 Mar")}"></div>
-      <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" placeholder="https://..."></textarea></div>
-      <button class="btn go">${T("Add idea")}</button></form>`;
+      <div class="row2"><div class="field"><label>${T("Category")}</label>${catSel("tip")}</div>
+      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label></div></div>
+      <details><summary class="linkbtn">${T("More details (optional)")}</summary>
+        <div class="row2"><div class="field"><label>${T("When the news came out (if news)")}</label><input type="date" name="news_date"></div>
+        <div class="field"><label>${T("Your score, 1 to 10")}</label><input type="number" name="score" min="1" max="10"></div></div>
+        <div class="field"><label>${T("Covered before?")}</label><input type="text" name="covered_before" dir="auto" placeholder="${T("e.g. a similar post went out on 29 Mar")}"></div>
+        <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" placeholder="https://..."></textarea></div>
+      </details>
+      <div class="d-foot inline"><span class="sp"></span><button class="btn go">${T("Add the idea")}</button></div></form>`;
   } else if (!S.split) {
-    body = `<form data-form="splitDraft" class="panel">
+    body = `<form data-form="splitDraft">
       <div class="field"><label>${T("Paste the full draft")}</label><textarea class="big" name="draft" dir="auto" placeholder="${T("Headline options, the post, sources and notes for Jay, in one block. The desk splits it into fields.")}">${esc(S.draftText || "")}</textarea></div>
-      <button class="btn go">${T("Split it into fields →")}</button>
-      <p class="muted small" style="margin-top:8px">${T("Nothing is saved until you check the fields and press Create.")}</p></form>`;
+      <p class="hint">${T("For hot news: it goes straight to First draft and Jay answers on the text.")}</p>
+      <div class="d-foot inline"><span class="sp"></span><button class="btn go">${T("Split it into fields →")}</button></div></form>`;
   } else {
     const sp = S.split;
-    body = `<form data-form="createDraft" class="panel">
-      <div class="row3"><div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" value="${esc((sp.headlines[0] || {}).en || "")}"></div>
-      <div class="field"><label>${T("Category")}</label>${catSel(sp.category)}</div>
-      <div class="field"><label>${T("When the news came out")}</label><input type="date" name="news_date"></div></div>
+    body = `<form data-form="createDraft">
+      <div class="row2"><div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" value="${esc((sp.headlines[0] || {}).en || "")}"></div>
+      <div class="field"><label>${T("Category")}</label>${catSel(sp.category)}</div></div>
       <div class="field"><label>${T("Headline options, one per line")}</label><textarea name="headlines" dir="auto">${esc(sp.headlines.map((h) => h.en).join("\n"))}</textarea>
       ${sp.headlines.some((h) => h.pick) ? `<span class="hint">${T("The writer's pick: {x}", { x: sp.headlines.find((h) => h.pick).en })}</span>` : ""}</div>
       <div class="field"><label>${T("Post text (WhatsApp format, no headline, no signature)")}</label><textarea class="big" name="body" dir="auto">${esc(sp.body)}</textarea></div>
       <div class="row2"><div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr">${esc(sp.sources.map((s) => `${s.url} ${s.label}`).join("\n"))}</textarea></div>
       <div class="field"><label>${T("Notes for Jay")}</label><textarea name="notes" dir="auto">${esc(sp.notes)}</textarea></div></div>
-      <div class="field"><label>${T("The idea in a line (optional)")}</label><input type="text" name="idea" dir="auto"></div>
-      <label class="check" style="margin-bottom:12px"><input type="checkbox" name="hot"> ${T("Hot: it goes stale fast")}</label><br>
-      <div class="btns"><button class="btn go">${owner ? T("Create draft") : T("Create and send to Jay")}</button><button type="button" class="btn ghost" data-act="newMode" data-a="draft">${T("Start over")}</button></div></form>`;
+      <div class="row2"><div class="field"><label>${T("When the news came out")}</label><input type="date" name="news_date"></div>
+      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label></div></div>
+      <input type="hidden" name="idea" value="">
+      <div class="d-foot inline"><button type="button" class="btn ghost" data-act="newMode" data-a="draft">${T("Start over")}</button><span class="sp"></span><button class="btn go">${owner ? T("Create the draft") : T("Create and send to Jay")}</button></div></form>`;
   }
-  return `<h1>${T("New")}</h1><p class="lead">${owner ? T("Your own idea or post. It stays with you until you mark it ready.") : T("Start with an idea for Jay to say yes to. For hot news, paste the full draft and Jay answers both at once.")}</p>
-    <div style="margin:16px 0"><span class="seg"><button class="${mode === "idea" ? "on" : ""}" data-act="newMode" data-a="idea">${T("Idea")}</button><button class="${mode === "draft" ? "on" : ""}" data-act="newMode" data-a="draft">${T("Paste a full draft")}</button></span></div>
-    ${body}`;
-}
-
-function viewPost(id, reviewIdx) {
-  const p = post(id);
-  if (!p) return `<div class="empty" style="margin-top:30px">${T("This post doesn't exist anymore.")} <a href="#/board">${T("Back to the board")}</a></div>`;
-  const owner = isOwner();
-  const mine = p.author === S.me;
-  const canEdit = owner || mine || member(p.author).role !== "owner";
-  const ch = S.channel[p.id] || "whatsapp";
-  const chName = t(CHANNELS.find((c) => c[0] === ch)[1]);
-  const v = shownVersion(p.id, ch);
-  const vs = versionsOf(p.id, ch);
-  const isLatest = v && vs.length && v.n === vs[vs.length - 1].n;
-  const notes = notesOf(p.id);
-  const assets = assetsOf(p.id);
-  ensureUrls(assets.filter((a) => a.status !== "replaced" || assets.length < 6));
-  const tt = displayTitle(p);
-  const title = biText(tt.en, tt.he);
-  const sched = buildSchedule(3);
-  const editing = S.edit && S.edit.postId === p.id && S.edit.channel === ch;
-
-  const q = reviewIdx != null ? ownerQueue() : null;
-  const reviewBar = q ? `<div class="review-bar"><span>${T("Review · {a} of {b}", { a: Math.min(reviewIdx + 1, q.length), b: q.length })}</span>
-    <span class="btns">${reviewIdx > 0 ? `<a class="btn sm" href="#/review/${reviewIdx - 1}">${T("← Prev")}</a>` : ""}${reviewIdx < q.length - 1 ? `<a class="btn sm" href="#/review/${reviewIdx + 1}">${T("Next →")}</a>` : ""}<a class="btn sm ghost" href="#/">${T("Exit")}</a></span></div>` : "";
-
-  const head = `${reviewBar}<div class="post-head"><a class="btn sm ghost" href="#/board">${T("← Board")}</a>${tag(p.category)}
-      <span class="pill ${p.stage === "ready" ? "go" : p.stage === "review" || p.stage === "idea" ? "wait" : "mute"}">${esc(stageLabel(p.stage))}</span>
-      ${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${p.text_ok && p.stage === "writing" ? `<span class="pill go">${T("Text approved · banner next")}</span>` : ""}
-      ${sched.slotOf[p.id] ? `<span class="pill blue">${T("Goes out {d}", { d: fmtDay(sched.slotOf[p.id]) })}</span>` : ""}
-      <span class="by">${avatar(p.author)} ${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
-    <h1 class="post-title" dir="auto">${esc(title.main)}</h1>${title.sub ? `<div class="post-title-sub" dir="auto">${esc(title.sub)}</div>` : ""}
-    <div><button class="linkbtn metabtn" data-act="toggleMeta">${T("Details: category, date, hot, email")} ${S.metaOpen ? "▴" : "▾"}</button></div>${S.metaOpen ? `<div class="meta-row">
-      ${canEdit ? `<button class="btn sm ghost" data-act="renameTitle" data-a="${p.id}">${T("Working title")}: <span dir="auto">${esc(p.title.slice(0, 50))}${p.title.length > 50 ? "…" : ""}</span></button>` : ""}
-      <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category">${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
-      <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried"><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
-      ${p.category === "news" ? `<label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date"></label>` : ""}
-      <button class="btn sm ${p.hot ? "hot" : "ghost"}" data-act="hot" data-a="${p.id}">🔥 ${p.hot ? T("Hot") : T("Make hot")}</button>
-      <button class="btn sm ${p.email_too ? "dark" : "ghost"}" data-act="emailToo" data-a="${p.id}">✉ ${p.email_too ? T("Also email") : T("Email too?")}</button>
-      <label>🔒 ${T("Lock to")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="pin" data-a="${p.id}"></label>
-    </div>` : ""}`;
-
-  // idea block
-  const ib = biText(p.idea, p.idea_he);
-  const ideaBlock = p.idea || p.stage === "idea" ? `<div class="panel" style="margin-top:14px"><h3>${T("The idea")}${canEdit ? ` <button class="btn sm ghost" data-act="editIdea" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
-      <div class="${ib.sub ? "two" : ""}">
-        <div class="pre" dir="auto">${p.idea ? esc(ib.main) : T("No pitch written.")}</div>
-        ${ib.sub ? `<div class="pre muted" dir="auto">${esc(ib.sub)}</div>` : ""}
-      </div>
-      <div class="meta-row">${p.score ? `<span class="pill blue">${T("Score {n}/10", { n: p.score })}</span>` : ""}${p.covered_before ? `<span>${T("Covered before:")} <span dir="auto">${esc(p.covered_before)}</span></span>` : ""}${p.news_date ? `<span>${T("News from {d}", { d: fmtDay(p.news_date) })}</span>` : ""}</div>
-    </div>` : "";
-
-  // first column: headlines and the text in the reader's language. Second column: the other language.
-  let colA;
-  let colB = "";
-  if (editing) {
-    const seed = S.edit.seed || {};
-    const base = v || {};
-    const openNotes = notes.filter((n) => n.kind === "note" && n.status === "open");
-    colA = `<form data-form="saveEdit" class="panel"><h3>${ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: chName })} · ${T("saves as v{n}", { n: (vs.length ? vs[vs.length - 1].n : 0) + 1 })}</h3>
-      <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? (base.headlines || []).map((h) => h.en).join("\n"))}</textarea></div>
-      <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : T("Text")}</label><textarea class="big" name="body" dir="auto">${esc(seed.body ?? base.body ?? "")}</textarea></div>
-      <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" style="min-height:70px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
-      ${!owner ? `<div class="field"><label>${T("What changed (for Jay)")}</label><input type="text" name="writer_note" dir="auto" placeholder="${T("e.g. new headline, added the source")}"></div>` : ""}
-      ${openNotes.length ? `<div class="field"><label>${T("Notes this version fixes")}</label>${openNotes.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> <span dir="auto">${esc(n.body.slice(0, 120))}</span></label>`).join("<br>")}</div>` : ""}
-      <div class="btns"><button class="btn go">${T("Save as new version")}</button><button type="button" class="btn ghost" data-act="cancelEdit">${T("Cancel")}</button></div></form>`;
-  } else if (!v) {
-    colA = `<div class="panel"><h3>${ch === "whatsapp" ? T("The post") : esc(chName)}</h3>
-      <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
-      ${canEdit ? `<div class="btns" style="margin-top:10px"><button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</div>`;
-  } else {
-    const ci = chosenIndex(v);
-    const nH = (v.headlines || []).length;
-    const hl = (v.headlines || []).map((h, i) => {
-      const hb = biText(h.en, h.he);
-      return `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${isLatest && (owner || canEdit) ? "" : "disabled"}>
-        <span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span>${h.pick ? `<span class="wp">${T("writer’s pick")}</span>` : ""}</button>`;
-    }).join("");
-    const prev = vs.find((x) => x.n === v.n - 1);
-    const showDiff = S.diff[p.id] && prev;
-    const headlines = `<h3><span>${ch === "email" ? T("Subject lines") : T("Headline options")}</span><span style="color:${nH >= 3 ? "var(--go)" : "var(--hot)"}">${T("{n} of 3", { n: nH })}${ci >= 0 ? ` · ${T("picked")}` : owner && nH > 1 ? ` · ${T("pick one")}` : ""}</span></h3>
-      ${hl || `<div class="empty">${T("No headline options.")}</div>`}
-      ${isLatest && canEdit && (owner || !(p.stage === "ready" || p.text_ok)) ? `<div class="btns"><button class="btn sm ghost" data-act="addHeadline" data-a="${v.id}">${T("+ Option")}</button>${nH ? `<button class="btn sm ghost" data-act="removeHeadlinePrompt" data-a="${v.id}">${T("− Remove one")}</button>` : ""}</div>` : ""}`;
-    const enBlock = `<h3><span>${S.lang === "he" ? T("The English text · this is what goes out") : ch === "whatsapp" ? T("Post · English") : T("Text · English")}</span>
-        <span class="vtabs">${vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("")}${prev ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("changes")}</button>` : ""}</span></h3>
-      ${showDiff ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`}
-      ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> ${bi(v.writer_note, v.writer_note_he)}</div>` : ""}
-      <div class="meta" style="margin-top:8px">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · ${T("an older version")}` : ""}</div>
-      ${canEdit && isLatest ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${owner && !mine ? T("Edit the text myself") : T("New version")}</button>${!owner && (p.stage === "ready" || p.text_ok) && ch === "whatsapp" ? `<span class="muted small">${T("Jay approved this text. A new version goes back to him.")}</span>` : ""}</div>` : ""}`;
-    const heBlock = `<h3><span>${T("Hebrew · literal translation")}</span><span class="pill blue">${T("auto")}</span></h3>
-      <div class="body-he pre" dir="rtl">${esc(v.body_he || t("Translating…"))}</div>`;
-    if (S.lang === "he") {
-      colA = `<div class="panel">${headlines}<div class="gap"></div>${heBlock}</div>`;
-      colB = `<div class="panel">${enBlock}</div>`;
-    } else {
-      colA = `<div class="panel">${headlines}<div class="gap"></div>${enBlock}</div>`;
-      colB = S.showHe ? `<div class="panel">${heBlock}</div>` : "";
-    }
-  }
-
-  // WhatsApp preview
-  const fin = approvedAsset(p.id) || finalAsset(p.id);
-  const finUrl = fin ? cachedUrl(fin) : "";
-  const preview = ch === "whatsapp" && v && !editing ? `<div class="panel"><h3>${T("WhatsApp preview")}</h3><div class="wa" dir="ltr"><div class="bub" dir="auto">${fin && finUrl ? ((fin.mime || "").startsWith("video/") ? `<video src="${esc(finUrl)}" muted playsinline></video>` : `<img alt="" src="${esc(finUrl)}">`) : ""}${waHtml(composeWhatsApp(p, v))}<div class="tm">${new Date().toTimeString().slice(0, 5)}</div></div></div></div>` : "";
-
-  // third column: notes, questions, sources, checks
-  const noteRow = (n) => {
-    const closed = n.status === "closed";
-    const canToggle = n.kind !== "question" && (owner || canEdit);
-    const ck = n.kind === "question" ? `<span class="ck q">${n.answer ? "✓" : "?"}</span>` : `<button class="ck ${closed ? "done" : ""}" data-act="toggleNote" data-a="${n.id}" ${canToggle ? "" : "disabled"} title="${closed ? T("Reopen") : T("Mark fixed")}">${closed ? "✓" : ""}</button>`;
-    const nb = biText(n.body, n.body_he);
-    const ab = biText(n.answer, n.answer_he);
-    return `<div class="note ${n.kind}">${ck}<div style="flex:1;min-width:0">
-      <div class="pre" dir="auto">${n.kind === "question" ? `<b>${T("Question:")}</b> ` : n.kind === "team" ? `<b>${T("Team:")}</b> ` : ""}${esc(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${esc(nb.sub)}</div>` : ""}
-      ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(ab.main)}</span>${ab.sub ? `<div class="t-sub" dir="auto">${esc(ab.sub)}</div>` : ""}</div>` : ""}
-      <div class="who">${esc(nameOf(n.author))} · ${esc(ago(n.created_at))}${n.version_n ? ` · ${T("on v{n}", { n: n.version_n })}` : ""}${closed && n.closed_in ? `<span class="fix">${T("fixed in v{n}", { n: n.closed_in })}</span>` : ""}
-        ${n.kind === "question" && !n.answer && owner ? `<button class="btn sm" data-act="answer" data-a="${n.id}" data-b="Yes">${T("Yes")}</button><button class="btn sm" data-act="answer" data-a="${n.id}" data-b="No">${T("No")}</button><button class="btn sm ghost" data-act="answer" data-a="${n.id}">${T("Answer")}</button>` : ""}
-        ${owner && n.kind === "note" && !n.is_rule ? `<button class="btn sm ghost" data-act="noteToRule" data-a="${n.id}" title="${T("Add to house rules")}">${T("Make it a rule")}</button>` : ""}${n.is_rule ? `<span class="pill go">${T("rule")}</span>` : ""}
-        ${n.author === S.me || owner ? `<button class="btn sm ghost" data-act="deleteNote" data-a="${n.id}">${T("delete")}</button>` : ""}</div>
-    </div></div>`;
-  };
-  const jayNotes = notes.filter((n) => n.kind === "note");
-  const otherNotes = notes.filter((n) => n.kind !== "note");
-  const openCount = jayNotes.filter((n) => n.status === "open").length;
-  const checks = ch === "whatsapp" && v ? checksFor(p, latest(p.id)) : [];
-  const right = `<div class="panel"><h3><span>${T("Jay's notes")}</span><span style="color:${openCount ? "var(--hot)" : "var(--go)"}">${T("{a} of {b} closed", { a: jayNotes.length - openCount, b: jayNotes.length })}</span></h3>
-      ${jayNotes.map(noteRow).join("") || `<div class="muted small">${T("No notes yet.")}</div>`}
-      ${otherNotes.length ? `<h3>${T("Questions and team")}</h3>${otherNotes.map(noteRow).join("")}` : ""}
-      <form data-form="addNote" data-post="${p.id}" style="margin-top:10px">
-        <textarea name="note" dir="auto" style="min-height:64px" placeholder="${owner ? T("Add a note for the writer") : T("A note for the team, or a question for Jay")}"></textarea>
-        <div class="btns" style="margin-top:6px">${owner ? `<input type="hidden" name="kind" value="note">` : `<select name="kind" style="width:auto"><option value="team">${T("Team note")}</option><option value="question">${T("Question for Jay")}</option></select>`}<button class="btn sm dark">${T("Add")}</button></div>
-      </form></div>
-    ${v && (v.sources || []).length ? `<div class="panel"><h3>${T("Sources")}</h3>${v.sources.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}</div>` : ""}
-    ${checks.length ? `<div class="panel"><h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}</div>` : ""}`;
-
-  // visuals
-  const visCard = (a) => {
-    const url = cachedUrl(a);
-    const isImg = (a.mime || "").startsWith("image/");
-    const isVid = (a.mime || "").startsWith("video/");
-    const media = url ? (isImg ? `<img alt="" src="${esc(url)}" loading="lazy">` : isVid ? `<video src="${esc(url)}" controls muted playsinline preload="metadata"></video>` : `<span class="mono">${esc(a.filename)}</span>`) : `<span class="muted">${T("loading…")}</span>`;
-    return `<div class="vcard ${a.status}"><div class="im">${media}<span class="v">${a.stage === "final" ? T("final") : T("sketch")}${a.status === "approved" ? ` · ${T("approved")}` : a.status === "replaced" ? ` · ${T("replaced")}` : ""}</span></div>
-      <div class="bd"><div><b dir="auto">${esc(a.filename)}</b> <span class="muted">${a.size ? (a.size / 1048576).toFixed(1) + " MB" : ""}</span></div>
-      <div class="muted">${esc(nameOf(a.author))} · ${esc(ago(a.created_at))}</div>
-      <div class="btns">
-        <button class="btn sm dark" data-act="download" data-a="${a.id}">${T("Download original ↓")}</button>
-        ${isImg ? `<button class="btn sm" data-act="copyImage" data-a="${a.id}">${T("Copy image")}</button>` : ""}
-        ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">${T("Share / save")}</button>` : ""}
-        ${owner && a.status !== "approved" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>` : ""}
-        ${a.status === "replaced" ? `<button class="btn sm ghost" data-act="assetRestore" data-a="${a.id}">${T("Restore")}</button>` : `<button class="btn sm ghost" data-act="assetReplace" data-a="${a.id}">${T("Mark replaced")}</button>`}
-        ${a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetFinal" data-a="${a.id}">${a.stage === "final" ? T("Make it a sketch") : T("Make it final")}</button>` : ""}
-        ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="btn sm ghost" data-act="assetDelete" data-a="${a.id}">${T("Delete")}</button>` : ""}
-      </div></div></div>`;
-  };
-  const visuals = `<h2>${T("Visuals")} <span class="count">${assets.filter((a) => a.status !== "replaced").length}</span></h2>
-    <div class="vis">${assets.map(visCard).join("")}
-      <label class="drop" data-drop="${p.id}"><b>${T("Upload a banner, image or video")}</b><span>${T("Drop files here or choose. Up to 50 MB each, the original file is kept. Bigger videos: a Drive link in a note.")}</span>
-        <span class="btns"><select data-upstage="${p.id}" style="width:auto"><option value="sketch">${T("Sketch")}</option><option value="final">${T("Final")}</option></select>
-        <input type="file" multiple accept="image/*,video/*,application/pdf" data-upload="${p.id}" style="max-width:210px"></span></label>
-    </div>`;
-
-  // action bar
-  const fa = finalAsset(p.id);
-  const acts = [];
-  let why = "";
-  if (owner) {
-    if (p.stage === "idea") {
-      why = T("An idea. Say yes and it moves to writing.");
-      acts.push(`<button class="btn go" data-act="ideaYes" data-a="${p.id}">${T("Yes")}</button><button class="btn" data-act="ideaChange" data-a="${p.id}">${T("Yes, with a change")}</button><button class="btn ghost" data-act="ideaNotNow" data-a="${p.id}">${T("Not now")}</button>`);
-      if (!latest(p.id)) acts.push(`<button class="btn ghost" data-act="addDraftToIdea" data-a="${p.id}">${T("Write it myself")}</button>`);
-    } else if (p.stage === "review") {
-      why = openCount ? esc(plural(openCount, "1 open note. Send back, or approve anyway.", "{n} open notes. Send back, or approve anyway.")) : T("Your call: approve, or add notes and send back.");
-      acts.push(`<button class="btn" data-act="requestChanges" data-a="${p.id}">${openCount ? T("Send back with {n}", { n: openCount }) : T("Send back")}</button>`);
-      if (fa) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="withBanner">${T("Approve text + banner")}</button>`);
-      else acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="textOnly">${T("Approve text, banner next")}</button><button class="btn ghost" data-act="approve" data-a="${p.id}" data-b="noBanner">${T("Approve, no banner")}</button>`);
-    } else if (p.stage === "ready") {
-      why = T("Approved. Copy it, attach the banner, send, then mark it published.");
-      acts.push(`<button class="btn ghost" data-act="backToReview" data-a="${p.id}">${T("Back to review")}</button><button class="btn" data-act="publish" data-a="${p.id}">${T("Mark published")}</button>`);
-    } else if (p.stage === "writing") {
-      why = mine ? T("Your own draft.") : T("{name} is on it.", { name: nameOf(p.author) });
-      if (mine || p.text_ok) acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}" data-b="${fa ? "withBanner" : "noBanner"}">${T("Mark ready")}</button>`);
-    } else if (p.stage === "published") {
-      why = T("Published {d}.", { d: p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "" });
-      acts.push(`<button class="btn ghost" data-act="unpublish" data-a="${p.id}">${T("Not published after all")}</button>`);
-    } else {
-      why = `${esc(stageLabel(p.stage))}${p.skip_reason ? `: <span dir="auto">${esc(p.skip_reason)}</span>` : ""}`;
-      acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Back to ideas")}</button>`);
-    }
-    if (!["skipped", "parked", "published"].includes(p.stage)) acts.push(`<button class="btn ghost" data-act="skip" data-a="${p.id}">${T("Skip")}</button>`);
-    acts.push(`<button class="btn ghost" data-act="deletePost" data-a="${p.id}">${T("Delete")}</button>`);
-  } else {
-    if (p.stage === "writing" && (mine || member(p.author).role !== "owner")) {
-      why = p.text_ok ? T("Jay approved the text. Upload the final banner, then send it back.") : openCount ? esc(plural(openCount, "1 note to fix.", "{n} notes to fix.")) : T("When it's ready, send it to Jay.");
-      acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">${T("Send to Jay")}</button>`);
-    } else if (p.stage === "idea") {
-      why = T("Waiting for Jay's yes. For hot news, add the full draft now.");
-      if (!latest(p.id)) acts.push(`<button class="btn" data-act="addDraftToIdea" data-a="${p.id}">${T("Add the draft now")}</button>`);
-      else acts.push(`<button class="btn go" data-act="submit" data-a="${p.id}">${T("Send idea + draft to Jay")}</button>`);
-    } else why = esc(stageLabel(p.stage));
-  }
-  const copyBtn = v || latest(p.id, "whatsapp") ? `<button class="btn ${p.stage === "ready" ? "go" : "dark"}" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: chName })}</button>` : "";
-  const bar = `<div class="actionbar"><span class="why">${why}</span><span class="sp"></span>${acts.join("")}${copyBtn}</div>
-    <div class="morebar"><span class="why">${why}</span>${acts.join("")}</div>`;
-
-  const chtabs = `<div class="chtabs" style="margin-top:18px">${CHANNELS.map(([k, label]) => {
-    const n = versionsOf(p.id, k).length;
-    return `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${n ? ` · v${n}` : ""}${k === "email" && p.email_too ? " ✉" : ""}</button>`;
-  }).join("")}</div>`;
-
-  return `${head}${ideaBlock}${chtabs}
-    <div class="cols">${editing ? `<div style="grid-column:1/-1">${colA}</div>` : `<div>${colA}</div><div>${colB}${preview}</div><div>${right}</div>`}</div>
-    ${visuals}${bar}`;
+  return `<div class="scrim" data-act="close"></div>
+  <aside class="drawer narrow" role="dialog" aria-modal="true">
+    <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button><b>${T("New")}</b></header>
+    <div class="d-body">
+      <span class="seg"><button class="${mode === "idea" ? "on" : ""}" data-act="newMode" data-a="idea">💡 ${T("Idea")}</button><button class="${mode === "draft" ? "on" : ""}" data-act="newMode" data-a="draft">📝 ${T("A written draft")}</button></span>
+      <p class="hint" style="margin:10px 0 16px">${mode === "idea" ? T("An idea goes to the Ideas column. Jay approves it, then the first draft is written.") : T("Paste a draft from your Claude. The desk splits it into headlines, text, sources and notes.")}</p>
+      ${body}
+    </div>
+  </aside>`;
 }
 
 function markNumbers(text) {
@@ -1637,47 +1675,49 @@ function viewNotMember() {
 function modalHtml() {
   const m = S.modal;
   if (!m) return "";
+  const tx = (s) => (m.pre ? esc(s) : T(s));
   const field = m.noText ? "" : m.readonly ? `<textarea readonly class="big" dir="auto">${esc(m.text)}</textarea>` : m.input ? `<input type="text" name="v" dir="auto" value="${esc(m.value || "")}">` : `<textarea name="v" dir="auto" class="${m.big ? "big" : ""}">${esc(m.value || "")}</textarea>`;
+  const list = m.list ? `<div class="mlist">${m.list.map((x, i) => `<button type="button" class="mrow" data-act="modalPick" data-a="${i}"><span dir="auto">${esc(x.label)}</span><small>${esc(x.sub || "")}</small></button>`).join("")}</div>` : "";
   return `<div class="modal-bg" data-act="closeModalBg"><form class="modal" data-form="modal">
-    <h4>${T(m.title)}</h4>${m.body ? `<p dir="auto">${T(m.body)}</p>` : ""}${field}
-    <div class="btns" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">${m.readonly ? T("Close") : T("Cancel")}</button>
-    ${m.readonly ? "" : `<button class="btn ${m.danger ? "danger" : "go"}">${T(m.confirm || "OK")}</button>`}</div></form></div>`;
+    <h4>${tx(m.title)}</h4>${m.body ? `<p dir="auto">${tx(m.body)}</p>` : ""}${field}${list}
+    <div class="btns" style="margin-top:16px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">${m.readonly || m.list ? T("Close") : T("Cancel")}</button>
+    ${m.alt ? `<button type="button" class="btn" data-act="modalAlt">${esc(m.alt.label)}</button>` : ""}
+    ${m.readonly || m.list ? "" : `<button class="btn ${m.danger ? "danger" : "go"}">${m.pre ? esc(m.confirm || t("OK")) : T(m.confirm || "OK")}</button>`}</div></form></div>`;
 }
 
+// ---------------- render ----------------
 function render() {
   document.documentElement.lang = S.lang;
   document.documentElement.dir = S.lang === "he" ? "rtl" : "ltr";
   const r = route();
   let html;
+  let overlay = "";
   if (!S.session) html = S.loaded || S.authChecked ? viewLogin() : "";
   else if (!S.loaded) html = S.loadError ? `<div class="login"><h1>${T("Couldn't load")}</h1><p>${esc(S.loadError)}</p><button class="btn go" data-act="refresh">${T("Try again")}</button></div>` : `<div class="login"><p>${T("Loading…")}</p></div>`;
   else if (!S.member) html = viewNotMember();
   else {
     let body;
-    if (r.name === "board") body = viewBoard();
-    else if (r.name === "schedule") body = viewSchedule();
-    else if (r.name === "published") body = viewPublished();
-    else if (r.name === "rules") body = viewRules();
-    else if (r.name === "settings") body = viewSettings();
-    else if (r.name === "new") body = viewNew();
-    else if (r.name === "post") body = viewPost(r.id);
-    else if (r.name === "review") {
-      const q = ownerQueue();
-      const i = Math.max(0, Math.min(Number(r.id) || 0, q.length - 1));
-      body = q.length ? viewPost(q[i].id, i) : `<h1>${T("All clear")}</h1><p class="lead">${T("Nothing waits for review.")} <a href="#/">${T("Back")}</a></p>`;
-    } else body = viewHome();
-    html = `${topBar(r)}<main class="wrap">${body}</main>`;
+    if (r.base === "schedule") body = viewSchedule();
+    else if (r.base === "published") body = viewPublished();
+    else if (r.base === "settings") body = viewSettings();
+    else body = viewBoard();
+    html = `${topBar(r)}<main class="wrap ${r.base === "board" ? "wide" : ""}">${body}</main>`;
+    if (r.id) {
+      const p = post(r.id);
+      overlay = p ? drawerPost(p) : `<div class="scrim" data-act="close"></div><aside class="drawer narrow"><header class="d-head"><button class="iconbtn" data-act="close">✕</button></header><div class="d-body"><div class="empty">${T("This post doesn't exist anymore.")}</div></div></aside>`;
+    } else if (r.isNew) overlay = drawerNew();
   }
+  document.body.classList.toggle("has-drawer", !!overlay);
   // keep scroll and whatever is typed in any form while re-rendering
   const sameRoute = S.lastRoute === location.hash;
   const keep = new Map();
+  const formKey = (f) => `${f.dataset.form}|${f.dataset.post || ""}|${f.dataset.form === "modal" && S.modal ? S.modal.title : ""}`;
   if (sameRoute) {
     app.querySelectorAll("form[data-form]").forEach((f) => {
-      const fk = `${f.dataset.form}|${f.dataset.post || ""}|${f.dataset.form === "modal" && S.modal ? S.modal.title : ""}`;
+      const fk = formKey(f);
       f.querySelectorAll("input[name], textarea[name], select[name]").forEach((el) => {
         if (el.type === "file" || el.type === "hidden") return;
-        const key = `${fk}|${el.name}|${el.type === "checkbox" ? el.value : ""}`;
-        keep.set(key, el.type === "checkbox" ? el.checked : el.value);
+        keep.set(`${fk}|${el.name}|${el.type === "checkbox" ? el.value : ""}`, el.type === "checkbox" ? el.checked : el.value);
       });
     });
   }
@@ -1687,10 +1727,13 @@ function render() {
     return f && a.name ? { form: f.dataset.form, post: f.dataset.post || "", name: a.name, start: a.selectionStart, end: a.selectionEnd } : null;
   })();
   const y = window.scrollY;
-  app.innerHTML = html + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}">${esc(S.toast.msg)}</div>` : "");
+  const dEl = app.querySelector(".d-body");
+  const dy = dEl ? dEl.scrollTop : 0;
+  const colY = [...app.querySelectorAll(".col-body")].map((c) => c.scrollTop);
+  app.innerHTML = html + overlay + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}">${esc(S.toast.msg)}</div>` : "");
   if (keep.size) {
     app.querySelectorAll("form[data-form]").forEach((f) => {
-      const fk = `${f.dataset.form}|${f.dataset.post || ""}|${f.dataset.form === "modal" && S.modal ? S.modal.title : ""}`;
+      const fk = formKey(f);
       f.querySelectorAll("input[name], textarea[name], select[name]").forEach((el) => {
         const key = `${fk}|${el.name}|${el.type === "checkbox" ? el.value : ""}`;
         if (!keep.has(key)) return;
@@ -1711,8 +1754,14 @@ function render() {
       }
     }
   }
-  if (S.lastRoute === location.hash) window.scrollTo(0, y);
+  // the page under a drawer keeps its place; a new page starts at the top
+  const prev = S.lastRoute ? S.lastRoute.split("/").slice(0, 2).join("/") : "";
+  const now = location.hash.split("/").slice(0, 2).join("/");
+  if (prev === now || (!S.lastRoute && !location.hash)) window.scrollTo(0, y);
   else window.scrollTo(0, 0);
+  const dNew = app.querySelector(".d-body");
+  if (dNew && sameRoute) dNew.scrollTop = dy;
+  if (prev === now) app.querySelectorAll(".col-body").forEach((c, i) => (c.scrollTop = colY[i] || 0));
   S.lastRoute = location.hash;
 }
 
@@ -1721,19 +1770,18 @@ document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]");
   if (!el) return;
   const act = el.dataset.act;
+  // a click on a field or a link inside a card is for that field, not for opening the card
+  if (act === "open" && e.target.closest("input, select, textarea, label, a, button:not([data-act=open])")) return;
   if (act === "closeModalBg") {
     if (e.target === el) A.closeModal();
     return;
   }
-  if (act === "pinPrompt") {
-    const p = post(el.dataset.a);
-    if (p.pinned_date) return A.pin(p.id, null);
-    openModal({ title: "Lock to a date", body: "Type the date as YYYY-MM-DD.", act: "pinGo", args: [p.id], required: true, input: true, value: el.dataset.b || todayStr(), confirm: "Lock" });
-    return;
-  }
-  if (act === "removeHeadlinePrompt") {
-    const v = S.d.versions.find((x) => x.id === el.dataset.a);
-    openModal({ title: "Remove a headline option", body: (v.headlines || []).map((h, i) => `${i + 1}. ${h.en}`).join("\n"), act: "removeHeadlineGo", args: [v.id], required: true, input: true, confirm: "Remove", value: String(v.headlines.length) });
+  if (act === "modalPick" || act === "modalAlt") {
+    const m = S.modal;
+    const it = act === "modalAlt" ? m.alt : m.list[Number(el.dataset.a)];
+    S.modal = null;
+    render();
+    if (it && A[it.act]) A[it.act](...(it.args || []));
     return;
   }
   const fn = A[act];
@@ -1741,16 +1789,6 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   fn(el.dataset.a, el.dataset.b, el.dataset.c);
 });
-A.pinGo = (id, text) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text.trim())) return toast("Use YYYY-MM-DD, e.g. 2026-11-23.", true);
-  A.pin(id, text.trim());
-};
-A.removeHeadlineGo = (vid, text) => {
-  const i = Number(text) - 1;
-  const v = S.d.versions.find((x) => x.id === vid);
-  if (!(i >= 0 && i < v.headlines.length)) return toast("Type the number of the option.", true);
-  A.removeHeadline(vid, i);
-};
 
 document.addEventListener("submit", (e) => {
   const form = e.target.closest("form[data-form]");
@@ -1773,14 +1811,14 @@ document.addEventListener("submit", (e) => {
 document.addEventListener("change", (e) => {
   const el = e.target;
   if (el.dataset.upload) {
-    const stageSel = document.querySelector(`select[data-upstage="${el.dataset.upload}"]`);
-    A.upload(el.dataset.upload, el.files, stageSel ? stageSel.value : "sketch");
+    A.upload(el.dataset.upload, el.files);
     return;
   }
   const act = el.dataset.change;
   if (!act) return;
   if (act === "meta") A.meta(el.dataset.a, el.dataset.b, el.value);
-  else if (act === "pin") A.pin(el.dataset.a, el.value);
+  else if (act === "date") A.setDate(el.dataset.a, el.value);
+  else if (act === "moveTo") A.moveTo(el.dataset.a, el.value);
   else if (act === "reactions") A.reactions(el.dataset.a, el.value);
   else if (act === "memberRole") A.memberRole(el.dataset.a, el.value);
 });
@@ -1799,11 +1837,15 @@ document.addEventListener("drop", (e) => {
   const d = e.target.closest("[data-drop]");
   if (!d) return;
   e.preventDefault();
-  const stageSel = document.querySelector(`select[data-upstage="${d.dataset.drop}"]`);
-  A.upload(d.dataset.drop, e.dataTransfer.files, stageSel ? stageSel.value : "sketch");
+  A.upload(d.dataset.drop, e.dataTransfer.files);
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && S.modal) A.closeModal();
+  if (e.key === "Escape") {
+    if (S.modal) return A.closeModal();
+    if (S.edit) return A.cancelEdit();
+    if (route().id || route().isNew) return A.close();
+  }
+  if (e.key === "Enter" && e.target.matches && e.target.matches(".card[data-act=open]")) A.open(e.target.dataset.a);
 });
 
 window.addEventListener("hashchange", () => {

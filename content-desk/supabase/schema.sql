@@ -40,7 +40,8 @@ create table if not exists public.posts (
   title         text not null,                       -- working title, English
   title_he      text,
   category      text not null default 'tip' check (category in ('news', 'tip', 'skill', 'deals', 'other')),
-  stage         text not null default 'idea' check (stage in ('idea', 'writing', 'review', 'ready', 'published', 'skipped', 'parked')),
+  stage         text not null default 'idea' check (stage in ('idea', 'draft', 'final', 'ready', 'published')),   -- the board column
+  status        text not null default 'waiting' check (status in ('waiting', 'approved', 'changes', 'rejected')), -- Jay's answer on that column
   idea          text,                                -- the pitch: hook, why now, what readers get
   idea_he       text,
   author        text not null default public.desk_email(),
@@ -48,9 +49,9 @@ create table if not exists public.posts (
   covered_before text,                               -- "you posted X on 29 Mar" style note
   news_date     date,                                -- when the news itself came out
   tried_myself  boolean,                             -- has Jay tried it himself
-  text_ok       boolean not null default false,      -- text approved, waiting for the visual
+  text_ok       boolean not null default false,      -- unused since migration 2, kept for old rows
   hot           boolean not null default false,      -- jumps to the front of the queue
-  pinned_date   date,                                -- locked to this day
+  pinned_date   date,                                -- the publishing date
   queue_pos     double precision not null default extract(epoch from now()),
   email_too     boolean not null default false,      -- also goes out as an email
   skip_reason   text,
@@ -62,6 +63,7 @@ create table if not exists public.posts (
   updated_by    text default public.desk_email()
 );
 create index if not exists posts_stage_idx on public.posts (stage);
+create index if not exists posts_status_idx on public.posts (status);
 
 -- ---------- versions (one row per saved draft, per channel) ----------
 create table if not exists public.versions (
@@ -164,8 +166,12 @@ create trigger posts_touch before update on public.posts for each row execute fu
 drop trigger if exists notes_touch on public.notes;
 create trigger notes_touch before update on public.notes for each row execute function public.desk_touch();
 
--- Only the owner moves a post to ready, published, parked or skipped, and only the
--- owner creates a post that starts past review. Writers move ideas and drafts along.
+-- Who may do what. Jay (owner) may do anything. A writer may:
+--   create an idea or a first draft (it always starts as waiting),
+--   move an approved idea to a first draft and an approved first draft to the final version,
+--   send a post back to Jay (status waiting) after changes,
+--   change dates, hot and the other details.
+-- Only Jay approves, sends back, rejects, moves to ready and marks published.
 create or replace function public.desk_stage_guard() returns trigger
 language plpgsql as $$
 begin
@@ -173,23 +179,75 @@ begin
   if current_user not in ('authenticated', 'anon') then return new; end if;
   if public.is_owner() then return new; end if;
   if tg_op = 'INSERT' then
-    if new.stage not in ('idea', 'writing', 'review') then
-      raise exception 'Only the owner can create a post in stage %', new.stage;
+    if new.stage not in ('idea', 'draft') then
+      raise exception 'Only the owner can create a post in %', new.stage;
     end if;
-    new.text_ok := false;
+    new.status := 'waiting';
+    new.published_at := null;
     return new;
   end if;
-  if new.stage is distinct from old.stage and new.stage not in ('writing', 'review') then
-    raise exception 'Only the owner can move a post to %', new.stage;
+  if new.status is distinct from old.status then
+    if new.status <> 'waiting' then
+      raise exception 'Only the owner can set the status to %', new.status;
+    end if;
+    if old.status = 'rejected' then
+      raise exception 'Only the owner can bring back a rejected post';
+    end if;
+    if new.stage not in ('idea', 'draft', 'final') then
+      raise exception 'Only the owner can change the status of a % post', new.stage;
+    end if;
   end if;
-  if new.text_ok and not old.text_ok then
-    raise exception 'Only the owner can approve the text';
+  if new.stage is distinct from old.stage then
+    -- a writer moves an approved idea or draft one column on, and it goes to Jay
+    if not ((old.stage = 'idea' and new.stage = 'draft' and old.status = 'approved' and new.status = 'waiting')
+         or (old.stage = 'draft' and new.stage = 'final' and old.status = 'approved' and new.status = 'waiting')) then
+      raise exception 'Only the owner can move a post from % to %', old.stage, new.stage;
+    end if;
+  end if;
+  if new.published_at is distinct from old.published_at
+     or new.published_text is distinct from old.published_text
+     or new.reactions is distinct from old.reactions
+     or new.author is distinct from old.author then
+    raise exception 'Only the owner can change this';
+  end if;
+  -- a published post is done: writers only add translations to it
+  if old.stage = 'published' and public.desk_strip(to_jsonb(new)) is distinct from public.desk_strip(to_jsonb(old)) then
+    raise exception 'Only the owner can change a published post';
   end if;
   return new;
 end $$;
 
 drop trigger if exists posts_stage_guard on public.posts;
-create trigger posts_stage_guard before insert or update on public.posts for each row execute function public.desk_stage_guard();
+create trigger posts_stage_guard before insert or update on public.posts
+  for each row execute function public.desk_stage_guard();
+
+-- A version row without its translations: every *_he column and the "he" inside each headline.
+create or replace function public.desk_version_core(j jsonb) returns jsonb
+language sql immutable as $$
+  select public.desk_strip(j - 'headlines') || jsonb_build_object('headlines',
+    coalesce((select jsonb_agg(h - 'he' order by i) from jsonb_array_elements(j -> 'headlines') with ordinality as x(h, i)), '[]'::jsonb))
+$$;
+
+-- Once Jay approved a post (ready or published), only he changes its text.
+create or replace function public.desk_version_guard() returns trigger
+language plpgsql as $$
+begin
+  if current_user not in ('authenticated', 'anon') then return new; end if;
+  if public.is_owner() then return new; end if;
+  if (select stage from public.posts where id = new.post_id) not in ('ready', 'published') then
+    return new;
+  end if;
+  -- on an approved post a writer may only add translations (the *_he columns and each headline's "he")
+  if tg_op = 'UPDATE' and new.post_id = old.post_id
+     and public.desk_version_core(to_jsonb(new)) = public.desk_version_core(to_jsonb(old)) then
+    return new;
+  end if;
+  raise exception 'Jay already approved this post. Ask him to send it back before changing the text';
+end $$;
+
+drop trigger if exists versions_guard on public.versions;
+create trigger versions_guard before insert or update on public.versions
+  for each row execute function public.desk_version_guard();
 
 -- Writers cannot approve their own visuals.
 create or replace function public.desk_asset_guard() returns trigger

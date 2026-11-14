@@ -101,7 +101,7 @@ function realStore() {
 
 // ---------------- demo mode ----------------
 function demoStore() {
-  const LS = "content-desk-demo-v1";
+  const LS = "content-desk-demo-v2";
   const params = new URLSearchParams(location.search);
   let db;
   try {
@@ -126,13 +126,30 @@ function demoStore() {
   const now = () => new Date().toISOString();
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const session = () => (signedIn ? { user: { email: as } } : null);
+  // Same rules as desk_stage_guard in the database: only the owner approves, sends back,
+  // rejects, moves to ready and marks published.
   const guardStage = (t, row, old) => {
     if (t !== "posts") return;
     const me = db.team_members.find((m) => m.email === as);
     if (me && me.role === "owner") return;
-    if (!old && !["idea", "writing", "review"].includes(row.stage)) throw new Error(`Only the owner can create a post in stage ${row.stage}`);
-    if (old && row.stage !== old.stage && !["writing", "review"].includes(row.stage)) throw new Error(`Only the owner can move a post to ${row.stage}`);
-    if (old && row.text_ok && !old.text_ok) throw new Error("Only the owner can approve the text");
+    if (!old) {
+      if (!["idea", "draft"].includes(row.stage)) throw new Error(`Only the owner can create a post in ${row.stage}`);
+      row.status = "waiting";
+      row.published_at = null;
+      return;
+    }
+    if (row.status !== old.status) {
+      if (row.status !== "waiting") throw new Error(`Only the owner can set the status to ${row.status}`);
+      if (old.status === "rejected") throw new Error("Only the owner can bring back a rejected post");
+      if (!["idea", "draft", "final"].includes(row.stage)) throw new Error(`Only the owner can change the status of a ${row.stage} post`);
+    }
+    if (row.stage !== old.stage) {
+      const ok = row.status === "waiting" && ((old.stage === "idea" && row.stage === "draft" && old.status === "approved") || (old.stage === "draft" && row.stage === "final" && old.status === "approved"));
+      if (!ok) throw new Error(`Only the owner can move a post from ${old.stage} to ${row.stage}`);
+    }
+    for (const k of ["published_at", "published_text", "reactions", "author"]) {
+      if ((row[k] ?? null) !== (old[k] ?? null)) throw new Error("Only the owner can change this");
+    }
   };
   return {
     demo: true,
@@ -163,7 +180,7 @@ function demoStore() {
         full.author = full.author || as;
         full.updated_at = now();
         full.queue_pos = full.queue_pos ?? Date.now() / 1000;
-        full.text_ok = !!full.text_ok;
+        full.status = full.status || "waiting";
       }
       if (["versions", "notes", "assets"].includes(t)) full.author = full.author || as;
       guardStage(t, full, null);
@@ -215,7 +232,7 @@ function demoStore() {
       save();
     },
     async signedUrl(path) {
-      return (db.__files && db.__files[path]) || (db.__blobs && db.__blobs[path]) || window.DESK_DEMO_IMAGE;
+      return (db.__files && db.__files[path]) || (db.__blobs && db.__blobs[path]) || (window.DESK_DEMO_IMAGES || {})[path] || window.DESK_DEMO_IMAGE;
     },
     async removeFile(path) {
       if (db.__files) delete db.__files[path];
