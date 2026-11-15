@@ -64,6 +64,75 @@ const CHRISTMAS_PLINKS = new Set<string>([
   'plink_1Uc3M8RqcDuiISNTvS1hMBWB', // the Skill + training
 ]);
 const CHRISTMAS_PROJECT = 'christmas_video';
+const CHRISTMAS_NOTIFY_TO = 'info@jaygptpro.com';
+const CHRISTMAS_LINK_NAMES: Record<string, string> = {
+  'plink_1Uc3M6RqcDuiISNTLgj5rk6I': 'Christmas video (1 to 4)',
+  'plink_1Uc3M7RqcDuiISNTByKOaDNm': 'Christmas video (5 or more)',
+  'plink_1Uc3M8RqcDuiISNTvS1hMBWB': 'The Skill + training',
+};
+
+// One mail to Jay per Christmas order, with everything needed to make and send it: the
+// buyer, what they bought and how many, the product link and who gives and receives (the
+// payment link's custom fields). Returns false when the mail did not go out, and the
+// caller answers 500 so Stripe retries: an order nobody was told about is a paid customer
+// waiting for a video that is not being made.
+async function notifyChristmasOrder(session: any, paymentLinkId: string): Promise<boolean> {
+  const key = Deno.env.get('RESEND_API_KEY') || '';
+  if (!key) { console.error('Christmas order: RESEND_API_KEY is not set, cannot notify.'); return false; }
+  const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[c]);
+  const fields: Record<string, string> = {};
+  for (const f of (session?.custom_fields || [])) {
+    fields[String(f?.key || '')] = String(f?.text?.value ?? f?.dropdown?.value ?? f?.numeric?.value ?? '');
+  }
+  let quantity = 0;
+  const items: string[] = [];
+  try {
+    if (stripeKey && session?.id) {
+      const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${session.id}/line_items?limit=10`, { headers: { 'Authorization': `Bearer ${stripeKey}` } });
+      if (res.ok) {
+        for (const it of ((await res.json())?.data || [])) {
+          const q = Number(it?.quantity ?? 1); quantity += q;
+          items.push(`${q} x ${it?.description || 'item'}`);
+        }
+      }
+    }
+  } catch (e) { console.error('Christmas order: line items lookup failed (the mail still goes out):', e); }
+  const what = CHRISTMAS_LINK_NAMES[paymentLinkId] || 'Christmas video order';
+  const isSkill = paymentLinkId === 'plink_1Uc3M8RqcDuiISNTvS1hMBWB';
+  const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
+  const currency = String(session?.currency || 'usd').toUpperCase();
+  const email = session?.customer_email || session?.customer_details?.email || '';
+  const name = session?.customer_details?.name || '';
+  const pi = session?.payment_intent || '';
+  const rows: [string, string][] = [
+    ['What', what],
+    ['Quantity', quantity ? String(quantity) : 'see Stripe'],
+    ['Paid', `${amount} ${currency}`],
+    ['Buyer', `${name} <${email}>`],
+  ];
+  if (!isSkill) {
+    rows.push(['Product link', fields.amazonlink || '(not given)']);
+    rows.push(['Who gives', fields.giver || '(not given)']);
+    rows.push(['Who receives', fields.receiver || '(not given)']);
+    if (quantity > 1) rows.push(['Note', 'Several videos: this is the first product link. Ask the buyer for the rest.']);
+  } else {
+    rows.push(['To do', 'Send the Skill and the training to the buyer by email.']);
+  }
+  rows.push(['Due', 'Within 48 hours (business days) of this payment.']);
+  rows.push(['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')]);
+  const html = `<h2>New Christmas order: ${esc(what)}</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
+    + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('')
+    + `</table>${items.length ? `<p style="font-family:Arial,sans-serif;font-size:13px;color:#666">${esc(items.join(' · '))}</p>` : ''}`;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [CHRISTMAS_NOTIFY_TO], reply_to: email || undefined,
+        subject: `New Christmas order: ${what}${quantity > 1 ? ` x ${quantity}` : ''} (${amount} ${currency})`, html }),
+    });
+    if (!res.ok) { console.error('Christmas order mail failed:', res.status, await res.text()); return false; }
+    return true;
+  } catch (e) { console.error('Christmas order mail error:', e); return false; }
+}
 const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6'; // "Donna Challenge. Full Access", $250
 const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
 
@@ -733,6 +802,9 @@ Deno.serve(async (req: Request) => {
     const eventMetaProject = String(event.data?.object?.metadata?.project || '');
     if ((paymentLinkId && CHRISTMAS_PLINKS.has(paymentLinkId)) || eventMetaProject === CHRISTMAS_PROJECT) {
       console.log('Christmas video purchase, not a course. Nothing to grant.', { paymentId, paymentLinkId });
+      if (isSessionEvent && !(await notifyChristmasOrder(event.data.object, paymentLinkId))) {
+        return new Response(JSON.stringify({ error: 'christmas order mail failed' }), { status: 500 });
+      }
       return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
     }
 
@@ -746,6 +818,9 @@ Deno.serve(async (req: Request) => {
     // Christmas video, route 3: the product, for a payment link nobody listed above.
     if (sessionProductIds.some(id => CHRISTMAS_PRODUCTS.has(id))) {
       console.log('Christmas video purchase (by product), not a course. Nothing to grant.', { paymentId, paymentLinkId, sessionProductIds });
+      if (isSessionEvent && !(await notifyChristmasOrder(event.data.object, paymentLinkId))) {
+        return new Response(JSON.stringify({ error: 'christmas order mail failed' }), { status: 500 });
+      }
       return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
     }
     let tookDonnaAddon = sessionProductIds.includes(DONNA_ADDON_PRODUCT);

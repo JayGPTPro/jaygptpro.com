@@ -5,6 +5,7 @@ import { DB, LOG } from "./stub_supabase.ts";
 // Match production: both secrets ARE set in the deployed environment.
 Deno.env.set('EDGE_SHARED_SECRET', 'test-form-secret');
 Deno.env.set('STRIPE_SECRET_KEY', 'sk_test_stub');
+Deno.env.set('RESEND_API_KEY', 're_test_stub');
 Deno.env.set('SUPABASE_URL', 'https://stub.supabase.co');
 Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'stub-service-key');
 
@@ -15,7 +16,7 @@ let handler: (r: Request) => Promise<Response>;
 // welcome function call: succeed unless the test says otherwise.
 // stripeLineItems: what the Stripe line-items lookup returns ([] simulates a missing key
 // or a failed call, which is the blind spot the guard has to survive).
-export const sendState = { ok: true, addonOk: true, calls: [] as any[], stripeLineItems: ['prod_UxhJATVn8CEfCT'] };
+export const sendState = { ok: true, addonOk: true, calls: [] as any[], stripeLineItems: ['prod_UxhJATVn8CEfCT'], mails: [] as any[], mailOk: true };
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: any, init?: any) => {
   const url = String(input);
@@ -23,6 +24,10 @@ globalThis.fetch = (async (input: any, init?: any) => {
     sendState.calls.push({ url, body: JSON.parse(init?.body || '{}') });
     const okForThis = url.includes('donna-addon') ? sendState.addonOk : sendState.ok;
     return new Response(JSON.stringify({ ok: okForThis }), { status: okForThis ? 200 : 502 });
+  }
+  if (url.includes('api.resend.com')) {
+    sendState.mails.push(JSON.parse(init?.body || '{}'));
+    return new Response(JSON.stringify({ id: 'mail_stub' }), { status: sendState.mailOk ? 200 : 500 });
   }
   if (url.includes('api.stripe.com')) {
     return new Response(JSON.stringify({ data: sendState.stripeLineItems.map(p => ({ price: { product: p } })) }), { status: 200 });
@@ -68,7 +73,7 @@ function reset() {
     { id: 'wonka_r2', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: PLINK_R2, stripe_plink_discounted: PLINK_R2_FLAT, stripe_product_id: GOLDEN_R2, start_date: '2026-09-22' },
     { id: 'round1', welcome_email_fn_slug: null, start_date: '2026-04-01' },
   ];
-  LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true;
+  LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true; sendState.mails = []; sendState.mailOk = true;
   sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT'];
 }
 
@@ -790,6 +795,41 @@ row = DB.allowed_emails.find(r => r.email === 'cardcom@student.com');
 check('http 200', res.status === 200, `got ${res.status}`);
 check('course access NOT revoked', !row?.access_revoked_at, JSON.stringify(row));
 check('no stripe_customers row', DB.stripe_customers.length === 0, JSON.stringify(DB.stripe_customers));
+
+console.log('\n17g. A Christmas order tells Jay everything he needs to make the video');
+reset();
+sendState.stripeLineItems = [XMAS_VIDEO];
+{
+  const s: any = xmas('order@seller.com', XMAS_PLINK, 19800);
+  s.data.object.custom_fields = [
+    { key: 'amazonlink', type: 'text', text: { value: 'https://www.amazon.com/dp/B07VYH5GC2' } },
+    { key: 'giver', type: 'dropdown', dropdown: { value: 'woman' } },
+    { key: 'receiver', type: 'dropdown', dropdown: { value: 'girl' } },
+  ];
+  res = await post(s);
+}
+check('http 200', res.status === 200, `got ${res.status}`);
+check('exactly one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails));
+{
+  const body = JSON.stringify(sendState.mails[0] || {});
+  check('carries the product link', body.includes('https://www.amazon.com/dp/B07VYH5GC2'), body.slice(0, 400));
+  check('carries giver and receiver', body.includes('woman') && body.includes('girl'), body.slice(0, 400));
+  check('carries the buyer and the amount', body.includes('order@seller.com') && body.includes('198.00'), body.slice(0, 400));
+}
+check('still no course access', !DB.allowed_emails.some((r: any) => r.email === 'order@seller.com'));
+
+console.log('\n17h. The mail cannot be sent: 500, so Stripe retries and the order is not lost');
+reset();
+sendState.stripeLineItems = [XMAS_VIDEO];
+sendState.mailOk = false;
+res = await post(xmas('lost@seller.com', XMAS_PLINK));
+check('http 500', res.status === 500, `got ${res.status}`);
+sendState.mailOk = true;
+
+console.log('\n17i. The payment_intent event of the same purchase sends no second mail');
+reset();
+res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_xmas_1', amount: 9900, currency: 'usd', metadata: { project: 'christmas_video' } } } });
+check('no mail', sendState.mails.length === 0, JSON.stringify(sendState.mails));
 
 console.log('\n17e. Control: any OTHER unrecognised product still lands in the Donna weekly cohort');
 reset();
