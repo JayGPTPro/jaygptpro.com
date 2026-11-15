@@ -59,6 +59,9 @@ function realStore() {
     async getRow(t, id) {
       return check(await sb.from(t).select("*").eq(keyOf(t), id).maybeSingle());
     },
+    async rows(t, col, val) {
+      return check(await sb.from(t).select("*").eq(col, val));
+    },
     async insert(t, row) {
       return check(await sb.from(t).insert(row).select().single());
     },
@@ -128,10 +131,21 @@ function demoStore() {
   const session = () => (signedIn ? { user: { email: as } } : null);
   // Same rules as desk_stage_guard in the database: only the owner approves, sends back,
   // rejects, moves to ready and marks published.
-  const guardStage = (t, row, old) => {
-    if (t !== "posts") return;
+  const owner = () => {
     const me = db.team_members.find((m) => m.email === as);
-    if (me && me.role === "owner") return;
+    return !!(me && me.role === "owner");
+  };
+  const onlyHe = (patch) => Object.keys(patch).every((k) => k.endsWith("_he") || k === "headlines");
+  const guardStage = (t, row, old, patch) => {
+    if (owner()) return;
+    if (["settings", "rules", "team_members"].includes(t)) throw new Error("Only the owner can change this");
+    if (t === "versions" && !(patch && onlyHe(patch) && JSON.stringify((row.headlines || []).map((h) => h.en)) === JSON.stringify(((old || {}).headlines || []).map((h) => h.en)) && !(patch.headlines && (row.headlines || []).some((h, i) => h.pick !== old.headlines[i].pick || h.sel !== old.headlines[i].sel)))) {
+      const p = db.posts.find((x) => x.id === row.post_id);
+      if (p && ["ready", "published"].includes(p.stage)) throw new Error("Jay already approved this post. Ask him to send it back before changing the text.");
+    }
+    if (t === "assets" && old && row.status === "approved" && old.status !== "approved") throw new Error("Only the owner can approve a visual");
+    if (t !== "posts") return;
+    if (old && old.stage === "published" && !(patch && Object.keys(patch).every((k) => k.endsWith("_he")))) throw new Error("Only the owner can change a published post");
     if (!old) {
       if (!["idea", "draft"].includes(row.stage)) throw new Error(`Only the owner can create a post in ${row.stage}`);
       row.status = "waiting";
@@ -183,7 +197,14 @@ function demoStore() {
         full.status = full.status || "waiting";
       }
       if (["versions", "notes", "assets"].includes(t)) full.author = full.author || as;
+      // the same defaults the database fills in
+      if (t === "notes") full.status = full.status || "open";
+      if (t === "assets") full.status = full.status || "pending";
+      if (t === "rules" && full.active == null) full.active = true;
       guardStage(t, full, null);
+      if (t === "versions" && db.versions.some((v) => v.post_id === full.post_id && v.channel === full.channel && v.n === full.n)) {
+        throw new Error('duplicate key value violates unique constraint "versions_post_id_channel_n_key"');
+      }
       db[t].push(full);
       save();
       return JSON.parse(JSON.stringify(full));
@@ -193,13 +214,16 @@ function demoStore() {
       const row = db[t].find((r) => r[keyOf(t)] === id);
       if (!row) throw new Error("Row not found");
       const next = { ...row, ...patch };
-      guardStage(t, next, row);
+      guardStage(t, next, row, patch);
       const onlyTranslation = Object.keys(patch).every((k) => k.endsWith("_he"));
       if ((t === "posts" || t === "notes") && !onlyTranslation) next.updated_at = now();
       if (t === "posts" && !onlyTranslation) next.updated_by = as;
       Object.assign(row, next);
       save();
       return JSON.parse(JSON.stringify(row));
+    },
+    async rows(t, col, val) {
+      return JSON.parse(JSON.stringify(db[t].filter((r) => r[col] === val)));
     },
     async getRow(t, id) {
       const r = db[t].find((x) => x[keyOf(t)] === id);
@@ -211,6 +235,7 @@ function demoStore() {
     },
     async remove(t, id) {
       await wait(30);
+      if (!owner() && ["posts", "versions", "rules"].includes(t)) throw new Error("You can't delete this one.");
       db[t] = db[t].filter((r) => r[keyOf(t)] !== id);
       if (t === "posts") ["versions", "notes", "assets"].forEach((c) => (db[c] = db[c].filter((r) => r.post_id !== id)));
       save();

@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=6";
-import { HE } from "./i18n.js?v=7";
+import { createStore } from "./store.js?v=8";
+import { HE } from "./i18n.js?v=8";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -64,7 +64,10 @@ const catLabel = (c) => t(CAT_KEYS[c] || c);
 
 // ---------------- helpers ----------------
 const isHttp = (u) => /^https?:\/\/[^\s"'<>]+$/i.test(String(u || ""));
-const todayStr = () => localDate(new Date());
+// The team's day is Jay's day: "today" and the day a post went out are cut in Israel time for everyone.
+const DAY_FMT = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" });
+const dayIn = (d) => DAY_FMT.format(d);
+const todayStr = () => dayIn(new Date());
 function localDate(d) {
   const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${dd}`;
@@ -104,7 +107,8 @@ const nameOf = (email) => member(email).name;
 function avatar(email, size = "") {
   const m = member(email);
   const ini = (m.name || "?").replace(/\(.*\)/, "").trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  return `<span class="av ${size}" style="background:${esc(m.color || "#8b94a3")}" title="${esc(m.name)}">${esc(ini)}</span>`;
+  const color = /^#[0-9a-f]{3,8}$/i.test(m.color || "") ? m.color : "#8b94a3";
+  return `<span class="av ${size}" style="background:${color}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
@@ -160,8 +164,9 @@ function chosenIndex(v) {
 function headlineOf(p, v = latest(p.id)) {
   if (!v || !v.headlines || !v.headlines.length) return { en: p.title, he: p.title_he };
   let i = chosenIndex(v);
-  if (i < 0) i = v.headlines.findIndex((h) => h.pick);
-  return v.headlines[i < 0 ? 0 : i];
+  if (i < 0) i = v.headlines.findIndex((h) => h.pick && !h.kind);
+  if (i < 0) i = v.headlines.findIndex((h) => !h.kind);
+  return i < 0 ? { en: "", he: "" } : v.headlines[i];
 }
 function displayTitle(p) {
   const h = headlineOf(p);
@@ -206,16 +211,20 @@ function newLine(p) {
   return key ? t(key, { who: nameOf(h.who) }) : "";
 }
 function markAllSeen() {
-  for (const k of Object.keys(SEEN)) if (k !== "_base") delete SEEN[k];
-  SEEN._base = new Date().toISOString();
+  for (const p of S.d.posts) {
+    const { at } = lastTouch(p);
+    if (at) SEEN[p.id] = at;
+  }
   saveSeen();
 }
 const subjectsOf = (v) => ((v && v.headlines) || []).filter((h) => !h.kind);
 const previewsOf = (v) => ((v && v.headlines) || []).filter((h) => h.kind === "preview");
+// The email preview shows pictures and styles, and nothing else from outside.
+const MAIL_CSP = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src 'unsafe-inline' https:; font-src https: data:">`;
 const looksHtml = (s) => /<[a-z!][\s\S]*>/i.test(String(s || ""));
 function markSeen(p) {
   if (!isNew(p)) return;
-  SEEN[p.id] = new Date().toISOString();
+  SEEN[p.id] = lastTouch(p).at;
   saveSeen();
 }
 // The order of a column on the board; the drawer walks the same order.
@@ -224,8 +233,14 @@ function sortStage(c, list) {
   if (c === "published") return list.sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
   return list.sort((a, b) => (STATUS_ORDER[a.status] - STATUS_ORDER[b.status]) || (b.hot - a.hot) || b.updated_at.localeCompare(a.updated_at));
 }
+// The chip that is on above the board ("waiting for Jay", "need changes"...).
+function onlyOk(p) {
+  const early = ["idea", "draft", "final"].includes(p.stage);
+  return !S.only || (S.only === "waiting" && p.status === "waiting" && early) || (S.only === "changes" && p.status === "changes" && early) ||
+    (S.only === "nodate" && p.stage === "ready" && !p.pinned_date) || (S.only === "new" && isNew(p));
+}
 function siblings(p) {
-  return sortStage(p.stage, S.d.posts.filter((x) => x.id === p.id || (x.stage === p.stage && x.status !== "rejected" && (S.cat === "all" || x.category === S.cat))));
+  return sortStage(p.stage, S.d.posts.filter((x) => x.id === p.id || (x.stage === p.stage && x.status !== "rejected" && (S.cat === "all" || x.category === S.cat) && onlyOk(x))));
 }
 // The next post in the column that still waits for Jay, after this one.
 function nextWaiting(p) {
@@ -258,7 +273,8 @@ function composeChannel(p, ch) {
   const v = latest(p.id, ch);
   if (!v) return "";
   const h = headlineOf(p, v).en;
-  if (ch === "email") return `${h ? `Subject: ${h}\n\n` : ""}${v.body || ""}`.trim();
+  // an HTML email has its own copy buttons; here only the subject line makes sense
+  if (ch === "email") return looksHtml(v.body) ? h : `${h ? `Subject: ${h}\n\n` : ""}${v.body || ""}`.trim();
   return [h, v.body].filter(Boolean).join("\n\n").trim();
 }
 
@@ -269,11 +285,11 @@ function checksFor(p, v) {
   const n = (v.headlines || []).length;
   out.push(n >= 3 ? { ok: true, t: t("{n} headline options", { n }) } : { ok: false, t: t("Headline options: {n} of 3", { n }) });
   const br = (v.body || "").match(/\[[^\]\n]{2,}\]/);
-  out.push(br ? { ok: false, t: t("Brackets left in the text: {x}", { x: br[0].slice(0, 60) }) } : { ok: true, t: t("No [brackets] left") });
+  out.push(br ? { ok: false, t: t("Brackets left in the text: {x}", { x: `\u2068${br[0].slice(0, 60)}\u2069` }) } : { ok: true, t: t("No [brackets] left") });
   const cta = ((v.body || "").match(/drop an? [^\n]*/i) || [])[0];
   if (cta) {
     const narrow = /\bif you('| a)?(re| are)?\s*(planning|going|claiming|building|testing|trying|already|using|switching)/i.test(cta) && !/useful|more (updates|like this)|learned/i.test(cta);
-    out.push(narrow ? { ok: false, t: t("Narrow reaction ask: “{x}”. Try “if you found this useful”.", { x: cta.slice(0, 70) }) } : { ok: true, t: t("Easy reaction ask") });
+    out.push(narrow ? { ok: false, t: t("Narrow reaction ask: “{x}”. Try “if you found this useful”.", { x: `\u2068${cta.slice(0, 70)}\u2069` }) } : { ok: true, t: t("Easy reaction ask") });
   }
   const text = composeWhatsApp(p, v);
   const hasImage = assetsOf(p.id).some((a) => (a.mime || "").startsWith("image/") && a.status !== "replaced");
@@ -300,7 +316,7 @@ function prevCadence(ds) {
 }
 // Posts that hold a publishing day: dated, not published, not rejected.
 const dated = () => S.d.posts.filter((p) => p.pinned_date && p.stage !== "published" && p.status !== "rejected");
-const pubDay = (p) => (p.published_at ? localDate(new Date(p.published_at)) : p.pinned_date);
+const pubDay = (p) => (p.published_at ? dayIn(new Date(p.published_at)) : p.pinned_date);
 const publishedOn = (ds) => S.d.posts.filter((p) => p.stage === "published" && pubDay(p) === ds);
 // Who holds a day: a planned post, or one that already went out that day.
 const onDay = (ds, except) => [...dated().filter((p) => p.pinned_date === ds && p.id !== except), ...publishedOn(ds)];
@@ -334,9 +350,13 @@ function pushPlan(ds, id) {
   return moves;
 }
 // ---------------- loading, auth, translation ----------------
+let writes = 0; // bumped by every action, so a background load can tell it was overtaken
 async function loadAll(silent) {
   try {
+    const w = writes;
     const d = await store.loadAll();
+    // a save that started while this was loading is newer than what came back
+    if (silent && (w !== writes || S.busy || S.edit)) return;
     S.d = d;
     S.member = d.team_members.find((m) => m.email === S.me && m.active) || null;
     S.loaded = true;
@@ -407,8 +427,13 @@ async function translateMissing() {
       const byRow = new Map();
       batch.forEach((j, i) => {
         const key = `${j.table}:${j.id}`;
+        const he = String((res.he && res.he[i]) || "");
+        if (!he.trim()) {
+          trSkip.set(j.key, Date.now() + 30 * 60000);
+          return;
+        }
         if (!byRow.has(key)) byRow.set(key, { table: j.table, id: j.id, items: [] });
-        byRow.get(key).items.push({ field: j.field, he: res.he[i] || "" });
+        byRow.get(key).items.push({ field: j.field, he, src: j.text });
       });
       for (const { table, id, items } of byRow.values()) {
         const row = S.d[table].find((r) => r.id === id);
@@ -424,7 +449,13 @@ async function translateMissing() {
             return hit && !h.he ? { ...h, he: hit.he } : { ...h };
           });
         }
-        for (const { field, he } of items) if (!field.startsWith("headline:")) patch[field] = he;
+        for (const { field, he, src } of items) {
+          if (field.startsWith("headline:")) continue;
+          const from = field.replace(/_he$/, "") === "title" ? row.title : row[field.replace(/_he$/, "")];
+          if (from != null && String(from) !== src) continue; // renamed while the translation was on its way
+          patch[field] = he;
+        }
+        if (!Object.keys(patch).length) continue;
         const saved = await store.update(table, id, patch);
         Object.assign(row, saved);
       }
@@ -460,9 +491,18 @@ document.addEventListener("focusout", () => {
 });
 
 // ---------------- running actions ----------------
+// Database and network errors in words a person can act on.
+function plain(msg) {
+  if (/^Only the owner|^Only Jay/.test(msg)) return "Only Jay can do this.";
+  if (/^Jay already approved this post/.test(msg)) return "Jay already approved this post. Ask him to send it back before changing the text.";
+  if (/duplicate key/i.test(msg)) return "Someone saved a version just now. Press Save again. Your text is still here.";
+  if (/failed to fetch|load failed|networkerror/i.test(msg)) return "No connection. Check the internet and try again.";
+  if (/cannot coerce the result|0 rows|JSON object requested/i.test(msg)) return "That didn't save. Refresh the page and try again.";
+  return msg;
+}
 let toastTimer;
 function toast(msg, err, undo) {
-  S.toast = { undo, msg: t(/^Only the owner|^Only Jay/.test(msg) ? "Only Jay can do this." : /^Jay already approved this post/.test(msg) ? "Jay already approved this post. Ask him to send it back before changing the text." : msg), err };
+  S.toast = { undo, msg: t(plain(String(msg))), err };
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     S.toast = null;
@@ -472,7 +512,7 @@ function toast(msg, err, undo) {
   render();
 }
 // Jay's answer on a post: save it, offer an undo, and move on to the next post that waits for him.
-function decide(p, patch, msg, extra) {
+function decide(p, patch, msg, extra, unextra) {
   const before = { stage: p.stage, status: p.status, skip_reason: p.skip_reason || null };
   const inDrawer = route().id === p.id;
   const nextId = inDrawer ? nextWaiting(p) : null;
@@ -483,11 +523,13 @@ function decide(p, patch, msg, extra) {
     if (inDrawer) go(nextId ? `#/${base}/p/${nextId}` : `#/${base}`);
   }, msg, () => run(async () => {
     await savePost(p, before);
+    if (unextra) await unextra();
     if (inDrawer) go(`#/${base}/p/${p.id}`);
   }, "Undone"));
 }
 async function run(fn, okMsg, undo) {
   S.busy++;
+  writes++;
   render();
   try {
     await fn();
@@ -509,6 +551,11 @@ async function insertRow(table, row) {
   const saved = await store.insert(table, row);
   S.d[table].push(saved);
   return saved;
+}
+async function freshRow(table, row) {
+  const f = await store.getRow(table, row.id);
+  if (f) Object.assign(row, f);
+  return row;
 }
 async function updateRow(table, row, patch) {
   const saved = await store.update(table, row.id, patch);
@@ -561,14 +608,31 @@ const cachedUrl = (a) => (S.urls[a.path] ? S.urls[a.path].url : "");
 // ---------------- actions ----------------
 function go(hash) {
   if (location.hash === hash) render();
-  else location.hash = hash;
+  else {
+    S.leaving = true; // the desk itself is moving on; only the Back button and links ask
+    location.hash = hash;
+  }
 }
+// True while a text someone typed has not been saved.
+function isDirty() {
+  const f = app.querySelector("form[data-form=saveEdit], form[data-form=createIdea], form[data-form=createDraft], form[data-form=splitDraft]");
+  if (!f) return false;
+  return [...f.querySelectorAll("textarea, input[type=text], input:not([type])")].some((el) => el.value !== el.defaultValue);
+}
+// A note or an answer that was typed and not sent.
+const halfNote = () => [...app.querySelectorAll("form[data-form=addNote] textarea, .modal textarea:not([readonly]), .modal input[name=v]")].some((el) => el.value.trim() && el.value !== el.defaultValue);
+const leaveOk = () => !(isDirty() || halfNote()) || window.confirm(t("Discard what you wrote?"));
 const baseOf = () => route().base;
-const closeDrawer = () => go(`#/${baseOf()}`);
+function closeDrawer() {
+  const to = `#/${baseOf()}`;
+  if (location.hash === to) return render();
+  S.leaving = true;
+  location.replace(to);
+}
 
 const A = {
-  async signIn() {
-    await store.signIn();
+  signIn() {
+    run(() => store.signIn());
   },
   async signOut() {
     await store.signOut();
@@ -591,7 +655,7 @@ const A = {
     if (!p) return;
     const sib = siblings(p);
     const to = sib[sib.findIndex((x) => x.id === id) + Number(dir)];
-    if (to) go(`#/${baseOf()}/p/${to.id}`);
+    if (to && leaveOk()) go(`#/${baseOf()}/p/${to.id}`);
   },
   undo() {
     const u = S.toast && S.toast.undo;
@@ -608,8 +672,12 @@ const A = {
   pickPreview(vid, i) {
     const v = S.d.versions.find((x) => x.id === vid);
     if (!v) return;
-    const hl = v.headlines.map((h, k) => (h.kind === "preview" ? { ...h, sel: k === Number(i) ? !h.sel : false } : { ...h }));
-    run(() => updateRow("versions", v, { headlines: hl }));
+    const en = (v.headlines[Number(i)] || {}).en;
+    run(async () => {
+      await freshRow("versions", v);
+      const hl = v.headlines.map((h) => (h.kind === "preview" ? { ...h, sel: h.en === en ? !h.sel : false } : { ...h }));
+      await updateRow("versions", v, { headlines: hl });
+    });
   },
   copyLine(vid, i) {
     const v = S.d.versions.find((x) => x.id === vid);
@@ -625,6 +693,7 @@ const A = {
     render();
   },
   close() {
+    if (!leaveOk()) return;
     S.edit = null;
     closeDrawer();
   },
@@ -658,6 +727,7 @@ const A = {
     render();
   },
   channel(pid, ch) {
+    if (S.edit && !leaveOk()) return;
     S.channel[pid] = ch;
     S.edit = null;
     render();
@@ -690,27 +760,45 @@ const A = {
     if (!v) return toast("There is no text yet.", true);
     if ((v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
     if (!coverOf(id) && !sure) {
-      return openModal({ title: "Approve without a banner?", body: "This post has no image yet. It moves to Ready without one.", act: "approveFinalGo", args: [id], noText: true, confirm: "Approve without a banner" });
+      return openModal({ title: "Approve without a banner?", body: "This post has no banner yet. It moves to Ready without one.", act: "approveFinalGo", args: [id], noText: true, confirm: "Approve without a banner" });
     }
+    const back = [];
     decide(p, { stage: "ready", status: "approved" }, p.pinned_date ? "Approved. It's in Ready." : "Approved. It's in Ready: pick a date.", async () => {
-      if ((v.headlines || []).length === 1 && chosenIndex(v) < 0) await updateRow("versions", v, { chosen: 0 });
-      for (const a of assetsOf(id)) if (isMedia(a) && a.status === "pending") await updateRow("assets", a, { status: "approved", stage: "final" });
+      if ((v.headlines || []).length === 1 && chosenIndex(v) < 0) {
+        await updateRow("versions", v, { chosen: 0 });
+        back.push(() => updateRow("versions", v, { chosen: null }));
+      }
+      for (const a of assetsOf(id)) {
+        if (!isMedia(a) || a.status !== "pending") continue;
+        const was = a.stage;
+        await updateRow("assets", a, { status: "approved", stage: "final" });
+        back.push(() => updateRow("assets", a, { status: "pending", stage: was }));
+      }
+    }, async () => {
+      for (const undo of back) await undo();
     });
   },
   approveFinalGo(id) {
     A.approveFinal(id, true);
   },
   sendBack(id) {
-    const open = openNotes(id);
+    const v = latest(id);
+    // only notes on the version Jay is looking at count; an old open note is not the reason this time
+    const open = openNotes(id).filter((n) => !v || n.version_n == null || n.version_n === v.n);
     if (!open.length) {
       return openModal({ title: "Send back for changes", body: "What should change? The writer sees it on the post.", act: "sendBackGo", args: [id], required: true, confirm: "Send back" });
     }
     decide(post(id), { status: "changes" }, plural(open.length, "Sent back with 1 note", "Sent back with {n} notes"));
   },
   async sendBackGo(id, text) {
+    let note;
     await decide(post(id), { status: "changes" }, "Sent back with your note", async () => {
-      await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
+      note = await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
       translateMissing();
+    }, async () => {
+      if (!note) return;
+      await store.remove("notes", note.id);
+      S.d.notes = S.d.notes.filter((x) => x.id !== note.id);
     });
   },
   reject(id) {
@@ -728,10 +816,18 @@ const A = {
   moveTo(id, stage) {
     const p = post(id);
     if (!stage || stage === p.stage) return;
+    // into Ready goes through the same checks as the Approve button: a text, a picked headline, the banner question
+    if (stage === "ready" && p.stage !== "published") {
+      render();
+      return A.approveFinal(id);
+    }
     const patch = { stage, status: ["ready", "published"].includes(stage) ? "approved" : "waiting" };
     if (stage === "published") patch.published_at = new Date().toISOString();
-    if (p.stage === "published") patch.published_at = null;
-    run(() => savePost(p, patch), t("Moved to {c}", { c: t(COL_ONE[stage]) }));
+    if (p.stage === "published") {
+      patch.published_at = null;
+      if (p.pinned_date && p.pinned_date < todayStr()) patch.pinned_date = null;
+    }
+    run(() => savePost(p, patch), t("Moved to {c}", { c: t(stage === "published" ? "Published|nav" : COL_KEYS[stage]) }));
   },
   publish(id) {
     openModal({ title: "Mark as published", body: "Optional: paste the text you actually sent, so the writer sees your last edits.", act: "publishGo", args: [id], confirm: "Mark published", big: true, value: composeWhatsApp(post(id)) });
@@ -740,7 +836,10 @@ const A = {
     run(() => savePost(post(id), { stage: "published", published_at: new Date().toISOString(), published_text: text || null }), "Marked published");
   },
   unpublish(id) {
-    run(() => savePost(post(id), { stage: "ready", status: "approved", published_at: null }), "Back in Ready");
+    const p = post(id);
+    const patch = { stage: "ready", status: "approved", published_at: null };
+    if (p.pinned_date && p.pinned_date < todayStr()) patch.pinned_date = null;
+    run(() => savePost(p, patch), "Back in Ready");
   },
   reactions(id, n) {
     run(() => savePost(post(id), { reactions: n === "" ? null : Number(n) }));
@@ -750,8 +849,9 @@ const A = {
   },
   deletePostGo(id) {
     run(async () => {
-      for (const a of assetsOf(id)) await store.removeFile(a.path).catch(() => {});
-      await store.remove("posts", id);
+      const files = assetsOf(id).map((a) => a.path);
+      await store.remove("posts", id); // the row first: if this fails, the files are still there
+      for (const path of files) await store.removeFile(path).catch(() => {});
       S.d.posts = S.d.posts.filter((p) => p.id !== id);
       S.d.versions = S.d.versions.filter((v) => v.post_id !== id);
       S.d.notes = S.d.notes.filter((n) => n.post_id !== id);
@@ -765,6 +865,7 @@ const A = {
   setDate(id, ds) {
     const p = post(id);
     if (!ds) return run(() => savePost(p, { pinned_date: null }), "Date removed");
+    if (ds < todayStr() || ds > addDays(todayStr(), 730)) return toast("Pick a day from today on.", true);
     const taken = onDay(ds, id);
     if (taken.length) {
       if (publishedOn(ds).length) {
@@ -772,6 +873,10 @@ const A = {
           act: "setDateGo", args: [id, ds, "same"], confirm: t("Both on the same day") });
       }
       const moves = pushPlan(ds, id);
+      if (!moves.length) {
+        return openModal({ pre: true, title: t("That day is taken"), body: t("{x} is already on {d}.", { x: displayTitle(taken[0]).main, d: fmtDay(ds) }), noText: true,
+          act: "setDateGo", args: [id, ds, "same"], confirm: t("Both on the same day") });
+      }
       return openModal({
         pre: true,
         title: t("That day is taken"),
@@ -789,7 +894,7 @@ const A = {
     run(async () => {
       await savePost(p, { pinned_date: ds });
       for (const [q, d] of moves) await savePost(q, { pinned_date: d });
-    }, moves.length ? t("On {d}. {n} moved a day forward.", { d: fmtDay(ds), n: moves.length }) : t("On {d}", { d: fmtDay(ds) }));
+    }, moves.length ? t(moves.length === 1 ? "On {d}. 1 post moved a day forward." : "On {d}. {n} posts moved a day forward.", { d: fmtDay(ds), n: moves.length }) : t("On {d}", { d: fmtDay(ds) }));
   },
   nextFree(id) {
     A.setDateGo(id, nextFreeDay(id), "same");
@@ -803,14 +908,16 @@ const A = {
     run(async () => {
       await savePost(p, { pinned_date: d, hot: true });
       for (const [q, nd] of moves) await savePost(q, { pinned_date: nd });
-    }, moves.length ? t("First in line: {d}. {n} moved a day forward.", { d: fmtDay(d), n: moves.length }) : t("First in line: {d}", { d: fmtDay(d) }));
+    }, moves.length ? t(moves.length === 1 ? "First in line: {d}. 1 post moved a day forward." : "First in line: {d}. {n} posts moved a day forward.", { d: fmtDay(d), n: moves.length }) : t("First in line: {d}", { d: fmtDay(d) }));
   },
   // Arrows on the schedule: one publishing day earlier or later, swapping with whoever is there.
   shift(id, dir) {
     const p = post(id);
     const to = Number(dir) > 0 ? nextCadence(p.pinned_date) : prevCadence(p.pinned_date);
     if (to < todayStr()) return toast("That day has passed.", true);
-    const there = onDay(to, id);
+    if (publishedOn(to).length) return toast(t("{x} already went out on {d}.", { x: displayTitle(publishedOn(to)[0]).main, d: fmtDay(to) }), true);
+    // swap with whoever is planned there, unless this post comes from a non-publishing day
+    const there = isCadenceDay(p.pinned_date) ? dated().filter((q) => q.pinned_date === to && q.id !== id) : [];
     run(async () => {
       for (const q of there) await savePost(q, { pinned_date: p.pinned_date });
       await savePost(p, { pinned_date: to });
@@ -819,7 +926,7 @@ const A = {
   pickForDay(ds) {
     const ready = S.d.posts.filter((p) => ["ready", "final", "draft"].includes(p.stage) && p.status !== "rejected" && !p.pinned_date)
       .sort((a, b) => COLS.indexOf(b.stage) - COLS.indexOf(a.stage));
-    if (!ready.length) return toast("No post without a date. Ready posts land here.", true);
+    if (!ready.length) return toast("Nothing to schedule yet. A post appears here once it has a first draft.", true);
     openModal({
       pre: true, title: t("What goes out on {d}?", { d: fmtDay(ds) }), noText: true, readonlyList: true,
       list: ready.map((p) => ({ act: "pickGo", args: [p.id, ds], label: displayTitle(p).main, sub: t(COL_ONE[p.stage]) })),
@@ -874,8 +981,12 @@ const A = {
     if (isOwner()) {
       run(() => updateRow("versions", v, { chosen: Number(i) === v.chosen ? null : Number(i) }));
     } else {
-      const hl = v.headlines.map((h, k) => ({ ...h, pick: k === Number(i) ? !h.pick : false }));
-      run(() => updateRow("versions", v, { headlines: hl }));
+      const en = (v.headlines[Number(i)] || {}).en;
+      run(async () => {
+        await freshRow("versions", v);
+        const hl = v.headlines.map((h) => (h.kind ? { ...h } : { ...h, pick: h.en === en ? !h.pick : false }));
+        await updateRow("versions", v, { headlines: hl });
+      });
     }
   },
   addHeadline(vid) {
@@ -884,7 +995,10 @@ const A = {
   addHeadlineGo(vid, text) {
     const v = S.d.versions.find((x) => x.id === vid);
     run(async () => {
-      await updateRow("versions", v, { headlines: [...(v.headlines || []), { en: text.trim() }] });
+      await freshRow("versions", v);
+      // subject lines and headlines stay before the preview lines
+      const all = v.headlines || [];
+      await updateRow("versions", v, { headlines: [...all.filter((h) => !h.kind), { en: text.trim() }, ...all.filter((h) => h.kind)] });
       translateMissing();
     });
   },
@@ -900,6 +1014,7 @@ const A = {
     }, 40);
   },
   cancelEdit() {
+    if (!leaveOk()) return;
     S.edit = null;
     render();
   },
@@ -936,7 +1051,7 @@ const A = {
         patch = { stage: "draft", status: owner ? "approved" : "waiting" };
         msg = owner ? "Saved as the first draft" : "First draft sent to Jay";
       } else if (mode === "final") {
-        patch = { stage: "final", status: owner ? "approved" : "waiting" };
+        patch = { stage: "final", status: "waiting" }; // Jay's own final still needs his "approve and move to Ready"
         msg = owner ? "Saved as the final version" : "Final version sent to Jay";
       } else if (!owner && p.status !== "waiting") {
         patch = { status: "waiting" };
@@ -951,10 +1066,17 @@ const A = {
           throw new Error(t("Jay changed this post while you were writing. Your text is still here: copy it before closing."));
         }
       }
-      const v = await insertRow("versions", {
-        post_id: postId, channel, n: prev ? prev.n + 1 : 1, body, headlines: hl, chosen, sources,
+      // someone else may have saved a version meanwhile: number this one after the newest on the server
+      const live = await store.rows("versions", "post_id", postId);
+      for (const r of live) if (!S.d.versions.some((x) => x.id === r.id)) S.d.versions.push(r);
+      const top = latest(postId, channel);
+      // a retry after the second step failed reuses the version that was already saved
+      const again = S.edit.saved && S.edit.saved.body === body ? S.edit.saved : null;
+      const v = again || (await insertRow("versions", {
+        post_id: postId, channel, n: top ? top.n + 1 : 1, body, headlines: hl, chosen, sources,
         writer_note: note || (owner && p.author !== S.me ? "Edited by Jay" : null),
-      });
+      }));
+      S.edit.saved = v;
       S.vsel[`${postId}:${channel}`] = v.n;
       const ticks = [...form.querySelectorAll("input[name=fixed]:checked")].map((i) => i.value);
       for (const nid of ticks) {
@@ -991,6 +1113,9 @@ const A = {
     run(() => updateRow("notes", n, n.status === "open" ? { status: "closed", closed_in: v ? v.n : null } : { status: "open", closed_in: null }));
   },
   deleteNote(nid) {
+    openModal({ title: "Delete this note?", act: "deleteNoteGo", args: [nid], confirm: "Delete", danger: true, noText: true });
+  },
+  deleteNoteGo(nid) {
     const n = S.d.notes.find((x) => x.id === nid);
     run(async () => {
       await store.remove("notes", nid);
@@ -1023,13 +1148,16 @@ const A = {
   },
   assetApprove(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
-    run(() => updateRow("assets", a, { status: "approved", stage: "final" }), "Visual approved");
+    run(() => updateRow("assets", a, { status: "approved", stage: "final" }), "Banner approved");
   },
   assetReplace(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
     run(() => updateRow("assets", a, { status: a.status === "replaced" ? "pending" : "replaced" }));
   },
   assetDelete(aid) {
+    openModal({ title: "Delete this file?", act: "assetDeleteGo", args: [aid], confirm: "Delete", danger: true, noText: true });
+  },
+  assetDeleteGo(aid) {
     const a = S.d.assets.find((x) => x.id === aid);
     run(async () => {
       await store.remove("assets", aid);
@@ -1181,6 +1309,9 @@ const A = {
     run(() => updateRow("rules", r, { active: !r.active }));
   },
   deleteRule(id) {
+    openModal({ title: "Delete this rule?", act: "deleteRuleGo", args: [id], confirm: "Delete", danger: true, noText: true });
+  },
+  deleteRuleGo(id) {
     run(async () => {
       await store.remove("rules", id);
       S.d.rules = S.d.rules.filter((r) => r.id !== id);
@@ -1193,6 +1324,7 @@ const A = {
   async saveSettings(form) {
     const f = Object.fromEntries(new FormData(form));
     const days = [...form.querySelectorAll("input[name=day]:checked")].map((i) => Number(i.value));
+    if (!days.length) return toast("Pick at least one publishing day.", true);
     await run(async () => {
       for (const [key, value] of [["signature", { text: f.signature.trim() }], ["cadence", { days, email_per_week: Number(f.email_per_week) || 0 }]]) {
         const saved = await store.upsert("settings", { key, value });
@@ -1231,8 +1363,14 @@ const A = {
 function parseSource(line) {
   const m = line.match(/https?:\/\/\S+/);
   const url = m ? m[0] : line;
-  const label = line.replace(url, "").replace(/^[\s:–-]+|[\s:–-]+$/g, "") || (isHttp(url) ? new URL(url).hostname.replace(/^www\./, "") : url);
-  const official = /(^|\.)(amazon\.[a-z.]+|aboutamazon\.com|openai\.com|anthropic\.com|claude\.com|claude\.ai|google\.com|blog\.google|shopify\.com|meta\.com|microsoft\.com|apple\.com)$/i.test(isHttp(url) ? new URL(url).hostname : "");
+  let host = "";
+  try {
+    host = isHttp(url) ? new URL(url).hostname : "";
+  } catch (_) {
+    host = "";
+  }
+  const label = line.replace(url, "").replace(/^[\s:–-]+|[\s:–-]+$/g, "") || host.replace(/^www\./, "") || url;
+  const official = /(^|\.)(amazon\.[a-z.]+|aboutamazon\.com|openai\.com|anthropic\.com|claude\.com|claude\.ai|google\.com|blog\.google|shopify\.com|meta\.com|microsoft\.com|apple\.com)$/i.test(host);
   return { url, label, official };
 }
 
@@ -1260,16 +1398,16 @@ function topBar(r) {
     <div class="me">${DEMO ? '<span class="demo-badge">DEMO</span>' : ""}
       <button class="btn sm go" data-act="newPost" data-a="idea">${T("+ New")}</button>
       <button class="btn sm ghost" data-act="setLang" data-a="${S.lang === "he" ? "en" : "he"}">${S.lang === "he" ? "English" : "עברית"}</button>
-      <a class="iconbtn ${r.base === "settings" ? "on" : ""}" href="#/settings" title="${T("Settings")}" aria-label="${T("Settings")}">⚙</a>
+      <a class="iconbtn ${r.base === "settings" ? "on" : ""}" href="#/settings" title="${T("Settings")}" aria-label="${T("Settings")}"${r.base === "settings" ? ' aria-current="page"' : ""}>⚙</a>
       ${avatar(S.me)}
     </div>
   </div></header>`;
 }
 
 function statusPill(p) {
-  if (p.stage === "published") return `<span class="pill mute">✓ ${esc(p.published_at ? fmtDM(localDate(new Date(p.published_at))) : t("Published"))}</span>`;
+  if (p.stage === "published") return `<span class="pill mute">✓ ${esc(p.published_at ? fmtDM(dayIn(new Date(p.published_at))) : t("Published"))}</span>`;
   if (p.status === "rejected") return `<span class="pill st-rejected">${T("Rejected")}</span>`;
-  if (p.stage === "ready") return p.pinned_date ? `<span class="pill go">📅 ${esc(relDay(p.pinned_date))}</span>` : `<span class="pill wait">📅 ${T("No date yet")}</span>`;
+  if (p.stage === "ready") return p.pinned_date ? `<span class="pill ${p.pinned_date < todayStr() ? "st-changes" : "go"}" ${p.pinned_date < todayStr() ? `title="${T("The date passed")}"` : ""}>📅 ${esc(relDay(p.pinned_date))}</span>` : `<span class="pill wait">📅 ${T("No date yet")}</span>`;
   return `<span class="pill st-${esc(p.status)}">${T(STATUS_KEYS[p.status] || p.status)}</span>`;
 }
 // One short line under the title: what has to happen next, and by whom.
@@ -1293,6 +1431,7 @@ function card(p, opts = {}) {
   const v = latest(p.id);
   const foot = [
     `${avatar(p.author, "sm")}<span>${esc(nameOf(p.author))}</span>`,
+    p.stage === "published" && p.reactions ? `<span title="${T("Reactions")}">👍 ${Number(p.reactions)}</span>` : "",
     `<span>${esc(ago(p.updated_at))}</span>`,
     v ? `<span>v${v.n}</span>` : "",
     nNotes ? `<span title="${T("Notes")}">💬 ${nNotes}</span>` : "",
@@ -1324,6 +1463,7 @@ function card(p, opts = {}) {
 }
 
 function viewBoard() {
+  if (S.only === "new" && !S.d.posts.some(isNew)) S.only = ""; // the last new post was just read: back to the whole board
   const match = (p) => (S.cat === "all" || p.category === S.cat) && (
     !S.only ||
     (S.only === "waiting" && p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage)) ||
@@ -1333,7 +1473,7 @@ function viewBoard() {
   const q = S.q.trim().toLowerCase();
   const hay = (p) => {
     const v = latest(p.id);
-    return [p.title, p.title_he, p.idea, p.idea_he, ...((v && v.headlines) || []).flatMap((h) => [h.en, h.he])].filter(Boolean).join(" ").toLowerCase();
+    return [p.title, p.title_he, p.idea, p.idea_he, v && v.body, v && v.body_he, ...((v && v.headlines) || []).flatMap((h) => [h.en, h.he]), ...notesOf(p.id).flatMap((n) => [n.body, n.body_he])].filter(Boolean).join(" ").toLowerCase();
   };
   const ps = S.d.posts.filter((p) => match(p) && (!q || hay(p).includes(q)));
   const all = S.d.posts.filter((p) => S.cat === "all" || p.category === S.cat);
@@ -1353,9 +1493,9 @@ function viewBoard() {
   };
   const cols = COLS.map((c) => ({ c, ...colOf(c) }));
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
-  const chip = (key, n, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(label)}</button>`;
+  const chip = (key, n, one, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(n === 1 ? one : label)}</button>`;
   return `<div class="boardbar">
-      <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waiting for Jay", "c-wait")}${chip("changes", nChg, "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date", "c-date")}</div>
+      <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit|one", "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waits for Jay", "waiting for Jay", "c-wait")}${chip("changes", nChg, "needs changes", "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date|one", "ready without a date", "c-date")}</div>
       <form data-form="search" class="search"><input type="search" name="q" data-input="q" dir="auto" value="${esc(S.q)}" placeholder="${T("Search…")}" aria-label="${T("Search…")}"></form>
       <div class="chips cats">${["all", ...CATS].map((c) => `<button class="chip ${S.cat === c ? "on" : ""}" data-act="cat" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     </div>
@@ -1378,7 +1518,7 @@ function viewSchedule() {
   const weeks = 4;
   const last = addDays(sunday, weeks * 7 - 1);
   const live = dated();
-  const pubOn = (ds) => S.d.posts.filter((p) => p.stage === "published" && p.published_at && localDate(new Date(p.published_at)) === ds);
+  const pubOn = (ds) => S.d.posts.filter((p) => p.stage === "published" && p.published_at && dayIn(new Date(p.published_at)) === ds);
   const he = S.lang === "he";
   const item = (p, published) => {
     const cover = coverOf(p.id);
@@ -1475,7 +1615,7 @@ function viewSettings() {
     </div>
     <form data-form="saveSettings" class="panel"><h3>${T("Publishing")}</h3>
       <div class="field"><label>${T("Publishing days (WhatsApp)")}</label><div class="btns">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<label class="check"><input type="checkbox" name="day" value="${i}" ${cad.days.includes(i) ? "checked" : ""} ${owner ? "" : "disabled"}> ${esc(dayName(i))}</label>`).join("")}</div></div>
-      <div class="field" style="max-width:220px"><label>${T("Emails per week")}</label><input type="number" min="0" max="7" name="email_per_week" value="${cad.email_per_week}" ${owner ? "" : "disabled"}></div>
+      <div class="field" style="max-width:220px"><label>${T("Emails per week")}</label><input type="number" min="0" max="7" name="email_per_week" value="${Number(cad.email_per_week) || 0}" ${owner ? "" : "disabled"}></div>
       <div class="field"><label>${T("Signature added under every WhatsApp post")}</label><textarea name="signature" dir="auto" ${owner ? "" : "disabled"}>${esc(sig)}</textarea>
       <span class="hint">${T("Added only when the post text has no group link of its own.")}</span></div>
       ${owner ? `<button class="btn go">${T("Save")}</button>` : ""}
@@ -1525,7 +1665,7 @@ function drawerPost(p) {
         : `<button class="btn sm go" data-act="nextFree" data-a="${p.id}">${T("Next free day: {d}", { d: fmtDay(nextFreeDay(p.id)) })}</button>`}
       <button class="btn sm" data-act="hotNow" data-a="${p.id}" title="${T("First publishing day from today; the rest move a day forward")}">🔥 ${T("First in line")}</button></div></section>`;
   } else if (p.stage === "published") {
-    dateBox = `<section class="sec"><h3>${T("Published")}</h3><div class="btns"><b>${esc(p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "")}</b>
+    dateBox = `<section class="sec"><h3>${T("Published")}</h3><div class="btns"><b>${esc(p.published_at ? fmtDay(dayIn(new Date(p.published_at))) : "")}</b>
       <label class="small muted">${T("Reactions")} ${owner ? `<input type="number" min="0" style="width:90px" value="${p.reactions ?? ""}" data-change="reactions" data-a="${p.id}">` : `<b>${esc(p.reactions ?? "–")}</b>`}</label></div></section>`;
   }
 
@@ -1543,7 +1683,7 @@ function drawerPost(p) {
         ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">${T("Share / save")}</button>` : ""}
         ${owner && a.status === "pending" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>` : ""}
       </div>
-      <div class="lnk">${a.status !== "approved" ? `<button class="linkbtn" data-act="assetReplace" data-a="${a.id}">${a.status === "replaced" ? T("Bring back") : T("Mark replaced")}</button>` : ""}
+      <div class="lnk">${a.status !== "approved" ? `<button class="linkbtn" data-act="assetReplace" data-a="${a.id}">${a.status === "replaced" ? T("Show again") : T("Hide, a newer one replaces it")}</button>` : ""}
         ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="linkbtn" data-act="assetDelete" data-a="${a.id}">${T("Delete")}</button>` : ""}
         <span class="muted">${esc(nameOf(a.author))} · ${esc(ago(a.created_at))}</span></div></div></div>`;
   };
@@ -1559,7 +1699,7 @@ function drawerPost(p) {
   // ---- the idea ----
   const ib = biText(p.idea, p.idea_he);
   const ideaSec = `<section class="sec"><h3>${T("The idea")}${canWrite ? `<button class="linkbtn" data-act="editIdea" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
-    <div class="pre" dir="auto">${p.idea ? esc(ib.main) : `<span class="muted">${T("No pitch written.")}</span>`}</div>${ib.sub ? `<div class="pre t-sub" dir="auto">${esc(ib.sub)}</div>` : ""}
+    <div class="pre" dir="auto">${p.idea ? esc(ib.main) : `<span class="muted">${T("No idea text yet.")}</span>`}</div>${ib.sub ? `<div class="pre t-sub" dir="auto">${esc(ib.sub)}</div>` : ""}
     <div class="meta-row">${p.score ? `<span class="pill blue">${T("Score {n}/10", { n: p.score })}</span>` : ""}${p.news_date ? `<span>${T("News from {d}", { d: fmtDay(p.news_date) })}</span>` : ""}${p.covered_before ? `<span>${T("Covered before:")} <span dir="auto">${esc(p.covered_before)}</span></span>` : ""}</div></section>`;
 
   // ---- headlines and text ----
@@ -1594,16 +1734,16 @@ function drawerPost(p) {
       const cu = cover ? cachedUrl(cover) : "";
       body = `<div class="wa" dir="ltr"><div class="bub" dir="auto">${cu ? ((cover.mime || "").startsWith("video/") ? `<video src="${esc(cu)}" muted playsinline></video>` : `<img alt="" src="${esc(cu)}">`) : ""}${waHtml(composeWhatsApp(p, v))}<div class="tm">${new Date().toTimeString().slice(0, 5)}</div></div></div>`;
     } else if (mode === "he") {
-      body = `<div class="body-he pre" dir="rtl">${esc(v.body_he || t("Translating…"))}</div>`;
+      body = `<div class="body-he pre" dir="rtl">${esc(v.body_he || t(S.translateError ? "Hebrew translation paused. It retries by itself. The English is on the next tab." : "Translating…"))}</div>`;
     } else {
       body = S.diff[p.id] && prev ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`;
     }
     const seg = (k, label) => `<button class="${mode === k ? "on" : ""}" data-act="view" data-a="${p.id}" data-b="${k}">${label}</button>`;
-    textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
+    textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
       ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
       ${isLatest && canWrite ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
       <section class="sec"><h3><span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span><span class="sp"></span>
-        <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("changes")}</button>` : ""}</span></h3>
+        <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("What changed")}</button>` : ""}</span></h3>
         ${mode === "he" ? `<p class="hint">${T("A literal translation for reading. What goes out is the English.")}</p>` : ""}
         ${body}
         ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> <span dir="auto">${esc(biText(v.writer_note, v.writer_note_he).main)}</span></div>` : ""}
@@ -1621,7 +1761,7 @@ function drawerPost(p) {
     const ci = chosenIndex(v);
     const row = (h, i, picked, act) => {
       const hb = biText(h.en, h.he);
-      return `<div class="mrow2 ${picked ? "pick" : ""}"><button class="hl" data-act="${act}" data-a="${v.id}" data-b="${i}" ${isLatest && canWrite ? "" : "disabled"}><span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span></button><button class="btn sm" data-act="copyLine" data-a="${v.id}" data-b="${i}">${T("Copy")}</button></div>`;
+      return `<div class="mrow2 ${picked || (ci < 0 && !h.kind && h.pick) ? "pick" : ""}"><button class="hl" data-act="${act}" data-a="${v.id}" data-b="${i}" ${isLatest && canWrite ? "" : "disabled"}><span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span></button><button class="btn sm" data-act="copyLine" data-a="${v.id}" data-b="${i}">${T("Copy")}</button></div>`;
     };
     const all = v.headlines || [];
     const subs = all.map((h, i) => (!h.kind ? row(h, i, ci === i, "pickHeadline") : "")).join("");
@@ -1634,7 +1774,7 @@ function drawerPost(p) {
         <h3 style="margin-top:16px">${T("Preview text")} <span class="count">${previewsOf(v).length}</span></h3>${pvs || `<div class="muted small">${T("No preview text yet.")}</div>`}</section>
       <section class="sec"><h3>${T("The email")}<span class="sp"></span>${html ? `<span class="seg sm"><button class="${mv === "look" ? "on" : ""}" data-act="mailView" data-a="${p.id}" data-b="look">${T("How it looks")}</button><button class="${mv === "code" ? "on" : ""}" data-act="mailView" data-a="${p.id}" data-b="code">HTML</button></span>` : ""}</h3>
         ${html ? `<div class="inbox"><b dir="auto">${esc(subj || t("(no subject)"))}</b><span dir="auto">${esc(prevw)}</span></div>
-          ${mv === "code" ? `<pre class="codebox" dir="ltr">${esc(html)}</pre>` : looksHtml(html) ? `<iframe class="mailframe" sandbox="" title="${T("The email")}" srcdoc="${esc(html)}"></iframe>` : `<div class="pre" dir="auto">${esc(html)}</div>`}`
+          ${mv === "code" ? `<pre class="codebox" dir="ltr">${esc(html)}</pre>` : looksHtml(html) ? `<iframe class="mailframe" sandbox="" referrerpolicy="no-referrer" title="${T("The email")}" srcdoc="${esc(MAIL_CSP + html)}"></iframe>` : `<div class="pre" dir="auto">${esc(html)}</div>`}`
           : `<div class="empty">${T("No HTML yet. Subject and preview options can come first.")}</div>`}
         <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}<span class="sp"></span>
           ${html ? `<button class="btn sm go" data-act="copyHtml" data-a="${p.id}">${T("Copy the HTML")}</button>` : ""}
@@ -1658,7 +1798,7 @@ function drawerPost(p) {
       <div class="pre" dir="auto">${esc(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${esc(nb.sub)}</div>` : ""}
       ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(ab.main)}</span></div>` : ""}
       <div class="n-act">${owner && fixable && !n.is_rule ? `<button class="linkbtn" data-act="noteToRule" data-a="${n.id}">${T("Make it a house rule")}</button>` : ""}${n.is_rule ? `<span class="pill go">${T("rule")}</span>` : ""}
-        ${n.author === S.me || owner ? `<button class="linkbtn" data-act="deleteNote" data-a="${n.id}">${T("delete")}</button>` : ""}</div>
+        ${n.author === S.me || owner ? `<button class="linkbtn" data-act="deleteNote" data-a="${n.id}">${T("Delete")}</button>` : ""}</div>
     </div></div>`;
   };
   const nOpen = openNotes(p.id).length;
@@ -1678,12 +1818,12 @@ function drawerPost(p) {
       ${checks.length ? `<h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}` : ""}
       <h3>${T("Details")}</h3>
       <div class="meta-row">
-        <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category">${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
-        <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried"><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
-        <label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date"></label>
+        <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
+        <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried" ${p.stage === "published" && !isOwner() ? "disabled" : ""}><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
+        <label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date" ${p.stage === "published" && !isOwner() ? "disabled" : ""}></label>
         ${p.stage !== "ready" && p.stage !== "published" ? `<label>📅 ${T("Planned date")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="date" data-a="${p.id}"></label>` : ""}
-        <button class="btn sm ${p.hot ? "hot" : ""}" data-act="hot" data-a="${p.id}">🔥 ${p.hot ? T("Hot") : T("Mark hot")}</button>
-        <button class="btn sm ${p.email_too ? "dark" : ""}" data-act="emailToo" data-a="${p.id}">✉ ${p.email_too ? T("Also email") : T("Email too?")}</button>
+        <button class="btn sm ${p.hot ? "hot" : ""}" data-act="hot" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🔥 ${p.hot ? T("Hot") : T("Mark hot")}</button>
+        <button class="btn sm ${p.email_too ? "dark" : ""}" data-act="emailToo" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>✉ ${p.email_too ? T("Also an email: yes") : T("Also an email: no")}</button>
         ${canWrite ? `<button class="btn sm" data-act="renameTitle" data-a="${p.id}">${T("Working title")}</button>` : ""}
       </div>
       ${owner ? `<h3>${T("Jay only")}</h3><div class="meta-row"><label>${T("Move to")} <select data-change="moveTo" data-a="${p.id}">${COLS.map((c) => `<option value="${c}" ${p.stage === c ? "selected" : ""}>${T(COL_ONE[c])}</option>`).join("")}</select></label>
@@ -1698,18 +1838,18 @@ function drawerPost(p) {
     if (owner) acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Bring it back")}</button>`);
   } else if (p.stage === "ready") {
     say = p.pinned_date ? T("Goes out {d}", { d: fmtDay(p.pinned_date) }) : T("Pick a date above.");
-    acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) })}</button>`);
+    if (!(ch === "email" && looksHtml((latest(p.id, "email") || {}).body))) acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) })}</button>`);
     if (coverOf(p.id)) acts.push(`<button class="btn" data-act="downloadCover" data-a="${p.id}">↓ ${T("Banner")}</button>`);
     if (owner) acts.push(`<button class="btn" data-act="publish" data-a="${p.id}">✓ ${T("Mark published")}</button>`);
   } else if (p.stage === "published") {
-    say = T("Published {d}.", { d: p.published_at ? fmtDay(localDate(new Date(p.published_at))) : "" });
+    say = T("Published {d}.", { d: p.published_at ? fmtDay(dayIn(new Date(p.published_at))) : "" });
     acts.push(`<button class="btn" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy the text")}</button>`);
     if (owner) acts.push(`<button class="btn ghost" data-act="unpublish" data-a="${p.id}">${T("Not published after all")}</button>`);
   } else if (owner) {
-    const label = p.stage === "idea" ? "Approve the idea" : p.stage === "draft" ? "Approve the draft" : "Approve · to Ready";
+    const label = p.stage === "idea" ? "Approve the idea" : p.stage === "draft" ? "Approve the draft" : "Approve and move to Ready";
     if (p.status !== "approved" || p.stage === "final") acts.push(`<button class="btn go" data-act="approve" data-a="${p.id}">✓ ${T(label)}</button>`);
     if (p.status === "approved" && p.stage === "idea") acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="draft">${T("Write the first draft")}</button>`);
-    if (p.status === "approved" && p.stage === "draft") acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Upload the final version")}</button>`);
+    if (p.status === "approved" && p.stage === "draft") acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Write the final version")}</button>`);
     if (p.status !== "changes") acts.push(`<button class="btn" data-act="sendBack" data-a="${p.id}">↩ ${T("Send back")}</button>`);
     acts.push(`<button class="btn ghost" data-act="reject" data-a="${p.id}">✕ ${T("Reject")}</button>`);
     say = p.status === "waiting" ? T("Your call.") : p.status === "changes" ? T("Sent back. Waiting for a new version.") : T("Approved.");
@@ -1719,7 +1859,7 @@ function drawerPost(p) {
       acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="draft">${T("Write the first draft")}</button>`);
     } else if (p.status === "approved" && p.stage === "draft") {
       say = T("Jay approved the draft. Next: the final version with the banner.");
-      acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Upload the final version")}</button>`);
+      acts.push(`<button class="btn go" data-act="startEdit" data-a="${p.id}" data-b="whatsapp" data-c="final">${T("Write the final version")}</button>`);
     } else if (p.status === "changes") {
       say = nOpen ? plural(nOpen, "Jay sent it back with 1 note.", "Jay sent it back with {n} notes.") : T("Jay sent it back.");
       if (p.stage === "idea" || !latest(p.id)) acts.push(`<button class="btn go" data-act="resubmit" data-a="${p.id}">${T("Send to Jay again")}</button>`);
@@ -1759,7 +1899,7 @@ function drawerNew() {
   if (mode === "idea") {
     body = `<form data-form="createIdea">
       <div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
-      <div class="field"><label>${T("The pitch")}</label><textarea name="idea" dir="auto" placeholder="${T("Hook, why now, what readers get. Two to five lines.")}"></textarea></div>
+      <div class="field"><label>${T("The idea")}</label><textarea name="idea" dir="auto" placeholder="${T("What it is, why now, what readers get. Two to five lines.")}"></textarea></div>
       <div class="row2"><div class="field"><label>${T("Category")}</label>${catSel("tip")}</div>
       <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label></div></div>
       <details><summary class="linkbtn">${T("More details (optional)")}</summary>
@@ -1835,7 +1975,7 @@ function viewLogin() {
 function viewNotMember() {
   return `<div class="login"><h1>${T("Not on the team yet")}</h1>
     <p>${T("You're signed in as {me}, and that account isn't on the Content Desk team. Ask Jay to add it, or sign in with your work account.", { me: S.me })}</p>
-    <button class="btn go" data-act="signOut">${T("Sign out")}</button>
+    <div class="btns" style="justify-content:center"><button class="btn go" data-act="refresh">${T("Try again")}</button><button class="btn" data-act="signOut">${T("Sign out")}</button></div>
     <p class="small">${langLink()}</p></div>`;
 }
 
@@ -1843,9 +1983,9 @@ function modalHtml() {
   const m = S.modal;
   if (!m) return "";
   const tx = (s) => (m.pre ? esc(s) : T(s));
-  const field = m.noText ? "" : m.readonly ? `<textarea readonly class="big" dir="auto">${esc(m.text)}</textarea>` : m.input ? `<input type="text" name="v" dir="auto" value="${esc(m.value || "")}">` : `<textarea name="v" dir="auto" class="${m.big ? "big" : ""}">${esc(m.value || "")}</textarea>`;
+  const field = m.noText ? "" : m.readonly ? `<textarea readonly class="big" dir="auto">${esc(m.text)}</textarea>` : m.input ? `<input type="text" name="v" dir="auto" aria-label="${tx(m.title)}" value="${esc(m.value || "")}">` : `<textarea name="v" dir="auto" aria-label="${tx(m.title)}" class="${m.big ? "big" : ""}">${esc(m.value || "")}</textarea>`;
   const list = m.list ? `<div class="mlist">${m.list.map((x, i) => `<button type="button" class="mrow" data-act="modalPick" data-a="${i}"><span dir="auto">${esc(x.label)}</span><small>${esc(x.sub || "")}</small></button>`).join("")}</div>` : "";
-  return `<div class="modal-bg" data-act="closeModalBg"><form class="modal" data-form="modal">
+  return `<div class="modal-bg" data-act="closeModalBg"><form class="modal" data-form="modal" role="dialog" aria-modal="true" aria-label="${tx(m.title)}">
     <h4>${tx(m.title)}</h4>${m.body ? `<p dir="auto">${tx(m.body)}</p>` : ""}${field}${list}
     <div class="btns" style="margin-top:16px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">${m.readonly || m.list ? T("Close") : T("Cancel")}</button>
     ${m.alt ? `<button type="button" class="btn" data-act="modalAlt">${esc(m.alt.label)}</button>` : ""}
@@ -1898,7 +2038,7 @@ function render() {
   const dEl = app.querySelector(".d-body");
   const dy = dEl ? dEl.scrollTop : 0;
   const colY = [...app.querySelectorAll(".col-body")].map((c) => c.scrollTop);
-  app.innerHTML = html + overlay + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}"><span>${esc(S.toast.msg)}</span>${S.toast.undo ? `<button data-act="undo">${T("Undo")}</button>` : ""}</div>` : "");
+  app.innerHTML = html + overlay + modalHtml() + (S.busy ? '<div class="busy"></div>' : "") + (S.toast ? `<div class="toast ${S.toast.err ? "err" : ""}" role="status"><span>${esc(S.toast.msg)}</span>${S.toast.undo ? `<button data-act="undo">${T("Undo")}</button>` : ""}</div>` : "");
   // A Hebrew line that opens with an English name (Claude, Amazon) still reads right to left.
   app.querySelectorAll("[dir=auto]").forEach((el) => {
     if (!/^(INPUT|TEXTAREA)$/.test(el.tagName) && !el.matches(".body-en, .bub") && /[\u0590-\u05FF]/.test(el.textContent)) el.dir = "rtl";
@@ -1933,6 +2073,11 @@ function render() {
   else window.scrollTo(0, 0);
   const dNew = app.querySelector(".d-body");
   if (dNew && sameRoute) dNew.scrollTop = dy;
+  // a post that just opened takes the keyboard, so Tab and a screen reader start inside it
+  if (dNew && !sameRoute && !isTyping()) {
+    const x = app.querySelector(".drawer .d-head button, .drawer .d-head a");
+    if (x) x.focus({ preventScroll: true });
+  }
   if (prev === now) app.querySelectorAll(".col-body").forEach((c, i) => (c.scrollTop = colY[i] || 0));
   S.lastRoute = location.hash;
 }
@@ -1945,7 +2090,7 @@ document.addEventListener("click", (e) => {
   // a click on a field or a link inside a card is for that field, not for opening the card
   if (act === "open" && e.target.closest("input, select, textarea, label, a, button:not([data-act=open])")) return;
   if (act === "closeModalBg") {
-    if (e.target === el) A.closeModal();
+    if (e.target === el && leaveOk()) A.closeModal();
     return;
   }
   if (act === "modalPick" || act === "modalAlt") {
@@ -1977,6 +2122,7 @@ document.addEventListener("submit", (e) => {
     if (m.act && A[m.act]) A[m.act](...(m.args || []), val);
     return;
   }
+  if (S.busy) return; // a second Enter while the first save is still running
   if (A[name]) A[name](form);
 });
 
@@ -2032,13 +2178,31 @@ document.addEventListener("input", (e) => {
 });
 
 window.addEventListener("hashchange", () => {
+  if (S.hashBack) {
+    S.hashBack = false;
+    return;
+  }
+  const meant = S.leaving;
+  S.leaving = false;
+  S.modal = null; // a question about the post that was open does not follow to the next one
+  if (!meant && S.lastRoute && S.lastRoute !== location.hash && (isDirty() || halfNote()) && !window.confirm(t("Discard what you wrote?"))) {
+    S.hashBack = true;
+    location.hash = S.lastRoute;
+    return;
+  }
   S.edit = null;
   render();
+});
+window.addEventListener("beforeunload", (e) => {
+  if (isDirty()) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
 });
 
 // Refresh when the tab comes back, unless someone is typing.
 function quietRefresh() {
-  if (!S.member || S.edit || S.modal || S.busy) return;
+  if (!S.session || S.edit || S.modal || S.busy) return;
   const a = document.activeElement;
   if (a && ["TEXTAREA", "INPUT", "SELECT"].includes(a.tagName) && a.value) return;
   loadAll(true);

@@ -1,10 +1,10 @@
 :root {
-  --bg: #f4f5f7; --card: #fff; --ink: #18202b; --ink2: #4b5563; --ink3: #8a93a1;
-  --line: #e6e8ec; --line2: #d4d8de; --soft: #eef0f3; --col: #eceef2;
-  --pri: #0c8f6f; --pri-d: #0a7259; --pri-bg: #e5f4ef;
-  --go: #0c8f6f; --go-bg: #e5f4ef;
-  --hot: #d9472f; --hot-bg: #fdebe7;
-  --wait: #b26b00; --wait-bg: #fff2d6;
+  --bg: #f4f5f7; --card: #fff; --ink: #18202b; --ink2: #4b5563; --ink3: #667080;
+  --line: #e6e8ec; --line2: #c5cbd3; --soft: #eef0f3; --col: #eceef2;
+  --pri: #0a7d61; --pri-d: #0a7259; --pri-bg: #e5f4ef;
+  --go: #0a7d61; --go-bg: #e5f4ef;
+  --hot: #c23a22; --hot-bg: #fdebe7;
+  --wait: #8a5200; --wait-bg: #fff2d6;
   --blue: #2f68d8; --blue-bg: #e9f0fd; --plum: #8448a8; --plum-bg: #f3eafa;
   --ui: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -136,7 +136,7 @@ h3 { font-size: 13px; color: var(--ink2); font-weight: 600; margin: 0 0 10px; di
 .c-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--ink3); }
 .c-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
 .c-foot.with-q { flex-wrap: nowrap; }
-.c-foot.with-q .c-meta { flex: 1; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
+.c-foot.with-q .c-meta { flex: 1; flex-wrap: wrap; row-gap: 2px; }
 .c-foot.with-q .sp { display: none; }
 .c-quick { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 2px; }
 .empty { color: var(--ink3); font-size: 14px; padding: 18px; border: 1px dashed var(--line2); border-radius: var(--r); text-align: center; }
@@ -208,7 +208,7 @@ html[dir=rtl] .drawer { box-shadow: 12px 0 40px rgba(24, 32, 43, .18); animation
 .ans { margin-top: 6px; padding: 8px 12px; background: var(--blue-bg); border-radius: 10px; font-size: 14px; }
 .noteform { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .noteform textarea { min-height: 44px; height: 44px; }
-.noteform textarea:focus { height: 90px; }
+.noteform:focus-within textarea { height: 90px; } /* stays tall while the Add button is pressed, so the button does not jump away */
 .lint { font-size: 13.5px; padding: 3px 0; display: flex; gap: 8px; align-items: flex-start; color: var(--ink2); }
 .lint i { width: 7px; height: 7px; border-radius: 50%; background: var(--pri); flex: none; margin-top: 8px; }
 .lint.bad i { background: var(--hot); }
@@ -406,3 +406,10 @@ html[dir=rtl] .hl-t > span, html[dir=rtl] .hl small, html[dir=rtl] .mrow span { 
 .mailframe { width: 100%; height: 560px; border: 1px solid var(--line); border-radius: 10px; background: #fff; display: block; }
 .codebox { max-height: 420px; overflow: auto; background: #18202b; color: #e6e8ec; border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; text-align: left; }
 textarea.code { font-family: var(--mono); font-size: 13px; text-align: left; }
+
+/* 15.11: iPhone Safari zooms into any field under 16px */
+@media (max-width: 640px) { input, textarea, select, .meta-row input[type=date], .meta-row select { font-size: 16px; } }
+/* the toast never covers the drawer's action bar */
+body.has-drawer .toast { bottom: 84px; }
+.drop:focus-within { outline: 2px solid var(--pri); outline-offset: 2px; }
+button:disabled, select:disabled, input:disabled { cursor: not-allowed; }
