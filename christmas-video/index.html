@@ -14,180 +14,316 @@
 <title>The Perfect Gift | A Christmas film for your Amazon product</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Antonio:wght@300;400&display=swap" rel="stylesheet">
 <style>
-:root{--night:#0b1018;--night2:#111927;--ink:#f4efe6;--dim:#a9a595;--gold:#e8c684;--gold2:#c79a4a;--red:#b3262c;--line:rgba(232,198,132,.22);--serif:"Playfair Display",Didot,"Bodoni 72",Georgia,serif;--sans:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--night);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+:root{
+  --night:#070b12;--night2:#0d1420;--panel:#111a29;
+  --ink:#f6f0e4;--soft:#d6cfbf;--dim:#9a968a;
+  --gold:#e9c784;--gold2:#b98a3e;--red:#a3232a;
+  --line:rgba(233,199,132,.2);--hair:rgba(246,240,228,.12);
+  --serif:"Bodoni Moda","Bodoni 72",Didot,Georgia,serif;
+  --sans:"Hanken Grotesk",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --bill:Antonio,"Arial Narrow",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{margin:0;background:var(--night);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img,video{display:block;max-width:100%}
 a{color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.eyebrow{font:600 12px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
-h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;letter-spacing:-.01em}
-h1{font-size:clamp(40px,6.4vw,84px);line-height:1.04}
-h2{font-size:clamp(30px,4.2vw,54px);line-height:1.1}
-h3{font-size:24px;line-height:1.25}
-em{font-style:italic;color:var(--gold)}
 p{margin:0}
-.lead{font-size:clamp(17px,1.6vw,20px);color:#d9d3c5;max-width:36em}
-.btn{display:inline-flex;align-items:center;gap:10px;font:600 16px/1 var(--sans);padding:18px 30px;border-radius:999px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
-.btn.gold{background:linear-gradient(180deg,#f3d9a2,#d9ae63);color:#1a1206;box-shadow:0 10px 40px rgba(232,198,132,.25)}
-.btn.gold:hover{transform:translateY(-2px);box-shadow:0 16px 50px rgba(232,198,132,.38)}
-.btn.ghost{border-color:rgba(244,239,230,.35);color:var(--ink)}
-.btn.ghost:hover{background:rgba(244,239,230,.08)}
-section{padding:110px 0;position:relative}
-.rule{width:64px;height:1px;background:var(--gold);margin:22px 0 26px}
-.center{text-align:center}.center .rule{margin-left:auto;margin-right:auto}.center .lead{margin-left:auto;margin-right:auto}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(44px,7vw,104px);line-height:.98}
+h2{font-size:clamp(32px,4.6vw,62px);line-height:1.04}
+h3{font-size:25px;line-height:1.2}
+em{font-style:italic;color:var(--gold)}
+.lead{font-size:clamp(17px,1.5vw,20px);color:var(--soft);max-width:34em}
+section{padding:130px 0;position:relative}
+
+/* film grain over everything */
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* scene label: a slate line instead of a plain eyebrow */
+.slate{display:inline-flex;align-items:center;gap:14px;font:600 12px/1 var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.slate i{font:400 13px/1 var(--bill);letter-spacing:.2em;font-style:normal;color:var(--night);background:var(--gold);padding:5px 8px 4px;border-radius:2px}
+.slate::after{content:"";width:54px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+.center{text-align:center}.center .lead{margin-left:auto;margin-right:auto}
+.center .slate::before{content:"";width:54px;height:1px;background:linear-gradient(270deg,var(--gold),transparent)}
+.head{margin-bottom:64px}
+.head h2{margin-top:26px}
+.head .lead{margin-top:22px}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;font:600 16px/1 var(--sans);letter-spacing:.01em;padding:19px 34px;border-radius:999px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,background .25s;overflow:hidden}
+.btn.gold{background:linear-gradient(180deg,#f7e0ad 0%,#e3ba70 55%,#c9973f 100%);color:#1c1305;box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 14px 44px rgba(233,199,132,.28)}
+.btn.gold::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);transition:left .7s}
+.btn.gold:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 20px 60px rgba(233,199,132,.42)}
+.btn.gold:hover::after{left:120%}
+.btn.gold svg{transition:transform .25s}.btn.gold:hover svg{transform:translateX(4px)}
+.btn.ghost{border-color:rgba(246,240,228,.32);color:var(--ink);background:rgba(246,240,228,.03);backdrop-filter:blur(6px)}
+.btn.ghost:hover{background:rgba(246,240,228,.1);border-color:rgba(246,240,228,.6)}
 
 /* nav */
-nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:16px 28px;background:linear-gradient(180deg,rgba(11,16,24,.85),rgba(11,16,24,0))}
-nav .brand{font:600 13px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;text-decoration:none}
-nav .btn{padding:11px 20px;font-size:14px}
+nav{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:18px 32px;transition:background .3s,padding .3s,border-color .3s;border-bottom:1px solid transparent}
+nav.solid{background:rgba(7,11,18,.82);backdrop-filter:blur(14px);padding:12px 32px;border-color:var(--hair)}
+nav .brand{text-decoration:none;display:flex;flex-direction:column;gap:5px}
+nav .brand b{font:400 17px/1 var(--serif);letter-spacing:.3em;text-transform:uppercase}
+nav .brand span{font:400 10px/1 var(--bill);letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+nav .btn{padding:12px 22px;font-size:14px}
 
 /* hero */
-.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;padding:0 0 9vh;overflow:hidden}
-.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,16,24,.35) 0%,rgba(11,16,24,.1) 35%,rgba(11,16,24,.82) 78%,var(--night) 100%)}
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;padding:0 0 150px;overflow:hidden}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.04)}
+.hero::before{content:"";position:absolute;inset:0;z-index:1;background:
+  linear-gradient(90deg,rgba(7,11,18,.78) 0%,rgba(7,11,18,.35) 45%,transparent 70%),
+  radial-gradient(120% 90% at 70% 30%,transparent 30%,rgba(7,11,18,.55) 100%),
+  linear-gradient(180deg,rgba(7,11,18,.55) 0%,rgba(7,11,18,0) 26%,rgba(7,11,18,.25) 48%,rgba(7,11,18,.9) 84%,var(--night) 100%)}
 .hero .wrap{position:relative;z-index:2;width:100%}
-.hero h1{max-width:13em;margin:18px 0 22px;text-shadow:0 2px 30px rgba(0,0,0,.5)}
-.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
-.hero .fine{margin-top:18px;color:var(--dim);font-size:14px}
+.hero .kicker{display:flex;align-items:center;gap:14px;font:600 12px/1 var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+.hero .kicker::before{content:"";width:44px;height:1px;background:var(--gold)}
+.hero h1{max-width:9.2em;margin:26px 0 26px;text-shadow:0 4px 50px rgba(0,0,0,.6)}
+.hero h1 em{display:inline-block}
+.hero .lead{max-width:31em;text-shadow:0 1px 20px rgba(0,0,0,.7)}
+.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:36px;align-items:center}
+.hero .offer{margin-top:26px;display:inline-flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(7,11,18,.55);backdrop-filter:blur(8px);font-size:14px;color:var(--soft)}
+.hero .offer b{font:400 13px/1 var(--bill);letter-spacing:.16em;text-transform:uppercase;background:var(--red);color:#fff;padding:6px 10px 5px;border-radius:999px;white-space:nowrap}
+.hero .fine{margin-top:14px;color:var(--dim);font-size:14px}
+.load{opacity:0;transform:translateY(22px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+.load:nth-child(2){animation-delay:.12s}.load:nth-child(3){animation-delay:.24s}.load:nth-child(4){animation-delay:.36s}.load:nth-child(5){animation-delay:.48s}.load:nth-child(6){animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
 
-/* film */
-.film{padding-top:40px}
-.player{position:relative;border-radius:14px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px var(--line);background:#000;aspect-ratio:16/9}
+/* film strip under the hero */
+.strip{position:relative;z-index:3;margin-top:-104px;background:#04060a;padding:22px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);overflow:hidden;transform:rotate(-1.2deg) scale(1.03)}
+.strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:9px;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(246,240,228,.5) 9px 21px,transparent 21px 30px)}
+.strip::before{top:7px}.strip::after{bottom:7px}
+.strip .track{display:flex;gap:8px;width:max-content;animation:roll 70s linear infinite}
+.strip:hover .track{animation-play-state:paused}
+.strip img{width:240px;aspect-ratio:16/9;object-fit:cover;border-radius:3px;filter:saturate(.92)}
+@keyframes roll{to{transform:translateX(-50%)}}
+
+/* film player */
+.film{padding-top:120px}
+.screen{position:relative;max-width:1080px;margin:0 auto}
+.screen::before{content:"";position:absolute;inset:6% -4% -10%;background:url(img/gift.jpg) center/cover;filter:blur(70px) saturate(1.3);opacity:.5;z-index:0}
+.player{position:relative;z-index:1;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:0 50px 140px rgba(0,0,0,.75),0 0 0 1px rgba(233,199,132,.35)}
 .player video{width:100%;height:100%}
-.player .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(11,16,24,.28) center/cover;border:0;cursor:pointer;color:var(--ink)}
-.player .play span{width:96px;height:96px;border-radius:50%;background:rgba(244,239,230,.14);backdrop-filter:blur(8px);border:1px solid rgba(244,239,230,.5);display:flex;align-items:center;justify-content:center;transition:transform .2s}
-.player .play:hover span{transform:scale(1.07)}
-.player .play svg{margin-left:6px}
-.film .note{margin-top:16px;color:var(--dim);font-size:14px;text-align:center}
+.player .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:center/cover;border:0;cursor:pointer;color:var(--ink);padding:0}
+.player .play .ring{position:relative;width:112px;height:112px;border-radius:50%;background:rgba(7,11,18,.35);backdrop-filter:blur(10px);border:1px solid rgba(246,240,228,.7);display:flex;align-items:center;justify-content:center;transition:transform .3s,background .3s}
+.player .play .ring::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(233,199,132,.6);animation:pulse 2.4s ease-out infinite}
+.player .play:hover .ring{transform:scale(1.08);background:rgba(233,199,132,.25)}
+.player .play svg{margin-left:7px}
+.player .play .tag{position:absolute;left:26px;bottom:22px;font:400 14px/1 var(--bill);letter-spacing:.26em;text-transform:uppercase;color:var(--ink);display:flex;gap:12px;align-items:center}
+.player .play .tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(163,35,42,.35)}
+@keyframes pulse{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.corner{position:absolute;width:30px;height:30px;border:1px solid var(--gold);z-index:2;opacity:.8}
+.corner.a{left:-14px;top:-14px;border-right:0;border-bottom:0}.corner.b{right:-14px;top:-14px;border-left:0;border-bottom:0}
+.corner.c{left:-14px;bottom:-14px;border-right:0;border-top:0}.corner.d{right:-14px;bottom:-14px;border-left:0;border-top:0}
+.film .note{position:relative;z-index:1;margin:34px auto 0;color:var(--soft);font:italic 400 clamp(18px,2vw,23px)/1.4 var(--serif);text-align:center;max-width:30em}
 
 /* problem */
-.problem{background:radial-gradient(900px 400px at 50% 0%,rgba(232,198,132,.07),transparent 70%)}
-.problem h2{max-width:14em;margin:0 auto}
+.problem .grid2{display:grid;grid-template-columns:1fr 1.05fr;gap:72px;align-items:center}
+.same{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.dull{aspect-ratio:1;background:#e6e3dd;border-radius:6px;position:relative;opacity:.5;filter:grayscale(1)}
+.dull::before{content:"";position:absolute;left:28%;right:28%;top:18%;bottom:38%;background:#b9b5ad;border-radius:5px}
+.dull::after{content:"";position:absolute;left:14%;right:14%;bottom:14%;height:14%;background:repeating-linear-gradient(180deg,#c9c5bd 0 3px,transparent 3px 7px)}
+.dull:nth-child(odd)::before{left:34%;right:34%;top:14%;border-radius:40% 40% 6px 6px}
+.dull:nth-child(3n)::before{left:22%;right:22%;top:28%;border-radius:50%}
+.live{grid-column:2/4;grid-row:1/3;position:relative;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1px var(--gold),0 30px 90px rgba(233,199,132,.28),0 30px 80px rgba(0,0,0,.7);transform:scale(1.07) rotate(-1.5deg);z-index:2}
+.live img{width:100%;height:100%;object-fit:cover}
+.live span{position:absolute;left:10px;top:10px;font:400 11px/1 var(--bill);letter-spacing:.2em;text-transform:uppercase;background:var(--gold);color:var(--night);padding:5px 8px 4px;border-radius:2px}
 
-/* story */
-.beats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
-.beat{position:relative;border-radius:12px;overflow:hidden;background:var(--night2);border:1px solid var(--line)}
-.beat img{aspect-ratio:4/5;object-fit:cover;width:100%;transition:transform .8s}
-.beat:hover img{transform:scale(1.04)}
-.beat .t{padding:18px 18px 22px}
-.beat .n{font:500 13px/1 var(--sans);letter-spacing:.2em;color:var(--gold)}
-.beat h3{margin:10px 0 8px;font-size:22px}
-.beat p{color:var(--dim);font-size:15px;line-height:1.55}
-.quote{font-family:var(--serif);font-style:italic;font-size:clamp(24px,3vw,38px);line-height:1.3;text-align:center;max-width:20em;margin:80px auto 0;color:var(--ink)}
-.quote b{display:block;font-weight:400;color:var(--gold)}
-
-/* product */
-.split{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
-.split img{border-radius:14px;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--line)}
-.checks{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:14px}
-.checks li{padding-left:34px;position:relative;color:#d9d3c5}
-.checks li::before{content:"";position:absolute;left:0;top:.45em;width:18px;height:10px;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(-45deg)}
+/* why */
+.split{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;align-items:center}
+.collage{position:relative;padding:0 0 70px 0}
+.collage img{border-radius:8px;box-shadow:0 40px 110px rgba(0,0,0,.7),0 0 0 1px var(--line)}
+.collage .back{width:100%}
+.collage .front{position:absolute;right:-28px;bottom:0;width:52%;border:6px solid var(--night);box-shadow:0 30px 80px rgba(0,0,0,.8)}
+.collage .cap{position:absolute;left:0;bottom:22px;font:400 12px/1.5 var(--bill);letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.points{list-style:none;padding:0;margin:36px 0 0;counter-reset:p}
+.points li{counter-increment:p;display:grid;grid-template-columns:54px 1fr;align-items:baseline;padding:18px 0;border-top:1px solid var(--hair);color:var(--soft)}
+.points li:last-child{border-bottom:1px solid var(--hair)}
+.points li::before{content:"0" counter(p);font:italic 400 22px/1 var(--serif);color:var(--gold)}
+.checks{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:13px}
+.checks li{padding-left:32px;position:relative;color:var(--soft);font-size:16px}
+.checks li::before{content:"";position:absolute;left:0;top:.5em;width:16px;height:9px;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(-45deg)}
 
 /* yours */
-.who{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:44px}
-.who.who3{grid-template-columns:1.2fr 1fr 1.3fr}
-.who .card{border:1px solid var(--line);border-radius:14px;padding:30px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0))}
-.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.chips span{padding:9px 16px;border-radius:999px;border:1px solid rgba(244,239,230,.25);font-size:14px}
+.yours{background:linear-gradient(180deg,var(--night),var(--night2) 30%,var(--night2) 70%,var(--night))}
+.swap{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:center}
+.frame{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px var(--line)}
+.frame img{width:100%}
+.spot{position:absolute;left:42.3%;top:69%;width:21%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:1.5px dashed var(--gold);animation:spin 26s linear infinite}
+.spot2{position:absolute;left:42.3%;top:69%;width:21%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 9999px rgba(7,11,18,.38),0 0 50px rgba(233,199,132,.5) inset}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.pin{position:absolute;left:56%;top:60%;display:flex;align-items:center;gap:10px;font:400 14px/1 var(--bill);letter-spacing:.24em;text-transform:uppercase;color:var(--night);background:var(--gold);padding:8px 12px 7px;border-radius:3px;white-space:nowrap}
+.pin::before{content:"";position:absolute;right:100%;top:50%;width:26px;height:1px;background:var(--gold)}
+.rows{display:grid}
+.row{display:grid;grid-template-columns:54px 1fr;padding:26px 0;border-top:1px solid var(--hair)}
+.row:last-child{border-bottom:1px solid var(--hair)}
+.row .n{font:italic 400 24px/1.2 var(--serif);color:var(--gold)}
+.row p{color:var(--dim);font-size:15px;margin-top:8px}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.chips button{font:500 14px/1 var(--sans);padding:11px 18px;border-radius:999px;border:1px solid rgba(246,240,228,.24);background:transparent;color:var(--ink);cursor:pointer;transition:all .18s}
+.chips button:hover{border-color:var(--gold)}
+.chips button.on{background:var(--gold);border-color:var(--gold);color:#1c1305;font-weight:700}
+.cast{margin-top:26px;font:italic 400 clamp(19px,2vw,24px)/1.35 var(--serif);color:var(--ink)}
+.cast b{font-weight:400;color:var(--gold)}
+
+/* specs: one ruled sheet */
+.sheet{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sheet div{padding:40px 28px 42px;border-left:1px solid var(--hair)}
+.sheet div:first-child{border-left:0;padding-left:0}
+.sheet b{display:block;font:400 clamp(38px,4.4vw,60px)/1 var(--serif);letter-spacing:-.02em;color:var(--ink)}
+.sheet b small{font:400 .42em/1 var(--bill);letter-spacing:.14em;color:var(--gold);margin-left:8px;text-transform:uppercase}
+.sheet strong{display:block;margin-top:18px;font:600 12px/1.3 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.sheet span{display:block;margin-top:8px;color:var(--dim);font-size:15px;line-height:1.5}
 
 /* steps */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:50px;counter-reset:s}
-.step{padding:30px;border-radius:14px;background:var(--night2);border:1px solid var(--line)}
-.step::before{counter-increment:s;content:"0" counter(s);font:400 44px/1 var(--serif);color:var(--gold);display:block;margin-bottom:16px}
-.step p{color:var(--dim);margin-top:8px;font-size:15px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;position:relative;counter-reset:s}
+.steps::before{content:"";position:absolute;left:8%;right:8%;top:27px;border-top:1px dashed rgba(233,199,132,.45)}
+.step{position:relative;counter-increment:s}
+.step::before{content:counter(s);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:50%;background:var(--night);border:1px solid var(--gold);font:italic 400 24px/1 var(--serif);color:var(--gold);margin-bottom:26px}
+.mock{height:150px;border-radius:12px;background:linear-gradient(180deg,var(--panel),#0b111b);border:1px solid var(--hair);display:flex;flex-direction:column;justify-content:center;gap:10px;padding:22px;margin-bottom:24px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.mock .url{display:flex;align-items:center;gap:10px;background:#070b12;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font:500 13px/1 ui-monospace,Menlo,monospace;color:var(--soft);white-space:nowrap;overflow:hidden}
+.mock .url::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.mock .url::after{content:"";flex:none;width:1.5px;height:16px;background:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.mock small{font:400 11px/1 var(--bill);letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.mock .mini{display:flex;gap:6px;flex-wrap:wrap}
+.mock .mini span{font-size:12px;padding:6px 11px;border-radius:999px;border:1px solid rgba(246,240,228,.2);color:var(--soft)}
+.mock .mini span.on{background:var(--gold);color:#1c1305;border-color:var(--gold);font-weight:700}
+.mock .mail{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:center}
+.mock .mail i{width:38px;height:38px;border-radius:50%;background:linear-gradient(180deg,#f7e0ad,#c9973f);display:flex;align-items:center;justify-content:center;font:italic 500 17px/1 var(--serif);color:#1c1305}
+.mock .mail b{display:block;font:600 14px/1.3 var(--sans)}
+.mock .mail span{display:block;font-size:12px;color:var(--dim)}
+.mock .dl{align-self:flex-start;font:600 12px/1 var(--sans);padding:9px 14px;border-radius:999px;background:rgba(233,199,132,.14);border:1px solid var(--line);color:var(--gold)}
+.step p{color:var(--dim);margin-top:10px;font-size:15.5px;max-width:22em}
 
-.specs{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
-.spec{border:1px solid var(--line);border-radius:14px;padding:26px 22px;background:var(--night2)}
-.spec b{display:block;font:400 21px/1.25 var(--serif);margin-bottom:8px}
-.spec span{color:var(--dim);font-size:15px;line-height:1.5}
-.about{display:grid;grid-template-columns:150px 1fr;gap:34px;align-items:center;max-width:860px;margin:0 auto;border:1px solid var(--line);border-radius:18px;padding:36px;background:var(--night2)}
-.about img{width:150px;height:150px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
-.about p{color:#d9d3c5;margin-top:10px}
+/* promise */
+.proof{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px var(--line);aspect-ratio:4/4.4}
+.proof img{width:100%;height:100%;object-fit:cover}
+.proof .tick{position:absolute;display:flex;align-items:center;gap:9px;font:400 13px/1 var(--bill);letter-spacing:.22em;text-transform:uppercase;background:rgba(7,11,18,.78);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--ink);padding:9px 13px 8px;border-radius:999px}
+.proof .tick::before{content:"";width:12px;height:7px;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(-45deg) translateY(-2px)}
+.proof .t1{left:7%;top:12%}.proof .t2{right:7%;top:30%}.proof .t3{left:7%;bottom:22%}.proof .t4{right:9%;bottom:9%}
+
+/* tickets */
+.order{background:#05080d;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.order::before{content:"";position:absolute;inset:0;background:radial-gradient(700px 380px at 30% 34%,rgba(233,199,132,.1),transparent 70%);pointer-events:none}
+.plans{display:grid;grid-template-columns:1.12fr 1fr;gap:26px;align-items:stretch;position:relative}
+.plan{position:relative;border-radius:16px;border:1px solid var(--hair);background:linear-gradient(180deg,#0f1724,#0a101a);display:flex;flex-direction:column}
+.plan.main{border-color:rgba(233,199,132,.6);background:linear-gradient(180deg,#182236 0%,#0f1725 60%,#0c131f 100%);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 80px rgba(233,199,132,.08)}
+.plan .top{padding:40px 42px 30px}
+.plan .stub{position:relative;margin-top:auto;padding:30px 42px 40px;border-top:1px dashed rgba(233,199,132,.4)}
+.plan .stub::before,.plan .stub::after{content:"";position:absolute;top:-14px;width:28px;height:28px;border-radius:50%;background:#05080d;border:1px solid var(--hair)}
+.plan .stub::before{left:-15px}.plan .stub::after{right:-15px}
+.plan.main .stub::before,.plan.main .stub::after{border-color:rgba(233,199,132,.6)}
+.plan .stub::before{clip-path:inset(0 0 0 50%)}.plan .stub::after{clip-path:inset(0 50% 0 0)}
+.plan .tag{display:inline-block;font:400 12px/1 var(--bill);letter-spacing:.22em;text-transform:uppercase;color:var(--night);background:var(--gold);padding:7px 11px 6px;border-radius:3px}
+.plan:not(.main) .tag{background:transparent;color:var(--gold);border:1px solid var(--line)}
+.plan h3{font-size:34px;margin:20px 0 0}
+.price{display:flex;align-items:baseline;gap:14px;font:400 84px/1 var(--serif);letter-spacing:-.03em;margin:22px 0 6px}
+.price s{font-size:.36em;color:var(--dim);text-decoration-thickness:1.5px;letter-spacing:0}
+.price small{font:500 15px/1 var(--sans);color:var(--dim);letter-spacing:0}
+.plan .sub{color:var(--dim);font-size:15px}
+.plan .sub b{color:var(--gold)}
+.plan .checks{margin:26px 0 0}
+.plan .btn{width:100%}
+label.f{display:block;font:600 12px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:46px;height:46px;border-radius:50%;border:1px solid rgba(246,240,228,.25);background:transparent;color:var(--ink);font:400 22px/1 var(--sans);cursor:pointer;transition:all .15s}
+.qty button:hover{border-color:var(--gold);color:var(--gold)}
+.qty input{width:74px;height:46px;text-align:center;border-radius:10px;border:1px solid rgba(246,240,228,.2);background:#070b12;color:var(--ink);font:500 18px var(--sans);-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.qty #each{margin-left:10px;color:var(--dim);font-size:15px}
+.total{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:22px 0 24px}
+.total span{color:var(--dim);font-size:13.5px;line-height:1.5;flex:1}
+.total b{font:400 46px/1 var(--serif);letter-spacing:-.02em}
+.pick{position:relative;margin-top:36px;text-align:center;color:var(--soft);font:italic 400 19px/1.4 var(--serif)}
+
+/* faq */
+.faqgrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px;align-items:start}
+.faqgrid .head{position:sticky;top:110px;margin:0}
+details{border-top:1px solid var(--hair);padding:24px 0}
+details:last-child{border-bottom:1px solid var(--hair)}
+details summary{cursor:pointer;list-style:none;font:400 23px/1.3 var(--serif);display:flex;justify-content:space-between;align-items:center;gap:24px;transition:color .2s}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--gold)}
+details summary::after{content:"";flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:linear-gradient(var(--gold),var(--gold)) center/12px 1px no-repeat,linear-gradient(var(--gold),var(--gold)) center/1px 12px no-repeat;transition:transform .3s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--dim);margin-top:14px;max-width:40em}
+
+/* about */
+.about{display:grid;grid-template-columns:320px 1fr;gap:64px;align-items:center;max-width:980px;margin:0 auto}
+.about .ph{position:relative}
+.about .ph img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:8px;filter:saturate(.9) contrast(1.03);box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.about .ph::before{content:"";position:absolute;inset:16px -16px -16px 16px;border:1px solid var(--gold);border-radius:8px;opacity:.6}
+.about .ph img{position:relative}
+.about h3{font-size:clamp(34px,4vw,48px);margin-top:22px}
+.about p{color:var(--soft);margin-top:16px}
+.about a{color:var(--gold)}
+
+/* final */
+.final{padding:0;min-height:92svh;display:flex;align-items:center;overflow:hidden}
+.final>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.final::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 70% at 50% 50%,rgba(7,11,18,.45),rgba(7,11,18,.86)),linear-gradient(180deg,var(--night) 0%,transparent 24%,transparent 76%,var(--night) 100%)}
+.final .wrap{position:relative;z-index:2;text-align:center}
+.final .title{font:400 14px/1 var(--bill);letter-spacing:.5em;text-transform:uppercase;color:var(--gold)}
+.final h2{font-size:clamp(38px,6vw,86px);max-width:11em;margin:26px auto 36px}
+.final .fine{margin-top:22px;color:var(--soft);font-size:15px}
+
+/* footer billing block */
+footer{padding:70px 0 60px;text-align:center}
+.billing{font:300 clamp(13px,1.5vw,17px)/1.9 var(--bill);letter-spacing:.2em;text-transform:uppercase;color:#6f6c63;max-width:880px;margin:0 auto}
+.billing b{font-weight:400;color:var(--soft);font-size:1.25em;letter-spacing:.14em}
+.legal{margin-top:34px;color:var(--dim);font-size:13px}
+.legal a{text-decoration-color:rgba(154,150,138,.4)}
+
+/* scroll reveal: only hides when JS is running */
+.js .rv{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+.js .rv.d1{transition-delay:.12s}.js .rv.d2{transition-delay:.24s}
+
 .sticky{display:none}
-@media (max-width:860px){
-  .specs{grid-template-columns:1fr 1fr}
-  .about{grid-template-columns:1fr;text-align:center;padding:28px 20px}.about img{margin:0 auto}
-  .sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(11,16,24,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);align-items:center;gap:12px;transform:translateY(110%);transition:transform .25s}
+@media (max-width:900px){
+  section{padding:84px 0}
+  .wrap{padding:0 18px}
+  nav,nav.solid{padding:12px 16px}
+  nav .brand b{font-size:13px;letter-spacing:.24em}nav .brand span{font-size:9px}
+  nav .btn{padding:10px 16px;font-size:13px}
+  .hero{padding-bottom:110px}
+  .hero .cta .btn{flex:1 1 100%}
+  .strip{margin-top:-70px}.strip img{width:160px}
+  .film{padding-top:84px}.corner{display:none}
+  .head{margin-bottom:44px}
+  .problem .grid2,.split,.swap,.plans,.faqgrid,.about{grid-template-columns:1fr;gap:44px}
+  .faqgrid .head{position:static}
+  .collage{padding-bottom:50px}.collage .front{right:0}
+  .hero .offer{font-size:13px}
+  .sheet{grid-template-columns:1fr 1fr}
+  .sheet div{padding:28px 18px 30px}
+  .sheet div:nth-child(odd){border-left:0;padding-left:0}
+  .sheet div:nth-child(n+3){border-top:1px solid var(--hair)}
+  .steps{grid-template-columns:1fr;gap:44px}.steps::before{display:none}
+  .plan .top{padding:30px 22px 24px}.plan .stub{padding:26px 22px 30px}
+  .price{font-size:66px}
+  .about{max-width:420px}.about .ph{max-width:260px}
+  .pin{font-size:11px;padding:6px 9px 5px}
+  .proof{aspect-ratio:1}
+  .sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(7,11,18,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);align-items:center;gap:12px;transform:translateY(110%);transition:transform .25s}
   .sticky.on{transform:none}
   .sticky span{font-size:13px;color:var(--dim);line-height:1.3;flex:1}.sticky span b{color:var(--ink);font-size:15px;display:block}
   .sticky .btn{padding:14px 20px;font-size:15px;white-space:nowrap}
   body{padding-bottom:76px}
 }
-
-/* pricing */
-.plans{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin-top:50px;align-items:stretch}
-.plan{border-radius:18px;padding:38px;border:1px solid var(--line);background:var(--night2);display:flex;flex-direction:column}
-.plan.main{background:linear-gradient(180deg,#1a2233,#121a28);border-color:rgba(232,198,132,.55);box-shadow:0 30px 100px rgba(0,0,0,.5)}
-.plan .tag{font:600 11px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
-.plan h3{font-size:32px;margin:12px 0 4px}
-.price{font:400 64px/1 var(--serif);margin:18px 0 4px}
-.price small{font:500 15px/1 var(--sans);color:var(--dim);margin-left:8px}
-.plan .sub{color:var(--dim);font-size:15px}
-.price s{font-size:.45em;color:var(--dim);margin-right:14px;text-decoration-thickness:2px}
-.sub s{opacity:.8}
-.plan .btn{margin-top:auto;justify-content:center}
-.plan .total{margin-top:20px;padding-top:18px}
-.plan .total span{flex:1;min-width:200px}
-.plan .checks{margin:22px 0 30px}
-.pick{margin-top:26px;text-align:center;color:var(--dim);font-size:15px}
-
-/* order */
-.order{background:linear-gradient(180deg,var(--night),#0d1420)}
-form{max-width:720px;margin:44px auto 0;border:1px solid var(--line);border-radius:18px;padding:36px;background:var(--night2)}
-label.f{display:block;font-weight:600;margin:24px 0 10px}
-label.f:first-child{margin-top:0}
-input[type=url],input[type=email],input[type=number]{width:100%;padding:15px 16px;border-radius:10px;border:1px solid rgba(244,239,230,.22);background:#0b1018;color:var(--ink);font:16px var(--sans)}
-input:focus{outline:2px solid var(--gold);outline-offset:1px}
-.opts{display:flex;gap:10px;flex-wrap:wrap}
-.opts label{cursor:pointer}
-.opts input{position:absolute;opacity:0}
-.opts span{display:block;padding:11px 20px;border-radius:999px;border:1px solid rgba(244,239,230,.25);font-size:15px;transition:all .15s}
-.opts input:checked+span{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:600}
-.opts input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
-.qty{display:flex;align-items:center;gap:16px}
-.qty input{width:110px}
-.total{margin-top:28px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
-.total b{font:400 40px/1 var(--serif)}
-.total span{color:var(--dim);font-size:14px}
-form .btn{width:100%;justify-content:center;margin-top:24px}
-.draft{margin-top:14px;font-size:13px;color:#e9b96a;text-align:center}
-
-.buy{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin:44px auto 0;max-width:980px;align-items:stretch}
-.buy .total{margin-top:22px}
-@media (max-width:860px){.buy{grid-template-columns:1fr}}
-
-/* faq */
-details{border-bottom:1px solid var(--line);padding:22px 0}
-details summary{cursor:pointer;list-style:none;font:400 22px/1.3 var(--serif);display:flex;justify-content:space-between;gap:20px}
-details summary::after{content:"+";color:var(--gold);font-family:var(--sans)}
-details[open] summary::after{content:"\2212"}
-details p{color:var(--dim);margin-top:12px;max-width:44em}
-.faq{max-width:820px;margin:40px auto 0}
-
-/* final */
-.final{padding:0;min-height:86svh;display:flex;align-items:center;overflow:hidden}
-.final img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.final::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--night) 0%,rgba(11,16,24,.55) 30%,rgba(11,16,24,.7) 70%,var(--night) 100%)}
-.final .wrap{position:relative;z-index:2;text-align:center}
-.final h2{font-size:clamp(34px,5.4vw,72px);max-width:13em;margin:0 auto 26px}
-footer{padding:36px 0 50px;text-align:center;color:var(--dim);font-size:13px}
-
-@media (max-width:860px){
-  section{padding:76px 0}
-  .beats{grid-template-columns:1fr 1fr}
-  .split,.plans,.who,.who.who3{grid-template-columns:1fr}
-  .steps{grid-template-columns:1fr}
-  .wrap{padding:0 16px}
-  nav{padding:12px 16px}
-  .hero{padding-bottom:6vh}
-  form,.plan{padding:26px 20px}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .load,.js .rv{opacity:1;transform:none;animation:none;transition:none}
+  .strip .track,.spot,.player .play .ring::before,.mock .url::after{animation:none}
 }
-@media (max-width:520px){.beats{grid-template-columns:1fr}.beat img{aspect-ratio:16/10}}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.beat img{transition:none}}
 </style>
+<script>document.documentElement.className='js';</script>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
 <script>
@@ -213,52 +349,75 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 </head>
 <body id="top">
 
-<nav>
-  <a class="brand" href="#top">Jay GPT Pro</a>
+<nav id="nav">
+  <a class="brand" href="#top"><b>The Perfect Gift</b><span>A Jay GPT Pro production</span></a>
   <a class="btn gold" href="#order">Get my video</a>
 </nav>
 
 <header class="hero">
   <video src="loop.mp4" poster="img/flight.jpg" autoplay muted loop playsinline></video>
   <div class="wrap">
-    <div class="eyebrow">Christmas 2026 · For Amazon sellers</div>
-    <h1>Your product, starring in its own <em>Christmas film.</em></h1>
-    <p class="lead">A cinematic Christmas story where your product is the gift everyone was hoping for. Made for you in 48 hours, ready for your Amazon video ads.</p>
-    <div class="cta">
-      <a class="btn gold" href="#order">Get my video, $99</a>
-      <a class="btn ghost" href="#film">Watch the film</a>
+    <div class="kicker load">Christmas 2026 · For Amazon sellers</div>
+    <h1 class="load">Your product, starring in its own <em>Christmas film.</em></h1>
+    <p class="lead load">A cinematic Christmas story where your product is the gift everyone was hoping for. Made for you in 48 hours, ready for your Amazon video ads.</p>
+    <div class="cta load">
+      <a class="btn gold" href="#order">Get my video, $99 <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
+      <a class="btn ghost" href="#film"><svg width="11" height="13" viewBox="0 0 11 13" fill="currentColor"><path d="M0 0l11 6.5L0 13z"/></svg> Watch the film</a>
     </div>
-    <p class="fine"><b style="color:var(--gold)">Launch price: half off for the first 30 customers.</b> No film crew. No editing. Just send your product link.</p>
+    <div class="load"><div class="offer"><b>Launch price</b> Half off for the first 30 customers</div>
+    <p class="fine">No film crew. No editing. Just send your product link.</p></div>
   </div>
 </header>
 
+<div class="strip" aria-hidden="true">
+  <div class="track" id="track">
+    <img src="img/strip/01.jpg" alt=""><img src="img/strip/03.jpg" alt=""><img src="img/strip/05.jpg" alt=""><img src="img/strip/06.jpg" alt=""><img src="img/strip/07.jpg" alt=""><img src="img/strip/08.jpg" alt=""><img src="img/strip/09.jpg" alt=""><img src="img/strip/10.jpg" alt=""><img src="img/strip/11.jpg" alt=""><img src="img/strip/12.jpg" alt=""><img src="img/strip/13.jpg" alt=""><img src="img/strip/14.jpg" alt=""><img src="img/strip/16.jpg" alt=""><img src="img/strip/15.jpg" alt="">
+  </div>
+</div>
+
 <section class="film" id="film">
   <div class="wrap">
-    <div class="player">
-      <video id="v" src="film.mp4" poster="img/holo.jpg" playsinline controls preload="none"></video>
-      <button class="play" id="play" aria-label="Play the film" style="background-image:linear-gradient(rgba(11,16,24,.25),rgba(11,16,24,.25)),url(img/gift.jpg)"><span><svg width="30" height="34" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span></button>
+    <div class="head center rv">
+      <div class="slate"><i>01</i>Now showing</div>
     </div>
-    <p class="note">Every video is this same film. Two things change: the product, and who gives and receives it.</p>
+    <div class="screen rv">
+      <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
+      <div class="player">
+        <video id="v" src="film.mp4" poster="img/holo.jpg" playsinline controls preload="none"></video>
+        <button class="play" id="play" aria-label="Play the film" style="background-image:linear-gradient(rgba(7,11,18,.2),rgba(7,11,18,.45)),url(img/gift.jpg)"><span class="ring"><svg width="32" height="36" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span><span class="tag">Play the film · Sound on</span></button>
+      </div>
+    </div>
+    <p class="note rv">Every video is this same film. Two things change: the product, and who gives and receives it.</p>
   </div>
 </section>
 
-<section class="problem center">
-  <div class="wrap">
-    <div class="eyebrow">The problem</div>
-    <div class="rule"></div>
-    <h2>Every December ad looks the same.</h2>
-    <p class="lead" style="margin-top:24px">Same white background. Same product spin. Shoppers scroll past without a second look. A story makes them stop, and a story about the perfect gift makes them want yours.</p>
+<section class="problem">
+  <div class="wrap grid2">
+    <div class="rv">
+      <div class="slate"><i>02</i>The problem</div>
+      <h2 style="margin-top:26px">Every December ad looks <em>the same.</em></h2>
+      <p class="lead" style="margin-top:24px">Same white background. Same product spin. Shoppers scroll past without a second look. A story makes them stop, and a story about the perfect gift makes them want yours.</p>
+    </div>
+    <div class="same rv d1" aria-hidden="true">
+      <div class="dull"></div>
+      <div class="live"><img src="img/wow.jpg" alt="" loading="lazy"><span>Your ad</span></div>
+      <div class="dull"></div><div class="dull"></div><div class="dull"></div>
+      <div class="dull"></div><div class="dull"></div><div class="dull"></div><div class="dull"></div>
+    </div>
   </div>
 </section>
 
 <section>
   <div class="wrap split">
-    <img src="img/hug.jpg" alt="A father hugging his son on Christmas morning">
-    <div>
-      <div class="eyebrow">Why it works</div>
-      <div class="rule"></div>
-      <h2>It sells the feeling, with your product in the middle of it.</h2>
-      <ul class="checks">
+    <div class="collage rv">
+      <img class="back" src="img/holo.jpg" alt="The product appears above the phone, large and clear" loading="lazy">
+      <img class="front" src="img/hug.jpg" alt="A father hugging his son on Christmas morning" loading="lazy">
+      <span class="cap">First seconds: the product<br>Last seconds: the feeling</span>
+    </div>
+    <div class="rv d1">
+      <div class="slate"><i>03</i>Why it works</div>
+      <h2 style="margin-top:26px">It sells the feeling, with your product in the middle of it.</h2>
+      <ul class="points">
         <li>Your product is on screen in the first seconds, large and clear.</li>
         <li>It comes back at the moment that matters: in their hands on Christmas morning.</li>
         <li>It works with the sound off, the way most shoppers watch.</li>
@@ -268,59 +427,72 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   </div>
 </section>
 
-<section>
+<section class="yours">
   <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">What changes in your video</div>
-      <div class="rule"></div>
+    <div class="head center rv">
+      <div class="slate"><i>04</i>What changes in your video</div>
       <h2>Same film. <em>Your product. Your people.</em></h2>
-      <p class="lead" style="margin-top:20px">The film you just watched stays exactly as it is: the story, Santa, the music, every scene. We change three things to make it yours.</p>
+      <p class="lead">The film you just watched stays exactly as it is: the story, Santa, the music, every scene. We change three things to make it yours.</p>
     </div>
-    <div class="who who3">
-      <div class="card"><h3>The product</h3><p style="color:var(--dim);margin-top:10px;font-size:15px">Yours, built from the photos on your listing. On the phone, in the air, and in their hands on Christmas morning.</p></div>
-      <div class="card"><h3>Who gives the gift</h3><div class="chips"><span>A man</span><span>A woman</span></div></div>
-      <div class="card"><h3>Who receives it</h3><div class="chips"><span>A boy</span><span>A girl</span><span>A man</span><span>A woman</span></div></div>
+    <div class="swap">
+      <div class="frame rv">
+        <img src="img/gift.jpg" alt="A boy holding the gift on Christmas morning" loading="lazy">
+        <i class="spot2"></i><i class="spot"></i>
+        <span class="pin">Your product here</span>
+      </div>
+      <div class="rows rv d1">
+        <div class="row"><span class="n">01</span><div><h3>The product</h3><p>Yours, built from the photos on your listing. On the phone, in the air, and in their hands on Christmas morning.</p></div></div>
+        <div class="row"><span class="n">02</span><div><h3>Who gives the gift</h3><div class="chips" data-k="g"><button type="button" class="on">A man</button><button type="button">A woman</button></div></div></div>
+        <div class="row"><span class="n">03</span><div><h3>Who receives it</h3><div class="chips" data-k="r"><button type="button" class="on">A boy</button><button type="button">A girl</button><button type="button">A man</button><button type="button">A woman</button></div>
+          <p class="cast">Your cast: <b id="cg">a man</b> gives, <b id="cr">a boy</b> receives.</p></div></div>
+      </div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">What you get</div>
-      <div class="rule"></div>
+    <div class="head rv">
+      <div class="slate"><i>05</i>What you get</div>
       <h2>One file, ready to run.</h2>
     </div>
-    <div class="specs">
-      <div class="spec"><b>MP4 video file</b><span>Full HD, 1920 x 1080.</span></div>
-      <div class="spec"><b>Widescreen 16:9</b><span>The format for Amazon Sponsored Brands video ads.</span></div>
-      <div class="spec"><b>Music and voiceover</b><span>Included, and it still works with the sound off.</span></div>
-      <div class="spec"><b>Download link by email</b><span>Within 48 hours of your order (business days).</span></div>
+    <div class="sheet rv">
+      <div><b>MP4</b><strong>Video file</strong><span>Full HD, 1920 x 1080.</span></div>
+      <div><b>16:9</b><strong>Widescreen</strong><span>The format for Amazon Sponsored Brands video ads.</span></div>
+      <div><b>Sound</b><strong>Music and voiceover</strong><span>Included, and it still works with the sound off.</span></div>
+      <div><b>48<small>hours</small></b><strong>Download link by email</strong><span>Within 48 hours of your order (business days).</span></div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">How it works</div>
-      <div class="rule"></div>
+    <div class="head center rv">
+      <div class="slate"><i>06</i>How it works</div>
       <h2>Three steps. About two minutes of your time.</h2>
     </div>
     <div class="steps">
-      <div class="step"><h3>Send your product link</h3><p>Paste the link to your product on Amazon. We take the photos from your listing.</p></div>
-      <div class="step"><h3>Pick the giver and the receiver</h3><p>A man or a woman gives. A boy, a girl, a man or a woman receives.</p></div>
-      <div class="step"><h3>Get your video in 48 hours</h3><p>Two business days after your order, a download link lands in your email.</p></div>
+      <div class="step rv">
+        <div class="mock" aria-hidden="true"><small>Your product link</small><div class="url">amazon.com/dp/your-product</div></div>
+        <h3>Send your product link</h3><p>Paste the link to your product on Amazon. We take the photos from your listing.</p>
+      </div>
+      <div class="step rv d1">
+        <div class="mock" aria-hidden="true"><small>Gives</small><div class="mini"><span>A man</span><span class="on">A woman</span></div><small>Receives</small><div class="mini"><span>A boy</span><span class="on">A girl</span><span>A man</span><span>A woman</span></div></div>
+        <h3>Pick the giver and the receiver</h3><p>A man or a woman gives. A boy, a girl, a man or a woman receives.</p>
+      </div>
+      <div class="step rv d2">
+        <div class="mock" aria-hidden="true"><div class="mail"><i>J</i><div><b>Your Christmas video is ready</b><span>info@jaygptpro.com</span></div></div><span class="dl">Download MP4</span></div>
+        <h3>Get your video in 48 hours</h3><p>Two business days after your order, a download link lands in your email.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap split">
-    <div>
-      <div class="eyebrow">Our promise</div>
-      <div class="rule"></div>
-      <h2>Your real product, kept exactly right.</h2>
+    <div class="rv">
+      <div class="slate"><i>07</i>Our promise</div>
+      <h2 style="margin-top:26px">Your real product, kept <em>exactly right.</em></h2>
       <p class="lead" style="margin-top:22px">Video tools like to change small things: a logo, a button, a colour, the shape of the box. Shoppers notice. So we check every scene against your real product photos before the video reaches you.</p>
       <ul class="checks">
         <li>Built from the photos on your listing.</li>
@@ -328,65 +500,74 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
         <li>One round of changes included.</li>
       </ul>
     </div>
-    <img src="img/stairs.jpg" alt="A boy coming down the stairs on Christmas morning">
+    <div class="proof rv d1">
+      <img src="img/proof.jpg" alt="Close view of the product in the boy's hands" loading="lazy">
+      <span class="tick t1">Logo</span><span class="tick t2">Colour</span><span class="tick t3">Buttons</span><span class="tick t4">Shape</span>
+    </div>
   </div>
 </section>
 
 <section class="order" id="order">
   <span id="ways"></span>
   <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">Pick your way</div>
-      <div class="rule"></div>
+    <div class="head center rv">
+      <div class="slate"><i>08</i>Pick your way</div>
       <h2>Done for you, or make them yourself?</h2>
-      <p class="lead" style="margin-top:20px">We make a limited number of videos each week, in the order they come in. Order early to run yours before Christmas.</p>
+      <p class="lead">We make a limited number of videos each week, in the order they come in. Order early to run yours before Christmas.</p>
     </div>
     <div class="plans">
-      <div class="plan main" id="buy-video">
-        <div class="tag">Launch price · first 30 customers</div>
-        <h3>We make it for you</h3>
-        <div class="price"><s>$199</s>$99<small>per video</small></div>
-        <p class="sub">5 videos or more: <s>$139</s> <b style="color:var(--gold)">$69 each</b></p>
-        <ul class="checks">
-          <li>The same film, with your product in it</li>
-          <li>You choose who gives and who receives</li>
-          <li>Delivered within 48 hours (business days)</li>
-          <li>Checked against your real product photos</li>
-          <li>One round of changes included</li>
-          <li>Yours to use in ads, on your store page and on social</li>
-        </ul>
-        <label class="f" for="qty" style="margin-top:0">How many videos?</label>
-        <div class="qty"><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><span id="each" style="color:var(--dim)">$99 each</span></div>
-        <div class="total"><span id="hint">At checkout you paste your product's Amazon link and pick who gives and who receives. For several videos, paste the first link and we email you for the rest.</span><b id="sum">$99</b></div>
-        <a class="btn gold" id="pay-video" href="#" style="margin-top:24px">Get my video</a>
+      <div class="plan main rv" id="buy-video">
+        <div class="top">
+          <div class="tag">Launch price · first 30 customers</div>
+          <h3>We make it for you</h3>
+          <div class="price"><s>$199</s>$99<small>per video</small></div>
+          <p class="sub">5 videos or more: <s>$139</s> <b>$69 each</b></p>
+          <ul class="checks">
+            <li>The same film, with your product in it</li>
+            <li>You choose who gives and who receives</li>
+            <li>Delivered within 48 hours (business days)</li>
+            <li>Checked against your real product photos</li>
+            <li>One round of changes included</li>
+            <li>Yours to use in ads, on your store page and on social</li>
+          </ul>
+        </div>
+        <div class="stub">
+          <label class="f" for="qty">How many videos?</label>
+          <div class="qty"><button type="button" id="minus" aria-label="One less">&minus;</button><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><button type="button" id="plus" aria-label="One more">+</button><span id="each">$99 each</span></div>
+          <div class="total"><span id="hint">At checkout you paste your product's Amazon link and pick who gives and who receives. For several videos, paste the first link and we email you for the rest.</span><b id="sum">$99</b></div>
+          <a class="btn gold" id="pay-video" href="#">Get my video <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
+        </div>
       </div>
-      <div class="plan" id="buy-skill">
-        <div class="tag">Launch price · half off</div>
-        <h3>Make them yourself</h3>
-        <div class="price"><s>$599</s>$299<small>one time</small></div>
-        <p class="sub">The Skill and the training.</p>
-        <ul class="checks">
-          <li>The Claude Skill that puts any product into the film</li>
-          <li>Step-by-step instructions, start to finish</li>
-          <li>Make a video for every product you sell</li>
-          <li>Nothing to fill in: pay, and it arrives by email within 48 hours</li>
-        </ul>
-        <p class="sub" style="margin-bottom:26px">Not included: what the tools themselves cost you, such as your Claude subscription and the video generation credits.</p>
-        <a class="btn ghost" id="pay-skill" href="#">Get the Skill</a>
+      <div class="plan rv d1" id="buy-skill">
+        <div class="top">
+          <div class="tag">Launch price · half off</div>
+          <h3>Make them yourself</h3>
+          <div class="price"><s>$599</s>$299<small>one time</small></div>
+          <p class="sub">The Skill and the training.</p>
+          <ul class="checks">
+            <li>The Claude Skill that puts any product into the film</li>
+            <li>Step-by-step instructions, start to finish</li>
+            <li>Make a video for every product you sell</li>
+            <li>Nothing to fill in: pay, and it arrives by email within 48 hours</li>
+          </ul>
+        </div>
+        <div class="stub">
+          <p class="sub" style="margin-bottom:24px">Not included: what the tools themselves cost you, such as your Claude subscription and the video generation credits.</p>
+          <a class="btn ghost" id="pay-skill" href="#">Get the Skill</a>
+        </div>
       </div>
     </div>
-    <p class="pick">Not sure? One to four products: get it done for you. A full catalog: the Skill pays for itself.</p>
+    <p class="pick rv">Not sure? One to four products: get it done for you. A full catalog: the Skill pays for itself.</p>
   </div>
 </section>
 
 <section>
-  <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">Questions</div>
-      <div class="rule"></div>
+  <div class="wrap faqgrid">
+    <div class="head rv">
+      <div class="slate"><i>09</i>Questions</div>
       <h2>Before you order</h2>
     </div>
-    <div class="faq">
+    <div class="rv d1">
       <details><summary>Is it really my product in the video?</summary><p>Yes. We build from your real product photos and check every scene against them before you get the video.</p></details>
       <details><summary>What do I need to send?</summary><p>The link to your product on Amazon, and who gives and receives the gift. The photos come from your listing. If we need anything else, we ask.</p></details>
       <details><summary>Does it work for my product?</summary><p>The story works for any product that can be a gift.</p></details>
@@ -403,10 +584,10 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap">
     <div class="about">
-      <img src="/assets/jay-headshot-2026.jpg" alt="Jay Margaliot" width="150" height="150" loading="lazy">
-      <div>
-        <div class="eyebrow">Who's behind this</div>
-        <h3 style="margin-top:12px;font-size:28px">Jay Margaliot</h3>
+      <div class="ph rv"><img src="/assets/jay-headshot-2026.jpg" alt="Jay Margaliot" loading="lazy"></div>
+      <div class="rv d1">
+        <div class="slate"><i>10</i>Who's behind this</div>
+        <h3>Jay Margaliot</h3>
         <p>I've been an eCommerce seller for over 10 years, and my day job is helping eCommerce businesses put AI to work. I run the AI Vault, a community of 250+ sellers and business owners, and I post a new AI play for Amazon sellers every week.</p>
         <p>I made this film for the sellers in my own groups, and my team and I make every video ourselves. Questions? Write to me at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
       </div>
@@ -415,15 +596,19 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 </section>
 
 <section class="final">
-  <img src="img/nod.jpg" alt="">
-  <div class="wrap">
+  <img src="img/hug.jpg" alt="" loading="lazy">
+  <div class="wrap rv">
+    <div class="title">The Perfect Gift</div>
     <h2>This Christmas, make your product <em>the perfect gift.</em></h2>
-    <a class="btn gold" href="#order">Get my video, $99</a>
-    <p class="fine" style="margin-top:18px;color:#d9d3c5">Launch price for the first 30 customers. Limited videos each week.</p>
+    <a class="btn gold" href="#order">Get my video, $99 <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
+    <p class="fine">Launch price for the first 30 customers. Limited videos each week.</p>
   </div>
 </section>
 
-<footer><div class="wrap">© 2026 Jay GPT PRO LLC · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> · <a href="terms.html">Terms</a> · <a href="/privacy-policy.html">Privacy</a></div></footer>
+<footer><div class="wrap">
+  <p class="billing">Jay GPT Pro presents <b>The Perfect Gift</b> starring <b>Your Product</b> with Santa Claus · music and voiceover included · delivered in 48 hours</p>
+  <p class="legal">© 2026 Jay GPT PRO LLC · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> · <a href="terms.html">Terms</a> · <a href="/privacy-policy.html">Privacy</a></p>
+</div></footer>
 
 <div class="sticky" id="sticky"><span><b>Your Christmas video, $99</b>Half off for the first 30 customers</span><a class="btn gold" href="#order">Get my video</a></div>
 
@@ -433,13 +618,37 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   p.addEventListener('click',function(){p.style.display='none';v.play();});
   var LINKS={video:'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o',pack:'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p',skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
   var q=document.getElementById('qty'),each=document.getElementById('each'),sum=document.getElementById('sum'),pv=document.getElementById('pay-video');
-  function calc(){var n=Math.min(50,Math.max(1,parseInt(q.value||'1',10))),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=n>=5?LINKS.pack:LINKS.video;}
+  function num(){return Math.min(50,Math.max(1,parseInt(q.value||'1',10)||1));}
+  function calc(){var n=num(),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=n>=5?LINKS.pack:LINKS.video;}
   q.addEventListener('input',calc);calc();
+  document.getElementById('minus').addEventListener('click',function(){q.value=Math.max(1,num()-1);calc();});
+  document.getElementById('plus').addEventListener('click',function(){q.value=Math.min(50,num()+1);calc();});
   document.getElementById('pay-skill').href=LINKS.skill;
   function track(what){try{if(window.fbq)fbq('track','InitiateCheckout',{content_name:what});if(window.gtag)gtag('event','begin_checkout',{item_name:what});}catch(e){}}
   function remember(kind,qty,value){try{localStorage.setItem('xmas_order',JSON.stringify({kind:kind,qty:qty,value:value,t:Date.now()}));}catch(e){}}
-  pv.addEventListener('click',function(){var n=Math.min(50,Math.max(1,parseInt(q.value||'1',10)));remember(n>=5?'pack':'video',n,n*(n>=5?69:99));track('christmas_video');});
+  pv.addEventListener('click',function(){var n=num();remember(n>=5?'pack':'video',n,n*(n>=5?69:99));track('christmas_video');});
   document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill');});
+
+  /* cast picker: shows the choice in words, the real choice is made at checkout */
+  [].forEach.call(document.querySelectorAll('.chips'),function(g){
+    g.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+      [].forEach.call(g.children,function(c){c.classList.remove('on');});b.classList.add('on');
+      document.getElementById(g.dataset.k==='g'?'cg':'cr').textContent=b.textContent.toLowerCase();});
+  });
+
+  /* film strip: second copy so the loop has no seam */
+  var tr=document.getElementById('track');tr.innerHTML+=tr.innerHTML;
+
+  var nav=document.getElementById('nav');
+  function onScroll(){nav.classList.toggle('solid',window.scrollY>40);}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  var rv=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px'});
+    [].forEach.call(rv,function(el){io.observe(el);});
+  }else{[].forEach.call(rv,function(el){el.classList.add('in');});}
+
   var st=document.getElementById('sticky'),hero=document.querySelector('.hero'),ord=document.getElementById('order');
   if(st&&'IntersectionObserver' in window){var past=false,atOrder=false;function upd(){st.classList.toggle('on',past&&!atOrder);}
     new IntersectionObserver(function(e){past=!e[0].isIntersecting;upd();}).observe(hero);
