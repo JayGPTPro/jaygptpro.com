@@ -99,6 +99,24 @@ nav .btn{padding:11px 20px;font-size:14px}
 .step::before{counter-increment:s;content:"0" counter(s);font:400 44px/1 var(--serif);color:var(--gold);display:block;margin-bottom:16px}
 .step p{color:var(--dim);margin-top:8px;font-size:15px}
 
+.specs{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+.spec{border:1px solid var(--line);border-radius:14px;padding:26px 22px;background:var(--night2)}
+.spec b{display:block;font:400 21px/1.25 var(--serif);margin-bottom:8px}
+.spec span{color:var(--dim);font-size:15px;line-height:1.5}
+.about{display:grid;grid-template-columns:150px 1fr;gap:34px;align-items:center;max-width:860px;margin:0 auto;border:1px solid var(--line);border-radius:18px;padding:36px;background:var(--night2)}
+.about img{width:150px;height:150px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+.about p{color:#d9d3c5;margin-top:10px}
+.sticky{display:none}
+@media (max-width:860px){
+  .specs{grid-template-columns:1fr 1fr}
+  .about{grid-template-columns:1fr;text-align:center;padding:28px 20px}.about img{margin:0 auto}
+  .sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(11,16,24,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);align-items:center;gap:12px;transform:translateY(110%);transition:transform .25s}
+  .sticky.on{transform:none}
+  .sticky span{font-size:13px;color:var(--dim);line-height:1.3;flex:1}.sticky span b{color:var(--ink);font-size:15px;display:block}
+  .sticky .btn{padding:14px 20px;font-size:15px;white-space:nowrap}
+  body{padding-bottom:76px}
+}
+
 /* pricing */
 .plans{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin-top:50px;align-items:stretch}
 .plan{border-radius:18px;padding:38px;border:1px solid var(--line);background:var(--night2);display:flex;flex-direction:column}
@@ -111,6 +129,8 @@ nav .btn{padding:11px 20px;font-size:14px}
 .price s{font-size:.45em;color:var(--dim);margin-right:14px;text-decoration-thickness:2px}
 .sub s{opacity:.8}
 .plan .btn{margin-top:auto;justify-content:center}
+.plan .total{margin-top:20px;padding-top:18px}
+.plan .total span{flex:1;min-width:200px}
 .plan .checks{margin:22px 0 30px}
 .pick{margin-top:26px;text-align:center;color:var(--dim);font-size:15px}
 
@@ -267,6 +287,22 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap">
     <div class="center">
+      <div class="eyebrow">What you get</div>
+      <div class="rule"></div>
+      <h2>One file, ready to run.</h2>
+    </div>
+    <div class="specs">
+      <div class="spec"><b>MP4 video file</b><span>Full HD, 1920 x 1080.</span></div>
+      <div class="spec"><b>Widescreen 16:9</b><span>The format for Amazon Sponsored Brands video ads.</span></div>
+      <div class="spec"><b>Music and voiceover</b><span>Included, and it still works with the sound off.</span></div>
+      <div class="spec"><b>Download link by email</b><span>Within 48 hours of your order (business days).</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="center">
       <div class="eyebrow">How it works</div>
       <div class="rule"></div>
       <h2>Three steps. About two minutes of your time.</h2>
@@ -296,30 +332,35 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   </div>
 </section>
 
-<section id="ways">
+<section class="order" id="order">
+  <span id="ways"></span>
   <div class="wrap">
     <div class="center">
       <div class="eyebrow">Pick your way</div>
       <div class="rule"></div>
       <h2>Done for you, or make them yourself?</h2>
+      <p class="lead" style="margin-top:20px">We make a limited number of videos each week, in the order they come in. Order early to run yours before Christmas.</p>
     </div>
     <div class="plans">
-      <div class="plan main">
+      <div class="plan main" id="buy-video">
         <div class="tag">Launch price · first 30 customers</div>
         <h3>We make it for you</h3>
         <div class="price"><s>$199</s>$99<small>per video</small></div>
         <p class="sub">5 videos or more: <s>$139</s> <b style="color:var(--gold)">$69 each</b></p>
         <ul class="checks">
-                    <li>The same film, with your product in it</li>
+          <li>The same film, with your product in it</li>
           <li>You choose who gives and who receives</li>
           <li>Delivered within 48 hours (business days)</li>
           <li>Checked against your real product photos</li>
           <li>One round of changes included</li>
           <li>Yours to use in ads, on your store page and on social</li>
         </ul>
-        <a class="btn gold" href="#order">Get my video</a>
+        <label class="f" for="qty" style="margin-top:0">How many videos?</label>
+        <div class="qty"><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><span id="each" style="color:var(--dim)">$99 each</span></div>
+        <div class="total"><span id="hint">At checkout you paste your product's Amazon link and pick who gives and who receives. For several videos, paste the first link and we email you for the rest.</span><b id="sum">$99</b></div>
+        <a class="btn gold" id="pay-video" href="#" style="margin-top:24px">Get my video</a>
       </div>
-      <div class="plan">
+      <div class="plan" id="buy-skill">
         <div class="tag">Launch price · half off</div>
         <h3>Make them yourself</h3>
         <div class="price"><s>$599</s>$299<small>one time</small></div>
@@ -328,41 +369,13 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
           <li>The Claude Skill that puts any product into the film</li>
           <li>Step-by-step instructions, start to finish</li>
           <li>Make a video for every product you sell</li>
+          <li>Nothing to fill in: pay, and it arrives by email within 48 hours</li>
         </ul>
         <p class="sub" style="margin-bottom:26px">Not included: what the tools themselves cost you, such as your Claude subscription and the video generation credits.</p>
-        <a class="btn ghost" href="#buy-skill">Get the Skill</a>
-      </div>
-    </div>
-    <p class="pick">Not sure? One to four products: get it done for you. A full catalog: the Skill pays for itself.</p>
-  </div>
-</section>
-
-<section class="order" id="order">
-  <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">Order</div>
-      <div class="rule"></div>
-      <h2>Two ways to get it</h2>
-      <p class="lead" style="margin-top:20px">We make a limited number of videos each week, in the order they come in. Order early to run yours before Christmas.</p>
-    </div>
-    <div class="buy">
-      <div class="plan main" id="buy-video">
-        <div class="tag">Product 1 · Done for you</div>
-        <h3>Your Christmas video</h3>
-        <label class="f" for="qty" style="margin-top:22px">How many videos?</label>
-        <div class="qty"><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><span id="each" style="color:var(--dim)">$99 each</span></div>
-        <div class="total"><span id="hint">Half off for the first 30 customers. 5 or more: $69 each.</span><b id="sum">$99</b></div>
-        <p class="sub" style="margin:18px 0 24px">At checkout you paste your product's Amazon link and pick who gives and who receives. For several videos, paste the first link. We email you for the rest.</p>
-        <a class="btn gold" id="pay-video" href="#">Continue to payment</a>
-      </div>
-      <div class="plan" id="buy-skill">
-        <div class="tag">Product 2 · Make them yourself</div>
-        <h3>The Skill + training</h3>
-        <div class="price"><s>$599</s>$299<small>one time</small></div>
-        <p class="sub" style="margin:10px 0 24px">Nothing to fill in. Pay, and the Skill and the training arrive by email within 48 hours. Tool costs are not included: your Claude subscription and the video generation credits.</p>
         <a class="btn ghost" id="pay-skill" href="#">Get the Skill</a>
       </div>
     </div>
+    <p class="pick">Not sure? One to four products: get it done for you. A full catalog: the Skill pays for itself.</p>
   </div>
 </section>
 
@@ -387,6 +400,20 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   </div>
 </section>
 
+<section>
+  <div class="wrap">
+    <div class="about">
+      <img src="/assets/jay-headshot-2026.jpg" alt="Jay Margaliot" width="150" height="150" loading="lazy">
+      <div>
+        <div class="eyebrow">Who's behind this</div>
+        <h3 style="margin-top:12px;font-size:28px">Jay Margaliot</h3>
+        <p>I've been an eCommerce seller for over 10 years, and my day job is helping eCommerce businesses put AI to work. I run the AI Vault, a community of 250+ sellers and business owners, and I post a new AI play for Amazon sellers every week.</p>
+        <p>I made this film for the sellers in my own groups, and my team and I make every video ourselves. Questions? Write to me at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="final">
   <img src="img/nod.jpg" alt="">
   <div class="wrap">
@@ -396,7 +423,9 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   </div>
 </section>
 
-<footer><div class="wrap">© 2026 Jay GPT PRO LLC · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></div></footer>
+<footer><div class="wrap">© 2026 Jay GPT PRO LLC · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> · <a href="terms.html">Terms</a> · <a href="/privacy-policy.html">Privacy</a></div></footer>
+
+<div class="sticky" id="sticky"><span><b>Your Christmas video, $99</b>Half off for the first 30 customers</span><a class="btn gold" href="#order">Get my video</a></div>
 
 <script>
 (function(){
@@ -408,8 +437,13 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   q.addEventListener('input',calc);calc();
   document.getElementById('pay-skill').href=LINKS.skill;
   function track(what){try{if(window.fbq)fbq('track','InitiateCheckout',{content_name:what});if(window.gtag)gtag('event','begin_checkout',{item_name:what});}catch(e){}}
-  pv.addEventListener('click',function(){track('christmas_video');});
-  document.getElementById('pay-skill').addEventListener('click',function(){track('christmas_skill');});
+  function remember(kind,qty,value){try{localStorage.setItem('xmas_order',JSON.stringify({kind:kind,qty:qty,value:value,t:Date.now()}));}catch(e){}}
+  pv.addEventListener('click',function(){var n=Math.min(50,Math.max(1,parseInt(q.value||'1',10)));remember(n>=5?'pack':'video',n,n*(n>=5?69:99));track('christmas_video');});
+  document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill');});
+  var st=document.getElementById('sticky'),hero=document.querySelector('.hero'),ord=document.getElementById('order');
+  if(st&&'IntersectionObserver' in window){var past=false,atOrder=false;function upd(){st.classList.toggle('on',past&&!atOrder);}
+    new IntersectionObserver(function(e){past=!e[0].isIntersecting;upd();}).observe(hero);
+    new IntersectionObserver(function(e){atOrder=e[0].isIntersecting;upd();},{threshold:0.15}).observe(ord);}
 })();
 </script>
 </body>
