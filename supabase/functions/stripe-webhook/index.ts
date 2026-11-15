@@ -50,6 +50,20 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 // Cross-sell products. These ride along inside somebody else's checkout, so they must
 // never be treated as the thing that was bought: not for round resolution, and not as
 // a purchase on their own.
+// The Christmas video (15.11.2026) is a service and a Skill, not a course: nothing in this
+// function applies to it. Without this an unrecognised product falls through to
+// ensureEvergreenRound below, and a $99 video buyer is handed a Donna cohort, Donna access
+// and the Donna welcome. Three independent routes, because each one can be missing:
+// the payment link is on the session payload itself, the product needs the line-items
+// call (which returns [] when it fails), and payment_intent.succeeded carries neither,
+// only the metadata the payment links stamp on the PaymentIntent.
+const CHRISTMAS_PRODUCTS = new Set<string>(['prod_VdK0ykqQR23ctI', 'prod_VdK0WmRf7Cgnvy']); // the video, the Skill + training
+const CHRISTMAS_PLINKS = new Set<string>([
+  'plink_1Uc3M6RqcDuiISNTLgj5rk6I', // video, 1 to 4
+  'plink_1Uc3M7RqcDuiISNTByKOaDNm', // video, 5 or more
+  'plink_1Uc3M8RqcDuiISNTvS1hMBWB', // the Skill + training
+]);
+const CHRISTMAS_PROJECT = 'christmas_video';
 const DONNA_ADDON_PRODUCT = 'prod_UxhPy8Tfpeiwv6'; // "Donna Challenge. Full Access", $250
 const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
 
@@ -583,6 +597,14 @@ Deno.serve(async (req: Request) => {
 
     if (event.type === 'charge.refunded') {
       const charge = event.data.object;
+      // A Christmas video refund has no row here (the purchase was skipped), so the branch
+      // below would write a refunded row and reconcile on it alone: a student who holds a
+      // course another way (Cardcom, added by hand) would lose it over a $99 video refund.
+      // A Charge carries the metadata of the PaymentIntent that created it.
+      if (String(charge?.metadata?.project || '') === CHRISTMAS_PROJECT) {
+        console.log('Christmas video refund, not a course. Nothing to revoke.', { charge: charge.id });
+        return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
+      }
       const paymentId = charge.payment_intent || charge.id;
       const refundedAmount = charge.amount_refunded || 0;
       const fullyRefunded = charge.refunded === true;
@@ -707,6 +729,13 @@ Deno.serve(async (req: Request) => {
 
     if (!paymentId) return new Response(JSON.stringify({ error: 'No payment ID found' }), { status: 400 });
 
+    // Christmas video, routes 1 and 2: the payment link, and the PaymentIntent's metadata.
+    const eventMetaProject = String(event.data?.object?.metadata?.project || '');
+    if ((paymentLinkId && CHRISTMAS_PLINKS.has(paymentLinkId)) || eventMetaProject === CHRISTMAS_PROJECT) {
+      console.log('Christmas video purchase, not a course. Nothing to grant.', { paymentId, paymentLinkId });
+      return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
+    }
+
     const currencyLower = (currency || '').toLowerCase();
     const couponUsedFromAmount = couponFromAmount(amountPaid);
 
@@ -714,6 +743,11 @@ Deno.serve(async (req: Request) => {
     // the payment link did not, and spotting a cross-sell. The add-on check must run even
     // when the round already resolved, which is the normal Wonka case.
     const sessionProductIds = sessionId ? await fetchSessionProductIds(sessionId) : [];
+    // Christmas video, route 3: the product, for a payment link nobody listed above.
+    if (sessionProductIds.some(id => CHRISTMAS_PRODUCTS.has(id))) {
+      console.log('Christmas video purchase (by product), not a course. Nothing to grant.', { paymentId, paymentLinkId, sessionProductIds });
+      return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
+    }
     let tookDonnaAddon = sessionProductIds.includes(DONNA_ADDON_PRODUCT);
     // No key means no line items, so fall back to the total. USD only: the Bina
     // side prices in ILS and has no cross-sell, and matching across currencies

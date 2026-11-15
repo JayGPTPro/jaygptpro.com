@@ -743,5 +743,60 @@ res = await post(paidAt('donna.weekly@buyer.com', 1792382370, 'plink_1TevFWRqcDu
 row = DB.allowed_emails.find(r => r.email === 'donna.weekly@buyer.com');
 check('lands in a Donna wk_ cohort', String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
 
+// ---------------------------------------------------------------
+// 17. The Christmas video (15.11.2026) is not a course. Before this guard an unrecognised
+// product fell through to ensureEvergreenRound, so a $99 video buyer would have been given
+// a Donna cohort, Donna access and the Donna welcome.
+const XMAS_VIDEO = 'prod_VdK0ykqQR23ctI', XMAS_SKILL = 'prod_VdK0WmRf7Cgnvy';
+const XMAS_PLINK = 'plink_1Uc3M6RqcDuiISNTLgj5rk6I', XMAS_PLINK_SKILL = 'plink_1Uc3M8RqcDuiISNTvS1hMBWB';
+const xmas = (email: string, plink: string, amount = 9900) => {
+  const s: any = session(email, amount); s.data.object.payment_link = plink; s.data.object.id = 'cs_xmas_1'; s.data.object.payment_intent = 'pi_xmas_1'; return s;
+};
+const untouched = (email: string) => !DB.allowed_emails.some((r: any) => r.email === email) && DB.stripe_customers.length === 0 && sendState.calls.length === 0;
+
+console.log('\n17a. Christmas video bought through its payment link: no access, no welcome, no row');
+reset();
+sendState.stripeLineItems = [XMAS_VIDEO];
+res = await post(xmas('xmas@seller.com', XMAS_PLINK));
+check('http 200', res.status === 200, `got ${res.status}`);
+check('nothing granted, nothing sent, nothing stored', untouched('xmas@seller.com'), JSON.stringify({ a: DB.allowed_emails, c: DB.stripe_customers, s: sendState.calls }));
+
+console.log('\n17b. The Skill, through a payment link the code has never seen: the product alone is enough');
+reset();
+sendState.stripeLineItems = [XMAS_SKILL];
+res = await post(xmas('skill@seller.com', 'plink_made_later_by_hand', 29900));
+check('http 200', res.status === 200, `got ${res.status}`);
+check('nothing granted, nothing sent, nothing stored', untouched('skill@seller.com'), JSON.stringify({ a: DB.allowed_emails, c: DB.stripe_customers, s: sendState.calls }));
+
+console.log('\n17c. Line-items lookup fails: the payment link alone is enough');
+reset();
+sendState.stripeLineItems = [];
+res = await post(xmas('blind@seller.com', XMAS_PLINK_SKILL, 29900));
+check('http 200', res.status === 200, `got ${res.status}`);
+check('nothing granted, nothing sent, nothing stored', untouched('blind@seller.com'), JSON.stringify({ a: DB.allowed_emails, c: DB.stripe_customers, s: sendState.calls }));
+
+console.log('\n17d. The payment_intent.succeeded of the same purchase is skipped by its metadata');
+reset();
+res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_xmas_1', amount: 9900, currency: 'usd', customer: 'cus_x', receipt_email: 'xmas@seller.com', metadata: { project: 'christmas_video' } } } });
+check('http 200', res.status === 200, `got ${res.status}`);
+check('no stripe_customers row', DB.stripe_customers.length === 0, JSON.stringify(DB.stripe_customers));
+
+console.log('\n17f. Refund of a Christmas video must not revoke a course the same person holds another way');
+reset();
+DB.allowed_emails.push({ email: 'cardcom@student.com', round: 'bina_r1', access_revoked_at: null, access_revoked_reason: null });
+res = await post({ type: 'charge.refunded', data: { object: { id: 'ch_xmas_1', payment_intent: 'pi_xmas_1', amount: 9900, amount_refunded: 9900, refunded: true, currency: 'usd', created: 1794700000,
+  billing_details: { email: 'cardcom@student.com', name: 'Student' }, refunds: { data: [{ created: 1794700000, reason: 'requested_by_customer' }] }, metadata: { project: 'christmas_video' } } } });
+row = DB.allowed_emails.find(r => r.email === 'cardcom@student.com');
+check('http 200', res.status === 200, `got ${res.status}`);
+check('course access NOT revoked', !row?.access_revoked_at, JSON.stringify(row));
+check('no stripe_customers row', DB.stripe_customers.length === 0, JSON.stringify(DB.stripe_customers));
+
+console.log('\n17e. Control: any OTHER unrecognised product still lands in the Donna weekly cohort');
+reset();
+sendState.stripeLineItems = ['prod_something_else'];
+res = await post(xmas('other@buyer.com', 'plink_unknown'));
+row = DB.allowed_emails.find(r => r.email === 'other@buyer.com');
+check('lands in a Donna wk_ cohort, as before', String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);
