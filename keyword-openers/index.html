@@ -72,11 +72,13 @@
   .small { font-size:14px; color:var(--faint); }
 
   /* the search stage: a real Amazon results page with the ad playing in its slot */
-  .bench { margin-top:40px; position:relative; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); column-gap:72px; align-items:center; }
+  .bench { margin:40px auto 0; position:relative; max-width:980px; }
   .serp { --rx:0; --ry:0; --rw:1500; --rh:800; position:relative; z-index:2; aspect-ratio:var(--rw) / var(--rh); overflow:hidden; border-radius:6px; background:#fff; box-shadow:var(--shadow); isolation:isolate; }
   .serp .pg { position:absolute; left:calc(var(--rx) / var(--rw) * -100%); top:calc(var(--ry) / var(--rh) * -100%); width:calc(1500 / var(--rw) * 100%); aspect-ratio:1500 / 800; }
   .serp .pg-img { position:absolute; inset:0; width:100%; height:100%; }
-  .serp .adbox { position:absolute; left:23.79%; top:20.5%; width:54%; height:57%; background:#000; overflow:hidden; }
+  .serp .adbox { position:absolute; left:23.79%; top:20.5%; width:54%; height:57%; background:#000; overflow:hidden; z-index:1; }
+  /* the focus: the rest of the results page dims, the ad slot gets an orange frame */
+  .serp .focus { position:absolute; left:23.79%; top:20.5%; width:54%; height:57%; z-index:2; pointer-events:none; border-radius:2px; box-shadow:0 0 0 3px #E0874A, 0 0 0 9px rgba(224,135,74,.28), 0 0 0 4000px rgba(14,13,11,.30); }
   .serp .adbox video { position:absolute; inset:-1px; width:calc(100% + 2px); height:calc(100% + 2px); object-fit:cover; opacity:0; transition:opacity .18s linear; }
   .serp .adbox video.on { opacity:1; }
   .tag { position:absolute; left:10px; bottom:10px; z-index:2; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#fff; background:rgba(14,13,11,.72); border-radius:6px; padding:4px 8px; line-height:1.3; }
@@ -88,14 +90,7 @@
   @media (prefers-reduced-motion: reduce) { .q .caret { animation:none; } }
   .pp { position:absolute; z-index:4; right:10px; bottom:10px; width:34px; height:34px; border-radius:50%; border:none; background:rgba(14,13,11,.62); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .pp svg { width:14px; height:14px; }
-  .loupe { position:relative; z-index:2; min-width:0; }
-  .lens { position:relative; aspect-ratio:810 / 456; background:#000 center / cover no-repeat; border:8px solid #F4EEE4; border-radius:6px; overflow:hidden; box-shadow:var(--shadow); }
-  .lens canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
-  .lt { display:block; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--mute); }
-  .lt b { color:var(--orange-ink); font-weight:500; }
-  .leader { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible; }
-  .leader polygon { fill:rgba(224,135,74,.10); stroke:#E0874A; stroke-width:1.2; stroke-linejoin:round; }
-  .bench figcaption { grid-column:1 / -1; margin-top:18px; font-size:14px; color:var(--mute); }
+  .bench figcaption { margin-top:18px; font-size:14px; color:var(--mute); }
   .bench figcaption b { color:var(--ink); font-weight:600; }
 
   /* ---------- the SOP ---------- */
@@ -235,8 +230,7 @@
     .fire h1 { font-size:31px; }
     .sub { font-size:16.5px; }
     .eyebrow { letter-spacing:.08em; font-size:11px; }
-    .bench { grid-template-columns:minmax(0,1fr); margin-top:26px; }
-    .loupe, .leader { display:none; }
+    .bench { margin-top:26px; }
     .bench figcaption { margin-top:12px; }
     .serp { --rx:344; --ry:0; --rw:1156; --rh:720; border-radius:10px; }
     .q { left:2.5%; top:1.6%; font-size:14px; padding:6px 11px 6px 9px; gap:7px; border-radius:8px; max-width:95%; }
@@ -307,12 +301,11 @@
             <video class="ad" muted playsinline preload="none" aria-hidden="true"></video>
             <span class="tag">Demo ad · <b>AI opening</b></span>
           </div>
+          <i class="focus" aria-hidden="true"></i>
         </div>
         <div class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><span class="qt">hot dog roasting sticks</span><i class="caret"></i></div>
         <button class="pp" type="button" aria-label="Pause the demo"></button>
       </div>
-      <div class="loupe" aria-hidden="true"><div class="lens"><canvas width="810" height="456"></canvas></div><span class="lt">Demo ad &middot; <b>AI opening</b>, up close</span></div>
-      <svg class="leader" aria-hidden="true"><polygon/></svg>
       <figcaption><b>Six searches, six openings.</b> Real Amazon results pages with the demo ad placed in the top slot. Every opening is AI-generated.</figcaption>
     </figure>
   </div>
@@ -630,7 +623,7 @@
       </details>
       <details>
         <summary>Stuck on something else</summary>
-        <div><p>Open Claude Code, paste the error you see, and ask what to do. Or ask in the WhatsApp group below.</p></div>
+        <div><p>Open Claude Code, paste the error you see, and ask what to do.</p></div>
       </details>
     </section>
   </div>
@@ -638,8 +631,8 @@
 
 <div class="join-wrap">
   <section class="cta" id="join">
-    <h2>Questions? Ask in the group.</h2>
-    <p>Join the free WhatsApp group. That's where I share what works with AI for eCommerce.</p>
+    <h2>Want more AI ideas like this one?</h2>
+    <p>Join my free WhatsApp group. It's a quiet one: AI tips, tools and updates for eCommerce sellers.</p>
     <a class="btn wa" href="https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.96 1.38-.5.07-1.14.1-1.83-.11-.42-.13-.97-.31-1.66-.61-2.93-1.27-4.85-4.22-5-4.42-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36.2 0 .39 0 .56.01.18.01.42-.07.66.5.24.59.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.29.49-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.35 1.46.29.15.46.12.63-.07.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.71-.17 1.39z"/></svg>
       <span>Join on WhatsApp</span>
@@ -686,31 +679,6 @@
     }
     btn.addEventListener('click', function () { ctl.paused = !ctl.paused; if (ctl.paused) ctl.stop(); else ctl.go(); draw(); });
     draw();
-  }
-
-  // The loupe: the ad in the results page, drawn again large beside it
-  function Loupe(root) {
-    var fig = root.parentNode, lp = fig.querySelector('.loupe'); if (!lp) return null;
-    var cv = lp.querySelector('canvas'), ctx = cv.getContext('2d'), lens = lp.querySelector('.lens');
-    var svg = fig.querySelector('.leader'), poly = svg && svg.querySelector('polygon'), raf = 0;
-    function active() { return root.querySelector('video.ad.on') || root.querySelector('video.ad'); }
-    function draw() {
-      var v = active();
-      if (v && v.readyState >= 2 && v.played.length) { try { ctx.drawImage(v, 0, 0, cv.width, cv.height); } catch (e) {} }
-      else if (v && v.poster) { ctx.clearRect(0, 0, cv.width, cv.height); lens.style.backgroundImage = 'url(' + v.getAttribute('poster') + ')'; }
-    }
-    function loop() { draw(); raf = requestAnimationFrame(loop); }
-    function layout() {
-      if (!poly || getComputedStyle(lp).display === 'none') return;
-      var f = fig.getBoundingClientRect(), a = root.querySelector('.adbox').getBoundingClientRect(), l = lens.getBoundingClientRect();
-      var pts = [[a.right, a.top], [l.left, l.top], [l.left, l.bottom], [a.right, a.bottom]];
-      poly.setAttribute('points', pts.map(function (p) { return (p[0] - f.left).toFixed(1) + ',' + (p[1] - f.top).toFixed(1); }).join(' '));
-    }
-    var v0 = active(); if (v0 && v0.getAttribute('poster')) lens.style.backgroundImage = 'url(' + v0.getAttribute('poster') + ')';
-    layout();
-    if ('ResizeObserver' in window) new ResizeObserver(layout).observe(fig); else addEventListener('resize', layout);
-    root.querySelectorAll('video.ad').forEach(function (v) { v.addEventListener('loadeddata', draw); v.addEventListener('seeked', draw); });
-    return { start: function () { layout(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }, stop: function () { cancelAnimationFrame(raf); draw(); } };
   }
 
   // The search stage: each search gets its own opening
@@ -765,8 +733,7 @@
       };
       play(v);
     }
-    var lo = Loupe(root);
-    watch(root, function () { inView = true; if (lo) lo.start(); if (!ctl.paused && !busy) run(); }, function () { inView = false; halt(); if (lo) lo.stop(); });
+    watch(root, function () { inView = true; if (!ctl.paused && !busy) run(); }, function () { inView = false; halt(); });
     ppButton(root.querySelector('.pp'), 'the demo', ctl);
   }
 
