@@ -39,7 +39,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
-  html, body { overflow-x:hidden; }
+  html { overflow-x:hidden; } body { overflow-x:clip; }   /* hidden on body made it a scroll box and broke the sticky steps */
   body { background:var(--bg); color:var(--ink); font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased; }
   img, video { max-width:100%; display:block; }
   img { height:auto; }
@@ -216,8 +216,14 @@
     .sop { grid-template-columns:minmax(0,1fr); gap:0; max-width:820px; padding-top:40px; }
     .side { position:sticky; top:0; z-index:10; background:var(--bg); padding:10px 0; margin-bottom:28px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .side-label { margin:0; }
-    .toc { display:none; }
-    .doc > section { scroll-margin-top:72px; }
+    /* phones and tablets: the steps ride in the sticky bar as one scrolling row of chips */
+    .side nav { flex:1 0 100%; min-width:0; }
+    .toc { display:flex; gap:6px; margin:2px -2px 0; padding:2px; border-left:0; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .toc::-webkit-scrollbar { display:none; }
+    .toc li { flex:none; }
+    .toc a { margin:0; padding:6px 12px; border:1px solid var(--line); border-radius:999px; background:var(--surface); font-size:13.5px; white-space:nowrap; }
+    .toc a.on { border-color:var(--orange); }
+    .doc > section { scroll-margin-top:118px; }
   }
   @media (max-width:860px) {
     .hero { grid-template-columns:minmax(0,1fr); gap:14px; }
@@ -322,7 +328,7 @@
       <ol class="toc">
         <li><a href="#need"><span>0</span>Before you start</a></li>
         <li><a href="#claude"><span>1</span>Install Claude Code</a></li>
-        <li><a href="#tools"><span>2</span>ffmpeg and Python</a></li>
+        <li><a href="#tools"><span>2</span>Install the tools</a></li>
         <li><a href="#skill"><span>3</span>Install the skill</a></li>
         <li><a href="#genrupt"><span>4</span>Connect Genrupt</a></li>
         <li><a href="#run"><span>5</span>Run it</a></li>
@@ -385,8 +391,14 @@
 
     <!-- 2 -->
     <section id="tools">
-      <div class="step-head"><div class="num">2</div><h2>Install ffmpeg and two Python packages</h2></div>
-      <p class="why">ffmpeg is the free tool that cuts and joins the video. numpy and Pillow are two small Python packages the skill uses to check frames and draw the title.</p>
+      <div class="step-head"><div class="num">2</div><h2>Install the tools the skill uses</h2></div>
+      <p class="why">ffmpeg cuts and joins the video. numpy and Pillow are two small Python packages that check frames and draw the title. Node.js runs the one-line install in step 3. All free.</p>
+
+      <div class="tip">
+        <p><b>The easy way: let Claude Code do it.</b> Type <code class="in">claude</code>, press Enter, and paste:</p>
+        <div class="cmd prompt"><code>Install ffmpeg, Node.js, and numpy and Pillow for Python 3, on this computer. Then check that all of them work.</code><button class="copy" type="button">Copy</button></div>
+        <p>It asks before it runs each command. Choose Yes. When it says everything works, go to step 3. Or run the commands yourself:</p>
+      </div>
 
       <div data-os="mac">
         <span class="os-label">Mac</span>
@@ -397,8 +409,8 @@
         <div class="cmd"><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code><button class="copy" type="button">Copy</button></div>
         <p class="expect">It asks for your Mac password. Nothing shows while you type; that is normal. At the end it may show a <em>Next steps</em> section with a few commands: copy and run them too.</p>
 
-        <h3>b. ffmpeg</h3>
-        <div class="cmd"><code>brew install ffmpeg</code><button class="copy" type="button">Copy</button></div>
+        <h3>b. ffmpeg and Node.js</h3>
+        <div class="cmd"><code>brew install ffmpeg node</code><button class="copy" type="button">Copy</button></div>
 
         <h3>c. numpy and Pillow</h3>
         <div class="cmd"><code>pip3 install numpy pillow</code><button class="copy" type="button">Copy</button></div>
@@ -411,6 +423,8 @@
           <p>The first line starts with <em>ffmpeg version</em>.</p>
           <div class="cmd"><code>python3 -c "import numpy, PIL; print('ready')"</code><button class="copy" type="button">Copy</button></div>
           <p>It prints <em>ready</em>.</p>
+          <div class="cmd"><code>node --version</code><button class="copy" type="button">Copy</button></div>
+          <p>You see a version number.</p>
         </div>
       </div>
 
@@ -422,9 +436,13 @@
         <h3>b. Python</h3>
         <p>Already have Python 3? Skip this one.</p>
         <div class="cmd"><code>winget install --id Python.Python.3.13 -e</code><button class="copy" type="button">Copy</button></div>
+
+        <h3>c. Node.js</h3>
+        <p>Already have Node.js? Skip this one.</p>
+        <div class="cmd"><code>winget install --id OpenJS.NodeJS.LTS -e</code><button class="copy" type="button">Copy</button></div>
         <p class="expect">Now close PowerShell and open a new one, so it finds the new tools.</p>
 
-        <h3>c. numpy and Pillow</h3>
+        <h3>d. numpy and Pillow</h3>
         <div class="cmd"><code>pip install numpy pillow</code><button class="copy" type="button">Copy</button></div>
 
         <div class="check">
@@ -433,14 +451,11 @@
           <p>The first line starts with <em>ffmpeg version</em>.</p>
           <div class="cmd"><code>python -c "import numpy, PIL; print('ready')"</code><button class="copy" type="button">Copy</button></div>
           <p>It prints <em>ready</em>.</p>
+          <div class="cmd"><code>node --version</code><button class="copy" type="button">Copy</button></div>
+          <p>You see a version number.</p>
         </div>
       </div>
 
-      <div class="tip">
-        <p><b>Rather not type all this?</b> Claude Code can do this step for you. Type <code class="in">claude</code>, press Enter, and paste:</p>
-        <div class="cmd prompt"><code>Install ffmpeg, plus numpy and Pillow for Python 3, on this computer. Then check that both work.</code><button class="copy" type="button">Copy</button></div>
-        <p>It asks before it runs each command. Choose Yes.</p>
-      </div>
     </section>
 
     <!-- 3 -->
@@ -448,7 +463,7 @@
       <div class="step-head"><div class="num">3</div><h2>Install the skill</h2></div>
       <p class="why">Paste this in your terminal, outside Claude Code (if Claude Code is open, type <code class="in">/exit</code> first).</p>
       <div class="cmd"><code>npx skills add JayGPTPro/keyword-openers -g</code><button class="copy" type="button">Copy</button></div>
-      <p class="expect">It needs Node.js. If it says <em>npx</em> is not found, install Node.js from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a> first, open a new terminal, and run it again.</p>
+      <p class="expect">It uses Node.js from step 2. If it says <em>npx</em> is not found, install Node.js from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a> first, open a new terminal, and run it again.</p>
 
       <div class="check">
         <div class="check-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg>Check it worked</div>
@@ -833,7 +848,9 @@
       es.forEach(function (e) {
         if (!e.isIntersecting) return;
         links.forEach(function (a) { a.classList.remove('on'); a.removeAttribute('aria-current'); });
-        var a = map[e.target.id]; if (a) { a.classList.add('on'); a.setAttribute('aria-current', 'step'); }
+        var a = map[e.target.id]; if (a) { a.classList.add('on'); a.setAttribute('aria-current', 'step');
+          var row = a.closest('.toc');   // the chip row on phones: keep the current step in view
+          if (row && row.scrollWidth > row.clientWidth) row.scrollTo({ left: row.scrollLeft + a.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - a.offsetWidth) / 2, behavior: 'smooth' }); }
       });
     }, { rootMargin: '-35% 0px -60% 0px' });
     Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
