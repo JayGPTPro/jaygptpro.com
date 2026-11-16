@@ -530,6 +530,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
         <div class="stub">
           <label class="f" for="qty">How many videos?</label>
           <div class="qty"><button type="button" id="minus" aria-label="One less">&minus;</button><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><button type="button" id="plus" aria-label="One more">+</button><span id="each">$99 each</span></div>
+          <p id="qnote" style="display:none;margin:8px 0 0;color:var(--dim);font-size:14px">You'll confirm the exact number of videos at checkout.</p>
           <div class="total"><span id="hint">At checkout you paste your product's Amazon link and pick who gives and who receives. For several videos, paste the first link and we email you for the rest.</span><b id="sum">$99</b></div>
           <a class="btn gold" id="pay-video" href="#">Get my video <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
         </div>
@@ -612,10 +613,13 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 (function(){
   var v=document.getElementById('v'),p=document.getElementById('play');
   p.addEventListener('click',function(){p.style.display='none';v.play();});
-  var LINKS={video:'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o',pack:'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p',skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
+  var LINKS={skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
+  /* one Stripe link per quantity, so the price on the page is the price charged; 11+ sets the number at checkout */
+  var QTY={'1':'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o','2':'https://buy.stripe.com/7sY6oJ0JbdV00tg03Ibwk0r','3':'https://buy.stripe.com/9B6dRb63vg38a3Q6s6bwk0s','4':'https://buy.stripe.com/14A7sN4Zr9EKb7U03Ibwk0t','5':'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p','6':'https://buy.stripe.com/6oUeVf8bD6sycbYcQubwk0u','7':'https://buy.stripe.com/bJecN71NfbMS3FscQubwk0v','8':'https://buy.stripe.com/fZu5kF2Rj7wCfoa03Ibwk0w','9':'https://buy.stripe.com/bJe28tdvXg38dg2aImbwk0x','10':'https://buy.stripe.com/28E6oJajL5ou2Bo17Mbwk0y','11+':'https://buy.stripe.com/14AdRb77z18efoaaImbwk0z'};
+  function linkFor(n){return n>10?QTY['11+']:QTY[String(n)];}
   var q=document.getElementById('qty'),each=document.getElementById('each'),sum=document.getElementById('sum'),pv=document.getElementById('pay-video');
   function num(){return Math.min(50,Math.max(1,parseInt(q.value||'1',10)||1));}
-  function calc(){var n=num(),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=n>=5?LINKS.pack:LINKS.video;}
+  function calc(){var n=num(),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=linkFor(n);var nt=document.getElementById('qnote');if(nt)nt.style.display=n>10?'block':'none';}
   q.addEventListener('input',calc);calc();
   document.getElementById('minus').addEventListener('click',function(){q.value=Math.max(1,num()-1);calc();});
   document.getElementById('plus').addEventListener('click',function(){q.value=Math.min(50,num()+1);calc();});
