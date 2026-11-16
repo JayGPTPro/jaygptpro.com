@@ -266,6 +266,7 @@ function demoStore() {
     },
     async ai(action, body) {
       await wait(350);
+      if (action === "translate" && body.to === "en") return { en: body.texts.map((t) => (t ? `[demo translation] ${t}` : "")) };
       if (action === "translate") return { he: body.texts.map((t) => (t ? `[תרגום הדגמה] ${t}` : "")) };
       if (action === "split") return demoSplit(body.text);
       throw new Error("Unknown action");

@@ -312,4 +312,10 @@ export const HE = {
   "Also an email: yes": "יוצא גם במייל: כן", "Also an email: no": "יוצא גם במייל: לא", "Banner approved": "הבאנר אושר",
   "The date passed": "התאריך עבר",
   "Daily AI limit reached. It starts again tomorrow.": "הגענו למגבלת ה-AI היומית. היא מתחדשת מחר.",
+  // ---- 16.11: inbox, mentions, notes on a picture, copy to consult
+  "What's new": "מה חדש", "{who} mentioned you": "{who} תייג/ה אותך", "Tag:": "לתייג:",
+  "Translate to Hebrew": "לתרגם לעברית", "Translating…": "מתרגם…",
+  "Copy for WhatsApp": "העתקה לוואטסאפ", "Copy to consult Claude": "העתקה להתייעצות עם Claude", "Copied. Paste it into Claude.": "הועתק. אפשר להדביק ב-Claude.",
+  "A note on {name}": "הערה על {name}", "It shows next to the picture and in the notes.": "ההערה תופיע ליד התמונה וגם ברשימת ההערות.",
+  "Note": "הערה", "Use this one": "לבחור בזו", "Chosen. The others are hidden.": "נבחרה. השאר הוסתרו.",
 };

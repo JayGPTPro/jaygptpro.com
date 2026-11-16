@@ -3,7 +3,7 @@
 // function under supabase/functions to the challenge project.
 //
 // Actions (POST JSON, signed-in team members only):
-//   { "action": "translate", "texts": ["...", ...] }  -> { "he": ["...", ...] }
+//   { "action": "translate", "texts": ["...", ...] }  -> { "he": ["...", ...] }   (with "to": "en" -> { "en": [...] })
 //   { "action": "split", "text": "<a draft pasted from Claude>" } -> { headlines, body, sources, notes }
 //
 // Secrets: ANTHROPIC_API_KEY (set in the dashboard). SUPABASE_URL and the anon key are
@@ -99,6 +99,15 @@ Rules:
 - Text that is already Hebrew comes back unchanged.
 - Return exactly one translation per input, in the same order.`;
 
+// The other direction: Jay writes a note in Hebrew, the team reads English.
+const TO_ENGLISH_SYSTEM = `You translate short Hebrew work notes from an Israeli business owner into plain English for his content team.
+
+Rules:
+- Translate faithfully. Keep the meaning, the tone and the order. Do not add, soften, summarise or explain.
+- Keep names, product names, @mentions, emoji, line breaks, URLs and numbers exactly as they are.
+- Text that is already English comes back unchanged.
+- Return exactly one translation per input, in the same order.`;
+
 const SPLIT_SYSTEM = `You receive one pasted block: a WhatsApp post draft that a content writer prepared for Jay, often straight from her own AI chat. Split it into fields without rewriting anything.
 
 - headlines: every headline option offered, in order, without numbering, bullets or asterisks. If there are no options, use the post's own title line as the single headline. pick is true for the one the writer marks as her pick, otherwise false for all.
@@ -165,16 +174,17 @@ Deno.serve(async (req) => {
       if (texts.length > MAX_TRANSLATE_ITEMS) return json(req, 413, { error: "Too many items in one request" });
       const total = texts.reduce((n, t) => n + t.length, 0);
       if (total > MAX_TRANSLATE_CHARS) return json(req, 413, { error: "Too much text in one request" });
+      const toEn = (payload as { to?: string }).to === "en";
       const out = (await askJson(
-        TRANSLATE_SYSTEM,
-        `Translate each item of this JSON array into Hebrew:\n${JSON.stringify(texts)}`,
+        toEn ? TO_ENGLISH_SYSTEM : TRANSLATE_SYSTEM,
+        `Translate each item of this JSON array into ${toEn ? "English" : "Hebrew"}:\n${JSON.stringify(texts)}`,
         TRANSLATE_SCHEMA,
         16000,
       )) as { translations: string[] };
       if (!Array.isArray(out.translations) || out.translations.length !== texts.length) {
         return json(req, 502, { error: "Translation came back with the wrong number of items" });
       }
-      return json(req, 200, { he: out.translations });
+      return json(req, 200, toEn ? { en: out.translations } : { he: out.translations });
     }
 
     if (payload.action === "split") {

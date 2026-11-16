@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=9";
-import { HE } from "./i18n.js?v=9";
+import { createStore } from "./store.js?v=10";
+import { HE } from "./i18n.js?v=10";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -29,7 +29,7 @@ const S = {
   channel: {}, vsel: {}, diff: {}, view: {}, more: {},
   cat: "all", only: "", col: "", q: "", showRejected: {},
   newMode: "idea", split: null, draftText: "",
-  files: {}, translateError: "", lang: "en", langChosen: false,
+  files: {}, translateError: "", lang: "en", langChosen: false, inbox: false,
 };
 
 // ---------------- language ----------------
@@ -196,7 +196,7 @@ if (!SEEN._base) {
 function lastTouch(p) {
   let hit = p.updated_by && p.updated_by !== S.me ? { at: p.updated_at || "", what: "update", who: p.updated_by } : { at: "" };
   for (const [what, list] of [["note", S.d.notes], ["version", S.d.versions], ["file", S.d.assets]]) {
-    for (const x of list) if (x.post_id === p.id && x.author !== S.me && (x.created_at || "") >= hit.at) hit = { at: x.created_at, what, who: x.author };
+    for (const x of list) if (x.post_id === p.id && x.author !== S.me && (x.created_at || "") >= hit.at) hit = { at: x.created_at, what, who: x.author, row: x };
   }
   return hit;
 }
@@ -207,6 +207,7 @@ const isNew = (p) => {
 // "New note from Denisa", for the card.
 function newLine(p) {
   const h = lastTouch(p);
+  if (h.what === "note" && h.row && mentionsMe(h.row.body)) return t("{who} mentioned you", { who: nameOf(h.who) });
   const key = { note: "New note from {who}", version: "New version from {who}", file: "New file from {who}", update: "Updated by {who}" }[h.what];
   return key ? t(key, { who: nameOf(h.who) }) : "";
 }
@@ -216,6 +217,57 @@ function markAllSeen() {
     if (at) SEEN[p.id] = at;
   }
   saveSeen();
+}
+// ---- mentions: "@Denisa" in a note. Names are the first word of each member's name.
+const firstName = (m) => String(m.name || "").replace(/\(.*\)/, "").trim().split(/\s+/)[0] || "";
+const myFirst = () => (S.member ? firstName(S.member) : "");
+function mentionsMe(text) {
+  const me = myFirst();
+  return !!me && new RegExp(`@${me.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w\u0590-\u05FF])`, "i").test(String(text || ""));
+}
+// Escaped note text with every @Name of a team member marked.
+function noteHtml(text) {
+  let out = esc(text);
+  for (const m of S.d.team_members) {
+    const n = firstName(m);
+    if (n.length < 2) continue;
+    out = out.replace(new RegExp(`@${esc(n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w\u0590-\u05FF])`, "gi"), (x) => `<span class="mention ${m.email === S.me ? "mine" : ""}">${x}</span>`);
+  }
+  return out;
+}
+const hasHe = (s) => /[\u0590-\u05FF]/.test(String(s || ""));
+// A note Jay writes in Hebrew is saved in English for the team, with his Hebrew kept next to it.
+async function bothLangs(text) {
+  if (!hasHe(text)) return { body: text };
+  try {
+    const res = await store.ai("translate", { texts: [text], to: "en" });
+    const en = String((res.en && res.en[0]) || "").trim();
+    if (en) return { body: en, body_he: text };
+  } catch (e) {
+    console.warn("note saved in Hebrew only:", e.message);
+  }
+  return { body: text, body_he: text };
+}
+// The posts with something new for this reader, newest first.
+function inboxItems() {
+  return S.d.posts.filter(isNew).map((p) => ({ p, h: lastTouch(p) })).sort((a, b) => b.h.at.localeCompare(a.h.at));
+}
+// What to paste into Claude or ChatGPT to think a post through.
+function consultText(p) {
+  const v = latest(p.id);
+  const out = ["I'm working on a WhatsApp post for my eCommerce AI community (Amazon sellers and business owners). Help me make it better.", "", `Stage: ${COL_ONE[p.stage]}`, `Working title: ${p.title}`];
+  if (p.idea) out.push("", "The idea:", p.idea);
+  if (v) {
+    const hs = subjectsOf(v);
+    if (hs.length) out.push("", "Headline options:", ...hs.map((h, i) => `${i + 1}. ${h.en}`));
+    out.push("", "Post text:", v.body || "");
+  }
+  const open = notesOf(p.id).filter((n) => n.status === "open");
+  if (open.length) out.push("", "Notes from the team:", ...open.map((n) => `- ${nameOf(n.author)}: ${n.body}`));
+  const rules = S.d.rules.filter((r) => r.active).sort((a, b) => a.sort - b.sort);
+  if (rules.length) out.push("", "House rules for these posts:", ...rules.map((r, i) => `${i + 1}. ${r.body}`));
+  out.push("", "What would you change, and why? Keep the voice: short, practical, no hype.");
+  return out.join("\n");
 }
 const subjectsOf = (v) => ((v && v.headlines) || []).filter((h) => !h.kind);
 const previewsOf = (v) => ((v && v.headlines) || []).filter((h) => h.kind === "preview");
@@ -648,6 +700,7 @@ const A = {
     render();
   },
   open(id) {
+    S.inbox = false;
     go(`#/${baseOf()}/p/${id}`);
   },
   nav(id, dir) {
@@ -664,6 +717,51 @@ const A = {
     else render();
   },
   search() {},
+  inbox() {
+    S.inbox = !S.inbox;
+    render();
+  },
+  openFromInbox(id) {
+    S.inbox = false;
+    go(`#/board/p/${id}`);
+  },
+  translateNow() {
+    trSkip.clear();
+    S.translateError = "";
+    translateMissing();
+    toast("Translating…");
+  },
+  // "@Name " into the note box of this post
+  mention(name, pid) {
+    const el = app.querySelector(`form[data-form=addNote][data-post="${pid}"] textarea[name=note]`);
+    if (!el) return;
+    el.value = `${el.value}${el.value && !/\s$/.test(el.value) ? " " : ""}@${name} `;
+    el.focus();
+  },
+  copyConsult(pid) {
+    copyText(consultText(post(pid)), "Copied. Paste it into Claude.");
+  },
+  noteOnAsset(aid) {
+    const a = S.d.assets.find((x) => x.id === aid);
+    if (!a) return;
+    openModal({ pre: true, title: t("A note on {name}", { name: a.filename }), body: t("It shows next to the picture and in the notes."), act: "noteOnAssetGo", args: [aid], required: true, confirm: t("Add") });
+  },
+  noteOnAssetGo(aid, text) {
+    const a = S.d.assets.find((x) => x.id === aid);
+    run(async () => {
+      await insertRow("notes", { post_id: a.post_id, kind: isOwner() ? "note" : "team", ...(await bothLangs(text)), asset_id: a.id, version_n: latest(a.post_id) ? latest(a.post_id).n : null });
+      translateMissing();
+    }, "Note added");
+  },
+  // Jay picks one picture: it is approved and the other candidates step aside.
+  assetChoose(aid) {
+    const a = S.d.assets.find((x) => x.id === aid);
+    const others = assetsOf(a.post_id).filter((x) => x.id !== aid && isMedia(x) && x.status === "pending");
+    run(async () => {
+      await updateRow("assets", a, { status: "approved", stage: "final" });
+      for (const o of others) await updateRow("assets", o, { status: "replaced" });
+    }, others.length ? "Chosen. The others are hidden." : "Banner approved");
+  },
   seenAll() {
     markAllSeen();
     if (S.only === "new") S.only = "";
@@ -793,7 +891,7 @@ const A = {
   async sendBackGo(id, text) {
     let note;
     await decide(post(id), { status: "changes" }, "Sent back with your note", async () => {
-      note = await insertRow("notes", { post_id: id, kind: "note", body: text, version_n: latest(id) ? latest(id).n : null });
+      note = await insertRow("notes", { post_id: id, kind: "note", ...(await bothLangs(text)), version_n: latest(id) ? latest(id).n : null });
       translateMissing();
     }, async () => {
       if (!note) return;
@@ -1102,7 +1200,7 @@ const A = {
     const text = form.note.value.trim();
     if (!text) return;
     await run(async () => {
-      await insertRow("notes", { post_id: pid, kind: isOwner() ? "note" : "team", body: text, version_n: latest(pid) ? latest(pid).n : null });
+      await insertRow("notes", { post_id: pid, kind: isOwner() ? "note" : "team", ...(await bothLangs(text)), version_n: latest(pid) ? latest(pid).n : null });
       app.querySelectorAll(`form[data-form=addNote][data-post="${pid}"] textarea[name=note]`).forEach((el) => (el.value = ""));
       translateMissing();
     }, "Note added");
@@ -1223,7 +1321,8 @@ const A = {
   copyPost(pid, ch = "whatsapp") {
     const p = post(pid);
     const v = latest(pid, ch);
-    if (ch === "whatsapp" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
+    // before Ready the copy is for reading and consulting, so it takes the writer's pick or the first headline
+    if (ch === "whatsapp" && p.stage === "ready" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
     const text = composeChannel(p, ch);
     if (!text) return toast("Nothing to copy yet.", true);
     copyText(text, ch === "whatsapp" ? "Copied for WhatsApp" : "Copied");
@@ -1385,8 +1484,18 @@ function route() {
   return { base };
 }
 
+function inboxPanel() {
+  const items = inboxItems();
+  const row = ({ p, h }) => {
+    const said = h.what === "note" && h.row ? biText(h.row.body, h.row.body_he).main : "";
+    return `<button class="in-row" data-act="openFromInbox" data-a="${p.id}">${avatar(h.who, "sm")}<span class="in-t"><b>${esc(newLine(p))}</b><span dir="auto">${esc(displayTitle(p).main)}</span>${said ? `<small dir="auto">${noteHtml(clip(said, 110))}</small>` : ""}</span><span class="in-ago">${esc(ago(h.at))}</span></button>`;
+  };
+  return `<div class="inbox-pop" role="dialog" aria-label="${T("What's new")}"><div class="in-head"><b>${T("What's new")}</b><span class="sp"></span>${items.length ? `<button class="linkbtn" data-act="seenAll">${T("Mark all as seen")}</button>` : ""}</div>
+    ${items.length ? items.map(row).join("") : `<div class="empty">${T("Nothing new since your last visit")}</div>`}</div>`;
+}
 function topBar(r) {
   const w = waitingCount();
+  const nNewAll = S.d.posts.filter(isNew).length;
   const link = (name, label, extra = "") => `<a href="#/${name}" class="${r.base === name ? "on" : ""}">${T(label)}${extra}</a>`;
   return `<header class="top"><div class="top-in">
     <a class="brand" href="#/board"><i></i>Content Desk</a>
@@ -1396,12 +1505,13 @@ function topBar(r) {
       ${link("published", "Published|nav")}
     </nav>
     <div class="me">${DEMO ? '<span class="demo-badge">DEMO</span>' : ""}
+      <button class="iconbtn bell ${S.inbox ? "on" : ""}" data-act="inbox" title="${T("What's new")}" aria-label="${T("What's new")}" aria-expanded="${S.inbox}">🔔${nNewAll ? `<span class="dot">${nNewAll}</span>` : ""}</button>
       <button class="btn sm go" data-act="newPost" data-a="idea">${T("+ New")}</button>
       <button class="btn sm ghost" data-act="setLang" data-a="${S.lang === "he" ? "en" : "he"}">${S.lang === "he" ? "English" : "עברית"}</button>
       <a class="iconbtn ${r.base === "settings" ? "on" : ""}" href="#/settings" title="${T("Settings")}" aria-label="${T("Settings")}"${r.base === "settings" ? ' aria-current="page"' : ""}>⚙</a>
       ${avatar(S.me)}
     </div>
-  </div></header>`;
+  </div>${S.inbox ? inboxPanel() : ""}</header>`;
 }
 
 function statusPill(p) {
@@ -1672,7 +1782,9 @@ function drawerPost(p) {
   }
 
   // ---- visuals ----
+  const rivals = assets.filter((x) => isMedia(x) && x.status === "pending").length;
   const visCard = (a) => {
+    const onIt = notesOf(p.id).filter((n) => n.asset_id === a.id);
     const url = cachedUrl(a);
     const isImg = (a.mime || "").startsWith("image/");
     const isVid = (a.mime || "").startsWith("video/");
@@ -1683,8 +1795,10 @@ function drawerPost(p) {
         <button class="btn sm" data-act="download" data-a="${a.id}">↓ ${T("Download")}</button>
         ${isImg ? `<button class="btn sm" data-act="copyImage" data-a="${a.id}">${T("Copy image")}</button>` : ""}
         ${navigator.canShare ? `<button class="btn sm" data-act="share" data-a="${a.id}">${T("Share / save")}</button>` : ""}
-        ${owner && a.status === "pending" ? `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>` : ""}
+        ${owner && a.status === "pending" ? (rivals > 1 && isMedia(a) ? `<button class="btn sm go" data-act="assetChoose" data-a="${a.id}">✓ ${T("Use this one")}</button>` : `<button class="btn sm go" data-act="assetApprove" data-a="${a.id}">${T("Approve")}</button>`) : ""}
+        <button class="btn sm" data-act="noteOnAsset" data-a="${a.id}">💬 ${T("Note")}${onIt.length ? ` · ${onIt.length}` : ""}</button>
       </div>
+      ${onIt.map((n) => `<div class="v-note ${n.status === "closed" ? "closed" : ""}" dir="auto"><b>${esc(nameOf(n.author))}:</b> ${noteHtml(biText(n.body, n.body_he).main)}</div>`).join("")}
       <div class="lnk">${a.status !== "approved" ? `<button class="linkbtn" data-act="assetReplace" data-a="${a.id}">${a.status === "replaced" ? T("Show again") : T("Hide, a newer one replaces it")}</button>` : ""}
         ${(owner || a.author === S.me) && a.status !== "approved" ? `<button class="linkbtn" data-act="assetDelete" data-a="${a.id}">${T("Delete")}</button>` : ""}
         <span class="muted">${esc(nameOf(a.author))} · ${esc(ago(a.created_at))}</span></div></div></div>`;
@@ -1794,10 +1908,13 @@ function drawerPost(p) {
     const fixable = n.kind === "note";
     const nb = biText(n.body, n.body_he);
     const ab = biText(n.answer, n.answer_he);
+    const onAsset = n.asset_id ? assets.find((a) => a.id === n.asset_id) : null;
     return `<div class="note ${fixable ? "fixable" : ""} ${closed ? "closed" : ""}">${avatar(n.author, "sm")}<div class="n-body">
       <div class="n-who"><b>${esc(nameOf(n.author))}</b> <span>${esc(ago(n.created_at))}${n.version_n ? ` · v${n.version_n}` : ""}</span>
         ${fixable ? `<button class="tick ${closed ? "done" : ""}" data-act="toggleNote" data-a="${n.id}" ${owner || canWrite ? "" : "disabled"}>${closed ? `✓ ${T("fixed")}${n.closed_in ? ` v${n.closed_in}` : ""}` : T("Mark fixed")}</button>` : ""}</div>
-      <div class="pre" dir="auto">${esc(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${esc(nb.sub)}</div>` : ""}
+      ${onAsset ? `<div class="n-on">🖼 ${esc(onAsset.filename)}</div>` : ""}
+      <div class="pre" dir="auto">${noteHtml(nb.main)}</div>${nb.sub ? `<div class="t-sub pre" dir="auto">${noteHtml(nb.sub)}</div>` : ""}
+      ${S.lang === "he" && !n.body_he ? `<button class="linkbtn" data-act="translateNow">${T("Translate to Hebrew")}</button>` : ""}
       ${n.answer ? `<div class="ans"><b>${esc(nameOf(n.answered_by))}:</b> <span dir="auto">${esc(ab.main)}</span></div>` : ""}
       <div class="n-act">${owner && fixable && !n.is_rule ? `<button class="linkbtn" data-act="noteToRule" data-a="${n.id}">${T("Make it a house rule")}</button>` : ""}${n.is_rule ? `<span class="pill go">${T("rule")}</span>` : ""}
         ${n.author === S.me || owner ? `<button class="linkbtn" data-act="deleteNote" data-a="${n.id}">${T("Delete")}</button>` : ""}</div>
@@ -1806,7 +1923,8 @@ function drawerPost(p) {
   const nOpen = openNotes(p.id).length;
   const notesSec = `<section class="sec"><h3>${T("Notes")} <span class="count">${notes.length}</span>${nOpen ? `<span class="pill st-changes">${plural(nOpen, "1 open", "{n} open")}</span>` : ""}</h3>
     ${notes.map(noteRow).join("")}
-    <form data-form="addNote" data-post="${p.id}" class="noteform"><textarea name="note" dir="auto" placeholder="${owner ? T("A note for the writer…") : T("A note or a question for Jay…")}"></textarea><button class="btn sm">${T("Add")}</button></form></section>`;
+    <form data-form="addNote" data-post="${p.id}" class="noteform"><textarea name="note" dir="auto" placeholder="${owner ? T("A note for the writer…") : T("A note or a question for Jay…")}"></textarea><button class="btn sm">${T("Add")}</button></form>
+    <div class="mention-row"><span class="muted small">${T("Tag:")}</span>${S.d.team_members.filter((m) => m.active && m.email !== S.me).map((m) => `<button class="chip sm" data-act="mention" data-a="${esc(firstName(m))}" data-b="${p.id}">@${esc(firstName(m))}</button>`).join("")}</div></section>`;
 
   // ---- more details ----
   const otherCh = CHANNELS.filter(([k]) => k !== "whatsapp");
@@ -1886,6 +2004,7 @@ function drawerPost(p) {
       <div class="d-meta">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
       <h1 class="d-title" dir="auto">${esc(tt.main)}</h1>${tt.sub ? `<div class="d-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${next ? `<div class="nextbox">${esc(next)}</div>` : ""}
+      <div class="btns d-copy">${latest(p.id) ? `<button class="btn sm" data-act="copyPost" data-a="${p.id}">⧉ ${T("Copy for WhatsApp")}</button>` : ""}<button class="btn sm" data-act="copyConsult" data-a="${p.id}">💬 ${T("Copy to consult Claude")}</button></div>
       ${order.join("")}
       ${moreSec}
     </div>
@@ -1996,6 +2115,8 @@ function modalHtml() {
 
 // ---------------- render ----------------
 function render() {
+  const unread = S.loaded && S.member ? S.d.posts.filter(isNew).length : 0;
+  document.title = `${unread ? `(${unread}) ` : ""}Content Desk`;
   document.documentElement.lang = S.lang;
   document.documentElement.dir = S.lang === "he" ? "rtl" : "ltr";
   const r = route();
@@ -2086,6 +2207,10 @@ function render() {
 
 // ---------------- events ----------------
 document.addEventListener("click", (e) => {
+  if (S.inbox && !e.target.closest(".inbox-pop, .bell")) {
+    S.inbox = false;
+    if (!e.target.closest("[data-act]")) return render();
+  }
   const el = e.target.closest("[data-act]");
   if (!el) return;
   const act = el.dataset.act;
