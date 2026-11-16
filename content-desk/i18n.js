@@ -311,4 +311,5 @@ export const HE = {
   "This post has no banner yet. It moves to Ready without one.": "לפוסט הזה עוד אין באנר. הוא יעבור למוכנים בלעדיו.",
   "Also an email: yes": "יוצא גם במייל: כן", "Also an email: no": "יוצא גם במייל: לא", "Banner approved": "הבאנר אושר",
   "The date passed": "התאריך עבר",
+  "Daily AI limit reached. It starts again tomorrow.": "הגענו למגבלת ה-AI היומית. היא מתחדשת מחר.",
 };

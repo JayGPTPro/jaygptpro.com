@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=8";
-import { HE } from "./i18n.js?v=8";
+import { createStore } from "./store.js?v=9";
+import { HE } from "./i18n.js?v=9";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -417,7 +417,7 @@ async function translateMissing() {
         res = await store.ai("translate", { texts: batch.map((j) => j.text) });
         S.translateError = "";
       } catch (e) {
-        if (/not a team member/i.test(e.message)) throw e;
+        if (/not a team member|daily ai limit/i.test(e.message)) throw e;
         S.translateError = e.message;
         // A failed batch is retried one item at a time; an item that fails alone waits 30 minutes.
         if (batch.length > 1) maxBatch = 1;
@@ -1084,7 +1084,7 @@ const A = {
         if (n) await updateRow("notes", n, { status: "closed", closed_in: v.n });
       }
       if (patch) await savePost(p, patch);
-      if (channel === "email" && !p.email_too) await savePost(p, { email_too: true });
+      if (channel === "email" && !p.email_too && (owner || p.stage !== "published")) await savePost(p, { email_too: true });
       S.edit = null;
       translateMissing();
     }, msg);
@@ -1645,6 +1645,8 @@ function drawerPost(p) {
   const mine = p.author === S.me;
   const live = p.status !== "rejected";
   const canWrite = owner || (live && ["idea", "draft", "final"].includes(p.stage));
+  // the email is usually written after Jay approved the post, so its text stays open to the team
+  const canText = canWrite || (live && (S.channel[p.id] || "whatsapp") !== "whatsapp" && ["ready", "published"].includes(p.stage));
   const ch = S.channel[p.id] || "whatsapp";
   const v = shownVersion(p.id, ch);
   const vs = versionsOf(p.id, ch);
@@ -1741,19 +1743,19 @@ function drawerPost(p) {
     const seg = (k, label) => `<button class="${mode === k ? "on" : ""}" data-act="view" data-a="${p.id}" data-b="${k}">${label}</button>`;
     textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
       ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
-      ${isLatest && canWrite ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
+      ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
       <section class="sec"><h3><span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span><span class="sp"></span>
         <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("What changed")}</button>` : ""}</span></h3>
         ${mode === "he" ? `<p class="hint">${T("A literal translation for reading. What goes out is the English.")}</p>` : ""}
         ${body}
         ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> <span dir="auto">${esc(biText(v.writer_note, v.writer_note_he).main)}</span></div>` : ""}
         <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · <b>${T("an older version")}</b>` : ""}
-          ${canWrite && isLatest ? `<span class="sp"></span><button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="${ch}" data-c="${!owner && p.status === "changes" ? "fix" : "edit"}">✎ ${T("Edit the text")}</button>` : ""}</div>
+          ${canText && isLatest ? `<span class="sp"></span><button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="${ch}" data-c="${!owner && p.status === "changes" ? "fix" : "edit"}">✎ ${T("Edit the text")}</button>` : ""}</div>
       </section>`;
   } else if (p.stage !== "idea") {
     textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(t(CHANNELS.find((c) => c[0] === ch)[1]))}</h3>
       <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
-      ${canWrite ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
+      ${canText ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
   }
 
   // ---- email: subject and preview options, the HTML as it will look, one-click copies ----
@@ -1761,7 +1763,7 @@ function drawerPost(p) {
     const ci = chosenIndex(v);
     const row = (h, i, picked, act) => {
       const hb = biText(h.en, h.he);
-      return `<div class="mrow2 ${picked || (ci < 0 && !h.kind && h.pick) ? "pick" : ""}"><button class="hl" data-act="${act}" data-a="${v.id}" data-b="${i}" ${isLatest && canWrite ? "" : "disabled"}><span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span></button><button class="btn sm" data-act="copyLine" data-a="${v.id}" data-b="${i}">${T("Copy")}</button></div>`;
+      return `<div class="mrow2 ${picked || (ci < 0 && !h.kind && h.pick) ? "pick" : ""}"><button class="hl" data-act="${act}" data-a="${v.id}" data-b="${i}" ${isLatest && canText ? "" : "disabled"}><span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span></button><button class="btn sm" data-act="copyLine" data-a="${v.id}" data-b="${i}">${T("Copy")}</button></div>`;
     };
     const all = v.headlines || [];
     const subs = all.map((h, i) => (!h.kind ? row(h, i, ci === i, "pickHeadline") : "")).join("");
@@ -1778,7 +1780,7 @@ function drawerPost(p) {
           : `<div class="empty">${T("No HTML yet. Subject and preview options can come first.")}</div>`}
         <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}<span class="sp"></span>
           ${html ? `<button class="btn sm go" data-act="copyHtml" data-a="${p.id}">${T("Copy the HTML")}</button>` : ""}
-          ${canWrite && isLatest ? `<button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="email">✎ ${html ? T("Edit") : T("Add the HTML")}</button>` : ""}</div>
+          ${canText && isLatest ? `<button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="email">✎ ${html ? T("Edit") : T("Add the HTML")}</button>` : ""}</div>
       </section>`;
   }
   if (p.stage !== "idea" || latest(p.id, "email")) {

@@ -15,6 +15,8 @@ const MODEL = "claude-opus-5-5";
 const PUBLISHABLE_KEY = "sb_publishable_EByrqj6P7ZrIna3Q7QYfMQ_VaVbDsy3";
 const MAX_TRANSLATE_CHARS = 40000;
 const MAX_SPLIT_CHARS = 20000;
+const MAX_TRANSLATE_ITEMS = 40;
+const DAILY_CALLS = 400; // per member, counted in the database by desk_ai_tick()
 
 const ALLOWED_ORIGINS = new Set([
   "https://jaygptpro.com",
@@ -39,8 +41,9 @@ function json(req: Request, status: number, body: unknown): Response {
   });
 }
 
-// Returns the member's email, or null when the caller is not an active team member.
-async function teamMember(req: Request): Promise<string | null> {
+// Returns the member's email and how many AI calls they made today (this one included),
+// or null when the caller is not an active team member.
+async function teamMember(req: Request): Promise<{ email: string; calls: number } | null> {
   const auth = req.headers.get("authorization") ?? "";
   const jwt = auth.replace(/^Bearer\s+/i, "").trim();
   if (!jwt) return null;
@@ -57,7 +60,11 @@ async function teamMember(req: Request): Promise<string | null> {
   // RLS lets a member read team_members only when is_team() is true for them.
   const { data, error } = await sb.from("team_members").select("email").eq("email", email).eq("active", true).maybeSingle();
   if (error || !data) return null;
-  return email;
+  // The count lives in the database, so it holds across function instances. If the counter
+  // itself fails, the call goes through: a broken counter must not stop the desk.
+  const { data: calls, error: tickErr } = await sb.rpc("desk_ai_tick");
+  if (tickErr) console.error("desk_ai_tick", tickErr.message);
+  return { email, calls: tickErr ? 0 : Number(calls) || 0 };
 }
 
 const anthropic = new Anthropic(); // reads ANTHROPIC_API_KEY
@@ -142,6 +149,7 @@ Deno.serve(async (req) => {
 
   const member = await teamMember(req);
   if (!member) return json(req, 401, { error: "Not a team member" });
+  if (member.calls > DAILY_CALLS) return json(req, 429, { error: "Daily AI limit reached. It starts again tomorrow." });
 
   let payload: { action?: string; texts?: unknown; text?: unknown };
   try {
@@ -154,6 +162,7 @@ Deno.serve(async (req) => {
     if (payload.action === "translate") {
       const texts = Array.isArray(payload.texts) ? payload.texts.map((t) => String(t ?? "")) : [];
       if (!texts.length) return json(req, 400, { error: "texts is empty" });
+      if (texts.length > MAX_TRANSLATE_ITEMS) return json(req, 413, { error: "Too many items in one request" });
       const total = texts.reduce((n, t) => n + t.length, 0);
       if (total > MAX_TRANSLATE_CHARS) return json(req, 413, { error: "Too much text in one request" });
       const out = (await askJson(
@@ -183,6 +192,6 @@ Deno.serve(async (req) => {
       return json(req, 502, { error: `AI service error (${e.status ?? "network"})` });
     }
     console.error(e);
-    return json(req, 500, { error: e instanceof Error ? e.message : "Unexpected error" });
+    return json(req, 500, { error: "Unexpected error. Try again." });
   }
 });

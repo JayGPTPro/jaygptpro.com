@@ -141,7 +141,7 @@ function demoStore() {
     if (["settings", "rules", "team_members"].includes(t)) throw new Error("Only the owner can change this");
     if (t === "versions" && !(patch && onlyHe(patch) && JSON.stringify((row.headlines || []).map((h) => h.en)) === JSON.stringify(((old || {}).headlines || []).map((h) => h.en)) && !(patch.headlines && (row.headlines || []).some((h, i) => h.pick !== old.headlines[i].pick || h.sel !== old.headlines[i].sel)))) {
       const p = db.posts.find((x) => x.id === row.post_id);
-      if (p && ["ready", "published"].includes(p.stage)) throw new Error("Jay already approved this post. Ask him to send it back before changing the text.");
+      if (p && row.channel === "whatsapp" && ["ready", "published"].includes(p.stage)) throw new Error("Jay already approved this post. Ask him to send it back before changing the text.");
     }
     if (t === "assets" && old && row.status === "approved" && old.status !== "approved") throw new Error("Only the owner can approve a visual");
     if (t !== "posts") return;
