@@ -380,7 +380,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 
 <div class="strip" aria-hidden="true">
   <div class="track" id="track">
-    <img src="img/strip/01.jpg" alt=""><img src="img/strip/03.jpg" alt=""><img src="img/strip/05.jpg" alt=""><img src="img/strip/06.jpg" alt=""><img src="img/strip/07.jpg" alt=""><img src="img/strip/08.jpg" alt=""><img src="img/strip/09.jpg" alt=""><img src="img/strip/10.jpg" alt=""><img src="img/strip/11.jpg" alt=""><img src="img/strip/12.jpg" alt=""><img src="img/strip/13.jpg" alt=""><img src="img/strip/14.jpg" alt=""><img src="img/strip/16.jpg" alt=""><img src="img/strip/15.jpg" alt="">
+    <img src="img/strip/01.jpg" alt="" loading="lazy"><img src="img/strip/03.jpg" alt="" loading="lazy"><img src="img/strip/05.jpg" alt="" loading="lazy"><img src="img/strip/06.jpg" alt="" loading="lazy"><img src="img/strip/07.jpg" alt="" loading="lazy"><img src="img/strip/08.jpg" alt="" loading="lazy"><img src="img/strip/09.jpg" alt="" loading="lazy"><img src="img/strip/10.jpg" alt="" loading="lazy"><img src="img/strip/11.jpg" alt="" loading="lazy"><img src="img/strip/12.jpg" alt="" loading="lazy"><img src="img/strip/13.jpg" alt="" loading="lazy"><img src="img/strip/14.jpg" alt="" loading="lazy"><img src="img/strip/16.jpg" alt="" loading="lazy"><img src="img/strip/15.jpg" alt="" loading="lazy">
   </div>
 </div>
 
@@ -613,21 +613,28 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 (function(){
   var v=document.getElementById('v'),p=document.getElementById('play');
   p.addEventListener('click',function(){p.style.display='none';v.play();});
+  var fired={};function ev(k,label){if(fired[k])return;fired[k]=1;try{if(window.gtag)gtag('event',k,{video_title:'The Perfect Gift',video_percent:label});if(window.fbq)fbq('trackCustom','Film_'+label,{film:'The Perfect Gift'});}catch(e){}}
+  v.addEventListener('play',function(){ev('video_start','start');});
+  v.addEventListener('timeupdate',function(){if(v.duration&&v.currentTime/v.duration>=0.5)ev('video_progress','50');});
+  v.addEventListener('ended',function(){ev('video_complete','complete');});
   var LINKS={skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
   /* one Stripe link per quantity, so the price on the page is the price charged; 11+ sets the number at checkout */
   var QTY={'1':'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o','2':'https://buy.stripe.com/7sY6oJ0JbdV00tg03Ibwk0r','3':'https://buy.stripe.com/9B6dRb63vg38a3Q6s6bwk0s','4':'https://buy.stripe.com/14A7sN4Zr9EKb7U03Ibwk0t','5':'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p','6':'https://buy.stripe.com/6oUeVf8bD6sycbYcQubwk0u','7':'https://buy.stripe.com/bJecN71NfbMS3FscQubwk0v','8':'https://buy.stripe.com/fZu5kF2Rj7wCfoa03Ibwk0w','9':'https://buy.stripe.com/bJe28tdvXg38dg2aImbwk0x','10':'https://buy.stripe.com/28E6oJajL5ou2Bo17Mbwk0y','11+':'https://buy.stripe.com/14AdRb77z18efoaaImbwk0z'};
-  function linkFor(n){return n>10?QTY['11+']:QTY[String(n)];}
+  var src='';try{var u=new URLSearchParams(location.search);src=(u.get('utm_source')||'')+(u.get('utm_campaign')?'_'+u.get('utm_campaign'):'');if(src)localStorage.setItem('xmas_src',src);else src=localStorage.getItem('xmas_src')||'';if(u.get('test')==='1')QTY['1']='https://buy.stripe.com/3cI7sN0Jb4kqfoag2Gbwk0A';}catch(e){}
+  src=src.replace(/[^A-Za-z0-9_-]/g,'').slice(0,190);
+  function withSrc(url){return src?url+(url.indexOf('?')<0?'?':'&')+'client_reference_id='+src:url;}
+  function linkFor(n){return withSrc(n>10?QTY['11+']:QTY[String(n)]);}
   var q=document.getElementById('qty'),each=document.getElementById('each'),sum=document.getElementById('sum'),pv=document.getElementById('pay-video');
   function num(){return Math.min(50,Math.max(1,parseInt(q.value||'1',10)||1));}
   function calc(){var n=num(),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=linkFor(n);var nt=document.getElementById('qnote');if(nt)nt.style.display=n>10?'block':'none';}
   q.addEventListener('input',calc);calc();
   document.getElementById('minus').addEventListener('click',function(){q.value=Math.max(1,num()-1);calc();});
   document.getElementById('plus').addEventListener('click',function(){q.value=Math.min(50,num()+1);calc();});
-  document.getElementById('pay-skill').href=LINKS.skill;
-  function track(what){try{if(window.fbq)fbq('track','InitiateCheckout',{content_name:what});if(window.gtag)gtag('event','begin_checkout',{item_name:what});}catch(e){}}
+  document.getElementById('pay-skill').href=withSrc(LINKS.skill);
+  function track(what,value,qty){try{if(window.fbq)fbq('track','InitiateCheckout',{content_name:what,value:value,currency:'USD',num_items:qty});if(window.gtag)gtag('event','begin_checkout',{value:value,currency:'USD',items:[{item_id:what,item_name:what,quantity:qty,price:value/qty}]});}catch(e){}}
   function remember(kind,qty,value){try{localStorage.setItem('xmas_order',JSON.stringify({kind:kind,qty:qty,value:value,t:Date.now()}));}catch(e){}}
-  pv.addEventListener('click',function(){var n=num();remember(n>=5?'pack':'video',n,n*(n>=5?69:99));track('christmas_video');});
-  document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill');});
+  pv.addEventListener('click',function(){var n=num(),val=n*(n>=5?69:99);remember(n>=5?'pack':'video',n,val);track('christmas_video',val,n);});
+  document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill',299,1);});
 
   /* cast picker: shows the choice in words, the real choice is made at checkout */
   [].forEach.call(document.querySelectorAll('.chips'),function(g){
