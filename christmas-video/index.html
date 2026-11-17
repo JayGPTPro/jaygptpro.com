@@ -105,6 +105,16 @@ nav .btn{padding:12px 22px;font-size:14px}
 .gift img{max-width:70%;max-height:70%;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));pointer-events:none}
 .gift.on{border-color:rgba(233,199,132,.85);background:rgba(233,199,132,.16)}
 .gift.lift{opacity:.3}
+.gift.yours{border:1.5px dashed rgba(233,199,132,.75);background:rgba(233,199,132,.07);flex-direction:column;gap:3px;text-decoration:none;color:var(--gold);cursor:pointer}
+.gift.yours b{font:300 26px/1 var(--sans)}
+.gift.yours span{font:600 10px/1.1 var(--sans);letter-spacing:.04em;text-align:center}
+.gift.yours:hover{background:rgba(233,199,132,.16)}
+.dock .hint{position:absolute;left:0;right:0;bottom:calc(100% + 12px);text-align:center;font:400 13px/1 var(--bill);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);text-shadow:0 1px 12px rgba(0,0,0,.8);pointer-events:none}
+.side::before{content:attr(data-label);position:absolute;left:14px;bottom:calc(100% + 8px);font:400 12px/1 var(--bill);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);white-space:nowrap;text-shadow:0 1px 10px rgba(0,0,0,.85)}
+.side.r::before{left:auto;right:14px}
+.side.r{pointer-events:auto;cursor:pointer;transition:border-color .25s,background .25s}
+.side.r:hover{border-color:rgba(233,199,132,.8);background:rgba(10,14,22,.8)}
+.side.r::before{text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(233,199,132,.5)}
 .acts{display:flex;gap:10px;align-items:center}
 .acts::before{content:"";width:1px;height:46px;background:var(--hair);margin:0 4px}
 .dbtn{height:72px;padding:0 22px;border-radius:18px;border:1px solid var(--hair);background:rgba(246,240,228,.06);cursor:pointer;font:600 15px/1 var(--sans);color:var(--ink);display:flex;align-items:center;gap:10px;text-decoration:none;white-space:nowrap;transition:background .25s}
@@ -326,6 +336,9 @@ footer{padding:70px 0 60px;text-align:center}
   .knob{width:42px;height:42px;margin:-21px 0 0 -21px;top:50%}.knob svg{width:18px}
   .side{bottom:8px;padding:4px 10px 4px 4px;gap:6px;background:rgba(10,14,22,.66)}
   .side.l{left:8px}.side.r{right:8px}
+  .side::before{font-size:8.5px;letter-spacing:.18em;left:6px;bottom:calc(100% + 5px)}.side.r::before{right:6px}
+  .dock .hint{position:static;font-size:11px;letter-spacing:.2em;padding:0 18px}
+  .gift.yours span{font-size:8.5px}.gift.yours b{font-size:22px}
   .side img{width:24px;height:24px}.side b{font-size:11.5px}.side b i{margin:0 3px}.side small{font-size:10px}
   .half span{font-size:10px;padding:7px 10px 6px;letter-spacing:.2em}
   .dock{position:relative;left:auto;bottom:auto;transform:none;flex-direction:column;align-items:stretch;gap:10px;margin:14px 0 0;padding:0;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -417,14 +430,15 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="rh"><video class="fv" id="dr" muted playsinline autoplay loop preload="auto" poster="clips/mg.jpg"></video><video class="fv" id="dr2" muted playsinline loop preload="auto"></video><i class="iris" id="iris"></i></div>
     <div class="half r"><span>Drop it into the film</span></div>
     <div class="seam" aria-hidden="true"><div class="knob"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1L1 7l6 6M15 1l6 6-6 6"/></svg></div></div>
-    <div class="side l" id="sl"></div><div class="side r" id="sr"></div>
+    <div class="side l" id="sl" data-label="The original"></div><div class="side r" id="sr" data-label="Your product goes here"></div>
   </div>
   <div class="top"><div class="wrap">
     <div class="kick">A Christmas film for Amazon sellers</div>
     <h1>One Christmas film.<br><span>Your gift. Your family.</span></h1>
-    <p class="sub">Your product becomes the gift in a cinematic Christmas story. You pick who gives it and who gets it. Ready in 48 hours.</p>
+    <p class="sub">Put your product into a cinematic Christmas story, as the gift everyone hoped for. You pick who gives it and who gets it. Ready in 48 hours.</p>
   </div></div>
   <div class="dock">
+    <p class="hint">Tap a product and watch it become the gift</p>
     <div class="gifts" id="gifts" aria-label="Products. Drag one into the film, or tap it."></div>
     <div class="acts">
       <button class="dbtn" type="button" id="fullbtn"><svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor"><path d="M0 0l12 7-12 7z"/></svg>Full film</button>
@@ -442,12 +456,12 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="steps-col">
       <div class="head rv">
         <div class="slate"><i>01</i>How it adapts</div>
-        <h2>Same story. Change anything.</h2>
+        <h2>Same story. <em>Your product. Your family.</em></h2>
       </div>
       <article class="st" data-film="safe"><span class="n">The film</span><h3>A dad, his son, and the gift he wished for.</h3><p>Christmas Eve, the wish on the phone, Santa, and the morning under the tree.</p></article>
-      <article class="st" data-film="cam"><span class="n">Change the gift</span><h3>Same dad. Same son. Your product.</h3><p>Your product goes everywhere the gift appears: on the phone, in the box, in their hands.</p></article>
-      <article class="st" data-film="mb"><span class="n">Change who gives</span><h3>Now Mom gives it.</h3><p>Her scenes, her voice, the same story.</p></article>
-      <article class="st" data-film="mg"><span class="n">Change who gets it</span><h3>A daughter.</h3><p>Every scene with the child is made again for her.</p></article>
+      <article class="st" data-film="cam"><span class="n">Put in your product</span><h3>Same dad. Same son. Your product.</h3><p>Your product takes the gift's place everywhere: on the phone, in the box, in their hands.</p></article>
+      <article class="st" data-film="mb"><span class="n">Pick who gives it</span><h3>Now Mom gives it.</h3><p>Her scenes, her voice, the same story, with your product.</p></article>
+      <article class="st" data-film="mg"><span class="n">Pick who gets it</span><h3>A daughter.</h3><p>Every scene with the child is made again for her.</p></article>
       <article class="st" data-film="dm"><span class="n">Or a grown-up</span><h3>Or the one they love.</h3><p>For a partner the film changes its tone: grown-up moments and a loving look.</p></article>
     </div>
   </div>
@@ -458,7 +472,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="head rv">
       <div class="slate"><i>02</i>Every family</div>
       <h2 style="margin-top:26px">Six families. <em>The same second.</em></h2>
-      <p class="lead">Six versions of one film, playing in sync. Tap any of them to watch it in full, with sound.</p>
+      <p class="lead">Six versions of one film, playing in sync. Yours is next: your product, the family you pick. Tap any film to watch it in full, with sound.</p>
     </div>
     <div class="grid6 rv" id="grid6"></div>
   </div>
@@ -468,7 +482,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <button class="th-x" type="button" id="thx" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   <div class="th-in">
     <div class="th-scr"><video id="tv" playsinline controls preload="none"></video></div>
-    <div class="th-bar"><p>Switch the family while it plays. The film keeps going.</p><div class="th-casts" id="thc"></div></div>
+    <div class="th-bar"><p>Your product goes where this one is. Switch the family while it plays, the film keeps going.</p><div class="th-casts" id="thc"></div></div>
   </div>
 </div>
 
@@ -685,6 +699,9 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   function tagHTML(f,orig){return '<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+(orig?' · the original':'')+'</small></div>';}
   var sl=document.getElementById('sl'),sr=document.getElementById('sr');
   sl.innerHTML=tagHTML(F(side.l),true);sr.innerHTML=tagHTML(F(side.r));
+  /* the right label is a way to order: your product goes here */
+  sr.addEventListener('pointerdown',function(e){e.stopPropagation();});
+  sr.addEventListener('click',function(){track('side_your_product',{});location.hash='#order';});
   function marks(){[].forEach.call(document.querySelectorAll('.gift'),function(g){g.classList.toggle('on',g.dataset.id===side.r);});}
   dl.src=clip(side.l);rf.src=clip(side.r);
   rb.style.clipPath=rb.style.webkitClipPath='circle(0px at 75% 50%)';
@@ -746,9 +763,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   var gifts=document.getElementById('gifts');
   FILMS.forEach(function(f){if(f.id===side.l)return;var b=document.createElement('button');b.type='button';b.className='gift';b.dataset.id=f.id;b.title=f.p+' · '+f.g+' to '+f.r;b.setAttribute('aria-label',f.p+', '+f.g+' gives, '+f.r+' gets it');
     b.innerHTML='<img src="'+pimg(f)+'" alt="" draggable="false">';gifts.appendChild(b);});
+  var yb=document.createElement('a');yb.className='gift yours';yb.href='#order';yb.setAttribute('aria-label','Your product: order your film');yb.innerHTML='<b>+</b><span>Your product</span>';gifts.appendChild(yb);
+  yb.addEventListener('click',function(){track('shelf_your_product',{});});
   marks();
   var dg=null;
-  gifts.addEventListener('pointerdown',function(e){var b=e.target.closest('.gift');if(!b)return;dg={b:b,id:b.dataset.id,x:e.clientX,y:e.clientY,on:false,touch:e.pointerType!=='mouse'};});
+  gifts.addEventListener('pointerdown',function(e){var b=e.target.closest('.gift');if(!b||b.classList.contains('yours'))return;dg={b:b,id:b.dataset.id,x:e.clientX,y:e.clientY,on:false,touch:e.pointerType!=='mouse'};});
   addEventListener('pointermove',function(e){if(!dg||dg.touch)return;
     if(!dg.on){if(Math.hypot(e.clientX-dg.x,e.clientY-dg.y)<7)return;dg.on=true;dg.g=ghost(dg.id,e.clientX,e.clientY);dg.b.classList.add('lift');duet.classList.add('armed');}
     dg.g.style.left=e.clientX+'px';dg.g.style.top=e.clientY+'px';
