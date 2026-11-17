@@ -24,10 +24,11 @@
   --serif:"DM Serif Display",Georgia,"Times New Roman",serif;
   --sans:"Hanken Grotesk",-apple-system,"Helvetica Neue",Arial,sans-serif;
   --bill:Antonio,"Arial Narrow",sans-serif;
+  --ease:cubic-bezier(.32,.72,0,1);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:clip}
-body{margin:0;background:var(--night);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:var(--night);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:clip}
 img,video{display:block;max-width:100%}
 a{color:inherit}
 p{margin:0}
@@ -72,69 +73,98 @@ nav .brand b{font:400 17px/1 var(--serif);letter-spacing:.3em;text-transform:upp
 nav .brand span{font:400 10px/1 var(--bill);letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
 nav .btn{padding:12px 22px;font-size:14px}
 
-/* hero */
-.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;padding:0 0 150px;overflow:hidden}
-.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.04)}
-.hero::before{content:"";position:absolute;inset:0;z-index:1;background:
-  linear-gradient(90deg,rgba(7,11,18,.88) 0%,rgba(7,11,18,.55) 42%,transparent 72%),
-  radial-gradient(120% 90% at 70% 30%,transparent 30%,rgba(7,11,18,.55) 100%),
-  linear-gradient(180deg,rgba(7,11,18,.55) 0%,rgba(7,11,18,0) 26%,rgba(7,11,18,.25) 48%,rgba(7,11,18,.9) 84%,var(--night) 100%)}
-.hero .wrap{position:relative;z-index:2;width:100%}
-.hero .kicker{display:flex;align-items:center;gap:14px;font:600 12px/1 var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
-.hero .kicker::before{content:"";width:44px;height:1px;background:var(--gold)}
-.hero h1{max-width:9.2em;margin:26px 0 26px;text-shadow:0 2px 4px rgba(0,0,0,.45),0 6px 44px rgba(0,0,0,.8)}
-.hero h1 em{display:inline-block}
-.hero .lead{max-width:31em;text-shadow:0 1px 20px rgba(0,0,0,.7)}
-.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:36px;align-items:center}
-.hero .offer{margin-top:26px;display:inline-flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(7,11,18,.55);backdrop-filter:blur(8px);font-size:14px;color:var(--soft)}
-.hero .offer b{font:400 13px/1 var(--bill);letter-spacing:.16em;text-transform:uppercase;background:var(--red);color:#fff;padding:6px 10px 5px;border-radius:999px;white-space:nowrap}
-.hero .fine{margin-top:14px;color:var(--dim);font-size:14px}
-.load{opacity:0;transform:translateY(22px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
-.load:nth-child(2){animation-delay:.12s}.load:nth-child(3){animation-delay:.24s}.load:nth-child(4){animation-delay:.36s}.load:nth-child(5){animation-delay:.48s}.load:nth-child(6){animation-delay:.6s}
-@keyframes rise{to{opacity:1;transform:none}}
+/* ===== split hero: one film, two families, one seam ===== */
+.duet{position:relative;height:100svh;min-height:640px;max-height:1080px;padding:0;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none}
+.duet .film{position:absolute;inset:0;touch-action:pan-y;cursor:ew-resize}
+.duet .fv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.duet .fv.r{clip-path:inset(0 0 0 var(--x,50%));-webkit-clip-path:inset(0 0 0 var(--x,50%))}
+.duet .film::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg,rgba(7,11,18,.84) 0%,rgba(7,11,18,.34) 26%,rgba(7,11,18,0) 46%,rgba(7,11,18,.4) 74%,rgba(7,11,18,.95) 100%)}
+.duet .flash{position:absolute;inset:0;z-index:2;background:#fff4dc;opacity:0;pointer-events:none}
+.half{position:absolute;top:0;bottom:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .2s;display:flex;align-items:center;justify-content:center}
+.half.l{left:0;width:var(--x,50%)}.half.r{left:var(--x,50%);right:0}
+.half span{font:400 14px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);background:rgba(7,11,18,.72);padding:12px 18px 11px;border-radius:999px;border:1px solid rgba(233,199,132,.6)}
+.duet.armed .half{opacity:.55}.duet.armed .half.hot{opacity:1;background:rgba(233,199,132,.12);box-shadow:inset 0 0 0 2px rgba(233,199,132,.85)}
+.seam{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;margin-left:-1px;background:rgba(255,255,255,.92);z-index:3;box-shadow:0 0 18px rgba(0,0,0,.45)}
+.knob{position:absolute;left:50%;top:54%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:#fff;color:#0b0f16;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform .35s var(--ease)}
+.duet.drag .knob{transform:scale(.88)}
+.duet .top{position:absolute;left:0;right:0;top:0;z-index:4;padding:118px 0 0;pointer-events:none}
+.duet .top .wrap{max-width:1320px;padding:0 40px}
+.kick{font:400 13px/1 var(--bill);letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+.duet h1{font-size:clamp(42px,6.2vw,96px);line-height:.98;letter-spacing:-.012em;margin:18px 0 0;text-shadow:0 4px 40px rgba(0,0,0,.55)}
+.duet h1 span{color:var(--gold)}
+.duet .sub{margin-top:20px;max-width:27em;color:var(--soft);font-size:18px;line-height:1.5;text-shadow:0 1px 18px rgba(0,0,0,.7)}
+.side{position:absolute;bottom:152px;z-index:4;display:flex;align-items:center;gap:12px;padding:9px 18px 9px 9px;border-radius:999px;background:rgba(10,14,22,.58);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--hair);pointer-events:none}
+.side.l{left:max(24px,calc(50% - 620px))}.side.r{right:max(24px,calc(50% - 620px))}
+.side img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+.side b{display:block;font:600 16px/1.2 var(--sans);white-space:nowrap}.side b i{font-style:normal;color:var(--gold);margin:0 6px}
+.side small{display:block;font-size:13px;color:var(--soft);white-space:nowrap}
+.dock{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:10px;padding:10px;border-radius:26px;background:rgba(14,19,29,.64);backdrop-filter:blur(26px) saturate(1.4);-webkit-backdrop-filter:blur(26px) saturate(1.4);border:1px solid var(--hair);box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.gifts{display:flex;gap:8px}
+.gift{position:relative;flex:none;width:72px;height:72px;border-radius:18px;border:1px solid transparent;background:rgba(246,240,228,.06);display:flex;align-items:center;justify-content:center;cursor:grab;padding:0;touch-action:pan-x;transition:transform .35s var(--ease),background .3s,border-color .3s}
+.gift:hover{transform:translateY(-6px) scale(1.06);background:rgba(246,240,228,.13)}
+.gift img{max-width:70%;max-height:70%;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));pointer-events:none}
+.gift.on{border-color:rgba(233,199,132,.85);background:rgba(233,199,132,.16)}
+.gift.lift{opacity:.3}
+.acts{display:flex;gap:10px;align-items:center}
+.acts::before{content:"";width:1px;height:46px;background:var(--hair);margin:0 4px}
+.dbtn{height:72px;padding:0 22px;border-radius:18px;border:1px solid var(--hair);background:rgba(246,240,228,.06);cursor:pointer;font:600 15px/1 var(--sans);color:var(--ink);display:flex;align-items:center;gap:10px;text-decoration:none;white-space:nowrap;transition:background .25s}
+.dbtn:hover{background:rgba(246,240,228,.14)}
+.dbtn.buy{border:0;background:linear-gradient(180deg,#f7e0ad,#e3ba70 55%,#c9973f);color:#1c1305;font-weight:700;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:0 26px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
+.dbtn.buy small{font:500 12px/1 var(--sans);opacity:.75}
+.dbtn.buy:hover{background:linear-gradient(180deg,#fbe8be,#e9c27b 55%,#d2a14a)}
+.ghost{position:fixed;z-index:90;pointer-events:none;width:96px;height:96px;margin:-48px 0 0 -48px;display:flex;align-items:center;justify-content:center}
+.ghost img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
 
-/* film strip under the hero */
-.strip{position:relative;z-index:3;margin-top:-104px;background:#04060a;padding:22px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);overflow:hidden;transform:rotate(-1.2deg) scale(1.03)}
-.strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:9px;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(246,240,228,.5) 9px 21px,transparent 21px 30px)}
-.strip::before{top:7px}.strip::after{bottom:7px}
-.strip .track{display:flex;gap:8px;width:max-content;animation:roll 70s linear infinite}
-.strip:hover .track{animation-play-state:paused}
-.strip img{width:240px;aspect-ratio:16/9;object-fit:cover;border-radius:3px;filter:saturate(.92)}
-@keyframes roll{to{transform:translateX(-50%)}}
+/* ===== 01 how it adapts: the film stays pinned, the copy changes one thing at a time ===== */
+.adapt .wrap{max-width:1320px}
+.adapt-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:64px;align-items:start}
+.pinbox{position:sticky;top:max(96px,calc(50vh - 22vw));z-index:2}
+.pscr{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px rgba(246,240,228,.08)}
+.pscr video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s var(--ease)}
+.pscr video.on{opacity:1}
+.ptag{position:absolute;left:14px;bottom:14px;z-index:2;display:flex;align-items:center;gap:10px;padding:7px 14px 7px 7px;border-radius:999px;background:rgba(10,14,22,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--hair)}
+.ptag img{width:34px;height:34px;object-fit:contain}
+.ptag b{display:block;font:600 14px/1.2 var(--sans);white-space:nowrap}.ptag b i{font-style:normal;color:var(--gold);margin:0 5px}
+.ptag small{display:block;font-size:12px;color:var(--soft);white-space:nowrap}
+.st{min-height:64vh;display:flex;flex-direction:column;justify-content:center;opacity:.28;transition:opacity .5s var(--ease)}
+.st.on{opacity:1}
+.st .n{font:400 13px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.st h3{font-size:clamp(30px,3.2vw,44px);line-height:1.08;margin-top:16px}
+.st p{color:var(--soft);margin-top:14px;max-width:24em}
+.adapt .head{margin-bottom:0}
+.adapt .st:last-child{min-height:56vh}
 
-/* film player */
-.film{padding-top:120px}
-.screen{position:relative;max-width:1080px;margin:0 auto}
-.screen::before{content:"";position:absolute;inset:6% -4% -10%;background:url(img/gift.jpg) center/cover;filter:blur(70px) saturate(1.3);opacity:.5;z-index:0}
-.player{position:relative;z-index:1;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:0 50px 140px rgba(0,0,0,.75),0 0 0 1px rgba(233,199,132,.35)}
-.player video{width:100%;height:100%}
-.player .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:center/cover;border:0;cursor:pointer;color:var(--ink);padding:0}
-.player .play .ring{position:relative;width:112px;height:112px;border-radius:50%;background:rgba(7,11,18,.35);backdrop-filter:blur(10px);border:1px solid rgba(246,240,228,.7);display:flex;align-items:center;justify-content:center;transition:transform .3s,background .3s}
-.player .play .ring::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(233,199,132,.6);animation:pulse 2.4s ease-out infinite}
-.player .play:hover .ring{transform:scale(1.08);background:rgba(233,199,132,.25)}
-.player .play svg{margin-left:7px}
-.player .play .tag{position:absolute;left:26px;bottom:22px;font:400 14px/1 var(--bill);letter-spacing:.26em;text-transform:uppercase;color:var(--ink);display:flex;gap:12px;align-items:center}
-.player .play .tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(163,35,42,.35)}
-@keyframes pulse{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
-.corner{position:absolute;width:30px;height:30px;border:1px solid var(--gold);z-index:2;opacity:.8}
-.corner.a{left:-14px;top:-14px;border-right:0;border-bottom:0}.corner.b{right:-14px;top:-14px;border-left:0;border-bottom:0}
-.corner.c{left:-14px;bottom:-14px;border-right:0;border-top:0}.corner.d{right:-14px;bottom:-14px;border-left:0;border-top:0}
-.film .note{position:relative;z-index:1;margin:34px auto 0;color:var(--soft);font:italic 400 clamp(18px,2vw,23px)/1.4 var(--serif);text-align:center;max-width:30em}
+/* ===== 02 every family: six films in sync ===== */
+.wall .wrap{max-width:1320px}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tile{display:block;border:0;padding:0;background:none;text-align:left;cursor:pointer;color:var(--ink)}
+.tile .v{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#05070b;box-shadow:0 0 0 1px var(--hair);transition:box-shadow .3s,transform .45s var(--ease)}
+.tile:hover .v{box-shadow:0 0 0 1px rgba(233,199,132,.75),0 24px 60px rgba(0,0,0,.5);transform:translateY(-3px)}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile .pl{position:absolute;right:12px;bottom:12px;width:40px;height:40px;border-radius:50%;background:rgba(10,14,22,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.85);transition:opacity .3s,transform .35s var(--ease)}
+.tile:hover .pl,.tile:focus-visible .pl{opacity:1;transform:none}
+.tile .cap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 2px 0}
+.tile .who{font:600 15px/1.2 var(--sans);white-space:nowrap}.tile .who i{font-style:normal;color:var(--gold);margin:0 6px}
+.tile .what{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--dim);white-space:nowrap}
+.tile .what img{height:26px;width:auto}
 
-.film .wrap{max-width:1360px}
-.pair{display:grid;grid-template-columns:250px 1fr;gap:56px;align-items:center}
-.pair .screen{max-width:none;margin:0}
-.lab{position:absolute;left:0;bottom:calc(100% + 16px);font:400 13px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
-.pick{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin:-10px auto 64px}
-.pick-lab{width:100%;text-align:center;font:400 13px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.pick button{display:flex;align-items:center;gap:12px;height:62px;padding:0 22px 0 12px;border-radius:999px;border:1px solid rgba(246,240,228,.28);background:rgba(7,11,18,.45);color:var(--ink);font:500 16px/1 var(--sans);cursor:pointer;transition:border-color .25s,background .25s,transform .25s}
-.pick button img{width:auto;height:40px;max-width:54px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))}
-.pick button:hover{border-color:rgba(233,199,132,.7);transform:translateY(-1px)}
-.pick button.on{border-color:var(--gold);background:rgba(233,199,132,.14);box-shadow:0 0 0 3px rgba(233,199,132,.18)}
-.prod{position:relative}
-.prod img{transition:opacity .3s}
-.prod::before{content:"";position:absolute;inset:-12% -18%;background:radial-gradient(closest-side,rgba(233,199,132,.2),transparent 75%)}
-.prod img{position:relative;width:100%;height:auto;filter:drop-shadow(0 30px 40px rgba(0,0,0,.65))}
+/* ===== theater: the full film, switch the family while it plays ===== */
+.theater{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:28px;background:rgba(3,5,9,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.theater.open{display:flex}
+.th-in{width:min(1180px,100%)}
+.th-scr{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 40px 140px rgba(0,0,0,.8)}
+.th-scr video{width:100%;height:100%;background:#000}
+.th-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:18px}
+.th-bar p{color:var(--dim);font-size:14px}
+.th-casts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.th-casts::-webkit-scrollbar{display:none}
+.th-casts button{flex:none;display:flex;align-items:center;gap:9px;height:50px;padding:0 15px 0 7px;border-radius:14px;border:1px solid var(--hair);background:rgba(246,240,228,.05);color:var(--ink);cursor:pointer;font:600 13px/1.15 var(--sans);text-align:left;transition:background .25s,border-color .25s}
+.th-casts button:hover{background:rgba(246,240,228,.12)}
+.th-casts button.on{border-color:var(--gold);background:rgba(233,199,132,.16)}
+.th-casts img{width:34px;height:34px;object-fit:contain}
+.th-casts small{display:block;font-weight:400;color:var(--dim);font-size:11.5px}
+.th-x{position:absolute;top:18px;right:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--hair);background:rgba(246,240,228,.08);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.th-x:hover{background:rgba(246,240,228,.18)}
 /* problem */
 .problem .grid2{display:grid;grid-template-columns:1fr 1.05fr;gap:72px;align-items:center}
 .same{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -161,28 +191,6 @@ nav .btn{padding:12px 22px;font-size:14px}
 .checks{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:13px}
 .checks li{padding-left:32px;position:relative;color:var(--soft);font-size:16px}
 .checks li::before{content:"";position:absolute;left:0;top:.5em;width:16px;height:9px;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(-45deg)}
-
-/* yours */
-.yours{background:linear-gradient(180deg,var(--night),var(--night2) 30%,var(--night2) 70%,var(--night))}
-.swap{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:center}
-.frame{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px var(--line)}
-.frame img{width:100%}
-.spot{position:absolute;left:42.3%;top:69%;width:21%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:1.5px dashed var(--gold);animation:spin 26s linear infinite}
-.spot2{position:absolute;left:42.3%;top:69%;width:21%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 9999px rgba(7,11,18,.38),0 0 50px rgba(233,199,132,.5) inset}
-@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.pin{position:absolute;left:56%;top:60%;display:flex;align-items:center;gap:10px;font:400 14px/1 var(--bill);letter-spacing:.24em;text-transform:uppercase;color:var(--night);background:var(--gold);padding:8px 12px 7px;border-radius:3px;white-space:nowrap}
-.pin::before{content:"";position:absolute;right:100%;top:50%;width:26px;height:1px;background:var(--gold)}
-.rows{display:grid}
-.row{display:grid;grid-template-columns:54px 1fr;padding:26px 0;border-top:1px solid var(--hair)}
-.row:last-child{border-bottom:1px solid var(--hair)}
-.row .n{font:italic 400 24px/1.2 var(--serif);color:var(--gold)}
-.row p{color:var(--dim);font-size:15px;margin-top:8px}
-.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-.chips button{font:500 14px/1 var(--sans);padding:11px 18px;border-radius:999px;border:1px solid rgba(246,240,228,.24);background:transparent;color:var(--ink);cursor:pointer;transition:all .18s}
-.chips button:hover{border-color:var(--gold)}
-.chips button.on{background:var(--gold);border-color:var(--gold);color:#1c1305;font-weight:700}
-.cast{margin-top:26px;font:italic 400 clamp(19px,2vw,24px)/1.35 var(--serif);color:var(--ink)}
-.cast b{font-weight:400;color:var(--gold)}
 
 /* specs: one ruled sheet */
 .sheet{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -306,14 +314,45 @@ footer{padding:70px 0 60px;text-align:center}
   nav,nav.solid{padding:12px 16px}
   nav .brand b{font-size:13px;letter-spacing:.24em}nav .brand span{font-size:9px}
   nav .btn{padding:10px 16px;font-size:13px}
-  .hero{padding-bottom:110px}
-  .hero .cta .btn{flex:1 1 100%}
-  .strip{margin-top:-70px}.strip img{width:160px}
-  .film{padding-top:84px}.corner{display:none}
-  .pair{grid-template-columns:1fr;gap:26px;justify-items:center}.pair .screen{width:100%;margin-top:30px}
-  .prod{width:130px;margin-top:30px}.prod .lab{left:50%;transform:translateX(-50%)}
+  /* duet hero on a phone: headline, then the film at 16:9 with the seam, then the shelf */
+  .duet{height:auto;min-height:0;max-height:none;overflow:visible;background:var(--night);padding:0 0 8px;display:flex;flex-direction:column}
+  .duet .top{position:relative;order:-1;padding:92px 0 20px}
+  .duet .top .wrap{padding:0 18px}
+  .kick{font-size:11px;letter-spacing:.24em}
+  .duet h1{font-size:40px;margin-top:14px}
+  .duet .sub{font-size:16px;margin-top:14px}
+  .duet .film{position:relative;inset:auto;aspect-ratio:16/9;overflow:hidden}
+  .duet .film::after{display:none}
+  .knob{width:42px;height:42px;margin:-21px 0 0 -21px;top:50%}.knob svg{width:18px}
+  .side{bottom:8px;padding:4px 10px 4px 4px;gap:6px;background:rgba(10,14,22,.66)}
+  .side.l{left:8px}.side.r{right:8px}
+  .side img{width:24px;height:24px}.side b{font-size:11.5px}.side b i{margin:0 3px}.side small{font-size:10px}
+  .half span{font-size:10px;padding:7px 10px 6px;letter-spacing:.2em}
+  .dock{position:relative;left:auto;bottom:auto;transform:none;flex-direction:column;align-items:stretch;gap:10px;margin:14px 0 0;padding:0;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .gifts{overflow-x:auto;padding:4px 18px 6px;scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding:0 18px}
+  .gifts::-webkit-scrollbar{display:none}
+  .gift{width:62px;height:62px;border-radius:16px;scroll-snap-align:start;background:rgba(246,240,228,.07);border-color:var(--hair)}
+  .gift:hover{transform:none}
+  .acts{padding:0 18px}.acts::before{display:none}
+  .dbtn{height:54px;flex:1;justify-content:center;border-radius:14px;padding:0 14px}
+  .dbtn.buy{flex:1.4;align-items:center;padding:0 14px}
+  .adapt-grid{grid-template-columns:minmax(0,1fr);gap:0}
+  .pinbox{top:58px;margin:0 -18px;padding:10px 18px 12px;background:linear-gradient(180deg,var(--night) 82%,rgba(7,11,18,0))}
+  .pscr{border-radius:10px}
+  .ptag{left:8px;bottom:8px;padding:4px 10px 4px 4px;gap:6px}.ptag img{width:24px;height:24px}.ptag b{font-size:11.5px}.ptag small{font-size:10px}
+  .adapt .head{order:-1;margin-bottom:22px}
+  .st{min-height:46vh;opacity:.35}
+  .st h3{font-size:28px}
+  .adapt .st:last-child{min-height:40vh}
+  .grid6{grid-template-columns:1fr 1fr;gap:10px}
+  .tile .cap{flex-direction:column;align-items:flex-start;gap:3px;padding-top:8px}
+  .tile .who{font-size:13px}.tile .what{font-size:11.5px}.tile .what img{display:none}
+  .theater{padding:0;align-items:center}
+  .th-scr{border-radius:0}
+  .th-bar{flex-direction:column;align-items:stretch;gap:12px;padding:0 14px}
+  .th-x{top:12px;right:12px}
   .head{margin-bottom:44px}
-  .problem .grid2,.split,.swap,.plans,.faqgrid,.about{grid-template-columns:1fr;gap:44px}
+  .problem .grid2,.split,.plans,.faqgrid,.about{grid-template-columns:1fr;gap:44px}
   .faqgrid .head{position:static}
   .collage{padding-bottom:50px}.collage .front{right:0}
   .hero .offer{font-size:13px}
@@ -372,49 +411,67 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <a class="btn gold" href="#order">Get my video</a>
 </nav>
 
-<header class="hero">
-  <video src="loop.mp4" poster="img/flight.jpg" autoplay muted loop playsinline></video>
-  <div class="wrap">
-    <div class="kicker load">Christmas 2026 · For Amazon sellers</div>
-    <h1 class="load">Your product, starring in its own <em>Christmas film.</em></h1>
-    <p class="lead load">A cinematic Christmas story where your product is the gift everyone was hoping for. Made for you in 48 hours, ready for your Amazon video ads.</p>
-    <div class="cta load">
-      <a class="btn gold" href="#order">Get my video, $99 <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
-      <a class="btn ghost" href="#buy-skill">Or make them yourself, $299</a>
+<header class="duet" id="film">
+  <div class="film" id="duet" aria-label="One film, two families. Drag the line to compare.">
+    <video class="fv l" id="dl" muted playsinline autoplay loop preload="auto" poster="clips/safe.jpg"></video>
+    <video class="fv r" id="dr" muted playsinline autoplay loop preload="auto" poster="clips/mg.jpg"></video>
+    <div class="flash" id="dflash"></div>
+    <div class="half l"><span>Drop it here</span></div><div class="half r"><span>Drop it here</span></div>
+    <div class="seam" aria-hidden="true"><div class="knob"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1L1 7l6 6M15 1l6 6-6 6"/></svg></div></div>
+    <div class="side l" id="sl"></div><div class="side r" id="sr"></div>
+  </div>
+  <div class="top"><div class="wrap">
+    <div class="kick">A Christmas film for Amazon sellers</div>
+    <h1>One Christmas film.<br><span>Your gift. Your family.</span></h1>
+    <p class="sub">Your product becomes the gift in a cinematic Christmas story. You pick who gives it and who gets it. Ready in 48 hours.</p>
+  </div></div>
+  <div class="dock">
+    <div class="gifts" id="gifts" aria-label="Products. Drag one into the film, or tap it."></div>
+    <div class="acts">
+      <button class="dbtn" type="button" id="fullbtn"><svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor"><path d="M0 0l12 7-12 7z"/></svg>Full film</button>
+      <a class="dbtn buy" href="#order">Get my video, $99<small>Launch price · first 30 customers</small></a>
     </div>
-    <div class="load"><div class="offer"><b>Launch price</b> Half off for the first 30 customers</div>
-    <p class="fine">No film crew. No editing. Just send your product link.</p></div>
   </div>
 </header>
 
-<div class="strip" aria-hidden="true">
-  <div class="track" id="track">
-    <img src="img/strip/01.jpg" alt="" loading="lazy"><img src="img/strip/03.jpg" alt="" loading="lazy"><img src="img/strip/05.jpg" alt="" loading="lazy"><img src="img/strip/06.jpg" alt="" loading="lazy"><img src="img/strip/07.jpg" alt="" loading="lazy"><img src="img/strip/08.jpg" alt="" loading="lazy"><img src="img/strip/09.jpg" alt="" loading="lazy"><img src="img/strip/10.jpg" alt="" loading="lazy"><img src="img/strip/11.jpg" alt="" loading="lazy"><img src="img/strip/12.jpg" alt="" loading="lazy"><img src="img/strip/13.jpg" alt="" loading="lazy"><img src="img/strip/14.jpg" alt="" loading="lazy"><img src="img/strip/16.jpg" alt="" loading="lazy"><img src="img/strip/15.jpg" alt="" loading="lazy">
-  </div>
-</div>
-
-<section class="film" id="film">
-  <div class="wrap">
-    <div class="head center rv">
-      <div class="slate"><i>01</i>Now showing</div>
-    </div>
-    <div class="pick rv" role="tablist" aria-label="Choose a product">
-      <span class="pick-lab">One film. Pick a product:</span>
-      <button class="on" role="tab" aria-selected="true" data-film="film.mp4?v=31" data-poster="img/holo.jpg?v=28" data-img="img/product.webp" data-alt="The product: a red and black toy safe" data-w="560" data-h="737" data-name="toy_safe"><img src="img/product.webp" alt="" width="40" height="53">Toy safe</button>
-      <button role="tab" aria-selected="false" data-film="film-camera.mp4?v=31" data-poster="img/holo-camera.jpg?v=31" data-img="img/product-camera.webp" data-alt="The product: a white kids instant print camera" data-w="560" data-h="421" data-name="kids_camera"><img src="img/product-camera.webp" alt="" width="53" height="40">Kids camera</button>
-    </div>
-    <div class="pair rv">
-      <div class="prod"><span class="lab">The product</span><img id="prodimg" src="img/product.webp" alt="The product: a red and black toy safe" width="560" height="737"></div>
-      <div class="screen"><span class="lab">The film</span>
-      <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
-      <div class="player">
-        <video id="v" src="film.mp4?v=31" poster="img/holo.jpg?v=28" playsinline controls preload="none"></video>
-        <button class="play" id="play" aria-label="Play the film" style="background-image:linear-gradient(rgba(7,11,18,.2),rgba(7,11,18,.45)),url(img/gift.jpg)"><span class="ring"><svg width="32" height="36" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span><span class="tag">Play the film · Sound on</span></button>
-      </div>
+<section class="adapt" id="adapt">
+  <div class="wrap adapt-grid">
+    <div class="pinbox"><div class="pscr" id="pscr">
+      <video muted playsinline loop preload="none"></video><video muted playsinline loop preload="none"></video>
+      <div class="ptag" id="ptag"></div>
     </div></div>
-    <p class="note rv">Every video is this same film. Two things change: the product, and who gives and receives it. Switch the product above and watch it again.</p>
+    <div class="steps-col">
+      <div class="head rv">
+        <div class="slate"><i>01</i>How it adapts</div>
+        <h2>Same story. Change anything.</h2>
+      </div>
+      <article class="st" data-film="safe"><span class="n">The film</span><h3>A dad, his son, and the gift he wished for.</h3><p>Christmas Eve, the wish on the phone, Santa, and the morning under the tree.</p></article>
+      <article class="st" data-film="cam"><span class="n">Change the gift</span><h3>Same dad. Same son. Your product.</h3><p>Your product goes everywhere the gift appears: on the phone, in the box, in their hands.</p></article>
+      <article class="st" data-film="mb"><span class="n">Change who gives</span><h3>Now Mom gives it.</h3><p>Her scenes, her voice, the same story.</p></article>
+      <article class="st" data-film="mg"><span class="n">Change who gets it</span><h3>A daughter.</h3><p>Every scene with the child is made again for her.</p></article>
+      <article class="st" data-film="dm"><span class="n">Or a grown-up</span><h3>Or the one they love.</h3><p>For a partner the film changes its tone: grown-up moments and a loving look.</p></article>
+    </div>
   </div>
 </section>
+
+<section class="wall" id="compare">
+  <div class="wrap">
+    <div class="head rv">
+      <div class="slate"><i>02</i>Every family</div>
+      <h2 style="margin-top:26px">Six families. <em>The same second.</em></h2>
+      <p class="lead">Six versions of one film, playing in sync. Tap any of them to watch it in full, with sound.</p>
+    </div>
+    <div class="grid6 rv" id="grid6"></div>
+  </div>
+</section>
+
+<div class="theater" id="theater" role="dialog" aria-modal="true" aria-label="The full film">
+  <button class="th-x" type="button" id="thx" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  <div class="th-in">
+    <div class="th-scr"><video id="tv" playsinline controls preload="none"></video></div>
+    <div class="th-bar"><p>Switch the family while it plays. The film keeps going.</p><div class="th-casts" id="thc"></div></div>
+  </div>
+</div>
 
 
 <section>
@@ -425,7 +482,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       <span class="cap">First seconds: the product<br>Last seconds: the feeling</span>
     </div>
     <div class="rv d1">
-      <div class="slate"><i>02</i>Why it works</div>
+      <div class="slate"><i>03</i>Why it works</div>
       <h2 style="margin-top:26px">It sells the feeling, with your product in the middle of it.</h2>
       <ul class="points">
         <li>Your product is on screen in the first seconds, large and clear.</li>
@@ -433,29 +490,6 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
         <li>It works with the sound off, the way most shoppers watch.</li>
         <li>Widescreen, the format Amazon asks for in Sponsored Brands video ads.</li>
       </ul>
-    </div>
-  </div>
-</section>
-
-<section class="yours">
-  <div class="wrap">
-    <div class="head center rv">
-      <div class="slate"><i>03</i>What changes in your video</div>
-      <h2>Same film. <em>Your product. Your people.</em></h2>
-      <p class="lead">The film you just watched stays exactly as it is: the story, Santa, the music, every scene. We change three things to make it yours.</p>
-    </div>
-    <div class="swap">
-      <div class="frame rv">
-        <img src="img/gift.jpg" alt="A boy holding the gift on Christmas morning" loading="lazy">
-        <i class="spot2"></i><i class="spot"></i>
-        <span class="pin">Your product here</span>
-      </div>
-      <div class="rows rv d1">
-        <div class="row"><span class="n">01</span><div><h3>The product</h3><p>Yours, built from the photos on your listing. On the phone, in the air, and in their hands on Christmas morning.</p></div></div>
-        <div class="row"><span class="n">02</span><div><h3>Who gives the gift</h3><div class="chips" data-k="g"><button type="button" class="on">A man</button><button type="button">A woman</button></div></div></div>
-        <div class="row"><span class="n">03</span><div><h3>Who receives it</h3><div class="chips" data-k="r"><button type="button" class="on">A boy</button><button type="button">A girl</button><button type="button">A man</button><button type="button">A woman</button></div>
-          <p class="cast">Your cast: <b id="cg">a man</b> gives, <b id="cr">a boy</b> receives.</p></div></div>
-      </div>
     </div>
   </div>
 </section>
@@ -625,24 +659,129 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 
 <script>
 (function(){
-  var v=document.getElementById('v'),p=document.getElementById('play');
-  p.addEventListener('click',function(){p.style.display='none';v.play();});
-  var fired={};function ev(k,label){if(fired[k])return;fired[k]=1;try{if(window.gtag)gtag('event',k,{video_title:'The Perfect Gift',video_percent:label});if(window.fbq)fbq('trackCustom','Film_'+label,{film:'The Perfect Gift'});}catch(e){}}
-  v.addEventListener('play',function(){ev('video_start','start');});
-  v.addEventListener('timeupdate',function(){if(v.duration&&v.currentTime/v.duration>=0.5)ev('video_progress','50');});
-  v.addEventListener('ended',function(){ev('video_complete','complete');});
-  /* one film, two products: the switch swaps the product picture and the film, and shows the play button again */
-  var pi=document.getElementById('prodimg'),tabs=document.querySelectorAll('.pick button');
-  Array.prototype.forEach.call(tabs,function(b){b.addEventListener('click',function(){
-    if(b.classList.contains('on'))return;
-    Array.prototype.forEach.call(tabs,function(o){o.classList.remove('on');o.setAttribute('aria-selected','false');});
-    b.classList.add('on');b.setAttribute('aria-selected','true');
-    var playing=!v.paused;v.pause();
-    pi.style.opacity=0;setTimeout(function(){pi.src=b.dataset.img;pi.alt=b.dataset.alt;pi.width=b.dataset.w;pi.height=b.dataset.h;pi.style.opacity=1;},180);
-    v.setAttribute('poster',b.dataset.poster);v.src=b.dataset.film;v.load();
-    if(playing){v.play();}else{p.style.display='';}
-    try{if(window.gtag)gtag('event','film_product_switch',{product:b.dataset.name});}catch(e){}
-  });});
+  /* every film shares one timeline, so any two of them can play side by side, second for second */
+  var FILMS=[
+    {id:'safe',g:'Dad',r:'Son',p:'Toy safe',img:'safe',full:'film.mp4?v=31'},
+    {id:'mg',g:'Mom',r:'Daughter',p:'Karaoke speaker',img:'karaoke',full:'films/mg.mp4?v=1'},
+    {id:'cam',g:'Dad',r:'Son',p:'Kids camera',img:'cam',full:'film-camera.mp4?v=31'},
+    {id:'mb',g:'Mom',r:'Son',p:'RC stunt car',img:'car',full:'films/mb.mp4?v=1'},
+    {id:'dg',g:'Dad',r:'Daughter',p:'Star projector',img:'projector',full:'films/dg.mp4?v=1'},
+    {id:'dm',g:'Dad',r:'Mom',p:'Photo frame',img:'frame',full:'films/dm.mp4?v=1'},
+    {id:'md',g:'Mom',r:'Dad',p:'Espresso machine',img:'espresso',full:'films/md.mp4?v=1'}
+  ];
+  var WALL=['safe','mg','mb','dg','dm','md'];
+  function F(id){for(var i=0;i<FILMS.length;i++)if(FILMS[i].id===id)return FILMS[i];}
+  var small=matchMedia('(max-width:900px)').matches,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function clip(id){return 'clips/'+id+(small?'-s':'')+'.mp4?v=1';}
+  function pimg(f){return 'img/prod/'+f.img+'.webp';}
+  function who(f){return f.g+'<i>→</i>'+f.r;}
+  function play(v){var p=v.play();if(p&&p.catch)p.catch(function(){});}
+  function track(k,o){try{if(window.gtag)gtag('event',k,o);}catch(e){}}
+
+  /* ---------- the duet: two films, one seam ---------- */
+  var duet=document.querySelector('.duet'),stage=document.getElementById('duet'),dl=document.getElementById('dl'),dr=document.getElementById('dr'),flash=document.getElementById('dflash');
+  var side={l:'safe',r:'mg'},stamp={l:0,r:1},x=.5,auto=!still,dragSeam=false,t0=performance.now(),duetOn=true;
+  function setX(v){x=Math.max(.06,Math.min(.94,v));duet.style.setProperty('--x',(x*100).toFixed(2)+'%');}
+  function tag(s){var f=F(side[s]);document.getElementById(s==='l'?'sl':'sr').innerHTML='<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+'</small></div>';}
+  function marks(){[].forEach.call(document.querySelectorAll('.gift'),function(g){g.classList.toggle('on',g.dataset.id===side.l||g.dataset.id===side.r);});}
+  dl.src=clip(side.l);dr.src=clip(side.r);tag('l');tag('r');
+  /* keep the right film on the left film's clock */
+  setInterval(function(){if(duetOn&&!dl.paused&&dr.readyState>1&&Math.abs(dr.currentTime-dl.currentTime)>.07)dr.currentTime=dl.currentTime;},400);
+  function cast(s,id){if(side.l===id||side.r===id){var o=side.l===id?'l':'r';stage.querySelector('.side.'+o).animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.32,.72,0,1)'});return;}
+    side[s]=id;stamp[s]=performance.now();var v=s==='l'?dl:dr,o=s==='l'?dr:dl,t=o.currentTime;
+    v.poster='clips/'+id+'.jpg';v.src=clip(id);
+    v.addEventListener('loadeddata',function(){v.currentTime=t+.05;play(v);
+      flash.style.clipPath=s==='l'?'inset(0 '+(100-x*100)+'% 0 0)':'inset(0 0 0 '+(x*100)+'%)';
+      flash.animate([{opacity:.5},{opacity:0}],{duration:160,easing:'ease-out'});},{once:true});
+    tag(s);marks();track('film_product_switch',{product:id});}
+  /* the seam sweeps by itself until someone takes it */
+  function tick(t){if(auto&&duetOn&&!dragSeam)setX(.5+.2*Math.sin((t-t0)/2300));requestAnimationFrame(tick);}
+  setX(.5);requestAnimationFrame(tick);
+  stage.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')return;dragSeam=true;auto=false;duet.classList.add('drag');var r=stage.getBoundingClientRect();setX((e.clientX-r.left)/r.width);});
+  /* on a phone the seam follows a sideways swipe, so the page still scrolls up and down */
+  var tx=null;stage.addEventListener('touchstart',function(e){tx={x:e.touches[0].clientX,y:e.touches[0].clientY,on:false};},{passive:true});
+  stage.addEventListener('touchmove',function(e){if(!tx)return;var t=e.touches[0];if(!tx.on){if(Math.abs(t.clientX-tx.x)>8&&Math.abs(t.clientX-tx.x)>Math.abs(t.clientY-tx.y))tx.on=true;else if(Math.abs(t.clientY-tx.y)>8){tx=null;return;}}
+    if(tx.on){auto=false;var r=stage.getBoundingClientRect();setX((t.clientX-r.left)/r.width);}},{passive:true});
+  stage.addEventListener('touchend',function(){tx=null;});
+  addEventListener('pointermove',function(e){if(!dragSeam)return;var r=stage.getBoundingClientRect();setX((e.clientX-r.left)/r.width);});
+  addEventListener('pointerup',function(){if(dragSeam){dragSeam=false;duet.classList.remove('drag');track('duet_seam_drag',{});}});
+
+  /* ---------- the shelf: drag a product onto either side, or tap it ---------- */
+  var gifts=document.getElementById('gifts');
+  FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.className='gift';b.dataset.id=f.id;b.title=f.p+' · '+f.g+' to '+f.r;b.setAttribute('aria-label',f.p+', '+f.g+' gives, '+f.r+' gets it');
+    b.innerHTML='<img src="'+pimg(f)+'" alt="" draggable="false">';gifts.appendChild(b);});
+  marks();
+  function ghost(id,cx,cy){var g=document.createElement('div');g.className='ghost';g.innerHTML='<img src="'+pimg(F(id))+'" alt="">';g.style.left=cx+'px';g.style.top=cy+'px';document.body.appendChild(g);return g;}
+  function older(){return stamp.l<=stamp.r?'l':'r';}
+  function fly(b,id,s){var r=b.getBoundingClientRect(),st=stage.getBoundingClientRect(),cx=st.left+st.width*(s==='l'?x/2:(1+x)/2),cy=st.top+st.height*.5;
+    if(still||st.bottom<0||st.top>innerHeight){cast(s,id);return;}
+    var g=ghost(id,r.left+r.width/2,r.top+r.height/2);
+    g.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+(cx-r.left-r.width/2)+'px,'+(cy-r.top-r.height/2)+'px) scale(1.6)',opacity:0}],{duration:560,easing:'cubic-bezier(.5,0,.2,1)'}).onfinish=function(){g.remove();};
+    setTimeout(function(){cast(s,id);},360);}
+  var dg=null;
+  gifts.addEventListener('pointerdown',function(e){var b=e.target.closest('.gift');if(!b)return;dg={b:b,id:b.dataset.id,x:e.clientX,y:e.clientY,on:false,touch:e.pointerType!=='mouse'};});
+  addEventListener('pointermove',function(e){if(!dg||dg.touch)return;
+    if(!dg.on){if(Math.hypot(e.clientX-dg.x,e.clientY-dg.y)<7)return;dg.on=true;dg.g=ghost(dg.id,e.clientX,e.clientY);dg.b.classList.add('lift');duet.classList.add('armed');auto=false;}
+    dg.g.style.left=e.clientX+'px';dg.g.style.top=e.clientY+'px';
+    var r=stage.getBoundingClientRect(),inside=e.clientY>r.top&&e.clientY<r.bottom,s=(e.clientX-r.left)/r.width<x?'l':'r';
+    dg.hot=inside?s:null;[].forEach.call(stage.querySelectorAll('.half'),function(h){h.classList.toggle('hot',inside&&h.classList.contains(s));});});
+  addEventListener('pointerup',function(){if(!dg)return;var d=dg;dg=null;
+    if(!d.on){fly(d.b,d.id,older());return;}
+    duet.classList.remove('armed');d.b.classList.remove('lift');[].forEach.call(stage.querySelectorAll('.half'),function(h){h.classList.remove('hot');});
+    if(d.hot){d.g.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.5)',opacity:0}],{duration:300,easing:'ease-out'}).onfinish=function(){d.g.remove();};cast(d.hot,d.id);}
+    else{var r=d.b.getBoundingClientRect();d.g.animate([{left:d.g.style.left,top:d.g.style.top},{left:(r.left+r.width/2)+'px',top:(r.top+r.height/2)+'px'}],{duration:380,easing:'cubic-bezier(.32,.72,0,1)'}).onfinish=function(){d.g.remove();};}});
+  addEventListener('pointercancel',function(){if(dg&&dg.g)dg.g.remove();if(dg)dg.b.classList.remove('lift');dg=null;duet.classList.remove('armed');});
+
+  /* ---------- 01: the pinned film, one change per step ---------- */
+  var pvs=document.querySelectorAll('#pscr video'),pf=0,pcur=null,ptag=document.getElementById('ptag'),adapt=document.getElementById('adapt'),adaptOn=false;
+  function pset(id){if(pcur===id)return;pcur=id;var f=F(id),nx=pvs[1-pf],cu=pvs[pf],t=cu.currentTime||0;
+    nx.poster='clips/'+id+'.jpg';nx.preload='auto';nx.src=clip(id);nx.load();if(!cu.currentSrc){nx.classList.add('on');}
+    nx.addEventListener('loadeddata',function(){if(pcur!==id)return;nx.currentTime=t;if(adaptOn)play(nx);nx.classList.add('on');cu.classList.remove('on');setTimeout(function(){cu.pause();},700);pf=1-pf;},{once:true});
+    ptag.innerHTML='<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+'</small></div>';}
+  var steps=document.querySelectorAll('.st');
+
+  /* ---------- 02: six films on one clock ---------- */
+  var grid=document.getElementById('grid6'),tiles=[];
+  WALL.forEach(function(id){var f=F(id),t=document.createElement('button');t.type='button';t.className='tile';
+    t.innerHTML='<div class="v"><video muted playsinline preload="none" poster="clips/'+id+'.jpg"></video><span class="pl"><svg width="11" height="13" viewBox="0 0 12 14" fill="#fff"><path d="M0 0l12 7-12 7z"/></svg></span></div><div class="cap"><span class="who">'+who(f)+'</span><span class="what"><img src="'+pimg(f)+'" alt="">'+f.p+'</span></div>';
+    t.setAttribute('aria-label','Watch the full film: '+f.g+' to '+f.r+', '+f.p);
+    t.addEventListener('click',function(){openTheater(id);});grid.appendChild(t);tiles.push(t.querySelector('video'));});
+  var wallOn=false,wallLoaded=false;
+  function wallStart(){tiles.forEach(function(v){v.currentTime=0;if(wallOn)play(v);});}
+  tiles[0].addEventListener('ended',wallStart);
+  function wallLoad(){wallLoaded=true;var n=0,go=false;function ready(){if(++n===tiles.length&&!go){go=true;wallStart();}}
+    tiles.forEach(function(v,i){v.src='clips/'+WALL[i]+'-s.mp4?v=1';v.addEventListener('canplaythrough',ready,{once:true});v.load();});
+    setTimeout(function(){if(!go){go=true;wallStart();}},3000);}
+
+  /* ---------- the theater: the full film with sound, switch the family while it plays ---------- */
+  var th=document.getElementById('theater'),tv=document.getElementById('tv'),thc=document.getElementById('thc'),thId=null;
+  FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
+    b.addEventListener('click',function(){thSet(f.id,true);});thc.appendChild(b);});
+  function thSet(id,keep){if(thId===id)return;thId=id;var t=keep?tv.currentTime:0,go=keep?!tv.paused:true;
+    [].forEach.call(thc.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)thc.scrollLeft=Math.max(0,b.offsetLeft-thc.clientWidth/2+b.offsetWidth/2);});
+    tv.poster='clips/'+id+'.jpg';tv.src=F(id).full;
+    if(t)tv.addEventListener('loadedmetadata',function(){tv.currentTime=t;},{once:true});
+    if(go)play(tv);else tv.load();
+    if(keep)track('theater_switch',{film:id});}
+  function openTheater(id){th.classList.add('open');document.body.style.overflow='hidden';dl.pause();dr.pause();thId=null;thSet(id,false);track('theater_open',{film:id});}
+  function closeTheater(){th.classList.remove('open');document.body.style.overflow='';tv.pause();if(duetOn){play(dl);play(dr);}}
+  document.getElementById('thx').addEventListener('click',closeTheater);
+  th.addEventListener('click',function(e){if(e.target===th)closeTheater();});
+  addEventListener('keydown',function(e){if(e.key==='Escape'&&th.classList.contains('open'))closeTheater();});
+  document.getElementById('fullbtn').addEventListener('click',function(){openTheater(stamp.l>stamp.r?side.l:side.r);});
+  var fired={};function ev(k,label){if(fired[k])return;fired[k]=1;try{if(window.gtag)gtag('event',k,{video_title:'The Perfect Gift',video_percent:label,film:thId});if(window.fbq)fbq('trackCustom','Film_'+label,{film:'The Perfect Gift'});}catch(e){}}
+  tv.addEventListener('play',function(){ev('video_start','start');});
+  tv.addEventListener('timeupdate',function(){if(tv.duration&&tv.currentTime/tv.duration>=0.5)ev('video_progress','50');});
+  tv.addEventListener('ended',function(){ev('video_complete','complete');});
+
+  /* ---------- play only what is on screen ---------- */
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){duetOn=es[0].isIntersecting;if(th.classList.contains('open'))return;if(duetOn){play(dl);play(dr);}else{dl.pause();dr.pause();}}).observe(stage);
+    new IntersectionObserver(function(es){adaptOn=es[0].isIntersecting;if(adaptOn){if(!pcur)pset('safe');play(pvs[pf]);}else{pvs[0].pause();pvs[1].pause();}},{rootMargin:'200px 0px'}).observe(adapt);
+    var sio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;[].forEach.call(steps,function(s){s.classList.toggle('on',s===e.target);});pset(e.target.dataset.film);});},{rootMargin:'-45% 0px -45% 0px'});
+    [].forEach.call(steps,function(s){sio.observe(s);});
+    new IntersectionObserver(function(es){wallOn=es[0].isIntersecting;if(wallOn){if(!wallLoaded)wallLoad();else tiles.forEach(function(v){play(v);});}else tiles.forEach(function(v){v.pause();});},{rootMargin:'250px 0px'}).observe(grid);
+  }else{pset('safe');[].forEach.call(steps,function(s){s.classList.add('on');});wallOn=true;wallLoad();}
   var LINKS={skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
   /* one Stripe link per quantity, so the price on the page is the price charged; 11+ sets the number at checkout */
   var QTY={'1':'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o','2':'https://buy.stripe.com/7sY6oJ0JbdV00tg03Ibwk0r','3':'https://buy.stripe.com/9B6dRb63vg38a3Q6s6bwk0s','4':'https://buy.stripe.com/14A7sN4Zr9EKb7U03Ibwk0t','5':'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p','6':'https://buy.stripe.com/6oUeVf8bD6sycbYcQubwk0u','7':'https://buy.stripe.com/bJecN71NfbMS3FscQubwk0v','8':'https://buy.stripe.com/fZu5kF2Rj7wCfoa03Ibwk0w','9':'https://buy.stripe.com/bJe28tdvXg38dg2aImbwk0x','10':'https://buy.stripe.com/28E6oJajL5ou2Bo17Mbwk0y','11+':'https://buy.stripe.com/14AdRb77z18efoaaImbwk0z'};
@@ -662,16 +801,6 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   pv.addEventListener('click',function(){var n=num(),val=n*(n>=5?69:99);remember(n>=5?'pack':'video',n,val);track('christmas_video',val,n);});
   document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill',299,1);});
 
-  /* cast picker: shows the choice in words, the real choice is made at checkout */
-  [].forEach.call(document.querySelectorAll('.chips'),function(g){
-    g.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
-      [].forEach.call(g.children,function(c){c.classList.remove('on');});b.classList.add('on');
-      document.getElementById(g.dataset.k==='g'?'cg':'cr').textContent=b.textContent.toLowerCase();});
-  });
-
-  /* film strip: second copy so the loop has no seam */
-  var tr=document.getElementById('track');tr.innerHTML+=tr.innerHTML;
-
   var nav=document.getElementById('nav');
   function onScroll(){nav.classList.toggle('solid',window.scrollY>40);}
   window.addEventListener('scroll',onScroll,{passive:true});onScroll();
@@ -682,7 +811,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     [].forEach.call(rv,function(el){io.observe(el);});
   }else{[].forEach.call(rv,function(el){el.classList.add('in');});}
 
-  var st=document.getElementById('sticky'),hero=document.querySelector('.hero'),ord=document.getElementById('order');
+  var st=document.getElementById('sticky'),hero=document.querySelector('.duet'),ord=document.getElementById('order');
   if(st&&'IntersectionObserver' in window){var past=false,atOrder=false;function upd(){st.classList.toggle('on',past&&!atOrder);}
     new IntersectionObserver(function(e){past=!e[0].isIntersecting;upd();}).observe(hero);
     new IntersectionObserver(function(e){atOrder=e[0].isIntersecting;upd();},{threshold:0.15}).observe(ord);}
