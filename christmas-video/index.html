@@ -125,7 +125,14 @@ nav .btn{padding:12px 22px;font-size:14px}
 .pair{display:grid;grid-template-columns:250px 1fr;gap:56px;align-items:center}
 .pair .screen{max-width:none;margin:0}
 .lab{position:absolute;left:0;bottom:calc(100% + 16px);font:400 13px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+.pick{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin:-10px auto 64px}
+.pick-lab{width:100%;text-align:center;font:400 13px/1 var(--bill);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.pick button{display:flex;align-items:center;gap:12px;height:62px;padding:0 22px 0 12px;border-radius:999px;border:1px solid rgba(246,240,228,.28);background:rgba(7,11,18,.45);color:var(--ink);font:500 16px/1 var(--sans);cursor:pointer;transition:border-color .25s,background .25s,transform .25s}
+.pick button img{width:auto;height:40px;max-width:54px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))}
+.pick button:hover{border-color:rgba(233,199,132,.7);transform:translateY(-1px)}
+.pick button.on{border-color:var(--gold);background:rgba(233,199,132,.14);box-shadow:0 0 0 3px rgba(233,199,132,.18)}
 .prod{position:relative}
+.prod img{transition:opacity .3s}
 .prod::before{content:"";position:absolute;inset:-12% -18%;background:radial-gradient(closest-side,rgba(233,199,132,.2),transparent 75%)}
 .prod img{position:relative;width:100%;height:auto;filter:drop-shadow(0 30px 40px rgba(0,0,0,.65))}
 /* problem */
@@ -391,16 +398,21 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="head center rv">
       <div class="slate"><i>01</i>Now showing</div>
     </div>
+    <div class="pick rv" role="tablist" aria-label="Choose a product">
+      <span class="pick-lab">One film. Pick a product:</span>
+      <button class="on" role="tab" aria-selected="true" data-film="film.mp4?v=31" data-poster="img/holo.jpg?v=28" data-img="img/product.webp" data-alt="The product: a red and black toy safe" data-w="560" data-h="737" data-name="toy_safe"><img src="img/product.webp" alt="" width="40" height="53">Toy safe</button>
+      <button role="tab" aria-selected="false" data-film="film-camera.mp4?v=31" data-poster="img/holo-camera.jpg?v=31" data-img="img/product-camera.webp" data-alt="The product: a white kids instant print camera" data-w="560" data-h="421" data-name="kids_camera"><img src="img/product-camera.webp" alt="" width="53" height="40">Kids camera</button>
+    </div>
     <div class="pair rv">
-      <div class="prod"><span class="lab">The product</span><img src="img/product.webp" alt="The product: a red and black toy safe" width="560" height="737"></div>
+      <div class="prod"><span class="lab">The product</span><img id="prodimg" src="img/product.webp" alt="The product: a red and black toy safe" width="560" height="737"></div>
       <div class="screen"><span class="lab">The film</span>
       <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
       <div class="player">
-        <video id="v" src="film.mp4?v=29" poster="img/holo.jpg?v=28" playsinline controls preload="none"></video>
+        <video id="v" src="film.mp4?v=31" poster="img/holo.jpg?v=28" playsinline controls preload="none"></video>
         <button class="play" id="play" aria-label="Play the film" style="background-image:linear-gradient(rgba(7,11,18,.2),rgba(7,11,18,.45)),url(img/gift.jpg)"><span class="ring"><svg width="32" height="36" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span><span class="tag">Play the film · Sound on</span></button>
       </div>
     </div></div>
-    <p class="note rv">Every video is this same film. Two things change: the product, and who gives and receives it.</p>
+    <p class="note rv">Every video is this same film. Two things change: the product, and who gives and receives it. Switch the product above and watch it again.</p>
   </div>
 </section>
 
@@ -619,6 +631,18 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   v.addEventListener('play',function(){ev('video_start','start');});
   v.addEventListener('timeupdate',function(){if(v.duration&&v.currentTime/v.duration>=0.5)ev('video_progress','50');});
   v.addEventListener('ended',function(){ev('video_complete','complete');});
+  /* one film, two products: the switch swaps the product picture and the film, and shows the play button again */
+  var pi=document.getElementById('prodimg'),tabs=document.querySelectorAll('.pick button');
+  Array.prototype.forEach.call(tabs,function(b){b.addEventListener('click',function(){
+    if(b.classList.contains('on'))return;
+    Array.prototype.forEach.call(tabs,function(o){o.classList.remove('on');o.setAttribute('aria-selected','false');});
+    b.classList.add('on');b.setAttribute('aria-selected','true');
+    var playing=!v.paused;v.pause();
+    pi.style.opacity=0;setTimeout(function(){pi.src=b.dataset.img;pi.alt=b.dataset.alt;pi.width=b.dataset.w;pi.height=b.dataset.h;pi.style.opacity=1;},180);
+    v.setAttribute('poster',b.dataset.poster);v.src=b.dataset.film;v.load();
+    if(playing){v.play();}else{p.style.display='';}
+    try{if(window.gtag)gtag('event','film_product_switch',{product:b.dataset.name});}catch(e){}
+  });});
   var LINKS={skill:'https://buy.stripe.com/6oU8wR2Rj2cifoa9Eibwk0q'};
   /* one Stripe link per quantity, so the price on the page is the price charged; 11+ sets the number at checkout */
   var QTY={'1':'https://buy.stripe.com/6oUaEZ8bD6sy8ZM2bQbwk0o','2':'https://buy.stripe.com/7sY6oJ0JbdV00tg03Ibwk0r','3':'https://buy.stripe.com/9B6dRb63vg38a3Q6s6bwk0s','4':'https://buy.stripe.com/14A7sN4Zr9EKb7U03Ibwk0t','5':'https://buy.stripe.com/cNi3cxeA118ea3Q17Mbwk0p','6':'https://buy.stripe.com/6oUeVf8bD6sycbYcQubwk0u','7':'https://buy.stripe.com/bJecN71NfbMS3FscQubwk0v','8':'https://buy.stripe.com/fZu5kF2Rj7wCfoa03Ibwk0w','9':'https://buy.stripe.com/bJe28tdvXg38dg2aImbwk0x','10':'https://buy.stripe.com/28E6oJajL5ou2Bo17Mbwk0y','11+':'https://buy.stripe.com/14AdRb77z18efoaaImbwk0z'};
