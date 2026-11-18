@@ -242,12 +242,12 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <div class="eyebrow">Order received</div>
   <div class="rule"></div>
   <h1 style="font-size:clamp(36px,5.5vw,68px)">Thank you. <em>Santa's on it.</em></h1>
-  <p class="lead" id="msg" style="margin:24px auto 0">Your Christmas video is on its way. A download link lands in your email within 48 hours (business days).</p>
+  <p class="lead" id="msg" style="margin:24px auto 0">Your Christmas film is on its way. A download link lands in your email within 48 hours (business days).</p>
   <p id="more" style="max-width:36em;margin-left:auto;margin-right:auto">If we need anything else about your product, we write to the email you paid with. Questions? <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></p>
   <div class="films" id="films">
-    <div class="bar"><b id="fhead">Your videos</b><span id="fcount"></span></div>
+    <div class="bar"><b id="fhead">Your films</b><span id="fcount"></span></div>
     <div id="cards"></div>
-    <p class="later">No rush: this page is also in your email, and you can fill the rest later. We start each video when its card is saved.</p>
+    <p class="later">No rush: this page is also in your email, and you can fill the rest later. We start each film when its card is saved.</p>
   </div>
   <p style="margin-top:34px"><a class="btn ghost" href="/christmas-video/">Back to the page</a></p>
 </div></div></main>
@@ -258,7 +258,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   try{var o=JSON.parse(localStorage.getItem('xmas_order')||'null');
     if(o&&(o.kind===kind||(o.kind!=='skill'&&kind!=='skill'))&&Date.now()-o.t<6*3600*1000){value=o.value;qty=o.qty;}}catch(e){}
   if(kind==='skill'){document.getElementById('msg').textContent='The Skill and the training arrive in your email within 48 hours.';document.getElementById('more').firstChild.textContent='We send them to the email you paid with. Questions? ';}
-  else if(kind==='pack'){document.getElementById('msg').textContent='Your Christmas videos are on their way. We email you today for the rest of your product links, and each video arrives within 48 hours (business days).';}
+  else if(kind==='pack'){document.getElementById('msg').textContent='Your Christmas films are on their way. Each film arrives within 48 hours (business days).';}
   /* one card per video: the product link, who gives, who receives */
   var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-films';
   var LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname),demo=LOCAL?parseInt(q.get('demo')||'0',10):0;
@@ -267,14 +267,14 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   function recLabel(g,r){return r==='partner'?partner(g):(r==='son'?'Son':'Daughter');}
   var total=0,doneN=0;
   function count(){document.getElementById('fcount').textContent=doneN+' of '+total+' ready';
-    if(total&&doneN===total){document.getElementById('msg').textContent=total>1?'All '+total+' cards are in. Each video arrives in your email within 48 hours (business days).':'Your card is in. Your video arrives in your email within 48 hours (business days).';}}
+    if(total&&doneN===total){document.getElementById('msg').textContent=total>1?'All '+total+' cards are in. Each film arrives in your email within 48 hours (business days).':'Your card is in. Your video arrives in your email within 48 hours (business days).';}}
   function card(n,f){var el=document.createElement('div');el.className='fc';var st={link:f?f.link:'',giver:f?f.giver:'',receiver:f?f.receiver:''};
-    el.innerHTML='<div class="top"><b>Video '+n+(total>1?' of '+total:'')+'</b><span class="st8">To fill</span></div>'
+    el.innerHTML='<div class="top"><b>Film '+n+(total>1?' of '+total:'')+'</b><span class="st8">To fill</span></div>'
       +'<div class="form"><label for="l'+n+'">Link to your product on Amazon</label><input id="l'+n+'" type="url" inputmode="url" autocomplete="off" placeholder="https://www.amazon.com/dp/...">'
       +'<label>Who gives the gift?</label><div class="seg" data-k="giver"><button type="button" data-v="mom">Mom</button><button type="button" data-v="dad">Dad</button></div>'
       +'<label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Son</button><button type="button" data-v="daughter">Daughter</button><button type="button" data-v="partner">Wife / Husband</button></div>'
       +'<p class="age">A son or daughter in the film is a child of about 8 to 12. Is your product for a much younger child or a teenager? Write to us at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we will find a way.</p>'
-      +'<p class="err" role="alert"></p><button type="button" class="btn gold save">Save this video</button></div>'
+      +'<p class="err" role="alert"></p><button type="button" class="btn gold save">Save this film</button></div>'
       +'<div class="sum"></div>';
     var inp=el.querySelector('input'),err=el.querySelector('.err'),save=el.querySelector('.save'),sum=el.querySelector('.sum'),badge=el.querySelector('.st8');
     function paint(){[].forEach.call(el.querySelectorAll('.seg button'),function(b){b.classList.toggle('on',st[b.parentNode.dataset.k]===b.dataset.v);});
@@ -288,7 +288,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       if(!st.giver){err.textContent='Pick who gives the gift.';return;}
       if(!st.receiver){err.textContent='Pick who receives it.';return;}
       err.textContent='';save.disabled=true;save.textContent='Saving...';
-      var done=function(j){save.disabled=false;save.textContent='Save this video';
+      var done=function(j){save.disabled=false;save.textContent='Save this film';
         if(!j||!j.ok){err.textContent=(j&&j.message)||'That did not save. Try again, or write to info@jaygptpro.com.';return;}
         if(j.link)st.link=j.link;doneN++;count();showDone();
         if(j.notified===false){sum.insertAdjacentHTML('beforeend','<br><span style="color:#f0a48f">Saved, but we could not confirm it reached us. Please also write to info@jaygptpro.com.</span>');}};
@@ -299,9 +299,9 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     return el;}
   function build(d){total=d.qty;doneN=0;var box=document.getElementById('cards');box.innerHTML='';var by={};(d.films||[]).forEach(function(f){by[f.n]=f;});
     for(var n=1;n<=total;n++)box.appendChild(card(n,by[n]));
-    document.getElementById('fhead').textContent=total>1?'Your '+total+' videos':'Your video';
-    document.querySelector('h1').innerHTML=total>1?'Thank you. <em>Now tell us about your videos.</em>':'Thank you. <em>Now tell us about your video.</em>';
-    document.getElementById('msg').textContent=total>1?'Fill one card for each video. Each one can be a different product and a different family.':'Fill the card below and we start on your video.';
+    document.getElementById('fhead').textContent=total>1?'Your '+total+' films':'Your film';
+    document.querySelector('h1').innerHTML=total>1?'Thank you. <em>Now tell us about your films.</em>':'Thank you. <em>Now tell us about your film.</em>';
+    document.getElementById('msg').textContent=total>1?'Fill one card for each film. Each one can be a different product and a different family.':'Fill the card below and we start on your film.';
     document.getElementById('more').style.display='none';
     document.getElementById('films').classList.add('on');count();}
   if(kind!=='skill'){
