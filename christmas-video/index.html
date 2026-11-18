@@ -125,7 +125,30 @@ nav .btn{padding:12px 22px;font-size:14px}
 .flyer{position:fixed;z-index:90;pointer-events:none;width:96px;height:96px;margin:-48px 0 0 -48px;display:flex;align-items:center;justify-content:center}
 .flyer img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
 
-/* ===== 01 how it adapts: the film stays pinned, the copy changes one thing at a time ===== */
+/* ===== 01 now showing: the whole film, for the family picked above ===== */
+.showing{padding:130px 0 30px}
+.showing .wrap{max-width:1320px}
+.ns-head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:32px;margin-bottom:34px}
+.ns-head h2{margin-top:24px}
+.ns-head .lead{margin-top:16px;max-width:30em}
+.ns-who{display:flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:999px;border:1px solid var(--hair);background:rgba(246,240,228,.04)}
+.ns-who img{width:44px;height:44px;object-fit:contain}
+.ns-who b{display:block;font:600 16px/1.2 var(--sans);white-space:nowrap}.ns-who b i{font-style:normal;color:var(--gold);margin:0 6px}
+.ns-who small{display:block;font-size:13px;color:var(--soft);white-space:nowrap}
+.nscr{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 50px 140px rgba(0,0,0,.7),0 0 0 1px rgba(246,240,228,.08)}
+.nscr video{position:absolute;inset:0;width:100%;height:100%;background:#000}
+.nplay{position:absolute;inset:0;z-index:2;border:0;padding:0;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;background:center/cover no-repeat}
+.nplay::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,18,.08) 0%,rgba(7,11,18,.18) 55%,rgba(7,11,18,.72) 100%)}
+.nplay .ring{position:relative;width:104px;height:104px;border-radius:50%;background:rgba(246,240,228,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(246,240,228,.65);display:flex;align-items:center;justify-content:center;transition:transform .45s var(--ease),background .3s}
+.nplay .ring svg{margin-left:6px}
+.nplay:hover .ring{transform:scale(1.07);background:rgba(246,240,228,.26)}
+.nplay .meta{position:absolute;left:26px;bottom:24px;font:400 14px/1 var(--bill);letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+.nscr.playing .nplay{display:none}
+.ns-row{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:18px}
+.ns-row p{flex:none;color:var(--dim);font-size:14px}
+.ns-casts{min-width:0}
+
+/* ===== 02 how it adapts: the film stays pinned, the copy changes one thing at a time ===== */
 .adapt .wrap{max-width:1320px}
 .adapt-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:64px;align-items:start}
 .pinbox{position:sticky;top:max(96px,calc(50vh - 22vw));z-index:2}
@@ -362,6 +385,13 @@ footer{padding:70px 0 60px;text-align:center}
   .st h3{font-size:28px}
   .adapt .st:last-child{min-height:40vh}
   .grid6{grid-template-columns:1fr 1fr;gap:10px}
+  .showing{padding:80px 0 10px}
+  .ns-head{grid-template-columns:minmax(0,1fr);gap:18px;margin-bottom:22px}
+  .ns-who{justify-self:start;padding:6px 14px 6px 6px}.ns-who img{width:32px;height:32px}.ns-who b{font-size:14px}.ns-who small{font-size:12px}
+  .nscr{margin:0 -18px;border-radius:0}
+  .nplay .ring{width:72px;height:72px}.nplay .ring svg{width:22px}
+  .nplay .meta{left:14px;bottom:12px;font-size:11px;letter-spacing:.18em}
+  .ns-row{flex-direction:column;align-items:stretch;gap:10px;margin-top:14px}
   .next{flex-direction:column;align-items:stretch;gap:18px;margin-top:36px;padding-top:28px}.next .btn{width:100%}
   .tile .cap{flex-direction:column;align-items:flex-start;gap:3px;padding-top:8px}
   .tile .who{font-size:13px}.tile .what{font-size:11.5px}.tile .what img{display:none}
@@ -452,6 +482,24 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   </div>
 </header>
 
+<section class="showing" id="showing">
+  <div class="wrap">
+    <div class="ns-head">
+      <div class="rv">
+        <div class="slate"><i>01</i>Now showing</div>
+        <h2>The whole film. <em>58 seconds, sound on.</em></h2>
+        <p class="lead">This is what your buyers watch, with your product as the gift. It plays the family you picked above.</p>
+      </div>
+      <div class="ns-who rv d1" id="nswho"></div>
+    </div>
+    <div class="nscr rv" id="nscr">
+      <video id="nv" playsinline preload="none"></video>
+      <button class="nplay" id="nplay" type="button" aria-label="Play the whole film with sound"><span class="ring"><svg width="30" height="34" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span><span class="meta">Play the film · 0:58 · sound on</span></button>
+    </div>
+    <div class="ns-row"><p>Switch the family while it plays. The film keeps going.</p><div class="th-casts ns-casts" id="ncasts"></div></div>
+  </div>
+</section>
+
 <section class="adapt" id="adapt">
   <div class="wrap adapt-grid">
     <div class="pinbox"><div class="pscr" id="pscr">
@@ -460,7 +508,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     </div></div>
     <div class="steps-col">
       <div class="head rv">
-        <div class="slate"><i>01</i>How it adapts</div>
+        <div class="slate"><i>02</i>How it adapts</div>
         <h2>Same story. <em>Your product. Your family.</em></h2>
       </div>
       <article class="st" data-film="safe"><span class="n">The film</span><h3>A dad, his son, and the gift he wished for.</h3><p>Christmas Eve, the wish on the phone, Santa, and the morning under the tree.</p></article>
@@ -475,7 +523,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section class="wall" id="compare">
   <div class="wrap">
     <div class="head rv">
-      <div class="slate"><i>02</i>Every family</div>
+      <div class="slate"><i>03</i>Every family</div>
       <h2 style="margin-top:26px">Six families. <em>The same second.</em></h2>
       <p class="lead">Six versions of one film, playing in sync. Yours is next: your product, the family you pick. Tap any film to watch it in full, with sound.</p>
     </div>
@@ -501,7 +549,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       <span class="cap">First seconds: the product<br>Last seconds: the feeling</span>
     </div>
     <div class="rv d1">
-      <div class="slate"><i>03</i>Why it works</div>
+      <div class="slate"><i>04</i>Why it works</div>
       <h2 style="margin-top:26px">It sells the feeling, with your product in the middle of it.</h2>
       <ul class="points">
         <li>Your product is on screen in the first seconds, large and clear.</li>
@@ -516,7 +564,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap">
     <div class="head rv">
-      <div class="slate"><i>04</i>What you get</div>
+      <div class="slate"><i>05</i>What you get</div>
       <h2>One file, ready to run.</h2>
     </div>
     <div class="sheet rv">
@@ -531,7 +579,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap">
     <div class="head center rv">
-      <div class="slate"><i>05</i>How it works</div>
+      <div class="slate"><i>06</i>How it works</div>
       <h2>Three steps. About two minutes of your time.</h2>
     </div>
     <div class="steps">
@@ -554,7 +602,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap split">
     <div class="rv">
-      <div class="slate"><i>06</i>Our promise</div>
+      <div class="slate"><i>07</i>Our promise</div>
       <h2 style="margin-top:26px">Your real product, kept <em>exactly right.</em></h2>
       <p class="lead" style="margin-top:22px">Video tools like to change small things: a logo, a button, a colour, the shape of the box. Shoppers notice. So we check every scene against your real product photos before the video reaches you.</p>
       <ul class="checks">
@@ -574,7 +622,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <span id="ways"></span>
   <div class="wrap">
     <div class="head center rv">
-      <div class="slate"><i>07</i>Pick your way</div>
+      <div class="slate"><i>08</i>Pick your way</div>
       <h2>Done for you, or make them yourself?</h2>
       <p class="lead">We make a limited number of videos each week, in the order they come in. Order early to run yours before Christmas.</p>
     </div>
@@ -628,7 +676,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap faqgrid">
     <div class="head rv">
-      <div class="slate"><i>08</i>Questions</div>
+      <div class="slate"><i>09</i>Questions</div>
       <h2>Before you order</h2>
     </div>
     <div class="rv d1">
@@ -652,7 +700,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="about">
       <div class="ph rv"><img src="/assets/jay-headshot-2026.jpg" alt="Jay Margaliot" loading="lazy"></div>
       <div class="rv d1">
-        <div class="slate"><i>09</i>Who's behind this</div>
+        <div class="slate"><i>10</i>Who's behind this</div>
         <h3>Jay Margaliot</h3>
         <p>I've been an eCommerce seller for over 10 years, and my day job is helping eCommerce businesses put AI to work. I run the AI Vault, a community of 250+ sellers and business owners, and I post a new AI play for Amazon sellers every week.</p>
         <p>I made this film for the sellers in my own groups, and my team and I make every video ourselves. Questions? Write to me at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
@@ -745,7 +793,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   function pick(id,btn,pt,dragGhost){
     if(id===side.r){sr.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.32,.72,0,1)'});if(dragGhost)dragGhost.remove();return;}
     if(busy){if(dragGhost)dragGhost.remove();return;}
-    busy=true;side.r=id;marks();track('film_product_switch',{product:id});
+    busy=true;side.r=id;marks();nsFollow(id);track('film_product_switch',{product:id});
     var v=rb;v.poster='clips/'+id+'.jpg?v=5';v.src=clip(id);v.load();
     var ready=new Promise(function(ok){v.addEventListener('loadeddata',ok,{once:true});setTimeout(ok,2500);});
     if(auto||x>.6||x<.3)seamTo(small?.5:.42);
@@ -823,14 +871,37 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   document.getElementById('thx').addEventListener('click',closeTheater);
   th.addEventListener('click',function(e){if(e.target===th)closeTheater();});
   addEventListener('keydown',function(e){if(e.key==='Escape'&&th.classList.contains('open'))closeTheater();});
-  document.getElementById('fullbtn').addEventListener('click',function(){openTheater(side.r);});
-  var fired={};function ev(k,label){if(fired[k])return;fired[k]=1;try{if(window.gtag)gtag('event',k,{video_title:'The Perfect Gift',video_percent:label,film:thId});if(window.fbq)fbq('trackCustom','Film_'+label,{film:'The Perfect Gift'});}catch(e){}}
+  var fired={};function ev(k,label){if(fired[k])return;fired[k]=1;try{if(window.gtag)gtag('event',k,{video_title:'The Perfect Gift',video_percent:label,film:thId||nId});if(window.fbq)fbq('trackCustom','Film_'+label,{film:'The Perfect Gift'});}catch(e){}}
   tv.addEventListener('play',function(){ev('video_start','start');});
   tv.addEventListener('timeupdate',function(){if(tv.duration&&tv.currentTime/tv.duration>=0.5)ev('video_progress','50');});
   tv.addEventListener('ended',function(){ev('video_complete','complete');});
 
+  /* ---------- now showing: the whole film, for the family picked above ---------- */
+  var nsec=document.getElementById('showing'),nscr=document.getElementById('nscr'),nv=document.getElementById('nv'),nbtn=document.getElementById('nplay'),ncast=document.getElementById('ncasts'),nId=null,nTouched=false;
+  FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
+    b.addEventListener('click',function(){nTouched=true;nsSet(f.id,true);});ncast.appendChild(b);});
+  function nsSet(id,keep){if(nId===id)return;nId=id;var f=F(id),t=keep?nv.currentTime:0,go=keep&&!nv.paused;
+    [].forEach.call(ncast.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)ncast.scrollLeft=Math.max(0,b.offsetLeft-ncast.clientWidth/2+b.offsetWidth/2);});
+    var poster='clips/'+id+'.jpg?v=5';nv.poster=poster;nbtn.style.backgroundImage='url('+poster+')';nv.src=f.full;
+    if(t)nv.addEventListener('loadedmetadata',function(){nv.currentTime=t;},{once:true});
+    if(go)play(nv);
+    document.getElementById('nswho').innerHTML=tagHTML(f);
+    if(keep)track('showing_switch',{film:id});}
+  /* the film follows the family picked in the split above, until the visitor picks one here */
+  function nsFollow(id){if(!nTouched&&nv.paused)nsSet(id,false);}
+  function nsPlay(){nscr.classList.add('playing');nv.controls=true;dl.pause();rf.pause();play(nv);track('showing_play',{film:nId});}
+  nbtn.addEventListener('click',nsPlay);
+  nv.addEventListener('ended',function(){nscr.classList.remove('playing');nv.controls=false;});
+  nv.addEventListener('play',function(){ev('video_start','start');});
+  nv.addEventListener('timeupdate',function(){if(nv.duration&&nv.currentTime/nv.duration>=0.5)ev('video_progress','50');});
+  nv.addEventListener('ended',function(){ev('video_complete','complete');});
+  nsSet(side.r,false);
+  /* the shelf's Full film button now plays it here, in the page */
+  document.getElementById('fullbtn').addEventListener('click',function(){nsSet(side.r,true);nsec.scrollIntoView({behavior:still?'auto':'smooth',block:'center'});nsPlay();});
+
   /* ---------- play only what is on screen ---------- */
   if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){if(!es[0].isIntersecting&&!nv.paused)nv.pause();},{threshold:.2}).observe(nscr);
     new IntersectionObserver(function(es){duetOn=es[0].isIntersecting;if(th.classList.contains('open'))return;if(duetOn){play(dl);play(rf);}else{dl.pause();rf.pause();}}).observe(stage);
     new IntersectionObserver(function(es){adaptOn=es[0].isIntersecting;if(adaptOn){if(!pcur)pset('safe');play(pvs[pf]);}else{pvs[0].pause();pvs[1].pause();}},{rootMargin:'200px 0px'}).observe(adapt);
     var sio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;[].forEach.call(steps,function(s){s.classList.toggle('on',s===e.target);});pset(e.target.dataset.film);});},{rootMargin:'-45% 0px -45% 0px'});
