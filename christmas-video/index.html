@@ -147,6 +147,11 @@ nav .btn{padding:12px 22px;font-size:14px}
 .ns-row{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:18px}
 .ns-row p{flex:none;color:var(--dim);font-size:14px}
 .ns-casts{min-width:0}
+/* the heading, the player and the family row fit one screen: the player width follows the screen height */
+.ns-box{width:min(100%,max(560px,calc((100svh - 370px)*1.7778)));margin:0 auto}
+.ns-head{margin-bottom:26px}
+.hold{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;pointer-events:none;z-index:1;background:#000}
+.th-scr .hold{z-index:1}
 
 /* ===== 02 how it adapts: the film stays pinned, the copy changes one thing at a time ===== */
 .adapt .wrap{max-width:1320px}
@@ -483,7 +488,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 </header>
 
 <section class="showing" id="showing">
-  <div class="wrap">
+  <div class="wrap"><div class="ns-box">
     <div class="ns-head">
       <div class="rv">
         <div class="slate"><i>01</i>Now showing</div>
@@ -493,11 +498,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       <div class="ns-who rv d1" id="nswho"></div>
     </div>
     <div class="nscr rv" id="nscr">
-      <video id="nv" playsinline preload="none"></video>
+      <video id="nv" playsinline preload="none"></video><canvas class="hold" id="ncv"></canvas>
       <button class="nplay" id="nplay" type="button" aria-label="Play the whole film with sound"><span class="ring"><svg width="30" height="34" viewBox="0 0 30 34" fill="currentColor"><path d="M0 0l30 17L0 34z"/></svg></span><span class="meta">Play the film · 0:58 · sound on</span></button>
     </div>
     <div class="ns-row"><p>Switch the family while it plays. The film keeps going.</p><div class="th-casts ns-casts" id="ncasts"></div></div>
-  </div>
+  </div></div>
 </section>
 
 <section class="adapt" id="adapt">
@@ -535,7 +540,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <div class="theater" id="theater" role="dialog" aria-modal="true" aria-label="The full film">
   <button class="th-x" type="button" id="thx" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   <div class="th-in">
-    <div class="th-scr"><video id="tv" playsinline controls preload="none"></video></div>
+    <div class="th-scr"><video id="tv" playsinline controls preload="none"></video><canvas class="hold" id="tcv"></canvas></div>
     <div class="th-bar"><p>Your product goes where this one is. Switch the family while it plays, the film keeps going.</p><div class="th-casts" id="thc"></div></div>
   </div>
 </div>
@@ -856,15 +861,28 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     tiles.forEach(function(v,i){v.src='clips/'+WALL[i]+'-s.mp4?v=5';v.addEventListener('canplaythrough',ready,{once:true});v.load();});
     setTimeout(function(){if(!go){go=true;wallStart();}},3000);}
 
+  /* Switching the film mid-play: freeze the current frame on a canvas, load the new film at the
+     same second, and lift the freeze only when that second is on screen. Without it the new
+     film's poster and first frame flash before the jump. */
+  function swapAt(v,cv,url,poster,t,go){var held=false;
+    if(t&&v.videoWidth){try{cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext('2d').drawImage(v,0,0,cv.width,cv.height);cv.style.opacity=1;held=true;}catch(e){}}
+    if(t)v.removeAttribute('poster');else v.poster=poster;
+    v.src=url;
+    if(!t){if(go)play(v);return;}   // not playing yet: nothing loads until Play (preload stays none)
+    v.preload='auto';
+    var lifted=false,lift=function(){if(lifted)return;lifted=true;v.poster=poster;if(!held)return;var hid=false,hide=function(){if(!hid){hid=true;cv.style.opacity=0;}};requestAnimationFrame(function(){requestAnimationFrame(hide);});setTimeout(hide,150);};
+    setTimeout(lift,6000);   // never leave the frozen frame up if the new film fails to load
+    v.addEventListener('loadedmetadata',function(){v.currentTime=t;},{once:true});
+    v.addEventListener('seeked',function(){if(go){v.addEventListener('playing',lift,{once:true});play(v);}else lift();},{once:true});
+    v.load();}
+
   /* ---------- the theater: the full film with sound, switch the family while it plays ---------- */
   var th=document.getElementById('theater'),tv=document.getElementById('tv'),thc=document.getElementById('thc'),thId=null;
   FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
     b.addEventListener('click',function(){thSet(f.id,true);});thc.appendChild(b);});
   function thSet(id,keep){if(thId===id)return;thId=id;var t=keep?tv.currentTime:0,go=keep?!tv.paused:true;
     [].forEach.call(thc.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)thc.scrollLeft=Math.max(0,b.offsetLeft-thc.clientWidth/2+b.offsetWidth/2);});
-    tv.poster='clips/'+id+'.jpg?v=5';tv.src=F(id).full;
-    if(t)tv.addEventListener('loadedmetadata',function(){tv.currentTime=t;},{once:true});
-    if(go)play(tv);else tv.load();
+    swapAt(tv,document.getElementById('tcv'),F(id).full,'clips/'+id+'.jpg?v=5',t,go);
     if(keep)track('theater_switch',{film:id});}
   function openTheater(id){th.classList.add('open');document.body.style.overflow='hidden';dl.pause();rf.pause();thId=null;thSet(id,false);track('theater_open',{film:id});}
   function closeTheater(){th.classList.remove('open');document.body.style.overflow='';tv.pause();if(duetOn){play(dl);play(rf);}}
@@ -882,9 +900,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     b.addEventListener('click',function(){nTouched=true;nsSet(f.id,true);});ncast.appendChild(b);});
   function nsSet(id,keep){if(nId===id)return;nId=id;var f=F(id),t=keep?nv.currentTime:0,go=keep&&!nv.paused;
     [].forEach.call(ncast.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)ncast.scrollLeft=Math.max(0,b.offsetLeft-ncast.clientWidth/2+b.offsetWidth/2);});
-    var poster='clips/'+id+'.jpg?v=5';nv.poster=poster;nbtn.style.backgroundImage='url('+poster+')';nv.src=f.full;
-    if(t)nv.addEventListener('loadedmetadata',function(){nv.currentTime=t;},{once:true});
-    if(go)play(nv);
+    var poster='clips/'+id+'.jpg?v=5';nbtn.style.backgroundImage='url('+poster+')';
+    swapAt(nv,document.getElementById('ncv'),f.full,poster,t,go);
     document.getElementById('nswho').innerHTML=tagHTML(f);
     if(keep)track('showing_switch',{film:id});}
   /* the film follows the family picked in the split above, until the visitor picks one here */
