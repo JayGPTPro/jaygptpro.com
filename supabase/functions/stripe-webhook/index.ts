@@ -86,19 +86,26 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
   }
   let quantity = 0;
   const items: string[] = [];
+  const products = new Set<string>();
   try {
     if (stripeKey && session?.id) {
       const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${session.id}/line_items?limit=10`, { headers: { 'Authorization': `Bearer ${stripeKey}` } });
       if (res.ok) {
         for (const it of ((await res.json())?.data || [])) {
           const q = Number(it?.quantity ?? 1); quantity += q;
+          if (it?.price?.product) products.add(String(it.price.product));
           items.push(`${q} x ${it?.description || 'item'}`);
         }
       }
     }
   } catch (e) { console.error('Christmas order: line items lookup failed (the mail still goes out):', e); }
-  const what = CHRISTMAS_LINK_NAMES[paymentLinkId] || 'Christmas video order';
-  const isSkill = paymentLinkId === 'plink_1Uc3M8RqcDuiISNTvS1hMBWB';
+  const what = CHRISTMAS_LINK_NAMES[paymentLinkId] || (products.has('prod_VdK0WmRf7Cgnvy') && !products.has('prod_VdK0ykqQR23ctI') ? 'The Skill + training' : 'Christmas video order');
+  // A video order is known by its product, or by one of the two video links when the
+  // line-items call failed. Anything else (the Skill, or an order we cannot identify)
+  // gets no cards mail: a Skill buyer must never be asked for video details.
+  const VIDEO_PRODUCT = 'prod_VdK0ykqQR23ctI', SKILL_PRODUCT = 'prod_VdK0WmRf7Cgnvy';
+  const isVideo = products.has(VIDEO_PRODUCT) || (products.size === 0 && (paymentLinkId === 'plink_1Uc3M6RqcDuiISNTLgj5rk6I' || paymentLinkId === 'plink_1Uc3M7RqcDuiISNTByKOaDNm'));
+  const isSkill = !isVideo && (paymentLinkId === 'plink_1Uc3M8RqcDuiISNTvS1hMBWB' || products.has(SKILL_PRODUCT));
   const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
   const currency = String(session?.currency || 'usd').toUpperCase();
   const email = session?.customer_email || session?.customer_details?.email || '';
@@ -110,15 +117,43 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
     ['Paid', `${amount} ${currency}`],
     ['Buyer', `${name} <${email}>`],
   ];
-  if (!isSkill) {
-    rows.push(['Product link', fields.amazonlink || '(not given)']);
-    rows.push(['Who gives', fields.giver || '(not given)']);
-    rows.push(['Who receives', fields.receiver || '(not given)']);
-    if (quantity > 1) rows.push(['Note', 'Several videos: this is the first product link. Ask the buyer for the rest.']);
-  } else {
+  if (isVideo) {
+    // The checkout takes the payment only (18.11.2026). The buyer fills one card per video
+    // on the cards page (christmas-films function): product link, who gives, who receives.
+    // Each saved card arrives as its own mail. The buyer gets the cards link by mail here,
+    // before the mail to Jay, so that mail can say whether the buyer has it.
+    const cardsUrl = `https://jaygptpro.com/christmas-video/thanks/?p=${quantity > 1 ? 'pack' : 'video'}&s=${encodeURIComponent(String(session?.id || ''))}`;
+    let buyerMailed = false;
+    if (email && session?.id) {
+      const n = quantity || 1;
+      const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
+        + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
+        + `<p>Thank you for your order. To start on your Christmas ${n > 1 ? 'videos' : 'video'}, I need a few details for ${n > 1 ? `each of your ${n} videos` : 'it'}: the link to your product, who gives the gift, and who receives it.</p>`
+        + `<p><a href="${esc(cardsUrl)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">Fill in your ${n > 1 ? `${n} videos` : 'video'}</a></p>`
+        + `<p>${n > 1 ? 'Each video can be a different product and a different family. You can fill some now and the rest later. ' : ''}Each video arrives within 48 hours (business days) of the moment you save its card.</p>`
+        + `<p>If you already filled ${n > 1 ? 'them' : 'it'} in right after paying, you are all set.</p><p>Jay</p></div>`;
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [email], reply_to: CHRISTMAS_NOTIFY_TO,
+            subject: n > 1 ? `Your ${n} Christmas videos: tell us about each one` : 'Your Christmas video: tell us about it', html: buyerHtml }),
+        });
+        buyerMailed = res.ok;
+        if (!res.ok) console.error('Christmas buyer mail failed:', res.status, await res.text());
+      } catch (e) { console.error('Christmas buyer mail error:', e); }
+    }
+    rows.push(['Video details', 'The buyer fills one card per video. Each saved card arrives as its own mail.']);
+    rows.push(['Cards page', cardsUrl]);
+    rows.push(['Cards link mailed to buyer', buyerMailed ? 'Yes' : 'NO. Send the cards page link to the buyer yourself.']);
+    if (fields.amazonlink || fields.giver || fields.receiver) {
+      rows.push(['From the checkout (old fields)', `${fields.amazonlink || '-'} | gives: ${fields.giver || '-'} | receives: ${fields.receiver || '-'}`]);
+    }
+  } else if (isSkill) {
     rows.push(['To do', 'Send the Skill and the training to the buyer by email.']);
+  } else {
+    rows.push(['To do', 'Could not tell what was bought (the Stripe lookup failed). Check the payment in Stripe. If it is a video, send the buyer the cards page: https://jaygptpro.com/christmas-video/thanks/?p=video&s=' + String(session?.id || '')]);
   }
-  rows.push(['Due', 'Within 48 hours (business days) of this payment.']);
+  rows.push(['Due', isSkill ? 'Within 48 hours (business days) of this payment.' : 'Each video: within 48 hours (business days) of its card.']);
   rows.push(['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')]);
   const html = `<h2>New Christmas order: ${esc(what)}</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('')

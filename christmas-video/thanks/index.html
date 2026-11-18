@@ -182,6 +182,34 @@ footer{padding:36px 0 50px;text-align:center;color:var(--dim);font-size:13px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.beat img{transition:none}}
 </style>
 <style>.page{min-height:100svh;display:flex;align-items:center;padding:110px 0 70px}.box{max-width:760px;margin:0 auto}.box p{color:#d9d3c5;margin-top:16px}.box h2{margin-top:14px}.legal h3{margin:34px 0 8px;font-size:22px}.legal p,.legal li{color:#d9d3c5;font-size:16px}.legal ul{padding-left:20px;margin:8px 0}body{padding-bottom:0}</style>
+<style>
+/* your films: one card per video bought */
+.films{max-width:760px;margin:44px auto 0;text-align:left;display:none}
+.films.on{display:block}
+.films .bar{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:16px}
+.films .bar b{font:400 24px/1.2 var(--serif)}
+.films .bar span{color:var(--dim);font-size:14px}
+.fc{border:1px solid var(--line);border-radius:16px;background:var(--night2);padding:24px;margin-bottom:14px;transition:border-color .3s}
+.fc.done{border-color:rgba(232,198,132,.6)}
+.fc .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.fc .top b{font:400 22px/1.2 var(--serif)}
+.fc .st8{font:600 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.fc.done .st8{color:var(--gold)}
+.fc label{display:block;font:600 13px/1 var(--sans);letter-spacing:.06em;color:#d9d3c5;margin:20px 0 9px}
+.fc input[type=url]{width:100%;padding:14px 15px;border-radius:10px;border:1px solid rgba(244,239,230,.22);background:#0b1018;color:var(--ink);font:16px var(--sans)}
+.fc .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.fc .seg button{height:46px;border-radius:10px;border:1px solid rgba(244,239,230,.22);background:transparent;color:var(--ink);font:500 15px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.fc .seg button.on{background:var(--gold);border-color:var(--gold);color:#1a1206;font-weight:600}
+.fc .save{width:100%;justify-content:center;margin-top:22px;border:0}
+.fc .save[disabled]{opacity:.55;cursor:default;transform:none}
+.fc .err{color:#f0a48f;font-size:14px;margin-top:12px;min-height:0}
+.fc .sum{display:none;margin-top:14px;color:#d9d3c5;font-size:15px;line-height:1.6;word-break:break-word}
+.fc .sum a{color:var(--gold)}
+.fc .edit{background:none;border:0;color:var(--dim);font:500 14px var(--sans);text-decoration:underline;cursor:pointer;padding:0;margin-top:8px}
+.fc.done .form{display:none}.fc.done .sum{display:block}
+.films .later{color:var(--dim);font-size:14px;margin-top:18px;text-align:center}
+@media (max-width:860px){.page{align-items:flex-start}.fc{padding:20px 16px}.fc .seg button{font-size:14px}}
+</style>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
 <script>
@@ -215,16 +243,69 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <h1 style="font-size:clamp(36px,5.5vw,68px)">Thank you. <em>Santa's on it.</em></h1>
   <p class="lead" id="msg" style="margin:24px auto 0">Your Christmas video is on its way. A download link lands in your email within 48 hours (business days).</p>
   <p id="more" style="max-width:36em;margin-left:auto;margin-right:auto">If we need anything else about your product, we write to the email you paid with. Questions? <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></p>
+  <div class="films" id="films">
+    <div class="bar"><b id="fhead">Your videos</b><span id="fcount"></span></div>
+    <div id="cards"></div>
+    <p class="later">No rush: this page is also in your email, and you can fill the rest later. We start each video when its card is saved.</p>
+  </div>
   <p style="margin-top:34px"><a class="btn ghost" href="/christmas-video/">Back to the page</a></p>
 </div></div></main>
 <script>
 (function(){
-  var q=new URLSearchParams(location.search),kind=q.get('p')||'video',sid=q.get('session_id')||'';
+  var q=new URLSearchParams(location.search),kind=q.get('p')||'video',sid=q.get('session_id')||'',cid=sid||q.get('s')||'';   // s= is the link in the buyer's mail: it opens the cards and counts no purchase
   var DEF={video:99,pack:345,skill:299},value=DEF[kind]||99,qty=1;
   try{var o=JSON.parse(localStorage.getItem('xmas_order')||'null');
     if(o&&(o.kind===kind||(o.kind!=='skill'&&kind!=='skill'))&&Date.now()-o.t<6*3600*1000){value=o.value;qty=o.qty;}}catch(e){}
   if(kind==='skill'){document.getElementById('msg').textContent='The Skill and the training arrive in your email within 48 hours.';document.getElementById('more').firstChild.textContent='We send them to the email you paid with. Questions? ';}
   else if(kind==='pack'){document.getElementById('msg').textContent='Your Christmas videos are on their way. We email you today for the rest of your product links, and each video arrives within 48 hours (business days).';}
+  /* one card per video: the product link, who gives, who receives */
+  var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-films';
+  var LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname),demo=LOCAL?parseInt(q.get('demo')||'0',10):0;
+  function h(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function partner(g){return g==='mom'?'Husband':'Wife';}
+  function recLabel(g,r){return r==='partner'?partner(g):(r==='son'?'Son':'Daughter');}
+  var total=0,doneN=0;
+  function count(){document.getElementById('fcount').textContent=doneN+' of '+total+' ready';
+    if(total&&doneN===total){document.getElementById('msg').textContent=total>1?'All '+total+' cards are in. Each video arrives in your email within 48 hours (business days).':'Your card is in. Your video arrives in your email within 48 hours (business days).';}}
+  function card(n,f){var el=document.createElement('div');el.className='fc';var st={link:f?f.link:'',giver:f?f.giver:'',receiver:f?f.receiver:''};
+    el.innerHTML='<div class="top"><b>Video '+n+(total>1?' of '+total:'')+'</b><span class="st8">To fill</span></div>'
+      +'<div class="form"><label for="l'+n+'">Link to your product on Amazon</label><input id="l'+n+'" type="url" inputmode="url" autocomplete="off" placeholder="https://www.amazon.com/dp/...">'
+      +'<label>Who gives the gift?</label><div class="seg" data-k="giver"><button type="button" data-v="mom">Mom</button><button type="button" data-v="dad">Dad</button></div>'
+      +'<label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Son</button><button type="button" data-v="daughter">Daughter</button><button type="button" data-v="partner">Wife / Husband</button></div>'
+      +'<p class="err" role="alert"></p><button type="button" class="btn gold save">Save this video</button></div>'
+      +'<div class="sum"></div>';
+    var inp=el.querySelector('input'),err=el.querySelector('.err'),save=el.querySelector('.save'),sum=el.querySelector('.sum'),badge=el.querySelector('.st8');
+    function paint(){[].forEach.call(el.querySelectorAll('.seg button'),function(b){b.classList.toggle('on',st[b.parentNode.dataset.k]===b.dataset.v);});
+      el.querySelector('[data-v=partner]').textContent=st.giver?partner(st.giver):'Wife / Husband';}
+    function showDone(){el.classList.add('done');badge.textContent='Saved';
+      sum.innerHTML='<a href="'+h(st.link)+'" target="_blank" rel="noopener">'+h(st.link)+'</a><br>'+(st.giver==='mom'?'Mom':'Dad')+' gives, '+recLabel(st.giver,st.receiver).toLowerCase()+' receives.<br><button type="button" class="edit">Change this video</button>';
+      sum.querySelector('.edit').addEventListener('click',function(){el.classList.remove('done');badge.textContent='To fill';doneN--;count();});}
+    el.addEventListener('click',function(e){var b=e.target.closest('.seg button');if(!b)return;st[b.parentNode.dataset.k]=b.dataset.v;err.textContent='';paint();});
+    save.addEventListener('click',function(){st.link=inp.value.trim();
+      if(!st.link){err.textContent='Please paste the link to your product.';inp.focus();return;}
+      if(!st.giver){err.textContent='Pick who gives the gift.';return;}
+      if(!st.receiver){err.textContent='Pick who receives it.';return;}
+      err.textContent='';save.disabled=true;save.textContent='Saving...';
+      var done=function(j){save.disabled=false;save.textContent='Save this video';
+        if(!j||!j.ok){err.textContent=(j&&j.message)||'That did not save. Try again, or write to info@jaygptpro.com.';return;}
+        if(j.link)st.link=j.link;doneN++;count();showDone();
+        if(j.notified===false){sum.insertAdjacentHTML('beforeend','<br><span style="color:#f0a48f">Saved, but we could not confirm it reached us. Please also write to info@jaygptpro.com.</span>');}};
+      if(demo){setTimeout(function(){done({ok:true});},500);return;}
+      fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({s:cid,n:n,link:st.link,giver:st.giver,receiver:st.receiver})})
+        .then(function(r){return r.json();}).then(done).catch(function(){done(null);});});
+    inp.value=st.link;paint();if(f){doneN++;showDone();}
+    return el;}
+  function build(d){total=d.qty;doneN=0;var box=document.getElementById('cards');box.innerHTML='';var by={};(d.films||[]).forEach(function(f){by[f.n]=f;});
+    for(var n=1;n<=total;n++)box.appendChild(card(n,by[n]));
+    document.getElementById('fhead').textContent=total>1?'Your '+total+' videos':'Your video';
+    document.querySelector('h1').innerHTML=total>1?'Thank you. <em>Now tell us about your videos.</em>':'Thank you. <em>Now tell us about your video.</em>';
+    document.getElementById('msg').textContent=total>1?'Fill one card for each video. Each one can be a different product and a different family.':'Fill the card below and we start on your video.';
+    document.getElementById('more').style.display='none';
+    document.getElementById('films').classList.add('on');count();}
+  if(kind!=='skill'){
+    if(demo)build({qty:demo,films:demo>2?[{n:1,link:'https://www.amazon.com/dp/B0CHS2VNHC',giver:'mom',receiver:'daughter'}]:[]});
+    else if(cid.indexOf('cs_')===0)fetch(API+'?s='+encodeURIComponent(cid)).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.qty)build(d);}).catch(function(){});
+  }
   if(!sid||sid.indexOf('cs_')!==0)return;                      // only a real return from checkout counts
   try{if(localStorage.getItem('xmas_done_'+sid))return;localStorage.setItem('xmas_done_'+sid,'1');}catch(e){}
   var name=kind==='skill'?'christmas_skill':'christmas_video';

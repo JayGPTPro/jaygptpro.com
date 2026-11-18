@@ -796,27 +796,47 @@ check('http 200', res.status === 200, `got ${res.status}`);
 check('course access NOT revoked', !row?.access_revoked_at, JSON.stringify(row));
 check('no stripe_customers row', DB.stripe_customers.length === 0, JSON.stringify(DB.stripe_customers));
 
-console.log('\n17g. A Christmas order tells Jay everything he needs to make the video');
+console.log('\n17g. A video order: the buyer gets the cards link, Jay gets the order with the same link');
 reset();
 sendState.stripeLineItems = [XMAS_VIDEO];
-{
-  const s: any = xmas('order@seller.com', XMAS_PLINK, 19800);
-  s.data.object.custom_fields = [
-    { key: 'amazonlink', type: 'text', text: { value: 'https://www.amazon.com/dp/B07VYH5GC2' } },
-    { key: 'giver', type: 'dropdown', dropdown: { value: 'woman' } },
-    { key: 'receiver', type: 'dropdown', dropdown: { value: 'girl' } },
-  ];
-  res = await post(s);
-}
+res = await post(xmas('order@seller.com', XMAS_PLINK, 19800));
 check('http 200', res.status === 200, `got ${res.status}`);
-check('exactly one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails));
+check('two mails: the buyer first, then Jay', sendState.mails.length === 2 && String(sendState.mails[0]?.to).includes('order@seller.com') && String(sendState.mails[1]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
 {
-  const body = JSON.stringify(sendState.mails[0] || {});
-  check('carries the product link', body.includes('https://www.amazon.com/dp/B07VYH5GC2'), body.slice(0, 400));
-  check('carries giver and receiver', body.includes('woman') && body.includes('girl'), body.slice(0, 400));
-  check('carries the buyer and the amount', body.includes('order@seller.com') && body.includes('198.00'), body.slice(0, 400));
+  const buyer = JSON.stringify(sendState.mails[0] || {}), jay = JSON.stringify(sendState.mails[1] || {});
+  check('buyer mail carries the cards link for this session', buyer.includes('christmas-video/thanks/?p=video&amp;s=cs_xmas_1'), buyer.slice(0, 600));
+  check('buyer mail never uses session_id= (that would count a second purchase)', !buyer.includes('session_id='), buyer.slice(0, 600));
+  check('Jay mail carries the cards link and that the buyer has it', jay.includes('s=cs_xmas_1') && jay.includes('Cards link mailed to buyer') && jay.includes('Yes'), jay.slice(0, 900));
+  check('Jay mail carries the buyer and the amount', jay.includes('order@seller.com') && jay.includes('198.00'), jay.slice(0, 400));
 }
 check('still no course access', !DB.allowed_emails.some((r: any) => r.email === 'order@seller.com'));
+
+console.log('\n17g2. The Skill, through any link: one mail, to Jay, and the buyer is never asked for video cards');
+reset();
+sendState.stripeLineItems = [XMAS_SKILL];
+res = await post(xmas('skill@seller.com', 'plink_made_later_by_hand', 29900));
+check('http 200', res.status === 200, `got ${res.status}`);
+check('exactly one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
+check('it says to send the Skill', JSON.stringify(sendState.mails[0] || {}).includes('Send the Skill'), JSON.stringify(sendState.mails[0] || {}).slice(0, 500));
+reset();
+sendState.stripeLineItems = [];
+res = await post(xmas('blind@seller.com', XMAS_PLINK_SKILL, 29900));
+check('line items lookup failed, Skill link: still one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
+
+console.log('\n17g3. A video order whose line items lookup failed: the video link alone still mails the buyer');
+reset();
+sendState.stripeLineItems = [];
+res = await post(xmas('blindvideo@seller.com', XMAS_PLINK));
+check('two mails, buyer and Jay', sendState.mails.length === 2 && String(sendState.mails[0]?.to).includes('blindvideo@seller.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
+
+console.log('\n17g4. An order we cannot identify (unknown link, lookup failed): Jay is told to check, the buyer is not mailed');
+reset();
+sendState.stripeLineItems = [];
+{
+  const s: any = xmas('mystery@seller.com', 'plink_unknown'); s.data.object.metadata = { project: 'christmas_video' };
+  res = await post(s);
+}
+check('one mail, to Jay, saying to check', sendState.mails.length === 1 && JSON.stringify(sendState.mails[0]).includes('Could not tell what was bought'), JSON.stringify(sendState.mails).slice(0, 500));
 
 console.log('\n17h. The mail cannot be sent: 500, so Stripe retries and the order is not lost');
 reset();

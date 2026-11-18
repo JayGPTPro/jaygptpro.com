@@ -80,7 +80,9 @@ jobs:
               -H 'Content-Type: application/json' -H 'x-form-secret: garbage-probe' -d '{}')
             echo "$s -> $code"
             case "$s:$code" in
-              *:401|cardcom-webhook:*|stripe-webhook:*) ;;
+              # christmas-films is public by design: the buyer's browser calls it, and the
+              # Stripe session id in the request is the key. It answers 400 to this probe.
+              *:401|cardcom-webhook:*|stripe-webhook:*|christmas-films:400) ;;
               *) echo "::error::$s answered $code to a garbage key, expected 401"; exit 1 ;;
             esac
           done
