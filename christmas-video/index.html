@@ -122,8 +122,8 @@ nav .btn{padding:12px 22px;font-size:14px}
 .dbtn.buy{border:0;background:linear-gradient(180deg,#f7e0ad,#e3ba70 55%,#c9973f);color:#1c1305;font-weight:700;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:0 26px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
 .dbtn.buy small{font:500 12px/1 var(--sans);opacity:.75}
 .dbtn.buy:hover{background:linear-gradient(180deg,#fbe8be,#e9c27b 55%,#d2a14a)}
-.ghost{position:fixed;z-index:90;pointer-events:none;width:96px;height:96px;margin:-48px 0 0 -48px;display:flex;align-items:center;justify-content:center}
-.ghost img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
+.flyer{position:fixed;z-index:90;pointer-events:none;width:96px;height:96px;margin:-48px 0 0 -48px;display:flex;align-items:center;justify-content:center}
+.flyer img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
 
 /* ===== 01 how it adapts: the film stays pinned, the copy changes one thing at a time ===== */
 .adapt .wrap{max-width:1320px}
@@ -356,7 +356,9 @@ footer{padding:70px 0 60px;text-align:center}
   .pscr{border-radius:10px}
   .ptag{left:8px;bottom:8px;padding:4px 10px 4px 4px;gap:6px}.ptag img{width:24px;height:24px}.ptag b{font-size:11.5px}.ptag small{font-size:10px}
   .adapt .head{order:-1;margin-bottom:22px}
-  .st{min-height:46vh;opacity:.35}
+  .st{min-height:34vh;opacity:.35}
+  .js .rv{transform:translateY(14px);transition-duration:.45s}
+  .js .rv.d1,.js .rv.d2{transition-delay:0s}
   .st h3{font-size:28px}
   .adapt .st:last-child{min-height:40vh}
   .grid6{grid-template-columns:1fr 1fr;gap:10px}
@@ -438,7 +440,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <div class="top"><div class="wrap">
     <div class="kick">A Christmas film for Amazon sellers</div>
     <h1>One Christmas film.<br><span><i>Your product.</i> <i>Your family.</i></span></h1>
-    <p class="sub">Put your product into a cinematic Christmas story, as the gift everyone hoped for. You pick who gives it and who gets it. Ready in 48 hours.</p>
+    <p class="sub">Put your product into a cinematic Christmas story, as the gift everyone hoped for. You pick who gives it and who gets it. Ready in 48 hours (business days).</p>
   </div></div>
   <div class="dock">
     <p class="hint">Tap a product and watch it become the gift</p>
@@ -717,7 +719,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   function landing(pt){var r=stage.getBoundingClientRect(),minX=r.left+r.width*x+30;
     if(pt)return{x:Math.max(minX,Math.min(r.right-30,pt.x)),y:Math.max(r.top+30,Math.min(r.bottom-30,pt.y))};
     return{x:r.left+r.width*(x+(1-x)/2),y:r.top+r.height*(small?.5:.46)};}
-  function ghost(id,cx,cy){var g=document.createElement('div');g.className='ghost';g.innerHTML='<img src="'+pimg(F(id))+'" alt="">';g.style.left=cx+'px';g.style.top=cy+'px';document.body.appendChild(g);return g;}
+  function ghost(id,cx,cy){var g=document.createElement('div');g.className='flyer';g.innerHTML='<img src="'+pimg(F(id))+'" alt="">';g.style.left=cx+'px';g.style.top=cy+'px';document.body.appendChild(g);return g;}
   /* the product lifts off the shelf and flies in an arc into the film */
   function fly(btn,id,to){return new Promise(function(done){var r=btn.getBoundingClientRect(),sx=r.left+r.width/2,sy=r.top+r.height/2,dx=to.x-sx,dy=to.y-sy,lift=small?70:150,big=small?1.9:2.6;
     var g=ghost(id,sx,sy),im=btn.querySelector('img');
@@ -788,8 +790,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   var pvs=document.querySelectorAll('#pscr video'),pf=0,pcur=null,ptag=document.getElementById('ptag'),adapt=document.getElementById('adapt'),adaptOn=false;
   function pset(id){if(pcur===id)return;pcur=id;var f=F(id),nx=pvs[1-pf],cu=pvs[pf],t=cu.currentTime||0;
     nx.poster='clips/'+id+'.jpg?v=5';nx.preload='auto';nx.src=clip(id);nx.load();if(!cu.currentSrc){nx.classList.add('on');}
-    nx.addEventListener('loadeddata',function(){if(pcur!==id)return;nx.currentTime=t;if(adaptOn)play(nx);nx.classList.add('on');cu.classList.remove('on');setTimeout(function(){cu.pause();},700);pf=1-pf;},{once:true});
-    ptag.innerHTML='<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+'</small></div>';}
+    nx.addEventListener('loadeddata',function(){if(pcur!==id)return;ptag.innerHTML=tagH;nx.currentTime=t;if(adaptOn)play(nx);nx.classList.add('on');cu.classList.remove('on');setTimeout(function(){cu.pause();},700);pf=1-pf;},{once:true});
+    var tagH='<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+'</small></div>';if(!cu.currentSrc)ptag.innerHTML=tagH;}
   var steps=document.querySelectorAll('.st');
 
   /* ---------- 02: six films on one clock ---------- */
