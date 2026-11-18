@@ -149,11 +149,33 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
       rows.push(['From the checkout (old fields)', `${fields.amazonlink || '-'} | gives: ${fields.giver || '-'} | receives: ${fields.receiver || '-'}`]);
     }
   } else if (isSkill) {
-    rows.push(['To do', 'Send the Skill and the training to the buyer by email.']);
+    // The Perfect Gift Kit (18.11.2026): delivered at once, no 48 hours. The buyer's private kit page opens with the
+    // Checkout Session id; the christmas-kit function checks it is paid, bought the Skill and was not refunded.
+    const kitUrl = `https://jaygptpro.com/christmas-video/kit/?s=${encodeURIComponent(String(session?.id || ''))}`;
+    let buyerMailed = false;
+    if (email && session?.id) {
+      const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
+        + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
+        + `<p>Thank you for buying the Perfect Gift Kit. Everything is ready for you on your own private page: a short video that shows you every step, the setup, and the Skill itself.</p>`
+        + `<p><a href="${esc(kitUrl)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">Open my kit</a></p>`
+        + `<p>Keep this email. The button always opens your kit, and when we improve the film, you get the new version there.</p>`
+        + `<p>Stuck at any step? Just reply to this email.</p><p>Jay</p></div>`;
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [email], reply_to: CHRISTMAS_NOTIFY_TO,
+            subject: 'Your Perfect Gift Kit is ready', html: buyerHtml }),
+        });
+        buyerMailed = res.ok;
+        if (!res.ok) console.error('Christmas kit buyer mail failed:', res.status, await res.text());
+      } catch (e) { console.error('Christmas kit buyer mail error:', e); }
+    }
+    rows.push(['Kit page', kitUrl]);
+    rows.push(['Kit link mailed to buyer', buyerMailed ? 'Yes. Nothing to do.' : 'NO. Send the buyer the kit page link above yourself.']);
   } else {
     rows.push(['To do', 'Could not tell what was bought (the Stripe lookup failed). Check the payment in Stripe. If it is a video, send the buyer the cards page: https://jaygptpro.com/christmas-video/thanks/?p=video&s=' + String(session?.id || '')]);
   }
-  rows.push(['Due', isSkill ? 'Within 48 hours (business days) of this payment.' : 'Each video: within 48 hours (business days) of its card.']);
+  if (!isSkill) rows.push(['Due', 'Each video: within 48 hours (business days) of its card.']);
   rows.push(['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')]);
   const html = `<h2>New Christmas order: ${esc(what)}</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('')

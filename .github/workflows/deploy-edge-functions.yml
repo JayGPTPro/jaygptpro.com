@@ -82,7 +82,9 @@ jobs:
             case "$s:$code" in
               # christmas-films is public by design: the buyer's browser calls it, and the
               # Stripe session id in the request is the key. It answers 400 to this probe.
-              *:401|cardcom-webhook:*|stripe-webhook:*|christmas-films:400) ;;
+              # christmas-kit too (18.11.2026): the Perfect Gift Kit's page and setup call it with the session id;
+              # a POST is refused with 405, and it only hands out signed links for a paid, unrefunded Skill order.
+              *:401|cardcom-webhook:*|stripe-webhook:*|christmas-films:400|christmas-kit:405) ;;
               *) echo "::error::$s answered $code to a garbage key, expected 401"; exit 1 ;;
             esac
           done

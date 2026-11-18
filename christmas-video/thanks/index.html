@@ -257,7 +257,10 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   var DEF={video:99,pack:345,skill:299},value=DEF[kind]||99,qty=1;
   try{var o=JSON.parse(localStorage.getItem('xmas_order')||'null');
     if(o&&(o.kind===kind||(o.kind!=='skill'&&kind!=='skill'))&&Date.now()-o.t<6*3600*1000){value=o.value;qty=o.qty;}}catch(e){}
-  if(kind==='skill'){document.getElementById('msg').textContent='The Skill and the training arrive in your email within 48 hours.';document.getElementById('more').firstChild.textContent='We send them to the email you paid with. Questions? ';}
+  if(kind==='skill'){   // the Perfect Gift Kit is delivered at once: the kit page opens with this session id (18.11.2026)
+    var m=document.getElementById('msg');m.textContent='Your Perfect Gift Kit is ready. ';
+    if(/^cs_(live|test)_/.test(cid)){var a=document.createElement('a');a.className='btn gold';a.href='/christmas-video/kit/?s='+encodeURIComponent(cid);a.textContent='Open my kit';a.style.marginTop='18px';m.appendChild(document.createElement('br'));m.appendChild(a);}
+    document.getElementById('more').firstChild.textContent='We also sent the link to the email you paid with, so you can come back to it any time. Questions? ';}
   else if(kind==='pack'){document.getElementById('msg').textContent='Your Christmas films are on their way. Each film arrives within 48 hours (business days).';}
   /* one card per video: the product link, who gives, who receives */
   var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-films';

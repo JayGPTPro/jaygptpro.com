@@ -811,17 +811,23 @@ check('two mails: the buyer first, then Jay', sendState.mails.length === 2 && St
 }
 check('still no course access', !DB.allowed_emails.some((r: any) => r.email === 'order@seller.com'));
 
-console.log('\n17g2. The Skill, through any link: one mail, to Jay, and the buyer is never asked for video cards');
+console.log('\n17g2. The Skill (the Perfect Gift Kit, 18.11): the buyer gets the kit page at once, Jay gets the sale, and nobody is asked for video cards');
 reset();
 sendState.stripeLineItems = [XMAS_SKILL];
 res = await post(xmas('skill@seller.com', 'plink_made_later_by_hand', 29900));
 check('http 200', res.status === 200, `got ${res.status}`);
-check('exactly one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
-check('it says to send the Skill', JSON.stringify(sendState.mails[0] || {}).includes('Send the Skill'), JSON.stringify(sendState.mails[0] || {}).slice(0, 500));
+check('two mails: buyer first, then Jay', sendState.mails.length === 2 && String(sendState.mails[0]?.to).includes('skill@seller.com') && String(sendState.mails[1]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
+{
+  const buyer = JSON.stringify(sendState.mails[0] || {}), jay = JSON.stringify(sendState.mails[1] || {});
+  check('buyer mail opens the kit page for this session', buyer.includes('christmas-video/kit/?s=cs_xmas_1') && buyer.includes('Your Perfect Gift Kit is ready'), buyer.slice(0, 600));
+  check('buyer mail never asks for video cards', !buyer.includes('thanks/?p=') && !buyer.toLowerCase().includes('fill in'), buyer.slice(0, 600));
+  check('Jay mail carries the kit page and that the buyer has it', jay.includes('kit/?s=cs_xmas_1') && jay.includes('Kit link mailed to buyer') && jay.includes('Yes'), jay.slice(0, 900));
+  check('Jay mail no longer promises 48 hours for the Skill', !jay.includes('48 hours'), jay.slice(0, 900));
+}
 reset();
 sendState.stripeLineItems = [];
 res = await post(xmas('blind@seller.com', XMAS_PLINK_SKILL, 29900));
-check('line items lookup failed, Skill link: still one mail, to Jay', sendState.mails.length === 1 && String(sendState.mails[0]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
+check('line items lookup failed, Skill link: the buyer still gets the kit, and Jay hears of it', sendState.mails.length === 2 && String(sendState.mails[0]?.to).includes('blind@seller.com') && String(sendState.mails[1]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
 
 console.log('\n17g3. A video order whose line items lookup failed: the video link alone still mails the buyer');
 reset();
