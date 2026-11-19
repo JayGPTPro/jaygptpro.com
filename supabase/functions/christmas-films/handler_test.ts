@@ -110,3 +110,24 @@ Deno.test("bonus: once given it stays, even if asked again later", async () => {
 Deno.test("bonus: a Skill-only order still has no cards", async () => {
   assert((await handle(new Request("https://x/f?s=" + S), world(0, true, IN).deps)).status === 404, "skill");
 });
+
+Deno.test("vault: a member's claim is mailed to Jay with the Vault email, nothing is stored", async () => {
+  const w = world(0);
+  const r = await handle(post({ vault: true, name: "Dana", email: "Dana@Example.com ", link: "https://www.amazon.com/x/dp/b000000009?ref=1", giver: "mom", receiver: "partner" }), w.deps);
+  const j = await r.json();
+  assert(r.status === 200 && j.ok === true && j.link === "https://www.amazon.com/dp/B000000009", JSON.stringify(j));
+  assert(w.mails.length === 1 && w.mails[0].includes("Vault free film claim") && w.mails[0].includes("dana@example.com") && w.mails[0].includes("Mom to Husband (Dad)"), w.mails.join("|"));
+  assert(Object.keys(w.o.metadata).length === 1, "no Stripe write");
+});
+Deno.test("vault: refuses a claim without a name, a real email, a link or the roles", async () => {
+  const ok = { vault: true, name: "Dana", email: "dana@example.com", link: "https://www.amazon.com/dp/B000000009", giver: "dad", receiver: "son" };
+  for (const bad of [{ name: "" }, { email: "dana" }, { link: "" }, { giver: "santa" }, { receiver: "dog" }]) {
+    const r = await handle(post({ ...ok, ...bad }), world(0).deps);
+    assert(r.status === 400, JSON.stringify(bad));
+  }
+});
+Deno.test("vault: a mail that does not go out is an error the member sees", async () => {
+  const w = world(0); w.deps.mail = () => Promise.resolve(false);
+  const r = await handle(post({ vault: true, name: "Dana", email: "dana@example.com", link: "https://www.amazon.com/dp/B000000009", giver: "dad", receiver: "son" }), w.deps);
+  assert(r.status === 502, String(r.status));
+});

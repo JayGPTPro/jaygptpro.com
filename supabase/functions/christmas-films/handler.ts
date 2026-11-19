@@ -121,6 +121,37 @@ export function receiverLabel(giver: string, receiver: string): string {
   return WHO[receiver] || receiver;
 }
 
+// AI Vault members: the first film is free (Jay, 19.11.2026). No payment and no member list
+// here: the member fills one card on /christmas-video/vault/ with the email they use in the Vault,
+// and Jay checks the membership by hand before the film is made. Nothing is stored, so a mail
+// that does not go out is an error the member sees.
+const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/i;
+async function vaultClaim(b: Record<string, unknown>, deps: Deps): Promise<Response> {
+  const email = String(b?.email || "").trim().toLowerCase();
+  const name = String(b?.name || "").trim().slice(0, 80);
+  const giver = String(b?.giver || ""), receiver = String(b?.receiver || "");
+  const link = cleanLink(b?.link);
+  if (!name) return json({ error: "name", message: "Please write your name." }, 400);
+  if (!EMAIL.test(email)) return json({ error: "email", message: "Please write the email you use in the Vault." }, 400);
+  if (!link) return json({ error: "link", message: "Please paste the link to your product." }, 400);
+  if (!(GIVERS as readonly string[]).includes(giver)) return json({ error: "giver", message: "Pick who gives the gift." }, 400);
+  if (!(RECEIVERS as readonly string[]).includes(receiver)) return json({ error: "receiver", message: "Pick who receives it." }, 400);
+  const rows: [string, string][] = [
+    ["Vault email", email],
+    ["Name", name],
+    ["Product link", link],
+    ["Who gives", WHO[giver]],
+    ["Who receives", receiverLabel(giver, receiver)],
+    ["Check first", "Is this email an active AI Vault member, and is this their first free film? One free film per member."],
+    ["Due", "Within 48 hours (business days) after you confirm the membership."],
+  ];
+  const html = `<h2>AI Vault free film claim: check membership, then make</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
+    + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("") + "</table>";
+  const sent = await deps.mail(`Vault free film claim: ${WHO[giver]} to ${receiverLabel(giver, receiver)} (${email})`, html, email);
+  if (!sent) return json({ error: "mail", message: "That did not go through. Please write to info@jaygptpro.com." }, 502);
+  return json({ ok: true, link });
+}
+
 export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   const url = new URL(req.url);
@@ -138,6 +169,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (req.method === "POST") {
     let b: Record<string, unknown>;
     try { b = JSON.parse(await req.text()); } catch { return json({ error: "bad json" }, 400); }
+    if (b?.vault === true) return await vaultClaim(b, deps);
     const s = b?.s;
     if (!validSession(s)) return json({ error: "bad session" }, 400);
     const n = Number(b?.n);
