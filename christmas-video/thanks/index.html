@@ -268,7 +268,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   var LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname),demo=LOCAL?parseInt(q.get('demo')||'0',10):0;
   function h(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function partner(g){return g==='mom'?'Husband':'Wife';}
-  function recLabel(g,r){return r==='partner'?partner(g):(r==='son'?'Son':'Daughter');}
+  function recLabel(g,r){return r==='partner'?partner(g):({son:'Son',daughter:'Daughter',toddler:'Toddler'}[r]||r);}
   var total=0,doneN=0,bonus=false;
   function count(){document.getElementById('fcount').textContent=doneN+' of '+total+' ready';
     if(total&&doneN===total){document.getElementById('msg').textContent=total>1?'All '+total+' cards are in. Each film arrives in your email within 48 hours (business days).':'Your card is in. Your video arrives in your email within 48 hours (business days).';}}
@@ -276,8 +276,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     el.innerHTML='<div class="top"><b>Film '+n+(total>1?' of '+total:'')+(bonus&&n===total?' <span class="gift">🎁 Free bonus film</span>':'')+'</b><span class="st8">To fill</span></div>'
       +'<div class="form"><label for="l'+n+'">Link to your product on Amazon</label><input id="l'+n+'" type="url" inputmode="url" autocomplete="off" placeholder="https://www.amazon.com/dp/...">'
       +'<label>Who gives the gift?</label><div class="seg" data-k="giver"><button type="button" data-v="mom">Mom</button><button type="button" data-v="dad">Dad</button></div>'
-      +'<label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Son</button><button type="button" data-v="daughter">Daughter</button><button type="button" data-v="partner">Wife / Husband</button></div>'
-      +'<p class="age">A son or daughter in the film is a child of about 8 to 12. Is your product for a much younger child or a teenager? Write to us at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we will find a way.</p>'
+      +'<label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Son</button><button type="button" data-v="daughter">Daughter</button><button type="button" data-v="toddler">Toddler</button><button type="button" data-v="partner">Wife / Husband</button></div>'
+      +'<p class="age">A son or daughter in the film is a child of about 8 to 12, a toddler is about 3 (best for toys for ages 1 to 4). Is your product for a teenager? Write to us at <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we will find a way.</p>'
       +'<p class="err" role="alert"></p><button type="button" class="btn gold save">Save this film</button></div>'
       +'<div class="sum"></div>';
     var inp=el.querySelector('input'),err=el.querySelector('.err'),save=el.querySelector('.save'),sum=el.querySelector('.sum'),badge=el.querySelector('.st8');

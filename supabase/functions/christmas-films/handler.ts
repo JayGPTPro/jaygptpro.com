@@ -24,7 +24,7 @@ export const BONUS_END = Date.UTC(2026, 10, 20, 8, 0, 0) / 1000;   // 20.11 00:0
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
 export const GIVERS = ["mom", "dad"] as const;
-export const RECEIVERS = ["son", "daughter", "partner"] as const;
+export const RECEIVERS = ["son", "daughter", "toddler", "partner"] as const;   // toddler: Jay, 19.11.2026 (a child of about 3)
 const LINK_MAX = 190; // two cards must fit one 500-character metadata value
 
 export type Film = { n: number; link: string; giver: string; receiver: string };
@@ -115,7 +115,7 @@ function maskEmail(e: string): string {
   return a.slice(0, 2) + "***@" + b;
 }
 
-const WHO: Record<string, string> = { mom: "Mom", dad: "Dad", son: "Son", daughter: "Daughter" };
+const WHO: Record<string, string> = { mom: "Mom", dad: "Dad", son: "Son", daughter: "Daughter", toddler: "Toddler" };
 export function receiverLabel(giver: string, receiver: string): string {
   if (receiver === "partner") return giver === "mom" ? "Husband (Dad)" : "Wife (Mom)";
   return WHO[receiver] || receiver;

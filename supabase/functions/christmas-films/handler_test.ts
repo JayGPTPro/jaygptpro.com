@@ -131,3 +131,10 @@ Deno.test("vault: a mail that does not go out is an error the member sees", asyn
   const r = await handle(post({ vault: true, name: "Dana", email: "dana@example.com", link: "https://www.amazon.com/dp/B000000009", giver: "dad", receiver: "son" }), w.deps);
   assert(r.status === 502, String(r.status));
 });
+
+Deno.test("toddler: a card for a toddler is saved and mailed as Toddler", async () => {
+  const w = world(1);
+  const r = await handle(post({ s: S, n: 1, link: "https://www.amazon.com/dp/B0BSP12239", giver: "dad", receiver: "toddler" }), w.deps);
+  assert(r.status === 200 && w.mails[0].includes("Dad to Toddler"), w.mails.join("|"));
+  assert(readFilms(w.o.metadata, 1)[0].receiver === "toddler", "stored");
+});
