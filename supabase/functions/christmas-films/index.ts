@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { handle, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, type Order } from "./handler.ts";
+import { handle, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, SKILL_PRICE_BF, type Order } from "./handler.ts";
 
 const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const resendKey = Deno.env.get("RESEND_API_KEY") || "";
@@ -29,7 +29,7 @@ function usedVault(s: any): boolean {
 Deno.serve((req) =>
   handle(req, {
     order: async (id): Promise<Order | null> => {
-      const res = await stripe(`checkout/sessions/${id}?expand[]=line_items&expand[]=total_details.breakdown`);
+      const res = await stripe(`checkout/sessions/${id}?expand[]=line_items&expand[]=total_details.breakdown&expand[]=payment_intent.latest_charge`);
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`stripe session ${res.status}`);
       const s = await res.json();
@@ -42,9 +42,11 @@ Deno.serve((req) =>
         qty,
         email: s?.customer_details?.email || s?.customer_email || "",
         name: s?.customer_details?.name || "",
-        paymentIntent: typeof s?.payment_intent === "string" ? s.payment_intent : "",
+        paymentIntent: typeof s?.payment_intent === "string" ? s.payment_intent : (s?.payment_intent?.id || ""),
         metadata: s?.metadata || {},
         created: Number(s?.created || 0),
+        // when the money actually moved; a $0 order has no charge and falls back to "created"
+        paidAt: Number(s?.payment_intent?.latest_charge?.created || 0),
         vault: usedVault(s),
       };
     },
@@ -54,7 +56,7 @@ Deno.serve((req) =>
       const q = new URLSearchParams({
         limit: "100", status: "complete",
         "customer_details[email]": email,
-        "created[gte]": String(BONUS_START), "created[lt]": String(BONUS_END),
+        "created[gte]": String(BONUS_START - 86400), "created[lt]": String(BONUS_END),
       });
       const res = await stripe(`checkout/sessions?${q}`);
       if (!res.ok) throw new Error(`stripe list ${res.status}`);
@@ -71,6 +73,48 @@ Deno.serve((req) =>
       }
       return false;
     },
+    // The Vault free film is recorded on the Stripe customer with that email (made if none).
+    vaultClaimed: async (email) => {
+      const res = await stripe(`customers?${new URLSearchParams({ email, limit: "100" })}`);
+      if (!res.ok) throw new Error(`stripe customers ${res.status}`);
+      return ((await res.json())?.data || []).some((c: any) => c?.metadata?.xmas_vault === "1");
+    },
+    vaultRecord: async (email, card) => {
+      const res = await stripe(`customers?${new URLSearchParams({ email, limit: "1" })}`);
+      const found = res.ok ? ((await res.json())?.data || [])[0] : null;
+      const body = new URLSearchParams({
+        "metadata[xmas_vault]": "1",
+        "metadata[xmas_vault_at]": new Date().toISOString(),
+        "metadata[xmas_vault_link]": card.link,
+        "metadata[xmas_vault_roles]": `${card.giver} to ${card.receiver}`,
+      });
+      if (!found) { body.set("email", email); body.set("name", card.name); }
+      const w = await stripe(found ? `customers/${found.id}` : "customers", body);
+      if (!w.ok) throw new Error(`stripe vault record ${w.status}: ${await w.text()}`);
+    },
+    bonusOrder: async (email) => {
+      const q = new URLSearchParams({ limit: "100", status: "complete", "customer_details[email]": email, "created[gte]": String(BONUS_START - 86400) });
+      const res = await stripe(`checkout/sessions?${q}`);
+      if (!res.ok) throw new Error(`stripe list ${res.status}`);
+      return ((await res.json())?.data || []).some((x: any) => x?.metadata?.project === "christmas_video" && x?.metadata?.bonus === "1");
+    },
+    skillCheckout: async (price, ref) => {
+      const body = new URLSearchParams({
+        mode: "payment",
+        "line_items[0][price]": price, "line_items[0][quantity]": "1",
+        success_url: "https://jaygptpro.com/christmas-video/thanks/?p=skill&session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: "https://jaygptpro.com/christmas-video/#order",
+        "metadata[project]": "christmas_video",
+        "metadata[offer]": price === SKILL_PRICE_BF ? "bf_skill_199" : "skill_299",
+        "custom_text[submit][message]": "Your kit opens right after you pay, and the link is in your email too.",
+        customer_creation: "if_required",
+      });
+      if (ref) body.set("client_reference_id", ref);
+      const res = await stripe("checkout/sessions", body);
+      if (!res.ok) throw new Error(`stripe checkout ${res.status}: ${await res.text()}`);
+      return String((await res.json())?.url || "");
+    },
+    now: () => Math.floor(Date.now() / 1000),
     saveMeta: async (id, patch) => {
       const body = new URLSearchParams();
       for (const [k, v] of Object.entries(patch)) body.set(`metadata[${k}]`, v);

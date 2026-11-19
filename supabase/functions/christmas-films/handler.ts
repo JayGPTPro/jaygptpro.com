@@ -14,13 +14,21 @@
 
 export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
 
-// Launch-day bonus (Jay, 19.11.2026): every paying customer who orders films on Thursday
-// 19 November, Pacific time, gets ONE extra film free, however many films and orders.
-// The window is the checkout's creation time: 00:00 PST to 23:59:59 PST.
-// One per customer: only the customer's FIRST paid film order in the window gets it,
-// judged by the email they paid with. A Vault free-film order never gets it (no stacking).
-export const BONUS_START = Date.UTC(2026, 10, 19, 8, 0, 0) / 1000; // 19.11 00:00 PST
-export const BONUS_END = Date.UTC(2026, 10, 20, 8, 0, 0) / 1000;   // 20.11 00:00 PST, exclusive
+// Free bonus film (Jay's launch plan, revised 19.11.2026): every customer who PAYS for at
+// least one film between launch and Monday 23 November 11:59 PM Pacific time gets exactly ONE
+// extra film free, however many films and orders. Judged by the moment the payment went
+// through (the charge), not by when the cards are filled: the bonus is written to the order
+// at payment and stays with it. One per customer, by the email they paid with: only their
+// FIRST paid film order in the window. Never for a customer who took the Vault free film.
+// The window opens on Thursday 19.11 00:00 PST because the page promised a bonus that day
+// before the plan moved; those buyers keep it.
+export const BONUS_START = Date.UTC(2026, 10, 19, 8, 0, 0) / 1000; // Thu 19.11 00:00 PST
+export const BONUS_END = Date.UTC(2026, 10, 24, 8, 0, 0) / 1000;   // Tue 24.11 00:00 PST, exclusive
+// Black Friday Skill price: $199 until Monday 30.11 11:59 PM PST, $299 from 1.12. The price is
+// picked HERE, by the server's clock, when the checkout is made: no step to remember on 1.12.
+export const BF_END = Date.UTC(2026, 11, 1, 8, 0, 0) / 1000;       // Tue 1.12 00:00 PST
+export const SKILL_PRICE_BF = "price_1UdWhjRqcDuiISNTODc4cSas";    // $199
+export const SKILL_PRICE_FULL = "price_1Uc3M6RqcDuiISNTdJqMRrRa";  // $299
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
 export const GIVERS = ["mom", "dad"] as const;
@@ -36,14 +44,21 @@ export type Order = {
   paymentIntent: string;
   metadata: Record<string, string>;
   created: number;                   // unix seconds, when the checkout was opened
+  paidAt: number;                    // unix seconds, when the payment went through (0: unknown)
   vault: boolean;                    // paid (or not) with the Vault first-film coupon
 };
+export type VaultCard = { name: string; link: string; giver: string; receiver: string };
 export type Deps = {
   order: (sessionId: string) => Promise<Order | null>;                       // null: no such session
   saveMeta: (sessionId: string, patch: Record<string, string>) => Promise<void>;
   mail: (subject: string, html: string, replyTo: string) => Promise<boolean>;
   // Did this email pay for another film order in the bonus window, opened before this one?
   earlierFilmOrder: (email: string, created: number, sessionId: string) => Promise<boolean>;
+  vaultClaimed: (email: string) => Promise<boolean>;           // has this email taken the Vault free film?
+  vaultRecord: (email: string, card: VaultCard) => Promise<void>;
+  bonusOrder: (email: string) => Promise<boolean>;             // does this email already have a bonus film?
+  skillCheckout: (price: string, ref: string) => Promise<string>; // a Stripe Checkout URL
+  now: () => number;                                           // unix seconds
 };
 
 // 1 when this order carries the launch-day bonus film, else 0. Decided once and written to
@@ -52,12 +67,14 @@ export async function bonusFor(o: Order, sessionId: string, deps: Deps): Promise
   if (o.metadata.bonus === "1") return 1;
   if (o.metadata.bonus === "0") return 0;
   if (!o.paid || o.qty < 1) return 0;
+  const t = o.paidAt || o.created;
   let b = 1;
-  if (o.created < BONUS_START || o.created >= BONUS_END) b = 0;
+  if (t < BONUS_START || t >= BONUS_END) b = 0;
   else if (o.vault) b = 0;
   else if (!o.email) b = 0;
+  else if (await deps.vaultClaimed(o.email.toLowerCase())) b = 0;
   else if (await deps.earlierFilmOrder(o.email.toLowerCase(), o.created, sessionId)) b = 0;
-  if (o.created >= BONUS_START) {
+  if (t >= BONUS_START) {
     try { await deps.saveMeta(sessionId, { bonus: String(b) }); o.metadata.bonus = String(b); } catch { /* decided again next time */ }
   }
   return b;
@@ -136,6 +153,12 @@ async function vaultClaim(b: Record<string, unknown>, deps: Deps): Promise<Respo
   if (!link) return json({ error: "link", message: "Please paste the link to your product." }, 400);
   if (!(GIVERS as readonly string[]).includes(giver)) return json({ error: "giver", message: "Pick who gives the gift." }, 400);
   if (!(RECEIVERS as readonly string[]).includes(receiver)) return json({ error: "receiver", message: "Pick who receives it." }, 400);
+  if (await deps.vaultClaimed(email)) {
+    return json({ error: "claimed", message: "This email has already claimed its free Vault film. More films are $99 each on the film page." }, 409);
+  }
+  if (await deps.bonusOrder(email)) {
+    return json({ error: "bonus", message: "Your order with this email already includes a free bonus film, and the two free-film offers do not combine. Questions? Write to info@jaygptpro.com." }, 409);
+  }
   const rows: [string, string][] = [
     ["Vault email", email],
     ["Name", name],
@@ -149,7 +172,18 @@ async function vaultClaim(b: Record<string, unknown>, deps: Deps): Promise<Respo
     + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("") + "</table>";
   const sent = await deps.mail(`Vault free film claim: ${WHO[giver]} to ${receiverLabel(giver, receiver)} (${email})`, html, email);
   if (!sent) return json({ error: "mail", message: "That did not go through. Please write to info@jaygptpro.com." }, 502);
+  // Recorded after the mail: a claim Jay has in his inbox and we failed to record is a
+  // duplicate he can see; a recorded claim he never heard of is a film nobody makes.
+  try { await deps.vaultRecord(email, { name, link, giver, receiver }); } catch (e) { console.error("vault record failed:", e); }
   return json({ ok: true, link });
+}
+
+// The Skill checkout: $199 until Black Friday ends, $299 after, by the server's clock.
+async function skillCheckout(b: Record<string, unknown>, deps: Deps): Promise<Response> {
+  const ref = String(b?.ref || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 190);
+  const bf = deps.now() < BF_END;
+  const url = await deps.skillCheckout(bf ? SKILL_PRICE_BF : SKILL_PRICE_FULL, ref);
+  return json({ ok: true, url, price: bf ? 199 : 299 });
 }
 
 export async function handle(req: Request, deps: Deps): Promise<Response> {
@@ -170,6 +204,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     let b: Record<string, unknown>;
     try { b = JSON.parse(await req.text()); } catch { return json({ error: "bad json" }, 400); }
     if (b?.vault === true) return await vaultClaim(b, deps);
+    if (b?.checkout === "skill") return await skillCheckout(b, deps);
     const s = b?.s;
     if (!validSession(s)) return json({ error: "bad session" }, 400);
     const n = Number(b?.n);

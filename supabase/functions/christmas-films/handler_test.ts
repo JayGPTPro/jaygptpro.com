@@ -1,17 +1,23 @@
-import { handle, cleanLink, readFilms, BONUS_START, BONUS_END, type Deps, type Order } from "./handler.ts";
+import { handle, cleanLink, readFilms, BONUS_START, BONUS_END, BF_END, SKILL_PRICE_BF, SKILL_PRICE_FULL, type Deps, type Order } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const S = "cs_live_" + "a".repeat(40);
 const BEFORE = BONUS_START - 3600; // an order placed before launch day: no bonus, as before
-function world(qty = 5, paid = true, created = BEFORE, opts: { vault?: boolean; earlier?: boolean } = {}) {
-  const o: Order = { paid, qty, email: "buyer@example.com", name: "Buyer", paymentIntent: "pi_1", metadata: { project: "christmas_video" }, created, vault: !!opts.vault };
+function world(qty = 5, paid = true, created = BEFORE, opts: { vault?: boolean; earlier?: boolean; paidAt?: number; vaultClaimed?: boolean; bonusOrder?: boolean; now?: number } = {}) {
+  const o: Order = { paid, qty, email: "buyer@example.com", name: "Buyer", paymentIntent: "pi_1", metadata: { project: "christmas_video" }, created, paidAt: opts.paidAt ?? 0, vault: !!opts.vault };
+  const vaultRecords: string[] = [], checkouts: string[] = [];
   const mails: string[] = [];
   const deps: Deps = {
     order: (id) => Promise.resolve(id === S ? { ...o, metadata: { ...o.metadata } } : null),
     saveMeta: (_id, p) => { Object.assign(o.metadata, p); return Promise.resolve(); },
     mail: (s) => { mails.push(s); return Promise.resolve(true); },
     earlierFilmOrder: () => Promise.resolve(!!opts.earlier),
+    vaultClaimed: (e) => Promise.resolve(!!opts.vaultClaimed || vaultRecords.includes(e)),
+    vaultRecord: (e) => { vaultRecords.push(e); return Promise.resolve(); },
+    bonusOrder: () => Promise.resolve(!!opts.bonusOrder),
+    skillCheckout: (price) => { checkouts.push(price); return Promise.resolve("https://checkout.stripe.com/c/pay/cs_test_x"); },
+    now: () => opts.now ?? Math.floor(Date.now() / 1000),
   };
-  return { o, mails, deps };
+  return { o, mails, deps, vaultRecords, checkouts };
 }
 const post = (b: unknown) => new Request("https://x/f", { method: "POST", body: JSON.stringify(b) });
 
@@ -137,4 +143,44 @@ Deno.test("toddler: a card for a toddler is saved and mailed as Toddler", async 
   const r = await handle(post({ s: S, n: 1, link: "https://www.amazon.com/dp/B0BSP12239", giver: "dad", receiver: "toddler" }), w.deps);
   assert(r.status === 200 && w.mails[0].includes("Dad to Toddler"), w.mails.join("|"));
   assert(readFilms(w.o.metadata, 1)[0].receiver === "toddler", "stored");
+});
+
+const PAID_IN = BONUS_START + 86400 * 2; // Saturday 21.11
+Deno.test("bonus: judged by the moment of payment, not the moment the checkout opened", async () => {
+  assert((await get(world(1, true, BONUS_START - 600, { paidAt: BONUS_START + 60 }).deps)).qty === 2, "opened before, paid inside");
+  assert((await get(world(1, true, BONUS_END - 600, { paidAt: BONUS_END + 60 }).deps)).qty === 1, "opened inside, paid after Monday midnight");
+  assert((await get(world(1, true, PAID_IN, { paidAt: PAID_IN }).deps)).qty === 2, "Saturday");
+});
+Deno.test("bonus: kept when the cards are filled after the deadline", async () => {
+  const w = world(3, true, PAID_IN, { paidAt: PAID_IN });
+  await get(w.deps);                       // the webhook asks at payment: the bonus is written to the order
+  w.o.paidAt = 0; w.o.created = BONUS_END + 86400 * 5; // even if the order looked like a late one now
+  const r = await handle(post({ s: S, n: 4, link: "https://www.amazon.com/dp/B000000004", giver: "mom", receiver: "son" }), w.deps);
+  assert(r.status === 200 && w.mails[0].includes("4 of 4 (free bonus)"), w.mails.join("|"));
+});
+Deno.test("bonus: a customer who took the Vault free film gets no bonus on a purchase", async () => {
+  const g = await get(world(2, true, PAID_IN, { paidAt: PAID_IN, vaultClaimed: true }).deps);
+  assert(g.qty === 2 && g.bonus === false, JSON.stringify(g));
+});
+const vault = { vault: true, name: "Dana", email: "dana@example.com", link: "https://www.amazon.com/dp/B000000009", giver: "dad", receiver: "son" };
+Deno.test("vault: exactly one free film per email, the second claim is refused", async () => {
+  const w = world(0);
+  assert((await handle(post(vault), w.deps)).status === 200, "first");
+  assert(w.vaultRecords.length === 1 && w.vaultRecords[0] === "dana@example.com", "recorded");
+  const r2 = await handle(post({ ...vault, email: "DANA@example.com" }), w.deps);
+  assert(r2.status === 409 && (await r2.json()).error === "claimed", "second");
+  assert(w.mails.length === 1, "Jay mailed once");
+});
+Deno.test("vault: refused for a customer whose order already has a bonus film (no stacking)", async () => {
+  const w = world(0, true, BEFORE, { bonusOrder: true });
+  const r = await handle(post(vault), w.deps);
+  assert(r.status === 409 && (await r.json()).error === "bonus" && w.mails.length === 0 && w.vaultRecords.length === 0, "refused");
+});
+Deno.test("skill checkout: $199 until Black Friday ends, $299 from then, by the server's clock", async () => {
+  const a = world(0, true, BEFORE, { now: BF_END - 1 });
+  const ja = await (await handle(post({ checkout: "skill", ref: "fb_ad" }), a.deps)).json();
+  assert(ja.ok && ja.price === 199 && a.checkouts[0] === SKILL_PRICE_BF && ja.url.startsWith("https://checkout.stripe.com"), JSON.stringify(ja));
+  const b = world(0, true, BEFORE, { now: BF_END });
+  const jb = await (await handle(post({ checkout: "skill" }), b.deps)).json();
+  assert(jb.price === 299 && b.checkouts[0] === SKILL_PRICE_FULL, JSON.stringify(jb));
 });

@@ -117,18 +117,32 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
     ['Paid', `${amount} ${currency}`],
     ['Buyer', `${name} <${email}>`],
   ];
+  let bonusNote = '';
   if (isVideo) {
     // The checkout takes the payment only (18.11.2026). The buyer fills one card per video
     // on the cards page (christmas-films function): product link, who gives, who receives.
     // Each saved card arrives as its own mail. The buyer gets the cards link by mail here,
     // before the mail to Jay, so that mail can say whether the buyer has it.
-    const cardsUrl = `https://jaygptpro.com/christmas-video/thanks/?p=${quantity > 1 ? 'pack' : 'video'}&s=${encodeURIComponent(String(session?.id || ''))}`;
+    // The free bonus film (Jay's launch plan, 19.11.2026): the christmas-films function decides
+    // it from the payment time and writes it to the order, so asking it HERE, at payment, fixes
+    // the bonus to this order even if the cards are filled after the deadline. It answers the
+    // number of cards (paid + bonus). If the call fails the mail still goes out, with the paid
+    // count, and the cards page shows the bonus card anyway when the buyer opens it.
+    let cards = quantity || 1, bonus = false;
+    try {
+      if (supabaseUrl && session?.id) {
+        const r = await fetch(`${supabaseUrl}/functions/v1/christmas-films?s=${encodeURIComponent(String(session.id))}`);
+        if (r.ok) { const j = await r.json(); if (Number(j?.qty) > 0) { cards = Number(j.qty); bonus = j?.bonus === true; } }
+      }
+    } catch (e) { console.error('Christmas bonus lookup failed (the mails still go out):', e); }
+    const cardsUrl = `https://jaygptpro.com/christmas-video/thanks/?p=${cards > 1 ? 'pack' : 'video'}&s=${encodeURIComponent(String(session?.id || ''))}`;
     let buyerMailed = false;
     if (email && session?.id) {
-      const n = quantity || 1;
+      const n = cards;
       const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
         + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
         + `<p>Thank you for your order. To start on your Christmas ${n > 1 ? 'videos' : 'video'}, I need a few details for ${n > 1 ? `each of your ${n} videos` : 'it'}: the link to your product, who gives the gift, and who receives it.</p>`
+        + (bonus ? `<p>&#127873; <b>Your order includes one FREE bonus video.</b> You paid for ${n - 1}, and you get ${n}: the last card is your free bonus video, for any product you like.</p>` : '')
         + `<p><a href="${esc(cardsUrl)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">Fill in your ${n > 1 ? `${n} videos` : 'video'}</a></p>`
         + `<p>${n > 1 ? 'Each video can be a different product and a different family. You can fill some now and the rest later. ' : ''}Each video arrives within 48 hours (business days) of the moment you save its card.</p>`
         + `<p>If you already filled ${n > 1 ? 'them' : 'it'} in right after paying, you are all set.</p><p>Jay</p></div>`;
@@ -136,12 +150,14 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [email], reply_to: CHRISTMAS_NOTIFY_TO,
-            subject: n > 1 ? `Your ${n} Christmas videos: tell us about each one` : 'Your Christmas video: tell us about it', html: buyerHtml }),
+            subject: bonus ? `Your ${n} Christmas videos (1 free bonus): tell us about each one` : n > 1 ? `Your ${n} Christmas videos: tell us about each one` : 'Your Christmas video: tell us about it', html: buyerHtml }),
         });
         buyerMailed = res.ok;
         if (!res.ok) console.error('Christmas buyer mail failed:', res.status, await res.text());
       } catch (e) { console.error('Christmas buyer mail error:', e); }
     }
+    if (bonus) bonusNote = ' + 1 FREE bonus';
+    rows.push(['Free bonus video', bonus ? `YES: +1 free. ${cards} videos to make in all (${cards - 1} paid + 1 bonus).` : 'No']);
     rows.push(['Video details', 'The buyer fills one card per video. Each saved card arrives as its own mail.']);
     rows.push(['Cards page', cardsUrl]);
     rows.push(['Cards link mailed to buyer', buyerMailed ? 'Yes' : 'NO. Send the cards page link to the buyer yourself.']);
@@ -184,7 +200,7 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [CHRISTMAS_NOTIFY_TO], reply_to: email || undefined,
-        subject: `New Christmas order: ${what}${quantity > 1 ? ` x ${quantity}` : ''} (${amount} ${currency})`, html }),
+        subject: `New Christmas order: ${what}${quantity > 1 ? ` x ${quantity}` : ''}${bonusNote} (${amount} ${currency})`, html }),
     });
     if (!res.ok) { console.error('Christmas order mail failed:', res.status, await res.text()); return false; }
     return true;

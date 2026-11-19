@@ -20,8 +20,11 @@ export const sendState = { ok: true, addonOk: true, calls: [] as any[], stripeLi
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: any, init?: any) => {
   const url = String(input);
+  if (url.includes('/functions/v1/christmas-films')) {   // a read (the bonus lookup), not a send
+    return new Response(JSON.stringify((sendState as any).filmsReply || { error: 'order not found' }), { status: (sendState as any).filmsReply ? 200 : 404 });
+  }
   if (url.includes('/functions/v1/')) {
-    sendState.calls.push({ url, body: JSON.parse(init?.body || '{}') });
+    sendState.calls.push({ url, body: init?.body ? JSON.parse(init.body) : {} });
     const okForThis = url.includes('donna-addon') ? sendState.addonOk : sendState.ok;
     return new Response(JSON.stringify({ ok: okForThis }), { status: okForThis ? 200 : 502 });
   }
@@ -810,6 +813,30 @@ check('two mails: the buyer first, then Jay', sendState.mails.length === 2 && St
   check('Jay mail carries the buyer and the amount', jay.includes('order@seller.com') && jay.includes('198.00'), jay.slice(0, 400));
 }
 check('still no course access', !DB.allowed_emails.some((r: any) => r.email === 'order@seller.com'));
+
+console.log('\n17g3. A video order in the bonus window: buyer and Jay both see the free bonus video');
+reset();
+sendState.stripeLineItems = [XMAS_VIDEO];
+(sendState as any).filmsReply = { qty: 3, paid: 2, bonus: true };
+res = await post(xmas('bonus@seller.com', XMAS_PLINK, 19800));
+{
+  const buyer = JSON.stringify(sendState.mails[0] || {}), jay = JSON.stringify(sendState.mails[1] || {});
+  check('http 200', res.status === 200, `got ${res.status}`);
+  check('buyer mail: 3 videos, one free bonus, the cards link', buyer.includes('FREE bonus video') && buyer.includes('Fill in your 3 videos') && buyer.includes('thanks/?p=pack&amp;s=cs_xmas_1'), buyer.slice(0, 900));
+  check('buyer subject says the bonus', String(sendState.mails[0]?.subject).includes('1 free bonus'), String(sendState.mails[0]?.subject));
+  check('Jay mail: YES, 3 to make, 2 paid + 1 bonus', jay.includes('Free bonus video') && jay.includes('3 videos to make in all (2 paid + 1 bonus)'), jay.slice(0, 1200));
+  check('Jay subject says the bonus', String(sendState.mails[1]?.subject).includes('1 FREE bonus'), String(sendState.mails[1]?.subject));
+}
+(sendState as any).filmsReply = null;
+reset();
+sendState.stripeLineItems = [XMAS_VIDEO];
+(sendState as any).filmsReply = { qty: 2, paid: 2, bonus: false };
+res = await post(xmas('late@seller.com', XMAS_PLINK, 19800));
+{
+  const buyer = JSON.stringify(sendState.mails[0] || {}), jay = JSON.stringify(sendState.mails[1] || {});
+  check('after the window: no bonus line for the buyer, "No" for Jay', !buyer.includes('FREE bonus') && jay.includes('Free bonus video') && jay.includes('>No<'), jay.slice(0, 1200));
+}
+(sendState as any).filmsReply = null;
 
 console.log('\n17g2. The Skill (the Perfect Gift Kit, 18.11): the buyer gets the kit page at once, Jay gets the sale, and nobody is asked for video cards');
 reset();
