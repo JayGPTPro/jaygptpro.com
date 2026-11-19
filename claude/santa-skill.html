@@ -171,6 +171,9 @@ h1 .sub{display:block;font-size:.42em;font-weight:300;font-style:italic;letter-s
 .tool .install-line{margin-top:8px}
 .tool .install-line code{font-size:14px;padding:15px 18px}
 .tool .install-line button{padding:15px 18px}
+.tool .install-line.say code{white-space:normal;word-break:normal;overflow-wrap:anywhere;line-height:1.55;font-size:13.5px}
+.dl-btn{display:flex;align-items:center;justify-content:center;margin-top:8px;padding:15px 18px;border-radius:16px;background:var(--grad);color:#1a1405;font-weight:800;font-size:14px;transition:filter .2s}
+.dl-btn:hover{filter:brightness(1.06)}
 .tool .hint{margin-top:10px}
 .tool ul{list-style:none;margin-top:4px}
 .tool li{font-size:14px;color:var(--txt-dim);padding:6px 0 6px 22px;position:relative;line-height:1.5;border-bottom:1px solid var(--brd-soft)}
@@ -397,7 +400,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
           <li><b>Claude Code</b>, desktop app or terminal.</li>
           <li><b>An OpenAI API key</b> on a verified organization. The skill draws with gpt-image-2, and a verified org is what unlocks that model. Never connected OpenAI to Claude Code? <a href="https://jaygptpro.com/openai/" target="_blank">This guide walks you through it</a>.</li>
           <li><b>Python 3</b> with the <code class="inl">openai</code> and <code class="inl">Pillow</code> packages. The first run prints the exact install line if anything is missing.</li>
-          <li><b>Node</b>, only for the one-line installer.</li>
+          <li><b>No Node.</b> The skill installs from a zip.</li>
         </ul>
         <div class="costline"><b>~9&cent;</b>an image on your OpenAI account, one run, ready to upload.</div>
       </div>
@@ -442,16 +445,19 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <div class="wrap">
     <div class="reveal"><div class="eyebrow">How it works</div></div>
     <div class="reveal" style="--d:.05s"><h2>Install once. <span class="accent">Then it is one line per listing.</span></h2></div>
-    <div class="reveal" style="--d:.1s"><p class="lead">Pick your tool. Paste its install line once, and from then on every session on your machine knows the skill. Works on macOS and Windows.</p></div>
+    <div class="reveal" style="--d:.1s"><p class="lead">Pick your tool and install it once. From then on every session on your machine knows the skill. Works on macOS and Windows.</p></div>
 
     <div class="tools">
       <div class="tool reveal" id="install-claude" style="--d:.05s">
         <div class="tname">Claude Code</div>
-        <div class="lbl">Install once: paste it into Claude Code</div>
-        <div class="install-line">
-          <code id="installCmd">npx skills add JayGPTPro/santa-skill -g</code>
+        <div class="lbl">Install once, step 1: download</div>
+        <a class="dl-btn" id="dlZip" href="/claude/santa-skill.zip" download>Download santa-skill.zip</a>
+        <div class="lbl">Step 2: paste this into Claude Code</div>
+        <div class="install-line say">
+          <code id="installCmd">Install the santa-skill skill from my Downloads: unzip santa-skill.zip (or take the santa-skill folder, if it is already unzipped) into ~/.claude/skills, so that ~/.claude/skills/santa-skill/SKILL.md exists.</code>
           <button onclick="copyText('installCmd',this)">Copy</button>
         </div>
+        <p class="hint">Claude asks before it writes to that folder: click <b>Allow</b>. Then open a new session. Have Node? <code class="inl">npx skills add JayGPTPro/santa-skill -g</code> installs it in one line instead.</p>
         <div class="lbl">Then, for every listing</div>
         <div class="install-line">
           <code id="runCmd">/santa-skill [ASIN]</code>
@@ -589,6 +595,10 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     function fallback(){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
     if(typeof gtag==='function') gtag('event','copy_'+id,{event_category:'conversion',event_label:'santa_skill'});
   };
+
+  // zip download tracking
+  var dl=document.getElementById('dlZip');
+  if(dl) dl.addEventListener('click',function(){ if(typeof gtag==='function') gtag('event','download_zip',{event_category:'conversion',event_label:'santa_skill'}); });
 
   // promo click tracking
   document.querySelectorAll('.promo').forEach(function(a){ a.addEventListener('click',function(){ if(typeof gtag==='function') gtag('event','promo_click',{event_category:'conversion',event_label:a.classList.contains('wa')?'whatsapp':a.classList.contains('ch')?'challenge':'wonka'}); }); });
