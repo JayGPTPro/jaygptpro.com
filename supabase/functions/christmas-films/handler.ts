@@ -13,6 +13,16 @@
 // we put it in the buyer's mail; it is long and unguessable, and it only opens that order.
 
 export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
+
+// Launch-day bonus (Jay, 19.11.2026): every paying customer who orders films on Thursday
+// 19 November, Pacific time, gets ONE extra film free, however many films and orders.
+// The window is the checkout's creation time: 00:00 PST to 23:59:59 PST.
+// One per customer: only the customer's FIRST paid film order in the window gets it,
+// judged by the email they paid with. A Vault free-film order never gets it (no stacking).
+export const BONUS_START = Date.UTC(2026, 10, 19, 8, 0, 0) / 1000; // 19.11 00:00 PST
+export const BONUS_END = Date.UTC(2026, 10, 20, 8, 0, 0) / 1000;   // 20.11 00:00 PST, exclusive
+// The Vault "first film free" coupon. An order that used it is the member's free film.
+export const VAULT_COUPON = "VAULT_FIRST_FILM";
 export const GIVERS = ["mom", "dad"] as const;
 export const RECEIVERS = ["son", "daughter", "partner"] as const;
 const LINK_MAX = 190; // two cards must fit one 500-character metadata value
@@ -25,12 +35,33 @@ export type Order = {
   name: string;
   paymentIntent: string;
   metadata: Record<string, string>;
+  created: number;                   // unix seconds, when the checkout was opened
+  vault: boolean;                    // paid (or not) with the Vault first-film coupon
 };
 export type Deps = {
   order: (sessionId: string) => Promise<Order | null>;                       // null: no such session
   saveMeta: (sessionId: string, patch: Record<string, string>) => Promise<void>;
   mail: (subject: string, html: string, replyTo: string) => Promise<boolean>;
+  // Did this email pay for another film order in the bonus window, opened before this one?
+  earlierFilmOrder: (email: string, created: number, sessionId: string) => Promise<boolean>;
 };
+
+// 1 when this order carries the launch-day bonus film, else 0. Decided once and written to
+// the session metadata ("bonus"), so the answer never changes after the buyer has seen it.
+export async function bonusFor(o: Order, sessionId: string, deps: Deps): Promise<number> {
+  if (o.metadata.bonus === "1") return 1;
+  if (o.metadata.bonus === "0") return 0;
+  if (!o.paid || o.qty < 1) return 0;
+  let b = 1;
+  if (o.created < BONUS_START || o.created >= BONUS_END) b = 0;
+  else if (o.vault) b = 0;
+  else if (!o.email) b = 0;
+  else if (await deps.earlierFilmOrder(o.email.toLowerCase(), o.created, sessionId)) b = 0;
+  if (o.created >= BONUS_START) {
+    try { await deps.saveMeta(sessionId, { bonus: String(b) }); o.metadata.bonus = String(b); } catch { /* decided again next time */ }
+  }
+  return b;
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -99,7 +130,9 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     if (!validSession(s)) return json({ error: "bad session" }, 400);
     const o = await deps.order(s);
     if (!o || !o.paid || o.qty < 1) return json({ error: "order not found" }, 404);
-    return json({ qty: o.qty, email: maskEmail(o.email), films: readFilms(o.metadata, o.qty) });
+    const bonus = await bonusFor(o, s, deps);
+    const total = o.qty + bonus;
+    return json({ qty: total, paid: o.qty, bonus: bonus === 1, email: maskEmail(o.email), films: readFilms(o.metadata, total) });
   }
 
   if (req.method === "POST") {
@@ -117,7 +150,9 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
 
     const o = await deps.order(s);
     if (!o || !o.paid || o.qty < 1) return json({ error: "order not found" }, 404);
-    if (n > o.qty) return json({ error: "bad film number" }, 400);
+    const bonus = await bonusFor(o, s, deps);
+    const total = o.qty + bonus;
+    if (n > total) return json({ error: "bad film number" }, 400);
 
     // Rewrite the pair this card shares its key with, keeping the other card as it was.
     const key = keyFor(n);
@@ -129,28 +164,30 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     if (value.length > 500) return json({ error: "link", message: "That link is too long. Paste the plain product page link." }, 400);
     await deps.saveMeta(s, { [key]: value });
 
-    const done = readFilms({ ...o.metadata, [key]: value }, o.qty).length;
+    const done = readFilms({ ...o.metadata, [key]: value }, total).length;
+    const isBonus = bonus === 1 && n === total;
     const changed = !before || before[0] !== link || before[1] !== giver || before[2] !== receiver;
     if (changed) {
       const rows: [string, string][] = [
-        ["Video", `${n} of ${o.qty}`],
+        ["Video", `${n} of ${total}${isBonus ? " (FREE launch-day bonus film)" : ""}`],
         ["Product link", link],
         ["Who gives", WHO[giver]],
         ["Who receives", receiverLabel(giver, receiver)],
         ["Buyer", `${o.name} <${o.email}>`],
-        ["Cards filled", `${done} of ${o.qty}`],
+        ["Cards filled", `${done} of ${total}`],
+        ["Paid for", `${o.qty} film${o.qty === 1 ? "" : "s"}${bonus ? " + 1 free launch-day bonus" : ""}${o.vault ? " (Vault first film free)" : ""}`],
         ["Due", "Within 48 hours (business days) of this card."],
         ["Stripe", o.paymentIntent ? `https://dashboard.stripe.com/payments/${o.paymentIntent}` : s],
       ];
       if (before) rows.splice(1, 0, ["Note", "The buyer CHANGED this card. This replaces what they sent before."]);
-      const html = `<h2>Christmas video ${n} of ${o.qty}: ready to make</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
+      const html = `<h2>Christmas video ${n} of ${total}${isBonus ? " (free bonus)" : ""}: ready to make</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
         + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("") + "</table>";
-      const sent = await deps.mail(`Christmas video ${n} of ${o.qty} ready to make: ${WHO[giver]} to ${receiverLabel(giver, receiver)}${before ? " (changed)" : ""}`, html, o.email);
+      const sent = await deps.mail(`Christmas video ${n} of ${total}${isBonus ? " (free bonus)" : ""} ready to make: ${WHO[giver]} to ${receiverLabel(giver, receiver)}${before ? " (changed)" : ""}`, html, o.email);
       // The card is saved either way. A card Jay never heard about is a film nobody makes,
       // so the buyer is told to write to us instead of being told all is well.
-      if (!sent) return json({ ok: true, done, qty: o.qty, link, notified: false }, 200);
+      if (!sent) return json({ ok: true, done, qty: total, link, notified: false }, 200);
     }
-    return json({ ok: true, done, qty: o.qty, link, notified: true });
+    return json({ ok: true, done, qty: total, link, notified: true });
   }
   return json({ error: "method not allowed" }, 405);
 }

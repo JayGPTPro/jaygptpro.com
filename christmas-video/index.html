@@ -310,6 +310,15 @@ label.f{display:block;font:600 12px/1 var(--sans);letter-spacing:.22em;text-tran
 .qty input{width:74px;height:46px;text-align:center;border-radius:10px;border:1px solid rgba(246,240,228,.2);background:#070b12;color:var(--ink);font:500 18px var(--sans);-moz-appearance:textfield}
 .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .qty input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.bonus{max-width:760px;margin:6px auto 34px;padding:24px 28px;border-radius:18px;text-align:center;border:1.5px solid rgba(233,199,132,.7);background:linear-gradient(180deg,rgba(233,199,132,.16),rgba(233,199,132,.06));box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.bonus .bh{font:400 clamp(22px,2.6vw,30px)/1.2 var(--serif);color:var(--ink)}
+.bonus .bt{margin-top:10px;color:var(--soft);font-size:16px;line-height:1.5}
+.bonus .bc{margin-top:14px;color:var(--dim);font-size:14px}
+.bonus .bc b{display:inline-block;margin:0 8px;font:600 22px/1 var(--sans);color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.bonus .bc span{white-space:nowrap}
+.bline{margin:12px 0 0;color:var(--gold);font-weight:600;font-size:15px}
+.sticky span i{font-style:normal}
+[hidden]{display:none!important}
 .lastday{margin-top:14px;color:var(--gold);font-weight:600;font-size:16px}
 .calm{margin:14px 0 0;text-align:center;color:var(--dim);font-size:14px}
 .qty #each{margin-left:10px;color:var(--dim);font-size:15px}
@@ -498,7 +507,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <p class="hint">Gifts for kids or grown-ups. Tap one and watch it become the gift</p>
     <div class="gifts" id="gifts" aria-label="Products. Drag one into the film, or tap it."></div>
     <div class="acts">
-      <a class="dbtn buy" href="#order">Put my product in the film, $99<small>Launch price · first 30 sellers</small></a>
+      <a class="dbtn buy" href="#order">Put my product in the film, $99<small data-until="bonus">🎁 Today only: get 1 extra film free</small><small data-after="bonus" hidden>Any number of films, $99 each</small></a>
     </div>
   </div>
 </header>
@@ -643,18 +652,23 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <span id="ways"></span>
   <div class="wrap">
     <div class="head center rv">
-      <div class="slate"><i>08</i>Pick your way</div>
-      <h2>Done for you, or make them yourself?</h2>
+      <div class="slate"><i>08</i><span data-until="bf">Black Friday Christmas Special</span><span data-after="bf" hidden>Pick your way</span></div>
+      <h2>Create your own Christmas films, or let us make them for you.</h2>
       <p class="lead">We make a limited number of films each week, in the order they come in. Order early to run yours before Christmas.</p>
       <p class="lastday">Last day to order: Wednesday, December 9.</p>
+    </div>
+    <div class="bonus rv" data-until="bonus">
+      <p class="bh">🎁 Today only: order any number of films, get ONE extra free!</p>
+      <p class="bt">Order one or more Done For You Christmas films today, and we'll create one additional film for FREE, no matter how many you order.</p>
+      <p class="bc">Ends in <b id="cd">--:--:--</b> <span>Thursday, November 19, 11:59 PM PST</span></p>
     </div>
     <div class="plans">
       <div class="plan main rv" id="buy-video">
         <div class="top">
-          <div class="tag">Launch price · first 30 customers</div>
+          <div class="tag" data-until="bonus">Today only: +1 film free</div><div class="tag" data-after="bonus" hidden>Done for you</div>
           <h3>We make it for you</h3>
-          <div class="price"><s>$199</s>$99<small>per film</small></div>
-          <p class="sub">5 films or more: <s>$139</s> <b>$69 each</b></p>
+          <div class="price">$99<small>per film</small></div>
+          <p class="sub">One price per film, however many you order.</p>
           <ul class="checks">
             <li>The same film, with your product in it</li>
             <li>Two versions: the full film, and a short cut for Sponsored Brands ads</li>
@@ -669,6 +683,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
           <label class="f" for="qty">How many films?</label>
           <div class="qty"><button type="button" id="minus" aria-label="One less">&minus;</button><input id="qty" type="number" min="1" max="50" value="1" inputmode="numeric"><button type="button" id="plus" aria-label="One more">+</button><span id="each">$99 each</span></div>
           <p id="qnote" style="display:none;margin:8px 0 0;color:var(--dim);font-size:14px">You'll confirm the exact number of films at checkout.</p>
+          <p class="bline" id="bline" data-until="bonus"></p>
           <div class="total"><span id="hint">Right after you pay, you fill one short card per film: your product's Amazon link, who gives, who receives. Each film can be a different product and a different family.</span><b id="sum">$99</b></div>
           <a class="btn gold" id="pay-video" href="#">Get my film <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
           <p class="calm">Something not right in your film? One round of changes is included.</p>
@@ -676,10 +691,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       </div>
       <div class="plan rv d1" id="buy-skill">
         <div class="top">
-          <div class="tag">Launch price · half off</div>
+          <div class="tag" data-until="bf">Black Friday price</div>
           <h3>Make them yourself</h3>
-          <div class="price"><s>$599</s>$299<small>one time</small></div>
-          <p class="sub">The Skill and the training.</p>
+          <div class="price"><span data-until="bf">$199</span><span data-after="bf" hidden>$299</span><small>one time</small></div>
+          <p class="sub" data-until="bf">Available through November 30. Price increases to $299 on December 1.</p>
+          <p class="sub" data-after="bf" hidden>The Skill and the training.</p>
           <ul class="checks">
             <li>The Claude Skill that puts your product into the film, in all six families</li>
             <li>A step-by-step video, start to finish</li>
@@ -729,7 +745,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
       <details><summary>What if something needs to change?</summary><p>One round of changes is included with every film.</p></details>
       <details><summary>Is it made with AI?</summary><p>Yes. AI video tools build it, and we check every scene by hand. That is how a full Christmas story is ready in 48 hours.</p></details>
       <details><summary>What is in "Make them yourself"?</summary><p>The Claude Skill that puts your product into the film, and a step-by-step video that shows you how. Claude picks the right family for each product. Your kit opens right after you pay, and the link is in your email too. It works with your own Genrupt or Higgsfield account. You pay the tools directly: what each film costs you depends on your Claude plan and what you pay for Seedance 2.5 video generation.</p></details>
-      <details><summary>Why is it half price now?</summary><p>It is the launch price for the first 30 customers. After that the price goes back to $199 per film, and the Skill to $599.</p></details>
+      <details data-until="bf"><summary>Is there a Black Friday offer?</summary><p>Yes, through November 30. The Skill is $199, and the price increases to $299 on December 1. Done-for-you films are $99 each, however many you order, and stay $99 after Black Friday.<span data-until="bonus"> And today only, Thursday, November 19, an order of any number of films gets one extra film free, one per customer, until 11:59 PM PST.</span></p></details>
     </div>
   </div>
 </section>
@@ -741,7 +757,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     <div class="title">The Perfect Gift</div>
     <h2>This Christmas, make your product <em>the perfect gift.</em></h2>
     <a class="btn gold" href="#order">Put my product in the film, $99 <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M0 6h16M11 1l5 5-5 5"/></svg></a>
-    <p class="fine">Launch price for the first 30 sellers. Limited films each week. Last day to order: Wednesday, December 9.</p>
+    <p class="fine"><span data-until="bonus">🎁 Today only: order any number of films, get one extra free. </span>Limited films each week. Last day to order: Wednesday, December 9.</p>
   </div>
 </section>
 
@@ -750,7 +766,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   <p class="legal">© 2026 Jay GPT PRO LLC · <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> · <a href="terms.html">Terms</a> · <a href="/privacy-policy.html">Privacy</a></p>
 </div></footer>
 
-<div class="sticky" id="sticky"><span><b>Your Christmas film, $99</b>Half off for the first 30 sellers</span><a class="btn gold" href="#order">Get my film</a></div>
+<div class="sticky" id="sticky"><span><b>Your Christmas film, $99</b><i data-until="bonus">🎁 Today only: 1 extra film free</i><i data-after="bonus" hidden>Last day to order: Dec 9</i></span><a class="btn gold" href="#order">Get my film</a></div>
 
 <script>
 (function(){
@@ -955,17 +971,30 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   src=src.replace(/[^A-Za-z0-9_-]/g,'').slice(0,190);
   function withSrc(url){return src?url+(url.indexOf('?')<0?'?':'&')+'client_reference_id='+src:url;}
   function linkFor(n){return withSrc(n>10?QTY['11+']:QTY[String(n)]);}
+  /* Black Friday Christmas Special (Jay, 19.11.2026). Fixed moments, the same for everyone:
+     the launch-day bonus ends Thursday 19.11 at 11:59 PM PST, the Skill goes to $299 on 1.12 at 00:00 PST.
+     ?now=2026-11-20T08:00:00Z previews the page at another moment (testing only). */
+  var BONUS_END=Date.UTC(2026,10,20,8,0,0),BF_END=Date.UTC(2026,11,1,8,0,0);
+  var SKILL_199='';   /* the $199 Skill link, filled in at launch */
+  var SHIFT=0;try{var tn=new URLSearchParams(location.search).get('now');if(tn){var t0n=Date.parse(tn);if(!isNaN(t0n))SHIFT=t0n-Date.now();}}catch(e){}
+  function now(){return Date.now()+SHIFT;}
+  var OFFER={bonus:true,bf:true};
+  function applyOffer(){var t=now();OFFER.bonus=t<BONUS_END;OFFER.bf=t<BF_END;
+    [].forEach.call(document.querySelectorAll('[data-until],[data-after]'),function(el){var until=el.hasAttribute('data-until'),k=until?el.getAttribute('data-until'):el.getAttribute('data-after');el.hidden=until?!OFFER[k]:!!OFFER[k];});
+    var ps=document.getElementById('pay-skill');if(ps)ps.href=withSrc(OFFER.bf&&SKILL_199?SKILL_199:LINKS.skill);}
+  function offerTick(){applyOffer();var cd=document.getElementById('cd');if(cd&&OFFER.bonus){var r=Math.max(0,Math.floor((BONUS_END-now())/1000)),hh=Math.floor(r/3600),mm=Math.floor(r%3600/60),ss=r%60;cd.textContent=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm+':'+(ss<10?'0':'')+ss;}}
   var q=document.getElementById('qty'),each=document.getElementById('each'),sum=document.getElementById('sum'),pv=document.getElementById('pay-video');
   function num(){return Math.min(50,Math.max(1,parseInt(q.value||'1',10)||1));}
-  function calc(){var n=num(),u=n>=5?69:99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=linkFor(n);var nt=document.getElementById('qnote');if(nt)nt.style.display=n>10?'block':'none';}
+  function calc(){var n=num(),u=99;each.textContent='$'+u+' each';sum.textContent='$'+(n*u).toLocaleString('en-US');pv.href=linkFor(n);var nt=document.getElementById('qnote');if(nt)nt.style.display=n>10?'block':'none';
+    var bl=document.getElementById('bline');if(bl)bl.textContent='🎁 You pay for '+n+' film'+(n===1?'':'s')+' and get '+(n+1)+'. The extra film is free today.';}
   q.addEventListener('input',calc);calc();
   document.getElementById('minus').addEventListener('click',function(){q.value=Math.max(1,num()-1);calc();});
   document.getElementById('plus').addEventListener('click',function(){q.value=Math.min(50,num()+1);calc();});
-  document.getElementById('pay-skill').href=withSrc(LINKS.skill);
+  offerTick();setInterval(offerTick,1000);
   function track(what,value,qty){try{if(window.fbq)fbq('track','InitiateCheckout',{content_name:what,value:value,currency:'USD',num_items:qty});if(window.gtag)gtag('event','begin_checkout',{value:value,currency:'USD',items:[{item_id:what,item_name:what,quantity:qty,price:value/qty}]});}catch(e){}}
   function remember(kind,qty,value){try{localStorage.setItem('xmas_order',JSON.stringify({kind:kind,qty:qty,value:value,t:Date.now()}));}catch(e){}}
-  pv.addEventListener('click',function(){var n=num(),val=n*(n>=5?69:99);remember(n>=5?'pack':'video',n,val);track('christmas_video',val,n);});
-  document.getElementById('pay-skill').addEventListener('click',function(){remember('skill',1,299);track('christmas_skill',299,1);});
+  pv.addEventListener('click',function(){var n=num(),val=n*99;remember(n>1?'pack':'video',n,val);track('christmas_video',val,n);});
+  document.getElementById('pay-skill').addEventListener('click',function(){var v=OFFER.bf?199:299;remember('skill',1,v);track('christmas_skill',v,1);});
 
   var nav=document.getElementById('nav');
   function onScroll(){nav.classList.toggle('solid',window.scrollY>40);}

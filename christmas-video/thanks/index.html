@@ -208,6 +208,7 @@ footer{padding:36px 0 50px;text-align:center;color:var(--dim);font-size:13px}
 .fc .sum a{color:var(--gold)}
 .fc .edit{background:none;border:0;color:var(--dim);font:500 14px var(--sans);text-decoration:underline;cursor:pointer;padding:0;margin-top:8px}
 .fc.done .form{display:none}.fc.done .sum{display:block}
+.fc .gift{font:600 13px/1 var(--sans,inherit);color:var(--gold,#e9c784);margin-left:8px;white-space:nowrap}
 .films .later{color:var(--dim);font-size:14px;margin-top:18px;text-align:center}
 @media (max-width:860px){.page{align-items:flex-start}.fc{padding:20px 16px}.fc .seg button{font-size:14px}}
 </style>
@@ -254,7 +255,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <script>
 (function(){
   var q=new URLSearchParams(location.search),kind=q.get('p')||'video',sid=q.get('session_id')||'',cid=sid||q.get('s')||'';   // s= is the link in the buyer's mail: it opens the cards and counts no purchase
-  var DEF={video:99,pack:345,skill:299},value=DEF[kind]||99,qty=1;
+  var DEF={video:99,pack:495,skill:199},value=DEF[kind]||99,qty=1;
   try{var o=JSON.parse(localStorage.getItem('xmas_order')||'null');
     if(o&&(o.kind===kind||(o.kind!=='skill'&&kind!=='skill'))&&Date.now()-o.t<6*3600*1000){value=o.value;qty=o.qty;}}catch(e){}
   if(kind==='skill'){   // the Perfect Gift Kit is delivered at once: the kit page opens with this session id (18.11.2026)
@@ -268,11 +269,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   function h(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function partner(g){return g==='mom'?'Husband':'Wife';}
   function recLabel(g,r){return r==='partner'?partner(g):(r==='son'?'Son':'Daughter');}
-  var total=0,doneN=0;
+  var total=0,doneN=0,bonus=false;
   function count(){document.getElementById('fcount').textContent=doneN+' of '+total+' ready';
     if(total&&doneN===total){document.getElementById('msg').textContent=total>1?'All '+total+' cards are in. Each film arrives in your email within 48 hours (business days).':'Your card is in. Your video arrives in your email within 48 hours (business days).';}}
   function card(n,f){var el=document.createElement('div');el.className='fc';var st={link:f?f.link:'',giver:f?f.giver:'',receiver:f?f.receiver:''};
-    el.innerHTML='<div class="top"><b>Film '+n+(total>1?' of '+total:'')+'</b><span class="st8">To fill</span></div>'
+    el.innerHTML='<div class="top"><b>Film '+n+(total>1?' of '+total:'')+(bonus&&n===total?' <span class="gift">🎁 Free bonus film</span>':'')+'</b><span class="st8">To fill</span></div>'
       +'<div class="form"><label for="l'+n+'">Link to your product on Amazon</label><input id="l'+n+'" type="url" inputmode="url" autocomplete="off" placeholder="https://www.amazon.com/dp/...">'
       +'<label>Who gives the gift?</label><div class="seg" data-k="giver"><button type="button" data-v="mom">Mom</button><button type="button" data-v="dad">Dad</button></div>'
       +'<label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Son</button><button type="button" data-v="daughter">Daughter</button><button type="button" data-v="partner">Wife / Husband</button></div>'
@@ -300,15 +301,15 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
         .then(function(r){return r.json();}).then(done).catch(function(){done(null);});});
     inp.value=st.link;paint();if(f){doneN++;showDone();}
     return el;}
-  function build(d){total=d.qty;doneN=0;var box=document.getElementById('cards');box.innerHTML='';var by={};(d.films||[]).forEach(function(f){by[f.n]=f;});
+  function build(d){total=d.qty;bonus=!!d.bonus;doneN=0;var box=document.getElementById('cards');box.innerHTML='';var by={};(d.films||[]).forEach(function(f){by[f.n]=f;});
     for(var n=1;n<=total;n++)box.appendChild(card(n,by[n]));
     document.getElementById('fhead').textContent=total>1?'Your '+total+' films':'Your film';
     document.querySelector('h1').innerHTML=total>1?'Thank you. <em>Now tell us about your films.</em>':'Thank you. <em>Now tell us about your film.</em>';
-    document.getElementById('msg').textContent=total>1?'Fill one card for each film. Each one can be a different product and a different family.':'Fill the card below and we start on your film.';
+    document.getElementById('msg').textContent=(total>1?'Fill one card for each film. Each one can be a different product and a different family.':'Fill the card below and we start on your film.')+(bonus?' Your order came with one extra film, free: it is the last card.':'');
     document.getElementById('more').style.display='none';
     document.getElementById('films').classList.add('on');count();}
   if(kind!=='skill'){
-    if(demo)build({qty:demo,films:demo>2?[{n:1,link:'https://www.amazon.com/dp/B0CHS2VNHC',giver:'mom',receiver:'daughter'}]:[]});
+    if(demo)build({qty:demo,bonus:q.get('bonus')==='1',films:demo>2?[{n:1,link:'https://www.amazon.com/dp/B0CHS2VNHC',giver:'mom',receiver:'daughter'}]:[]});
     else if(cid.indexOf('cs_')===0)fetch(API+'?s='+encodeURIComponent(cid)).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.qty)build(d);}).catch(function(){});
   }
   if(!sid||sid.indexOf('cs_')!==0)return;                      // only a real return from checkout counts

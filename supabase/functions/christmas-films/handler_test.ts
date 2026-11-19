@@ -1,13 +1,15 @@
-import { handle, cleanLink, readFilms, type Deps, type Order } from "./handler.ts";
+import { handle, cleanLink, readFilms, BONUS_START, BONUS_END, type Deps, type Order } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const S = "cs_live_" + "a".repeat(40);
-function world(qty = 5, paid = true) {
-  const o: Order = { paid, qty, email: "buyer@example.com", name: "Buyer", paymentIntent: "pi_1", metadata: { project: "christmas_video" } };
+const BEFORE = BONUS_START - 3600; // an order placed before launch day: no bonus, as before
+function world(qty = 5, paid = true, created = BEFORE, opts: { vault?: boolean; earlier?: boolean } = {}) {
+  const o: Order = { paid, qty, email: "buyer@example.com", name: "Buyer", paymentIntent: "pi_1", metadata: { project: "christmas_video" }, created, vault: !!opts.vault };
   const mails: string[] = [];
   const deps: Deps = {
     order: (id) => Promise.resolve(id === S ? { ...o, metadata: { ...o.metadata } } : null),
     saveMeta: (_id, p) => { Object.assign(o.metadata, p); return Promise.resolve(); },
     mail: (s) => { mails.push(s); return Promise.resolve(true); },
+    earlierFilmOrder: () => Promise.resolve(!!opts.earlier),
   };
   return { o, mails, deps };
 }
@@ -69,4 +71,42 @@ Deno.test("a card whose mail failed says so", async () => {
   const w = world(1); w.deps.mail = () => Promise.resolve(false);
   const j = await (await handle(post({ s: S, n: 1, link: "https://www.amazon.com/dp/B000000001", giver: "mom", receiver: "son" }), w.deps)).json();
   assert(j.ok === true && j.notified === false, JSON.stringify(j));
+});
+
+const IN = BONUS_START + 5 * 3600; // Thursday 19.11, 05:00 PST
+const get = async (deps: Deps) => await (await handle(new Request("https://x/f?s=" + S), deps)).json();
+Deno.test("bonus: one film bought on launch day gives two cards", async () => {
+  const w = world(1, true, IN);
+  const g = await get(w.deps);
+  assert(g.qty === 2 && g.paid === 1 && g.bonus === true, JSON.stringify(g));
+  assert(w.o.metadata.bonus === "1", "frozen");
+  const r = await handle(post({ s: S, n: 2, link: "https://www.amazon.com/dp/B000000002", giver: "dad", receiver: "son" }), w.deps);
+  assert(r.status === 200 && w.mails[0].includes("2 of 2 (free bonus)"), w.mails.join("|"));
+});
+Deno.test("bonus: five films bought give exactly six cards, never more", async () => {
+  const w = world(5, true, IN);
+  const g = await get(w.deps); assert(g.qty === 6 && g.bonus === true, JSON.stringify(g));
+  assert((await handle(post({ s: S, n: 7, link: "https://www.amazon.com/dp/B000000007", giver: "dad", receiver: "son" }), w.deps)).status === 400, "no 7th card");
+});
+Deno.test("bonus: the same customer's second order that day gets none", async () => {
+  const g = await get(world(3, true, IN, { earlier: true }).deps);
+  assert(g.qty === 3 && g.bonus === false, JSON.stringify(g));
+});
+Deno.test("bonus: ends at midnight PST, not a second later", async () => {
+  assert((await get(world(1, true, BONUS_END - 1).deps)).qty === 2, "23:59:59 PST");
+  assert((await get(world(1, true, BONUS_END).deps)).qty === 1, "00:00 PST Friday");
+  assert((await get(world(1, true, BONUS_START - 1).deps)).qty === 1, "Wednesday");
+});
+Deno.test("bonus: a Vault free-film order does not stack with it", async () => {
+  const g = await get(world(1, true, IN, { vault: true }).deps);
+  assert(g.qty === 1 && g.bonus === false, JSON.stringify(g));
+});
+Deno.test("bonus: once given it stays, even if asked again later", async () => {
+  const w = world(2, true, IN);
+  await get(w.deps);
+  w.deps.earlierFilmOrder = () => Promise.resolve(true); // a later look must not take it away
+  assert((await get(w.deps)).qty === 3, "stays");
+});
+Deno.test("bonus: a Skill-only order still has no cards", async () => {
+  assert((await handle(new Request("https://x/f?s=" + S), world(0, true, IN).deps)).status === 404, "skill");
 });

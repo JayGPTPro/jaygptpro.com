@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { handle, VIDEO_PRODUCT, type Order } from "./handler.ts";
+import { handle, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, type Order } from "./handler.ts";
 
 const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const resendKey = Deno.env.get("RESEND_API_KEY") || "";
@@ -13,10 +13,23 @@ async function stripe(path: string, body?: URLSearchParams): Promise<Response> {
   });
 }
 
+// deno-lint-ignore no-explicit-any
+function usedVault(s: any): boolean {
+  // A promotion code shows its coupon only in the expanded breakdown.
+  for (const d of (s?.total_details?.breakdown?.discounts || [])) {
+    if (d?.discount?.coupon?.id === VAULT_COUPON) return true;
+  }
+  for (const d of (s?.discounts || [])) {
+    const c = typeof d?.coupon === "string" ? d.coupon : d?.coupon?.id;
+    if (c === VAULT_COUPON) return true;
+  }
+  return false;
+}
+
 Deno.serve((req) =>
   handle(req, {
     order: async (id): Promise<Order | null> => {
-      const res = await stripe(`checkout/sessions/${id}?expand[]=line_items`);
+      const res = await stripe(`checkout/sessions/${id}?expand[]=line_items&expand[]=total_details.breakdown`);
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`stripe session ${res.status}`);
       const s = await res.json();
@@ -31,7 +44,32 @@ Deno.serve((req) =>
         name: s?.customer_details?.name || "",
         paymentIntent: typeof s?.payment_intent === "string" ? s.payment_intent : "",
         metadata: s?.metadata || {},
+        created: Number(s?.created || 0),
+        vault: usedVault(s),
       };
+    },
+    // Paid film orders by the same email, opened in the bonus window before this one.
+    // Ties on the same second go to the lower session id, so exactly one order wins.
+    earlierFilmOrder: async (email, created, sessionId) => {
+      const q = new URLSearchParams({
+        limit: "100", status: "complete",
+        "customer_details[email]": email,
+        "created[gte]": String(BONUS_START), "created[lt]": String(BONUS_END),
+      });
+      const res = await stripe(`checkout/sessions?${q}`);
+      if (!res.ok) throw new Error(`stripe list ${res.status}`);
+      const list = (await res.json())?.data || [];
+      for (const x of list) {
+        if (x.id === sessionId || x.payment_status !== "paid") continue;
+        if (x?.metadata?.project !== "christmas_video") continue;
+        const before = x.created < created || (x.created === created && x.id < sessionId);
+        if (!before) continue;
+        const li = await stripe(`checkout/sessions/${x.id}/line_items?limit=10`);
+        if (!li.ok) throw new Error(`stripe line items ${li.status}`);
+        const films = ((await li.json())?.data || []).some((it: any) => it?.price?.product === VIDEO_PRODUCT);
+        if (films) return true;
+      }
+      return false;
     },
     saveMeta: async (id, patch) => {
       const body = new URLSearchParams();
