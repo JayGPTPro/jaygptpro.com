@@ -64,7 +64,7 @@ footer{padding:50px 0 80px;text-align:center}
 <div class="wrap hold" id="hold">
   <div class="eyebrow">The Perfect Gift Kit</div>
   <h1>Your Skill opens <em>on Sunday.</em></h1>
-  <p class="lead">Your Christmas Film Skill and training open on Sunday, November 22. We'll email you the moment they're live. This link will work then too.</p>
+  <p class="lead">Your Christmas Film Skill and training open on Sunday, November 22, at 1 PM New York time. We'll email you the moment they're live. This link will work then too.</p>
   <p class="fine">Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
 </div>
 
@@ -140,9 +140,10 @@ Get the kit from https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas
 
 <script>
 (function(){
-  // 20.11.2026: the kit opens on Sunday 22.11 (Jay). OPEN=false shows the holding message and removes the kit from the
-  // page, so no step, message or download link is reachable. On Sunday: set OPEN=true (one line) and push.
-  var OPEN=false;
+  // 20.11.2026: the kit opens on Sunday 22.11 at 1 PM New York (Jay). Before that the holding message shows and the kit
+  // is removed from the page, so no step, message or download link is reachable. It opens by itself at OPEN_AT.
+  var OPEN_AT=Date.UTC(2026,10,22,18,0,0);   // Sunday 22.11.2026, 1 PM New York (EST = UTC-5)
+  var OPEN=Date.now()>=OPEN_AT;
   if(!OPEN){var k=document.getElementById('kit');if(k)k.remove();document.getElementById('hold').style.display='block';return;}
   var s=new URLSearchParams(location.search).get('s')||new URLSearchParams(location.search).get('session_id')||'';
   var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-kit';

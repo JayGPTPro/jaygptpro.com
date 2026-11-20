@@ -7,9 +7,9 @@ import Stripe from "https://esm.sh/stripe@17?target=deno";
 // test/run_test.ts fails if the two ever differ. Edit the site file, then copy it here.
 import "./cohort-calendar.js";
 
-// 20.11.2026 (Jay): Skill buyers until Sunday 22.11 get the kit then. true = the buyer mail says it opens Sunday.
-// On Sunday: false (and the kit page OPEN / thanks page KIT_OPEN switches), then deploy.
-export const KIT_HOLD = true;
+// 20.11.2026 (Jay): the Skill opens Sunday 22.11 at 1 PM New York (18:00 UTC). Until then the buyer mail says when it
+// opens; from then on it is the normal "your kit is ready" mail. The kit page and the thanks page switch at the same minute.
+export const KIT_OPEN_AT = Date.UTC(2026, 10, 22, 18, 0, 0);
 const WonkaCalendar = (globalThis as any).WonkaCalendar;
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -176,8 +176,8 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
     if (email && session?.id) {
       const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
         + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
-        + (KIT_HOLD
-          ? `<p>Thank you for buying the Christmas Film Skill. Your Skill and the step-by-step training open on Sunday, November 22. We'll email you the moment they're live.</p>`
+        + (Date.now() < KIT_OPEN_AT
+          ? `<p>Thank you for buying the Christmas Film Skill. Your Skill and the step-by-step training open on Sunday, November 22, at 1 PM New York time. We'll email you the moment they're live.</p>`
             + `<p><a href="${esc(kitUrl)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">My kit link</a></p>`
             + `<p>Keep this email. This link opens your kit on Sunday and any time after.</p>`
           : `<p>Thank you for buying the Perfect Gift Kit. Everything is ready for you on your own private page: a short video that shows you every step, the setup, and the Skill itself.</p>`
@@ -188,14 +188,14 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [email], reply_to: CHRISTMAS_NOTIFY_TO,
-            subject: KIT_HOLD ? 'Your Christmas Film Skill opens Sunday, November 22' : 'Your Perfect Gift Kit is ready', html: buyerHtml }),
+            subject: Date.now() < KIT_OPEN_AT ? 'Your Christmas Film Skill opens Sunday, November 22, 1 PM ET' : 'Your Perfect Gift Kit is ready', html: buyerHtml }),
         });
         buyerMailed = res.ok;
         if (!res.ok) console.error('Christmas kit buyer mail failed:', res.status, await res.text());
       } catch (e) { console.error('Christmas kit buyer mail error:', e); }
     }
     rows.push(['Kit page', kitUrl]);
-    if (KIT_HOLD) rows.push(['Kit opens', 'Sunday 22.11 (holding page until then). After the switch, this buyer gets the "Your kit is open" email.']);
+    if (Date.now() < KIT_OPEN_AT) rows.push(['Kit opens', 'Sunday 22.11, 1 PM New York (holding page until then). After the switch, this buyer gets the "Your kit is open" email.']);
     rows.push(['Kit link mailed to buyer', buyerMailed ? 'Yes. Nothing to do.' : 'NO. Send the buyer the kit page link above yourself.']);
   } else {
     rows.push(['To do', 'Could not tell what was bought (the Stripe lookup failed). Check the payment in Stripe. If it is a video, send the buyer the cards page: https://jaygptpro.com/christmas-video/thanks/?p=video&s=' + String(session?.id || '')]);

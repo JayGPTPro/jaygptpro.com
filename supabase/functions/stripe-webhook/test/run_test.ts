@@ -846,7 +846,7 @@ check('http 200', res.status === 200, `got ${res.status}`);
 check('two mails: buyer first, then Jay', sendState.mails.length === 2 && String(sendState.mails[0]?.to).includes('skill@seller.com') && String(sendState.mails[1]?.to).includes('info@jaygptpro.com'), JSON.stringify(sendState.mails.map((m: any) => m.to)));
 {
   const buyer = JSON.stringify(sendState.mails[0] || {}), jay = JSON.stringify(sendState.mails[1] || {});
-  check('buyer mail opens the kit page for this session', buyer.includes('christmas-video/kit/?s=cs_xmas_1') && buyer.includes('open on Sunday, November 22') && buyer.includes('Your Christmas Film Skill opens Sunday'), buyer.slice(0, 600));
+  check('buyer mail opens the kit page for this session', buyer.includes('christmas-video/kit/?s=cs_xmas_1') && (Date.now() < Date.UTC(2026, 10, 22, 18) ? buyer.includes('at 1 PM New York time') && buyer.includes('opens Sunday, November 22, 1 PM ET') : buyer.includes('Your Perfect Gift Kit is ready')), buyer.slice(0, 600));
   check('buyer mail never asks for video cards', !buyer.includes('thanks/?p=') && !buyer.toLowerCase().includes('fill in'), buyer.slice(0, 600));
   check('Jay mail carries the kit page and that the buyer has it', jay.includes('kit/?s=cs_xmas_1') && jay.includes('Kit link mailed to buyer') && jay.includes('Yes'), jay.slice(0, 900));
   check('Jay mail no longer promises 48 hours for the Skill', !jay.includes('48 hours'), jay.slice(0, 900));
