@@ -169,8 +169,8 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
     </section>
 
     <section id="vault" aria-labelledby="h-vault">
-      <h2 id="h-vault">Vault: סרט ראשון חינם</h2>
-      <p class="lead">חבר Vault ממלא כרטיס בדף ה-Vault, ואתה בודק ידנית שהוא באמת חבר. סרט אחד לכל חבר. <b>48 השעות מתחילות כשאתה מאשר את החברות.</b></p>
+      <h2 id="h-vault">Vault: סרט ו-Skill במתנה</h2>
+      <p class="lead"><b>סרט חינם:</b> חבר Vault ממלא כרטיס בדף ה-Vault, ואתה בודק ידנית שהוא באמת חבר. סרט אחד לכל חבר, ו-2 ימי העסקים מתחילים כשאתה מאשר את החברות. <b>Skill חינם:</b> מ-22.11 זה קישור קיט אחד לכל ה-Vault, בלי בדיקת מייל, אז אי אפשר לספור כמה חברים נכנסו. בקשה אישית, אם תהיה, תופיע כאן בשורה משלה. לא נספר במכירות, בקופות ובהמרה.</p>
       <div class="rows" id="vault-rows"></div>
     </section>
 
@@ -218,7 +218,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
 
     <section id="tests" aria-labelledby="h-tests">
       <h2 id="h-tests">הבדיקות שלך</h2>
-      <p class="lead">לא נספרות במכירות ובהמרה. הסרטים שלהן עוברים בתור של "סרטים להכין" כמו הזמנה של לקוח, עם דדליין ומסומנים TEST, כדי שתראה מה נשבר בייצור. הזמנה נחשבת בדיקה אם היא באה מקישור הבדיקה, שולמה עם קוד שיש בו <bdi dir="ltr">TEST</bdi> (כמו <bdi dir="ltr">XMASTEST2</bdi> או <bdi dir="ltr">KITTEST1</bdi>), או שולמה ממייל של <bdi dir="ltr">jaygptpro.com</bdi>.</p>
+      <p class="lead">לא נספרות במכירות ובהמרה. הסרטים שלהן עוברים בתור של "סרטים להכין" כמו הזמנה של לקוח, עם דדליין ומסומנים TEST, כדי שתראה מה נשבר בייצור. הזמנה נחשבת בדיקה אם היא מסומנת כבדיקה (כמו בקישור הבדיקה), שולמה עם קוד שיש בו <bdi dir="ltr">TEST</bdi> (כמו <bdi dir="ltr">XMASTEST2</bdi> או <bdi dir="ltr">KITTEST1</bdi>), או שולמה ממייל של <bdi dir="ltr">jaygptpro.com</bdi>.</p>
       <div class="list" id="test-list"></div>
     </section>
 
@@ -377,11 +377,12 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
   /* ---------- vault ---------- */
   function renderVault(){
     var box = $('vault-rows'); box.textContent = '';
-    var now = Date.now() / 1000, real = data.vault.filter(function(v){ return !v.test.length; });
-    $('j-vault').textContent = String(real.length);
-    if (data.vaultError) { box.append(el('div', 'empty', 'לא הצלחתי לקרוא את בקשות ה-Vault מ-Stripe עכשיו. נסה לרענן. (' + data.vaultError.slice(0, 120) + ')')); return; }
-    if (!data.vault.length) { box.append(el('div', 'empty', 'אין עדיין בקשות מחברי Vault.')); return; }
-    data.vault.forEach(function(v){
+    var now = Date.now() / 1000, films = data.vault || [], skills = data.vaultSkill || [];
+    var real = films.filter(function(v){ return !v.test.length; }).length + skills.filter(function(v){ return !v.test.length && !v.shared; }).length;
+    $('j-vault').textContent = String(real);
+    if (data.vaultError) box.append(el('div', 'empty', 'לא הצלחתי לקרוא את בקשות הסרט מה-Vault מ-Stripe עכשיו. נסה לרענן. (' + data.vaultError.slice(0, 120) + ')'));
+    if (!films.length && !skills.length && !data.vaultError) { box.append(el('div', 'empty', 'אין עדיין בקשות מחברי Vault.')); return; }
+    films.forEach(function(v){
       var row = el('article', 'row wait');
       var due = el('div', 'due'); due.append(el('span', 'when', 'בדוק חברות'), el('span', 'left', 'הוגש לפני ' + hoursText(now - v.claimedAt)));
       var w = el('div', 'what');
@@ -391,6 +392,18 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       if (v.link) p.append(link(v.link, v.asin || v.link, 'asin'));
       if (v.giver) p.append(el('span', null, roles(v.giver, v.receiver)));
       w.append(p);
+      row.append(due, w); box.append(row);
+    });
+    skills.forEach(function(v){
+      var row = el('article', 'row');
+      var due = el('div', 'due'); due.append(el('span', 'when', 'הקיט פתוח'), el('span', 'left', 'אין מה לעשות'));
+      var w = el('div', 'what');
+      var h = el('div', 'h'); h.append(el('span', null, v.shared ? 'קישור הקיט של ה-Vault' : 'Skill + הדרכה במתנה'), chip('vault', 'Vault')); if (v.test.length) h.append(chip('test', 'TEST')); w.append(h);
+      var who = el('div', 'who');
+      if (v.shared) who.append('קישור אחד לכל חברי ה-Vault · נוצר ' + when(v.claimedAt));
+      else who.append(v.name ? bdi(v.name) : '', v.name ? ' · ' : '', bdi(v.email || 'בלי מייל'), ' · ' + when(v.claimedAt));
+      w.append(who);
+      var l = el('div', 'links'); l.append(link(v.kitUrl, v.shared ? 'פתח את הקיט' : 'הקיט שלו')); w.append(l);
       row.append(due, w); box.append(row);
     });
   }
@@ -500,7 +513,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
   function selectText(node){ var r = document.createRange(); r.selectNodeContents(node); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
 
   /* ---------- tests ---------- */
-  var WHY = { 'test link (?test=1)': 'קישור הבדיקה', "Jay's own email": 'המייל שלך' };
+  var WHY = { 'marked test': 'מסומנת כבדיקה', 'test link (?test=1)': 'קישור הבדיקה', "Jay's own email": 'המייל שלך' };
   function renderTests(){
     var box = $('test-list'); box.textContent = '';
     if (!data.tests.length && !data.testOpens) { box.append(el('div', 'empty', 'אין הזמנות בדיקה.')); return; }

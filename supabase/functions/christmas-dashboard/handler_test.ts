@@ -97,7 +97,7 @@ Deno.test("the board: sales per day, films with the bonus, deadlines, Skill, tes
   const k = build({ sessions: [s3, session({ id: "cs_kt", skill: true, amount: 0, discounts: [{ promotion_code: "promo_k" }] })], promos: { promo_k: { code: "KITTEST1", coupon: "c" } }, vault: [], now });
   assert(k.skill.length === 2 && k.skill.find((x) => x.order === "cs_kt")!.test[0] === "code KITTEST1", "a Skill test is listed, marked");
   assert(k.totals.skillOrders === 1 && k.totals.skillUsd === 19900, "and stays out of the sales numbers");
-  assert(b.tests.length === 1 && b.tests[0].why[0].startsWith("test link"), "the test order is listed apart");
+  assert(b.tests.length === 1 && b.tests[0].why[0] === "marked test", "the test order is listed apart");
   assert(b.refunds.length === 1 && b.refunds[0].full, "the refund is listed");
   assert(b.days[0].day === ilDay(LAUNCH), "the table starts on launch day");
 });
@@ -147,4 +147,27 @@ Deno.test("a partner's orders are split out, and still counted in the totals", (
   assert(r.films.filter((f) => f.partner === "p1").length === 3, "his films are marked in the production list (2 paid + his test)");
   const empty = build({ sessions: [session({ amount: 9900 })], promos: {}, vault: [], now });
   assert(empty.partners.length === 1 && empty.partners[0].filmOrders === 0, "a known partner shows before the first order");
+});
+
+Deno.test("Vault free Skill claims: listed with the Vault, never a Skill sale, a checkout or a Sunday buyer", () => {
+  const now = U(2026, 11, 27, 10);
+  const claim = { ...session({ id: "cs_vs", skill: true, amount: 0, paidAt: U(2026, 11, 26, 9), email: "member@example.com", meta: { offer: "vault_skill" }, discounts: [{ coupon: "VAULT_FREE_SKILL", promotion_code: null }] }), payment_intent: null };
+  const test = { ...session({ id: "cs_vt", skill: true, amount: 0, paidAt: U(2026, 11, 20, 14, 22), email: "info+vaulttest@jaygptpro.com", meta: { offer: "vault_skill", test: "true" } }), payment_intent: null };
+  const open = session({ id: "cs_vo", skill: true, amount: 0, paid: false, created: U(2026, 11, 26, 8), meta: { offer: "vault_skill" } });
+  const sale = session({ id: "cs_s", skill: true, amount: 19900, paidAt: U(2026, 11, 26, 11) });
+  const b = build({ sessions: [claim, test, open, sale], promos: {}, vault: [], now });
+  assert(b.vaultSkill.length === 2 && b.vaultSkill[0].order === "cs_vt" && b.vaultSkill[1].order === "cs_vs", "both claims listed, oldest first");
+  assert(b.vaultSkill[1].kitUrl === "https://jaygptpro.com/christmas-video/kit/?s=cs_vs" && b.vaultSkill[1].claimedAt === U(2026, 11, 26, 9) - 20, "kit link and time (a $0 claim has no charge: the session's own time)");
+  assert(b.vaultSkill[0].test[0] === "marked test", "the test claim is marked");
+  assert(b.totals.skillOrders === 1 && b.totals.skillUsd === 19900, "only the real sale counts");
+  assert(b.totals.opened === 1 && b.totals.paidOfOpened === 1 && b.unpaid.length === 0, "claims stay out of checkouts and conversion");
+  assert(b.skill.length === 1 && b.skill[0].order === "cs_s", "claims are not Skill buyers");
+  assert(!b.tests.some((x) => x.email.startsWith("info+vaulttest")) && b.testOpens === 0, "the Vault test shows with the Vault, not twice");
+});
+
+Deno.test("the Vault's one shared kit link is its own row, not a test and not a member", () => {
+  const shared = { ...session({ id: "cs_vshared", skill: true, amount: 0, paidAt: U(2026, 11, 22, 10), email: "info+vault@jaygptpro.com", meta: { offer: "vault_skill", vault_shared: "1" } }), payment_intent: null };
+  const b = build({ sessions: [shared], promos: {}, vault: [], now: U(2026, 11, 22, 12) });
+  assert(b.vaultSkill.length === 1 && b.vaultSkill[0].shared && b.vaultSkill[0].test.length === 0, "shared row, not TEST");
+  assert(b.totals.skillOrders === 0 && b.skill.length === 0 && b.tests.length === 0 && b.unpaid.length === 0, "no sale, no buyer, no test row");
 });

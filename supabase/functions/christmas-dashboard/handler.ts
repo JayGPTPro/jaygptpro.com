@@ -21,6 +21,9 @@ export const VAULT_COUPON = "VAULT_FIRST_FILM";
 // metadata.partner on every order (22.11.2026: partner p1, jaygptpro.com/xmas). Listed here so the
 // board shows a partner from day one, before the first order.
 export const PARTNERS = ["p1"];
+// The Vault free Skill (Jay, 20.11.2026; opens with November's Vault episode): a $0 Skill checkout with this
+// coupon and metadata.offer "vault_skill". Stripe marks it "paid". It is a claim, not a sale.
+export const VAULT_SKILL_COUPON = "VAULT_FREE_SKILL";
 
 const H = 3600;
 // Israel is UTC+2 until 26.3.2027 and Pacific is UTC-8 until 14.3.2027, so for this launch
@@ -93,6 +96,8 @@ export type Order = {
   fullyRefunded: boolean;
   bonus: "yes" | "no" | "unknown"; // unknown: paid in the bonus window, not decided yet
   vaultCoupon: boolean;
+  vaultSkill: boolean;             // a Vault member's free Skill: listed with the Vault claims, never a sale
+  vaultShared: boolean;            // the ONE shared $0 kit session for the whole Vault (metadata.vault_shared "1")
   test: string[];                  // why this is one of Jay's own tests (empty: a real order)
   status: string;                  // Stripe: open, complete, expired
   failed: string;                  // a declined payment attempt, if any
@@ -119,7 +124,7 @@ export function classify(s: Any, promos: Record<string, Promo>): Order | null {
     if (c) coupons.push(c);
   }
   const test: string[] = [];
-  if (s?.metadata?.test === "true") test.push("test link (?test=1)");
+  if (s?.metadata?.test === "true") test.push("marked test");
   for (const c of codes) if (/test/i.test(c)) test.push("code " + c);
   if (email.endsWith("@jaygptpro.com")) test.push("Jay's own email");
   const pi = typeof s?.payment_intent === "object" ? s.payment_intent : null;
@@ -137,7 +142,8 @@ export function classify(s: Any, promos: Record<string, Promo>): Order | null {
   return {
     id: String(s?.id || ""), kind: films > 0 ? "film" : "skill", created: Number(s?.created || 0), paid, paidAt,
     email, name: String(s?.customer_details?.name || ""), films, skills, usd, refunded,
-    fullyRefunded: !!charge?.refunded, bonus, vaultCoupon: coupons.includes(VAULT_COUPON), test,
+    fullyRefunded: !!charge?.refunded, bonus, vaultCoupon: coupons.includes(VAULT_COUPON),
+    vaultSkill: meta.offer === "vault_skill" || coupons.includes(VAULT_SKILL_COUPON), vaultShared: meta.vault_shared === "1", test,
     status: String(s?.status || ""), failed: !paid && pi?.last_payment_error ? String(pi.last_payment_error.message || pi.last_payment_error.code || "declined") : "",
     paymentIntent: idOf(s?.payment_intent), partner: String(meta.partner || ""), meta,
   };
@@ -148,7 +154,8 @@ const net = (o: Order) => (o.usd ?? 0) - o.refunded;
 export function build(input: Input) {
   const { now } = input;
   const all = input.sessions.map((s) => classify(s, input.promos)).filter((o): o is Order => !!o);
-  const real = all.filter((o) => !o.test.length);
+  // Sales, checkouts and conversion count real buyers only: not Jay's tests, not Vault Skill claims.
+  const real = all.filter((o) => !o.test.length && !o.vaultSkill);
   const sold = real.filter((o) => o.paid && !o.fullyRefunded);
 
   // Sales and checkouts per Israel day, from launch day to today.
@@ -226,9 +233,17 @@ export function build(input: Input) {
 
   // The Skill: who paid before the kit opens on Sunday 22.11 (they get the "kit is open" mail).
   // Jay's own tests are listed too, marked, so he sees them go through like a customer (20.11).
-  const skill = all.filter((o) => o.paid && !o.fullyRefunded && o.kind === "skill").map((o) => ({
+  const skill = all.filter((o) => o.paid && !o.fullyRefunded && o.kind === "skill" && !o.vaultSkill).map((o) => ({
     email: o.email, name: o.name, paidAt: o.paidAt, usd: net(o), beforeOpen: o.paidAt < KIT_OPEN_AT, order: o.id, test: o.test, partner: o.partner,
   })).sort((a, b) => a.paidAt - b.paidAt);
+
+  // Vault free Skill: since 22.11 ONE shared $0 kit session for the whole Vault (open link, no email check),
+  // so members cannot be counted one by one; any per-member claim still lists as its own row.
+  const vaultSkill = all.filter((o) => o.vaultSkill && o.paid).map((o) => ({
+    email: o.email, name: o.name, claimedAt: o.paidAt, order: o.id, shared: o.vaultShared,
+    test: o.vaultShared ? [] : o.test,   // the shared link is made with Jay's own email on purpose: not a test
+    kitUrl: `https://jaygptpro.com/christmas-video/kit/?s=${o.id}`,
+  })).sort((a, b) => a.claimedAt - b.claimedAt);
 
   // Checkouts opened since launch and not paid.
   const unpaid = real.filter((o) => !o.paid && o.created >= LAUNCH).map((o) => ({
@@ -240,11 +255,11 @@ export function build(input: Input) {
     paidAt: o.paidAt, kind: o.kind, email: o.email, usd: o.usd, refunded: o.refunded, full: o.fullyRefunded,
   }));
 
-  const tests = all.filter((o) => o.test.length && o.paid).map((o) => ({
+  const tests = all.filter((o) => o.test.length && o.paid && !o.vaultSkill).map((o) => ({
     paidAt: o.paidAt, kind: o.kind, qty: o.kind === "film" ? o.films : o.skills, usd: o.usd, email: o.email,
     why: o.test, bonus: o.bonus, refunded: o.refunded, fullyRefunded: o.fullyRefunded,
   })).sort((a, b) => b.paidAt - a.paidAt);
-  const testOpens = all.filter((o) => o.test.length && !o.paid && o.created >= LAUNCH).length;
+  const testOpens = all.filter((o) => o.test.length && !o.vaultSkill && !o.paid && o.created >= LAUNCH).length;
 
   // Each partner's own sales (orders from their Stripe links). These orders are ALSO inside the
   // day table and totals above; this only splits them out, by the same rules (real orders, USD,
@@ -269,7 +284,7 @@ export function build(input: Input) {
 
   return {
     generatedAt: now, launch: LAUNCH, kitOpenAt: KIT_OPEN_AT, bonusEnd: BONUS_END, filmHours: FILM_HOURS,
-    days, totals, films, vault, vaultError: input.vaultError || "", skill, unpaid, refunds, tests, testOpens, partners,
+    days, totals, films, vault, vaultError: input.vaultError || "", vaultSkill, skill, unpaid, refunds, tests, testOpens, partners,
   };
 }
 
