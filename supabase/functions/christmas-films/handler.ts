@@ -58,6 +58,7 @@ export type Deps = {
   vaultRecord: (email: string, card: VaultCard) => Promise<void>;
   bonusOrder: (email: string) => Promise<boolean>;             // does this email already have a bonus film?
   skillCheckout: (price: string, ref: string) => Promise<string>; // a Stripe Checkout URL
+  resolveShort?: (url: string) => Promise<string>;             // where an amzn.to / a.co link leads
   now: () => number;                                           // unix seconds
 };
 
@@ -99,18 +100,45 @@ export function validSession(s: unknown): s is string {
 }
 
 // An Amazon link is long and mostly tracking. Keep the product page, drop the rest.
+// A bare ASIN: B0 and eight more, or the ten-digit ISBN form books use (last may be X).
+const BARE_ASIN = /^(B0[A-Z0-9]{8}|\d{9}[\dX])$/i;
+// Every way Amazon puts the ASIN in a product page path.
+const ASIN_PATH = /\/(?:dp|gp\/product|gp\/aw\/d|gp\/offer-listing|o\/ASIN|exec\/obidos\/ASIN|exec\/obidos\/tg\/detail\/-)\/([A-Z0-9]{10})(?:[/?#]|$)/i;
+// Amazon's short links: they only say the ASIN after a redirect.
+export const SHORT_HOST = /^(?:www\.)?(?:amzn\.to|a\.co|amzn\.eu|amzn\.asia|amzn\.com)$/i;
+
+// The product as the buyer typed it: an ASIN, any Amazon product link, or another shop's link.
+// Amazon comes back as https://<host>/dp/<ASIN> (a bare ASIN as amazon.com); other links as typed.
 export function cleanLink(raw: unknown): string {
   let s = String(raw ?? "").trim().replace(/\s+/g, "");
   if (!s) return "";
+  if (BARE_ASIN.test(s)) return `https://www.amazon.com/dp/${s.toUpperCase()}`;
   if (!/^https?:\/\//i.test(s)) s = "https://" + s;
   let u: URL;
   try { u = new URL(s); } catch { return ""; }
   if (!/^https?:$/.test(u.protocol) || !u.hostname.includes(".")) return "";
-  const asin = (u.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})(?:[/?]|$)/i) || [])[1];
-  if (asin && /(^|\.)amazon\./i.test(u.hostname)) return `https://${u.hostname}/dp/${asin.toUpperCase()}`;
+  if (/(^|\.)amazon\./i.test(u.hostname)) {
+    const asin = (u.pathname.match(ASIN_PATH) || [])[1] || u.searchParams.get("asin") || u.searchParams.get("ASIN") || "";
+    if (/^[A-Z0-9]{10}$/i.test(asin)) return `https://${u.hostname.toLowerCase()}/dp/${asin.toUpperCase()}`;
+  }
   const plain = u.origin + u.pathname;
   const full = plain + u.search;
   return (full.length <= LINK_MAX ? full : plain).slice(0, LINK_MAX);
+}
+
+// cleanLink, and an amzn.to / a.co short link is followed to the product page when it can be.
+// If the short link cannot be followed, it is kept as typed, as before.
+export async function cleanProduct(raw: unknown, deps: Deps): Promise<string> {
+  const link = cleanLink(raw);
+  if (!link || !deps.resolveShort) return link;
+  let host = "";
+  try { host = new URL(link).hostname; } catch { return link; }
+  if (!SHORT_HOST.test(host)) return link;
+  try {
+    const long = cleanLink(await deps.resolveShort(link));
+    if (long && /\/dp\/[A-Z0-9]{10}$/.test(long)) return long;
+  } catch { /* keep the short link */ }
+  return link;
 }
 
 const keyFor = (n: number) => "films_" + String(Math.ceil(n / 2)).padStart(2, "0");
@@ -147,10 +175,10 @@ async function vaultClaim(b: Record<string, unknown>, deps: Deps): Promise<Respo
   const email = String(b?.email || "").trim().toLowerCase();
   const name = String(b?.name || "").trim().slice(0, 80);
   const giver = String(b?.giver || ""), receiver = String(b?.receiver || "");
-  const link = cleanLink(b?.link);
+  const link = await cleanProduct(b?.link, deps);
   if (!name) return json({ error: "name", message: "Please write your name." }, 400);
   if (!EMAIL.test(email)) return json({ error: "email", message: "Please write the email you use in the Vault." }, 400);
-  if (!link) return json({ error: "link", message: "Please paste the link to your product." }, 400);
+  if (!link) return json({ error: "link", message: "Please paste your product's Amazon link or its ASIN." }, 400);
   if (!(GIVERS as readonly string[]).includes(giver)) return json({ error: "giver", message: "Pick who gives the gift." }, 400);
   if (!(RECEIVERS as readonly string[]).includes(receiver)) return json({ error: "receiver", message: "Pick who receives it." }, 400);
   if (await deps.vaultClaimed(email)) {
@@ -209,9 +237,9 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     if (!validSession(s)) return json({ error: "bad session" }, 400);
     const n = Number(b?.n);
     const giver = String(b?.giver || ""), receiver = String(b?.receiver || "");
-    const link = cleanLink(b?.link);
+    const link = await cleanProduct(b?.link, deps);
     if (!Number.isInteger(n) || n < 1) return json({ error: "bad film number" }, 400);
-    if (!link) return json({ error: "link", message: "Please paste the link to your product." }, 400);
+    if (!link) return json({ error: "link", message: "Please paste your product's Amazon link or its ASIN." }, 400);
     if (!(GIVERS as readonly string[]).includes(giver)) return json({ error: "giver", message: "Pick who gives the gift." }, 400);
     if (!(RECEIVERS as readonly string[]).includes(receiver)) return json({ error: "receiver", message: "Pick who receives it." }, 400);
 

@@ -114,6 +114,19 @@ Deno.serve((req) =>
       if (!res.ok) throw new Error(`stripe checkout ${res.status}: ${await res.text()}`);
       return String((await res.json())?.url || "");
     },
+    // Follow an amzn.to / a.co link's redirects (never the Amazon page itself), at most 4 hops, 4 s.
+    resolveShort: async (start) => {
+      let url = start;
+      for (let hop = 0; hop < 4; hop++) {
+        const res = await fetch(url, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(4000) });
+        await res.body?.cancel();
+        const next = res.headers.get("location");
+        if (!next) return url;
+        url = new URL(next, url).toString();
+        if (/(^|\.)amazon\./i.test(new URL(url).hostname)) return url;
+      }
+      return url;
+    },
     now: () => Math.floor(Date.now() / 1000),
     saveMeta: async (id, patch) => {
       const body = new URLSearchParams();

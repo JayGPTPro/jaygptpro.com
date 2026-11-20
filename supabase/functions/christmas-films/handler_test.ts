@@ -28,6 +28,37 @@ Deno.test("amazon link is cut to the product page", () => {
   assert(cleanLink("javascript:alert(1)") === "", "scheme");
   assert(cleanLink("https://shop.example.com/p/" + "x".repeat(400) + "?a=1").length <= 190, "long");
 });
+Deno.test("a bare ASIN and every Amazon link form become the product page", () => {
+  const D = "https://www.amazon.com/dp/B07S6K6B27";
+  assert(cleanLink("B07S6K6B27") === D, "bare");
+  assert(cleanLink("  b07s6k6b27 ") === D, "bare, lower case, spaces");
+  assert(cleanLink("0316769487") === "https://www.amazon.com/dp/0316769487", "isbn asin");
+  assert(cleanLink("031676948X") === "https://www.amazon.com/dp/031676948X", "isbn asin with X");
+  assert(cleanLink("https://www.amazon.com/gp/product/B07S6K6B27/ref=ppx_yo_dt_b?ie=UTF8&psc=1") === D, "gp/product");
+  assert(cleanLink("https://www.amazon.com/gp/aw/d/B07S6K6B27?th=1") === D, "gp/aw/d");
+  assert(cleanLink("https://www.Amazon.com/Kids-Toy-Long-Name-Here/dp/B07S6K6B27/ref=sr_1_3?crid=2ABC&dib=eyJ2IjoiMSJ9." + "x".repeat(600) + "&keywords=toy&qid=1&sr=8-3&th=1") === D, "very long link");
+  assert(cleanLink("https://www.amazon.com/dp/B07S6K6B27#customerReviews") === D, "hash");
+  assert(cleanLink("https://www.amazon.co.uk/o/ASIN/B07S6K6B27") === "https://www.amazon.co.uk/dp/B07S6K6B27", "o/ASIN, other market");
+  assert(cleanLink("https://www.amazon.com/s?k=toy&asin=B07S6K6B27") === D, "asin query");
+  assert(cleanLink("https://amzn.to/3abcXYZ") === "https://amzn.to/3abcXYZ", "short link kept");
+  assert(cleanLink("B07S6K6B2") === "", "nine characters is not an ASIN");
+  assert(cleanLink("https://www.amazon.com/dp/B07S6K6B27") === D, "already clean stays the same");
+});
+Deno.test("a card saved with a bare ASIN, and a short link followed to its ASIN", async () => {
+  const w = world(2);
+  const r = await handle(post({ s: S, n: 1, link: "B07S6K6B27", giver: "dad", receiver: "son" }), w.deps);
+  const j = await r.json();
+  assert(r.status === 200 && j.link === "https://www.amazon.com/dp/B07S6K6B27", "bare asin saved " + JSON.stringify(j));
+  w.deps.resolveShort = (u) => Promise.resolve(u === "https://a.co/d/abc123" ? "https://www.amazon.com/Toy/dp/B0D4YZRK2M?ref=x" : u);
+  const r2 = await handle(post({ s: S, n: 2, link: "https://a.co/d/abc123", giver: "mom", receiver: "toddler" }), w.deps);
+  const j2 = await r2.json();
+  assert(r2.status === 200 && j2.link === "https://www.amazon.com/dp/B0D4YZRK2M", "short followed " + JSON.stringify(j2));
+  w.deps.resolveShort = () => Promise.reject(new Error("offline"));
+  const r3 = await handle(post({ s: S, n: 2, link: "amzn.to/3abc", giver: "mom", receiver: "toddler" }), w.deps);
+  assert((await r3.json()).link === "https://amzn.to/3abc", "short kept when it cannot be followed");
+  const bad = await (await handle(post({ s: S, n: 1, link: "toy", giver: "dad", receiver: "son" }), w.deps)).json();
+  assert(bad.error === "link" && /ASIN/.test(bad.message), "error names the ASIN");
+});
 Deno.test("five videos take five different cards and each is mailed", async () => {
   const w = world(5);
   const fams = [["mom", "son"], ["dad", "daughter"], ["mom", "partner"], ["dad", "partner"], ["dad", "son"]];
