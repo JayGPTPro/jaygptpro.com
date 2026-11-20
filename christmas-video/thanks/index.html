@@ -316,7 +316,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     document.getElementById('films').classList.add('on');count();}
   if(kind!=='skill'){
     if(demo)build({qty:demo,bonus:q.get('bonus')==='1',films:demo>2?[{n:1,link:'https://www.amazon.com/dp/B0CHS2VNHC',giver:'mom',receiver:'daughter'}]:[]});
-    else if(cid.indexOf('cs_')===0)fetch(API+'?s='+encodeURIComponent(cid)).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.qty)build(d);}).catch(function(){});
+    else if(cid.indexOf('cs_')===0){
+      /* the film cards are the step that starts the work: if they do not load, try twice more, then say where they are */
+      var tries=0,retry=function(){if(++tries<3)setTimeout(load,2500);else{document.getElementById('msg').textContent='Your payment went through. We could not open your film card on this page, so use the link in the email we just sent you, or reload this page in a minute. We start each film when its card is saved.';}},
+        load=function(){fetch(API+'?s='+encodeURIComponent(cid)).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.qty)build(d);else retry();}).catch(retry);};
+      load();}
   }
   if(!sid||sid.indexOf('cs_')!==0)return;                      // only a real return from checkout counts
   try{if(localStorage.getItem('xmas_done_'+sid))return;localStorage.setItem('xmas_done_'+sid,'1');}catch(e){}
