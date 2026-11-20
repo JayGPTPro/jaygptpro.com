@@ -1,4 +1,4 @@
-import { handle, cleanLink, readFilms, BONUS_START, BONUS_END, BF_END, SKILL_PRICE_BF, SKILL_PRICE_FULL, type Deps, type Order } from "./handler.ts";
+import { handle, cleanLink, readFilms, VAULT_OPEN, BONUS_START, BONUS_END, BF_END, SKILL_PRICE_BF, SKILL_PRICE_FULL, type Deps, type Order } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const S = "cs_live_" + "a".repeat(40);
 const BEFORE = BONUS_START - 3600; // an order placed before launch day: no bonus, as before
@@ -16,6 +16,7 @@ function world(qty = 5, paid = true, created = BEFORE, opts: { vault?: boolean; 
     bonusOrder: () => Promise.resolve(!!opts.bonusOrder),
     skillCheckout: (price) => { checkouts.push(price); return Promise.resolve("https://checkout.stripe.com/c/pay/cs_test_x"); },
     now: () => opts.now ?? Math.floor(Date.now() / 1000),
+    vaultOpen: true,   // the claim rules below are tested as they will run once the Vault opens
   };
   return { o, mails, deps, vaultRecords, checkouts };
 }
@@ -214,4 +215,21 @@ Deno.test("skill checkout: $199 until Black Friday ends, $299 from then, by the 
   const b = world(0, true, BEFORE, { now: BF_END });
   const jb = await (await handle(post({ checkout: "skill" }), b.deps)).json();
   assert(jb.price === 299 && b.checkouts[0] === SKILL_PRICE_FULL, JSON.stringify(jb));
+});
+
+Deno.test("vault closed: a direct POST is refused on the server, nothing is mailed or recorded", async () => {
+  assert(VAULT_OPEN === false, "the deployed switch is closed");
+  const w = world(1);
+  delete w.deps.vaultOpen;   // as deployed
+  for (const body of [vault, { ...vault, vault: "skill" }, { ...vault, vault: 1 }]) {
+    const r = await handle(post(body), w.deps);
+    const j = await r.json();
+    assert(r.status === 403 && j.error === "closed" && /next week/.test(j.message), "refused " + JSON.stringify(j));
+  }
+  assert(w.mails.length === 0 && w.vaultRecords.length === 0, "nothing sent or stored");
+  // public orders still work while the Vault is closed
+  const c = await handle(post({ s: S, n: 1, link: "B07S6K6B27", giver: "dad", receiver: "son" }), w.deps);
+  assert(c.status === 200 && (await c.json()).ok === true, "a paid card still saves");
+  const sk = await handle(post({ checkout: "skill" }), w.deps);
+  assert(sk.status === 200 && (await sk.json()).url, "the Skill checkout still opens");
 });

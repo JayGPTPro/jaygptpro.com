@@ -31,6 +31,11 @@ export const SKILL_PRICE_BF = "price_1UdWhjRqcDuiISNTODc4cSas";    // $199
 export const SKILL_PRICE_FULL = "price_1Uc3M6RqcDuiISNTdJqMRrRa";  // $299
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
+// The Vault gifts are CLOSED until November's Vault episode goes up (Jay, 20.11.2026): every
+// Vault claim is refused here, on the server, so the old form and a direct POST both stop.
+// The public orders, the cards and the bonus do not pass through this switch.
+export const VAULT_OPEN = false;
+export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts open next week with November's Vault episode. Watch the Vault for the date.";
 export const GIVERS = ["mom", "dad"] as const;
 export const RECEIVERS = ["son", "daughter", "toddler", "partner"] as const;   // toddler: Jay, 19.11.2026 (a child of about 3)
 const LINK_MAX = 190; // two cards must fit one 500-character metadata value
@@ -60,6 +65,7 @@ export type Deps = {
   skillCheckout: (price: string, ref: string) => Promise<string>; // a Stripe Checkout URL
   resolveShort?: (url: string) => Promise<string>;             // where an amzn.to / a.co link leads
   now: () => number;                                           // unix seconds
+  vaultOpen?: boolean;                                         // tests only; the deployed function uses VAULT_OPEN
 };
 
 // 1 when this order carries the launch-day bonus film, else 0. Decided once and written to
@@ -231,7 +237,10 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (req.method === "POST") {
     let b: Record<string, unknown>;
     try { b = JSON.parse(await req.text()); } catch { return json({ error: "bad json" }, 400); }
-    if (b?.vault === true) return await vaultClaim(b, deps);
+    if (b?.vault) {
+      if (!(deps.vaultOpen ?? VAULT_OPEN)) return json({ error: "closed", message: VAULT_CLOSED_MESSAGE }, 403);
+      return await vaultClaim(b, deps);
+    }
     if (b?.checkout === "skill") return await skillCheckout(b, deps);
     const s = b?.s;
     if (!validSession(s)) return json({ error: "bad session" }, 400);

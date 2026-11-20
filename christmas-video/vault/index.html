@@ -230,52 +230,9 @@ footer{padding:36px 0 50px;text-align:center;color:var(--dim);font-size:13px}
 <main class="page"><div class="wrap"><div class="box center">
   <div class="eyebrow">AI Vault members</div>
   <div class="rule"></div>
-  <h1 style="font-size:clamp(36px,5.5vw,64px)">Your first film <em>is on us.</em></h1>
-  <p class="lead" style="margin:24px auto 0">As a member of the AI Vault, your first Christmas film is free: one film, for one product. Fill the card below with the email you use in the Vault. We check it, and your film arrives in your email within 2 business days.</p>
-  <div class="vform" id="vform"><div class="fc">
-    <div class="top"><b>Your free film</b><span class="st8">To fill</span></div>
-    <div class="form">
-      <div class="two">
-        <div><label for="vn">Your name</label><input id="vn" type="text" autocomplete="name"></div>
-        <div><label for="ve">The email you use in the Vault</label><input id="ve" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
-      </div>
-      <label for="vl">Your product: its Amazon link or its ASIN</label><input id="vl" type="text" class="plink" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Amazon link or ASIN, like B07S6K6B27">
-      <label>Who gives the gift?</label><div class="seg" data-k="giver"><button type="button" data-v="mom">Mom</button><button type="button" data-v="dad">Dad</button></div>
-      <label>Who receives it?</label><div class="seg" data-k="receiver"><button type="button" data-v="son">Boy, 8 to 12</button><button type="button" data-v="daughter">Girl, 8 to 12</button><button type="button" data-v="toddler">Toddler, 2 to 3</button><button type="button" data-v="partner">Wife / Husband</button></div>
-      <p class="age">A boy or girl in the film is a child of about 8 to 12, a toddler is about 2 to 3 (best for toys for ages 1 to 4). The gift box in the film is the same size for every product. Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
-      <p class="err" role="alert" id="verr"></p><button type="button" class="btn gold save" id="vsave">Send my free film</button>
-    </div>
-  </div></div>
-  <div class="vdone" id="vdone"><div class="fc done"><div class="top"><b>Got it</b><span class="st8">Sent</span></div>
-    <div class="sum" id="vsum"></div></div>
-    <p class="small">We check your Vault membership and start on your film. It arrives in your email within 2 business days. Want films for more products? They are $99 each on <a href="/christmas-video/#order">the film page</a>.</p></div>
-  <p class="small" id="vfine">One free film for one product per Vault member. It cannot be combined with the public free bonus film.</p>
+  <h1 style="font-size:clamp(36px,5.5vw,64px)">Your Christmas gifts <em>arrive next week.</em></h1>
+  <p class="lead" style="margin:24px auto 0">The Perfect Gift Skill with its full training, and one Done For You Christmas film for one of your products. Both come free with your Vault membership, in November's Vault episode next week. Watch the Vault for the date.</p>
+  <p class="small">Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
 </div></div></main>
-<script>
-(function(){
-  var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-films';
-  var st={giver:'',receiver:''},err=document.getElementById('verr'),save=document.getElementById('vsave');
-  function h(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function paint(){[].forEach.call(document.querySelectorAll('.seg button'),function(b){b.classList.toggle('on',st[b.parentNode.dataset.k]===b.dataset.v);});
-    document.querySelector('[data-v=partner]').textContent=st.giver?(st.giver==='mom'?'Husband':'Wife'):'Wife / Husband';}
-  document.getElementById('vform').addEventListener('click',function(e){var b=e.target.closest('.seg button');if(!b)return;st[b.parentNode.dataset.k]=b.dataset.v;err.textContent='';paint();});
-  save.addEventListener('click',function(){
-    var name=document.getElementById('vn').value.trim(),email=document.getElementById('ve').value.trim(),link=document.getElementById('vl').value.trim();
-    if(/^(B0[A-Z0-9]{8}|\d{9}[\dX])$/i.test(link))link='https://www.amazon.com/dp/'+link.toUpperCase();   // a bare ASIN goes as its product page
-    if(!name){err.textContent='Please write your name.';return;}
-    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){err.textContent='Please write the email you use in the Vault.';return;}
-    if(!link){err.textContent='Please paste your product\'s Amazon link or its ASIN.';return;}
-    if(!st.giver){err.textContent='Pick who gives the gift.';return;}
-    if(!st.receiver){err.textContent='Pick who receives it.';return;}
-    err.textContent='';save.disabled=true;save.textContent='Sending...';
-    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({vault:true,name:name,email:email,link:link,giver:st.giver,receiver:st.receiver})})
-      .then(function(r){return r.json();}).then(function(j){save.disabled=false;save.textContent='Send my free film';
-        if(!j||!j.ok){err.textContent=(j&&j.message)||'That did not go through. Please write to info@jaygptpro.com.';return;}
-        var rec=st.receiver==='partner'?(st.giver==='mom'?'husband':'wife'):({son:'boy',daughter:'girl',toddler:'toddler'}[st.receiver]||st.receiver);
-        document.getElementById('vsum').innerHTML='<a href="'+h(j.link||link)+'" target="_blank" rel="noopener">'+h(j.link||link)+'</a><br>'+(st.giver==='mom'?'Mom':'Dad')+' gives, '+h(rec)+' receives.<br>Vault email: '+h(email);
-        document.getElementById('vform').style.display='none';document.getElementById('vfine').style.display='none';document.getElementById('vdone').classList.add('on');})
-      .catch(function(){save.disabled=false;save.textContent='Send my free film';err.textContent='That did not go through. Please write to info@jaygptpro.com.';});});
-})();
-</script>
 </body>
 </html>
