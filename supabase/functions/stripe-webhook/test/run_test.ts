@@ -849,7 +849,7 @@ check('two mails: buyer first, then Jay', sendState.mails.length === 2 && String
   check('buyer mail opens the kit page for this session', buyer.includes('christmas-video/kit/?s=cs_xmas_1') && (Date.now() < Date.UTC(2026, 10, 22, 18) ? buyer.includes('at 1 PM New York time') && buyer.includes('opens Sunday, November 22, 1 PM ET') : buyer.includes('Your Perfect Gift Kit is ready')), buyer.slice(0, 600));
   check('buyer mail never asks for video cards', !buyer.includes('thanks/?p=') && !buyer.toLowerCase().includes('fill in'), buyer.slice(0, 600));
   check('Jay mail carries the kit page and that the buyer has it', jay.includes('kit/?s=cs_xmas_1') && jay.includes('Kit link mailed to buyer') && jay.includes('Yes'), jay.slice(0, 900));
-  check('Jay mail no longer promises 48 hours for the Skill', !jay.includes('48 hours'), jay.slice(0, 900));
+  check('Jay mail no longer promises a delivery time for the Skill', !jay.includes('48 hours') && !jay.includes('business days'), jay.slice(0, 900));
 }
 reset();
 sendState.stripeLineItems = [];

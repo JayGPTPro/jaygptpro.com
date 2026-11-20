@@ -194,7 +194,7 @@ async function vaultClaim(b: Record<string, unknown>, deps: Deps): Promise<Respo
     ["Who gives", WHO[giver]],
     ["Who receives", receiverLabel(giver, receiver)],
     ["Check first", "Is this email an active AI Vault member, and is this their first free film? One free film per member."],
-    ["Due", "Within 48 hours (business days) after you confirm the membership."],
+    ["Due", "Within 2 business days after you confirm the membership."],
   ];
   const html = `<h2>AI Vault free film claim: check membership, then make</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("") + "</table>";
@@ -271,7 +271,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
         ["Buyer", `${o.name} <${o.email}>`],
         ["Cards filled", `${done} of ${total}`],
         ["Paid for", `${o.qty} film${o.qty === 1 ? "" : "s"}${bonus ? " + 1 free launch-day bonus" : ""}${o.vault ? " (Vault first film free)" : ""}`],
-        ["Due", "Within 48 hours (business days) of this card."],
+        ["Due", "Within 2 business days of this card."],
         ["Stripe", o.paymentIntent ? `https://dashboard.stripe.com/payments/${o.paymentIntent}` : s],
       ];
       if (before) rows.splice(1, 0, ["Note", "The buyer CHANGED this card. This replaces what they sent before."]);

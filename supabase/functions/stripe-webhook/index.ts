@@ -148,7 +148,7 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
         + `<p>Thank you for your order. To start on your Christmas ${n > 1 ? 'videos' : 'video'}, I need a few details for ${n > 1 ? `each of your ${n} videos` : 'it'}: the link to your product, who gives the gift, and who receives it.</p>`
         + (bonus ? `<p>&#127873; <b>Your order includes one FREE bonus video.</b> You paid for ${n - 1}, and you get ${n}: the last card is your free bonus video, for any product you like.</p>` : '')
         + `<p><a href="${esc(cardsUrl)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">Fill in your ${n > 1 ? `${n} videos` : 'video'}</a></p>`
-        + `<p>${n > 1 ? 'Each video can be a different product and a different family. You can fill some now and the rest later. ' : ''}Each video arrives within 48 hours (business days) of the moment you save its card.</p>`
+        + `<p>${n > 1 ? 'Each video can be a different product and a different family. You can fill some now and the rest later. ' : ''}Each video arrives within 2 business days of the moment you save its card.</p>`
         + `<p>If you already filled ${n > 1 ? 'them' : 'it'} in right after paying, you are all set.</p><p>Jay</p></div>`;
       try {
         const res = await fetch('https://api.resend.com/emails', {
@@ -200,7 +200,7 @@ async function notifyChristmasOrder(session: any, paymentLinkId: string): Promis
   } else {
     rows.push(['To do', 'Could not tell what was bought (the Stripe lookup failed). Check the payment in Stripe. If it is a video, send the buyer the cards page: https://jaygptpro.com/christmas-video/thanks/?p=video&s=' + String(session?.id || '')]);
   }
-  if (!isSkill) rows.push(['Due', 'Each video: within 48 hours (business days) of its card.']);
+  if (!isSkill) rows.push(['Due', 'Each video: within 2 business days of its card.']);
   rows.push(['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')]);
   const html = `<h2>New Christmas order: ${esc(what)}</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('')
