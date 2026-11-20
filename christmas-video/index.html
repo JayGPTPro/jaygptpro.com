@@ -147,11 +147,12 @@ nav .btn{transition:opacity .3s}nav:not(.solid) .btn{opacity:0;pointer-events:no
 .nscr{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 50px 140px rgba(0,0,0,.7),0 0 0 1px rgba(246,240,228,.08)}
 .nscr video{position:absolute;inset:0;width:100%;height:100%;background:#000}
 .nplay{position:absolute;inset:0;z-index:2;border:0;padding:0;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;background:center/cover no-repeat}
-.nplay::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,18,.08) 0%,rgba(7,11,18,.18) 55%,rgba(7,11,18,.72) 100%)}
-.nplay .ring{position:relative;width:104px;height:104px;border-radius:50%;background:rgba(246,240,228,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(246,240,228,.65);display:flex;align-items:center;justify-content:center;transition:transform .45s var(--ease),background .3s}
+.nsold{position:absolute;inset:0;background:center/cover no-repeat;pointer-events:none}
+.nplay::before{z-index:1;content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,18,.08) 0%,rgba(7,11,18,.18) 55%,rgba(7,11,18,.72) 100%)}
+.nplay .ring{z-index:2;position:relative;width:104px;height:104px;border-radius:50%;background:rgba(246,240,228,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(246,240,228,.65);display:flex;align-items:center;justify-content:center;transition:transform .45s var(--ease),background .3s}
 .nplay .ring svg{margin-left:6px}
 .nplay:hover .ring{transform:scale(1.07);background:rgba(246,240,228,.26)}
-.nplay .meta{position:absolute;left:26px;bottom:24px;font:600 14px/1 var(--bill);letter-spacing:.11em;text-transform:uppercase;color:var(--ink)}
+.nplay .meta{z-index:2;position:absolute;left:26px;bottom:24px;font:600 14px/1 var(--bill);letter-spacing:.11em;text-transform:uppercase;color:var(--ink)}
 .nscr.playing .nplay{display:none}
 .ns-row{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:16px;width:min(1180px,calc(100vw - 64px));position:relative;left:50%;transform:translateX(-50%)}
 .ns-row p{color:var(--dim);font-size:14px;text-align:center}
@@ -925,13 +926,13 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   /* Switching the film mid-play: freeze the current frame on a canvas, load the new film at the
      same second, and lift the freeze only when that second is on screen. Without it the new
      film's poster and first frame flash before the jump. */
-  function swapAt(v,cv,url,poster,t,go){var held=false;
+  function swapAt(v,cv,url,poster,t,go,rv){var held=false;
     if(t&&v.videoWidth){try{cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext('2d').drawImage(v,0,0,cv.width,cv.height);cv.style.opacity=1;held=true;}catch(e){}}
     if(t)v.removeAttribute('poster');else v.poster=poster;
     v.src=url;
     if(!t){if(go)play(v);return;}   // not playing yet: nothing loads until Play (preload stays none)
     v.preload='auto';
-    var lifted=false,lift=function(){if(lifted)return;lifted=true;v.poster=poster;if(!held)return;var hid=false,hide=function(){if(!hid){hid=true;cv.style.opacity=0;}};requestAnimationFrame(function(){requestAnimationFrame(hide);});setTimeout(hide,150);};
+    var lifted=false,lift=function(){if(lifted)return;lifted=true;v.poster=poster;if(!held)return;if(rv){rv(cv);return;}var hid=false,hide=function(){if(!hid){hid=true;cv.style.opacity=0;}};requestAnimationFrame(function(){requestAnimationFrame(hide);});setTimeout(hide,150);};
     setTimeout(lift,6000);   // never leave the frozen frame up if the new film fails to load
     v.addEventListener('loadedmetadata',function(){v.currentTime=t;},{once:true});
     v.addEventListener('seeked',function(){if(go){v.addEventListener('playing',lift,{once:true});play(v);}else lift();},{once:true});
@@ -958,11 +959,36 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   /* ---------- now showing: the whole film, for the family picked above ---------- */
   var nsec=document.getElementById('showing'),nscr=document.getElementById('nscr'),nv=document.getElementById('nv'),nbtn=document.getElementById('nplay'),ncast=document.getElementById('ncasts'),nId=null,nTouched=false;
   FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
-    b.addEventListener('click',function(){nTouched=true;nsSet(f.id,true);});ncast.appendChild(b);});
-  function nsSet(id,keep){if(nId===id)return;nId=id;var f=F(id),t=keep?nv.currentTime:0,go=keep&&!nv.paused;
+    b.addEventListener('click',function(){nsPick(f.id,b);});ncast.appendChild(b);});
+  /* as in the split above: the product lifts off its button, flies into the film, and the new
+     family opens in a circle from where it landed, at the same second when the film is playing */
+  var nring=document.createElement('i');nring.className='iris';nscr.appendChild(nring);var nBusy=false;
+  function maskOpen(el,px,py,R,done){var st=performance.now(),D=1000,fin=false,end=function(){if(fin)return;fin=true;el.style.webkitMaskImage=el.style.maskImage='';done();};
+    var ease=function(k){return k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;};
+    (function step(t){var k=Math.min(1,(t-st)/D),r=ease(k)*R,m='radial-gradient(circle at '+px+'px '+py+'px, transparent '+r+'px, #000 '+(r+1)+'px)';
+      el.style.webkitMaskImage=el.style.maskImage=m;if(k<1&&!fin)requestAnimationFrame(step);else end();})(st);
+    setTimeout(end,D+500);}
+  function nsPick(id,btn){nTouched=true;
+    if(id===nId){btn.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:380,easing:'cubic-bezier(.32,.72,0,1)'});return;}
+    if(nBusy)return;
+    if(still){nsSet(id,true);return;}
+    nBusy=true;var safe=setTimeout(function(){nBusy=false;},8000);
+    var r=nscr.getBoundingClientRect();
+    fly(btn,id,{x:r.left+r.width/2,y:r.top+r.height/2}).then(function(g){
+      var rr=nscr.getBoundingClientRect(),px=rr.width/2,py=rr.height/2,R=Math.hypot(px,py)+4;
+      g.animate([{transform:getComputedStyle(g).transform,opacity:1,filter:'blur(0px)'},{transform:getComputedStyle(g).transform+' scale(1.35)',opacity:0,filter:'blur(8px)'}],{duration:520,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'}).onfinish=function(){g.remove();};
+      var ring=function(){nring.style.left=px+'px';nring.style.top=py+'px';
+        nring.animate([{width:'0px',height:'0px',opacity:.9},{width:2*R+'px',height:2*R+'px',opacity:.5,offset:.85},{width:2*R+'px',height:2*R+'px',opacity:0}],{duration:1000,easing:'cubic-bezier(.55,0,.2,1)'});};
+      var ok=function(){clearTimeout(safe);nBusy=false;};
+      if(nv.currentTime&&nv.videoWidth){   // the film has started: the old frame is held, then opens once the new one plays
+        nsSet(id,true,function(cv){ring();maskOpen(cv,px,py,R,function(){cv.style.opacity=0;ok();});});}
+      else{   // not started: the old poster opens onto the new one
+        var old=document.createElement('span');old.className='nsold';old.style.backgroundImage=nbtn.style.backgroundImage;nbtn.insertBefore(old,nbtn.firstChild);
+        nsSet(id,true);ring();maskOpen(old,px,py,R,function(){old.remove();ok();});}});}
+  function nsSet(id,keep,rv){if(nId===id)return;nId=id;var f=F(id),t=keep?nv.currentTime:0,go=keep&&!nv.paused;
     [].forEach.call(ncast.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)ncast.scrollLeft=Math.max(0,b.offsetLeft-ncast.clientWidth/2+b.offsetWidth/2);});
     var poster='clips/'+id+'.jpg?v=13';nbtn.style.backgroundImage='url('+poster+')';
-    swapAt(nv,document.getElementById('ncv'),f.full,poster,t,go);
+    swapAt(nv,document.getElementById('ncv'),f.full,poster,t,go,rv);
     document.getElementById('nswho').innerHTML=tagHTML(f);
     if(keep)track('showing_switch',{film:id});}
   /* the film follows the family picked in the split above, until the visitor picks one here */
