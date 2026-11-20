@@ -216,6 +216,7 @@ nav .navbtns{display:flex;gap:10px;align-items:center}
 .th-bar{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:18px}
 .th-bar p{color:var(--dim);font-size:14px;text-align:center}
 .th-casts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:2px}
+@media (min-width:901px){.th-casts{display:grid;grid-template-columns:repeat(4,auto);justify-content:center}}
 .th-casts::-webkit-scrollbar{display:none}
 .th-casts button{flex:none;display:flex;align-items:center;gap:9px;height:50px;padding:0 15px 0 7px;border-radius:14px;border:1px solid var(--hair);background:rgba(246,240,228,.05);color:var(--ink);cursor:pointer;font:600 13px/1.15 var(--sans);text-align:left;transition:background .25s,border-color .25s}
 .th-casts button:hover{background:rgba(246,240,228,.12)}
@@ -814,7 +815,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     {id:'dg',g:'Dad',r:'Daughter',p:'Star projector',img:'projector',full:'films/dg.mp4?v=13'},
     {id:'mt',g:'Mom',r:'Toddler',p:'Learning puppy',img:'puppy',full:'films/mt.mp4?v=1',tile:false}   /* same product as dt: one tile in the hero row, both families in the film pickers */
   ];
-  var WALL=['safe','mg','mb','dg','dm','md'];
+  var WALL=['cam','mg','mb','dg','dm','md'];   /* the toy safe stays the original at the top; one Dad to Son here is enough (Jay, 20.11) */
   function F(id){for(var i=0;i<FILMS.length;i++)if(FILMS[i].id===id)return FILMS[i];}
   var small=matchMedia('(max-width:900px)').matches,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
   function clip(id){return 'clips/'+id+(small?'-s':'')+'.mp4?v=13';}
@@ -951,7 +952,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 
   /* ---------- the theater: the full film with sound, switch the family while it plays ---------- */
   var th=document.getElementById('theater'),tv=document.getElementById('tv'),thc=document.getElementById('thc'),thId=null;
-  FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
+  FILMS.forEach(function(f){if(f.id==='safe')return;var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
     b.addEventListener('click',function(){thSet(f.id,true);});thc.appendChild(b);});
   function thSet(id,keep){if(thId===id)return;thId=id;var t=keep?tv.currentTime:0,go=keep?!tv.paused:true;
     [].forEach.call(thc.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)thc.scrollLeft=Math.max(0,b.offsetLeft-thc.clientWidth/2+b.offsetWidth/2);});
@@ -969,7 +970,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 
   /* ---------- now showing: the whole film, for the family picked above ---------- */
   var nsec=document.getElementById('showing'),nscr=document.getElementById('nscr'),nv=document.getElementById('nv'),nbtn=document.getElementById('nplay'),ncast=document.getElementById('ncasts'),nId=null,nTouched=false;
-  FILMS.forEach(function(f){var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
+  FILMS.forEach(function(f){if(f.id==='safe')return;var b=document.createElement('button');b.type='button';b.dataset.id=f.id;b.innerHTML='<img src="'+pimg(f)+'" alt=""><span>'+f.g+' → '+f.r+'<small>'+f.p+'</small></span>';
     b.addEventListener('click',function(){nsPick(f.id,b);});ncast.appendChild(b);});
   /* as in the split above: the product lifts off its button, flies into the film, and the new
      family opens in a circle from where it landed, at the same second when the film is playing */
