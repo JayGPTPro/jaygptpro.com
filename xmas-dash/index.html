@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Perfect Gift Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<!--
+  Jay's private launch board for The Perfect Gift. This file holds NO data: it asks the
+  christmas-dashboard function, which reads Stripe (GET only) and answers only to the key.
+  The key travels in the link's #fragment (browsers never send that part to any server)
+  and is kept in this browser's localStorage. No analytics, no third-party scripts here.
+-->
+<style>
+/* Layout: one column of work sections, most urgent first; a production schedule, not a report. */
+:root{
+  --bg:#f3f4f8; --surface:#ffffff; --line:#dfe2ec; --ink:#151a2d; --muted:#5d6479;
+  --gold:#a8782a; --gold-soft:#f6ecd8; --late:#c42d2d; --late-soft:#fbe4e2; --soon:#a96a08; --soon-soft:#fbefd6;
+  --ok:#2c7a4c; --ok-soft:#e1f2e7; --test:#6a5fb0; --test-soft:#ebe8f8;
+  --font:"Heebo", "Arial Hebrew", Arial, sans-serif; --display:"Rubik", "Heebo", Arial, sans-serif; --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d1222; --surface:#151b30; --line:#262e4a; --ink:#e8ebf4; --muted:#9aa2bb;
+  --gold:#d9ae63; --gold-soft:#2c2618; --late:#ff6b63; --late-soft:#3a1a1c; --soon:#f0b44c; --soon-soft:#352812;
+  --ok:#5fc48a; --ok-soft:#14301f; --test:#a99cf2; --test-soft:#231f3d; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0d1222; --surface:#151b30; --line:#262e4a; --ink:#e8ebf4; --muted:#9aa2bb;
+  --gold:#d9ae63; --gold-soft:#2c2618; --late:#ff6b63; --late-soft:#3a1a1c; --soon:#f0b44c; --soon-soft:#352812;
+  --ok:#5fc48a; --ok-soft:#14301f; --test:#a99cf2; --test-soft:#231f3d; color-scheme:dark }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font);font-variant-numeric:tabular-nums}
+a{color:var(--gold);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--gold);outline-offset:2px}
+bdi{unicode-bidi:isolate}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);background:var(--surface);z-index:10}
+.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.2;margin-inline-end:auto;min-width:0}
+.brand b{font:700 19px/1.2 var(--display);letter-spacing:.01em}
+.brand span{font-size:13px;color:var(--muted)}
+.stamp{font-size:13px;color:var(--muted)}
+.stamp.err{color:var(--late)}
+button{font:500 14px var(--font);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--gold)}
+button[disabled]{opacity:.55;cursor:default}
+
+nav.jump{display:flex;gap:6px;overflow-x:auto;padding-block:10px 2px;scrollbar-width:none}
+nav.jump a{flex:none;font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--surface)}
+nav.jump a b{color:var(--ink);font-weight:700}
+
+main{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;padding-block:20px 48px}
+section{scroll-margin-top:84px;min-width:0}
+.cols > *{min-width:0}
+h2{font:700 21px/1.25 var(--display);margin:0 0 4px;text-wrap:balance}
+.lead{margin:0 0 12px;color:var(--muted);max-width:68ch}
+.lead b{color:var(--ink)}
+.rule{font-size:13.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 14px;max-width:80ch}
+.rule b{color:var(--ink)}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted)}
+
+/* work rows */
+.rows{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:150px minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.due{padding:12px 14px;border-inline-end:1px solid var(--line);display:flex;flex-direction:column;gap:2px;justify-content:center}
+.due .when{font-weight:700;font-size:15px}
+.due .left{font-size:13px;color:var(--muted)}
+.row.late{border-color:var(--late)}
+.row.late .due{background:var(--late-soft)}
+.row.late .due .when,.row.late .due .left{color:var(--late)}
+.row.soon .due{background:var(--soon-soft)}
+.row.soon .due .left{color:var(--soon);font-weight:500}
+.row.wait .due .when{color:var(--muted);font-weight:500}
+.row.istest{opacity:.8}
+.what{padding:12px 14px;display:grid;gap:4px;min-width:0}
+.what .h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-weight:700}
+.who{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.prod{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.asin{font:500 14px var(--mono);letter-spacing:.02em}
+.nocard{color:var(--soon);font-weight:500}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:13.5px}
+.chip{display:inline-block;font:500 12px/1.6 var(--font);border-radius:999px;padding:0 9px;white-space:nowrap}
+.chip.bonus{background:var(--gold-soft);color:var(--gold)}
+.chip.vault{background:var(--ok-soft);color:var(--ok)}
+.chip.test{background:var(--test-soft);color:var(--test)}
+.chip.warn{background:var(--soon-soft);color:var(--soon)}
+button.copy{font-size:13px;padding:2px 10px;border-radius:999px;background:transparent;color:var(--gold);border-color:var(--gold)}
+textarea.copybox{width:100%;font:13px/1.5 var(--mono);direction:ltr;text-align:left;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:6px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 0 10px;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--gold)}
+
+/* tables */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;text-align:start;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:12.5px;background:var(--surface)}
+td.n,th.n{text-align:end}
+tr:last-child td{border-bottom:0}
+tfoot td{font-weight:700;border-top:2px solid var(--line)}
+th:first-child,td:first-child{position:sticky;inset-inline-start:0;background:var(--surface)}
+.zero{color:var(--muted)}
+
+.list{display:grid;gap:8px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;font-size:14.5px;min-width:0}
+.item .t{color:var(--muted);font-size:13.5px}
+.item .m{overflow-wrap:anywhere}
+.emails{font:500 13.5px/1.7 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;direction:ltr;text-align:left;overflow-wrap:anywhere;white-space:pre-wrap;margin:0 0 8px}
+.sub{font:700 16px/1.3 var(--display);margin:18px 0 8px}
+.cols{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+
+.lock{max-width:460px;margin:12vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.lock h1{font:700 22px var(--display);margin:0 0 8px}
+.lock p{color:var(--muted);margin:0 0 14px}
+.lock form{display:flex;gap:8px}
+.lock input{flex:1;min-width:0;font:15px var(--mono);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);direction:ltr}
+footer{color:var(--muted);font-size:13px;padding-block:0 32px}
+
+@media (max-width:560px){
+  .row{grid-template-columns:1fr}
+  .due{border-inline-end:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+  h2{font-size:19px}
+}
+@media (prefers-reduced-motion: no-preference){ .row,.item{transition:border-color .2s} }
+</style>
+</head>
+<body>
+
+<div id="lock" class="wrap" hidden>
+  <div class="lock">
+    <h1>Perfect Gift Board</h1>
+    <p id="lockmsg">צריך לפתוח את הדף מהקישור המלא, עם המפתח בסוף. אפשר גם להדביק את המפתח כאן.</p>
+    <form id="keyform"><input id="keyin" autocomplete="off" spellcheck="false" placeholder="המפתח" aria-label="המפתח"><button type="submit">פתח</button></form>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand"><b>The Perfect Gift</b><span>לוח ההשקה · נתונים חיים מ-Stripe</span></div>
+      <span id="stamp" class="stamp">טוען…</span>
+      <button id="reload" type="button">רענן</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <nav class="jump" aria-label="קפיצה לחלק">
+      <a href="#films">סרטים להכין <b id="j-films">·</b></a>
+      <a href="#vault">Vault <b id="j-vault">·</b></a>
+      <a href="#sales">מכירות</a>
+      <a href="#funnel">מי שלא קנה</a>
+      <a href="#skill">Skill <b id="j-skill">·</b></a>
+      <a href="#tests">בדיקות</a>
+    </nav>
+  </div>
+  <main class="wrap">
+
+    <section id="films" aria-labelledby="h-films">
+      <h2 id="h-films">סרטים להכין</h2>
+      <p class="lead" id="films-lead">טוען…</p>
+      <p class="rule" id="clock-rule"><b>מתי הדדליין:</b> 48 שעות עבודה מהרגע שהלקוח שומר את הכרטיס של הסרט (קישור למוצר, מי נותן, מי מקבל). כך כתוב במייל ללקוח ובקוד. שעות עבודה = שני עד שישי לפי שעון פסיפיק, שבת וראשון לא נספרים. השעות כאן בשעון ישראל.<span id="clock-fallback" hidden> <b>שים לב:</b> הקוד עוד לא שומר מתי הכרטיס נשמר, אז בינתיים הספירה מתחילה מרגע התשלום. זה המוקדם האפשרי, כך שהדדליין האמיתי אף פעם לא מוקדם יותר ממה שכתוב כאן.</span><br><b>מייל מסירה:</b> הכפתור מעתיק את המייל מהתבנית שלך (<bdi dir="ltr">gift-video-service/delivery/delivery-email.md</bdi>), עם השם, מי נותן למי וסרט הבונוס כבר בפנים. הלינק לדרייב ושם המוצר נשארים בסוגריים למילוי.</p>
+      <div class="rows" id="film-rows"></div>
+    </section>
+
+    <section id="vault" aria-labelledby="h-vault">
+      <h2 id="h-vault">Vault: סרט ראשון חינם</h2>
+      <p class="lead">חבר Vault ממלא כרטיס בדף ה-Vault, ואתה בודק ידנית שהוא באמת חבר. סרט אחד לכל חבר. <b>48 השעות מתחילות כשאתה מאשר את החברות.</b></p>
+      <div class="rows" id="vault-rows"></div>
+    </section>
+
+    <section id="sales" aria-labelledby="h-sales">
+      <h2 id="h-sales">מכירות לפי יום</h2>
+      <p class="lead" id="sales-lead">בדולרים, אחרי החזרים. ימים לפי שעון ישראל. הזמנות הבדיקה שלך לא נספרות.</p>
+      <div class="tbl"><table id="sales-table">
+        <thead><tr><th>יום</th><th class="n">הזמנות סרט</th><th class="n">סרטים ששולמו</th><th class="n">סרטי בונוס</th><th class="n">הכנסות סרטים</th><th class="n">הזמנות Skill</th><th class="n">הכנסות Skill</th><th class="n">סה״כ</th></tr></thead>
+        <tbody></tbody><tfoot></tfoot>
+      </table></div>
+      <div id="refunds"></div>
+    </section>
+
+    <section id="funnel" aria-labelledby="h-funnel">
+      <h2 id="h-funnel">מי שלא קנה</h2>
+      <div class="cols">
+        <div>
+          <h3 class="sub">ביקורים בדף</h3>
+          <p class="rule"><b>אין כאן מספר ביקורים, כי לדשבורד אין גישה לכלי המדידה.</b> הדף כבר מודד עם Google Analytics, Meta Pixel ו-Microsoft Clarity, ואפשר לראות שם ביקורים עכשיו: <a href="https://analytics.google.com/" target="_blank" rel="noopener">Google Analytics</a> · <a href="https://clarity.microsoft.com/" target="_blank" rel="noopener">Clarity</a>. כדי שהביקורים יופיעו כאן ליד הקופות, ההצעה הפשוטה היא מונה משלנו: הדף שולח "ביקור" אחד לכל כניסה, והלוח סופר לפי יום. אין מה להגדיר מצדך, רק לאשר. הספירה תתחיל מהרגע שזה עולה.</p>
+        </div>
+        <div>
+          <h3 class="sub">קופות שנפתחו ולא שולמו</h3>
+          <p class="rule">כל לחיצה על כפתור קנייה פותחת קופה ב-Stripe, כולל הבדיקות של הצוות. רק הקופות מקישור הבדיקה לא נספרות כאן. ההמרה = כמה מהקופות שנפתחו שולמו.</p>
+        </div>
+      </div>
+      <div class="tbl"><table id="funnel-table">
+        <thead><tr><th>יום</th><th class="n">קופות שנפתחו</th><th class="n">מתוכן סרט</th><th class="n">מתוכן Skill</th><th class="n">שולמו</th><th class="n">לא שולמו</th><th class="n">המרה</th></tr></thead>
+        <tbody></tbody><tfoot></tfoot>
+      </table></div>
+      <h3 class="sub">הקופות שלא שולמו, מהחדשה לישנה</h3>
+      <div class="list" id="unpaid-list"></div>
+    </section>
+
+    <section id="skill" aria-labelledby="h-skill">
+      <h2 id="h-skill">Skill: מחכים לפתיחה ביום ראשון</h2>
+      <p class="lead" id="skill-lead">טוען…</p>
+      <div id="skill-body"></div>
+    </section>
+
+    <section id="tests" aria-labelledby="h-tests">
+      <h2 id="h-tests">הבדיקות שלך</h2>
+      <p class="lead">לא נספרות במכירות ובהמרה. הסרטים שלהן עוברים בתור של "סרטים להכין" כמו הזמנה של לקוח, עם דדליין ומסומנים TEST, כדי שתראה מה נשבר בייצור. הזמנה נחשבת בדיקה אם היא באה מקישור הבדיקה, שולמה עם קוד שיש בו <bdi dir="ltr">TEST</bdi> (כמו <bdi dir="ltr">XMASTEST2</bdi> או <bdi dir="ltr">KITTEST1</bdi>), או שולמה ממייל של <bdi dir="ltr">jaygptpro.com</bdi>.</p>
+      <div class="list" id="test-list"></div>
+    </section>
+
+  </main>
+  <footer class="wrap">הדף קורא מ-Stripe בלבד. הוא לא משנה שום הזמנה ולא שולח מיילים. מתעדכן לבד כל שתי דקות כשהוא פתוח.</footer>
+</div>
+
+<script>
+(function(){
+  var API = 'https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-dashboard';
+  var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if (local) { var m = location.search.match(/[?&]api=([^&]+)/); if (m) API = decodeURIComponent(m[1]); }
+  var KEY_STORE = 'xmasdash_k';
+  var $ = function(id){ return document.getElementById(id); };
+  var data = null, lastLoad = 0, busy = false;
+
+  function store(k, v){ try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch(e){} }
+  function read(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function keyFromHash(){ var h = decodeURIComponent((location.hash || '').replace(/^#/, '')); return h.replace(/^k=/, '').trim(); }
+  var key = keyFromHash() || read(KEY_STORE) || '';
+  if (keyFromHash()) store(KEY_STORE, keyFromHash());
+
+  /* ---------- words ---------- */
+  function roles(g, r){
+    var to = r === 'partner' ? (g === 'mom' ? 'בעלה' : 'אשתו') : (({ son: 'בן (8 עד 12)', daughter: 'בת (8 עד 12)', toddler: 'פעוט (2 עד 3)' })[r] || r || '?');
+    return (g === 'mom' ? 'אמא נותנת ל' : g === 'dad' ? 'אבא נותן ל' : (g || '?') + ' נותן ל') + to;
+  }
+  var fmtWhen = new Intl.DateTimeFormat('he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  var fmtTime = new Intl.DateTimeFormat('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', hour12: false });
+  var fmtDay = new Intl.DateTimeFormat('he-IL', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'numeric' });
+  function when(t){ return fmtWhen.format(new Date(t * 1000)).replace(',', ' ·'); }
+  function dayLabel(d){ return d === 'before' ? 'לפני ההשקה' : fmtDay.format(new Date(d + 'T12:00:00Z')).replace(',', ''); }
+  function usd(c){ return c == null ? '?' : '$' + Math.round(c / 100).toLocaleString('en-US'); }
+  function hoursText(sec){
+    var a = Math.abs(sec), h = Math.floor(a / 3600), m = Math.round((a % 3600) / 60);
+    if (a < 3600) return m + ' דק׳';
+    if (h < 10) return h + ' ש׳' + (m ? ' ו-' + m + ' דק׳' : '');
+    return h + ' שעות';
+  }
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function bdi(text, cls){ return el('bdi', cls, text); }
+  function link(href, text, cls){ var a = el('a', cls, text); if (/^https?:\/\//.test(href)) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; } return a; }
+  function chip(cls, text){ return el('span', 'chip ' + cls, text); }
+
+  /* ---------- delivery emails (template: gift-video-service/delivery/delivery-email.md, 20.11) ---------- */
+  var EN_GIVER = { mom: 'Mom', dad: 'Dad' };
+  function enWho(g, r){ return r === 'partner' ? (g === 'mom' ? 'husband' : 'wife') : (({ son: 'son', daughter: 'daughter', toddler: 'toddler' })[r] || r || '[Receiver]'); }
+  function cap(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
+  function firstName(n){ return (String(n || '').trim().split(/\s+/)[0]) || '[First name]'; }
+  function productOf(f){ return f.card ? '[Product short name' + (f.card.asin ? ', ' + f.card.asin : '') + ']' : '[Product]'; }
+  function deliveryEmail(films){
+    var f0 = films[0], hi = 'Hi ' + firstName(f0.name) + ',\n\n';
+    var tail = 'Merry Christmas,\nJay';
+    if (films.length === 1) {
+      var c = f0.card, gives = c ? (EN_GIVER[c.giver] || c.giver) + ' gives it to ' + (c.giver === 'mom' ? 'her ' : 'his ') + enWho(c.giver, c.receiver) : '[Giver] gives it to [Receiver]';
+      return 'Subject: Your Christmas film is ready 🎄\n\n' + hi
+        + 'Your Christmas film is ready. Your ' + productOf(f0) + ' is the gift, and ' + gives + '.\n\n'
+        + 'Download it here: [Drive link]\n\n'
+        + 'Inside you\'ll find two versions:\n→ The full film (about 1 minute)\n→ The 30 second cut, made for Sponsored Brands video ads\n\n'
+        + 'Both are MP4, Full HD, 16:9, with music and voiceover. They work with the sound off too.\n\n'
+        + 'Where to use it:\n→ Sponsored Brands video ads (use the 30 second cut)\n→ The video on your product page\n→ Your Brand Store, website and social\n\n'
+        + 'Amazon reviews every new video ad before it goes live, so upload it early.\n\n'
+        + 'Want something changed? Just reply to this email within 7 days and tell me what. One round of changes is included.\n\n' + tail;
+    }
+    var lines = films.map(function(f){
+      var c = f.card, roles = c ? (EN_GIVER[c.giver] || c.giver) + ' to ' + cap(enWho(c.giver, c.receiver)) : '[Giver] to [Receiver]';
+      return '→ Film ' + f.n + ': ' + productOf(f) + ', ' + roles + (f.bonus ? ' 🎁 your free bonus film' : '');
+    }).join('\n');
+    var anyBonus = films.some(function(f){ return f.bonus; });
+    return 'Subject: ' + (anyBonus ? 'Your Christmas films are ready, including your free one 🎁' : 'Your ' + films.length + ' Christmas films are ready 🎄') + '\n\n' + hi
+      + 'Your Christmas films are ready.\n\nDownload them here: [Drive link]\n\nInside, one folder per film:\n' + lines + '\n\n'
+      + 'Each film comes in two versions: the full film (about 1 minute) and the 30 second cut, made for Sponsored Brands video ads. All files are MP4, Full HD, 16:9, with music and voiceover, and they work with the sound off too.\n\n'
+      + 'Where to use them:\n→ Sponsored Brands video ads (use the 30 second cut)\n→ The video on each product page\n→ Your Brand Store, website and social\n\n'
+      + 'Amazon reviews every new video ad before it goes live, so upload them early.\n\n'
+      + 'Want something changed in any of them? Just reply to this email within 7 days and tell me which film and what. One round of changes is included for every film.\n\n' + tail;
+  }
+  function reminderEmail(films){
+    var empty = films.filter(function(f){ return !f.card; }).length;
+    var which = films.length === 1 ? 'your film' : empty === 1 ? 'one of your films' : empty + ' of your films';
+    return 'Subject: One quick thing for your Christmas film\n\nHi ' + firstName(films[0].name) + ',\n\n'
+      + 'Quick one: I still need the product for ' + which + ' before I can start.\n\n'
+      + 'Fill your card here: ' + films[0].cardsUrl + '\n\n'
+      + 'It takes a minute: your Amazon link (or ASIN), who gives the gift and who gets it.\n\nJay';
+  }
+  function copyButton(label, text, row){
+    var b = el('button', 'copy', label); b.type = 'button';
+    b.addEventListener('click', function(){
+      var fallback = function(){
+        var old = row.querySelector('textarea.copybox'); if (old) old.remove();
+        var ta = el('textarea', 'copybox'); ta.value = text; ta.readOnly = true; ta.rows = 10; row.append(ta); ta.focus(); ta.select();
+      };
+      var done = function(){ b.textContent = 'הועתק'; setTimeout(function(){ b.textContent = label; }, 1800); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+    });
+    return b;
+  }
+
+  /* ---------- films ---------- */
+  function renderFilms(){
+    var now = Date.now() / 1000, list = data.films;
+    var tests = list.filter(function(f){ return f.test.length; }).length;
+    var late = 0, soon = 0, nocard = 0;
+    list.forEach(function(f){ if (!f.card) nocard++; else if (f.deadline < now) late++; else if (f.deadline - now < 12 * 3600) soon++; });
+    $('clock-fallback').hidden = !list.some(function(f){ return f.clock === 'payment'; });
+    var lead = $('films-lead'); lead.textContent = '';
+    if (!list.length) lead.textContent = 'אין כרגע סרט להכין. כל סרט ששולם, וגם סרט הבונוס, יופיע כאן עם הכרטיס והדדליין שלו, הקרוב ביותר למעלה.';
+    else {
+      lead.append(bdi(String(list.length)), list.length === 1 ? ' סרט מחכה' : ' סרטים מחכים');
+      lead.append(tests ? (tests === list.length ? ', כולם מהזמנות הבדיקה שלך (מסומנים TEST).' : ', ' + tests + ' מהם מהזמנות הבדיקה שלך (מסומנים TEST).') : '.');
+      if (late) { lead.append(' '); var b = el('b', null, late + ' באיחור.'); b.style.color = 'var(--late)'; lead.append(b); }
+      if (soon) lead.append(' ' + soon + ' עם פחות מ-12 שעות.');
+      if (nocard) lead.append(' ' + nocard + (nocard === 1 ? ' עוד בלי כרטיס, ולכן השעון שלו לא התחיל.' : ' עוד בלי כרטיס, ולכן השעון שלהם לא התחיל.'));
+      lead.append(' אין עדיין סימון "נשלח", אז סרט נשאר כאן גם אחרי שמסרת אותו.');
+    }
+    $('j-films').textContent = String(list.length);
+    var byOrder = {};
+    list.forEach(function(f){ (byOrder[f.order] = byOrder[f.order] || []).push(f); });
+    var box = $('film-rows'); box.textContent = '';
+    if (!list.length) { box.append(el('div', 'empty', 'אין סרטים להכין כרגע.')); return; }
+    list.forEach(function(f){
+      var row = el('article', 'row');
+      var due = el('div', 'due');
+      if (!f.card) { row.classList.add('wait'); due.append(el('span', 'when', 'השעון לא התחיל'), el('span', 'left', 'מחכה לכרטיס מהלקוח')); }
+      else {
+        var left = f.deadline - now;
+        if (left < 0) row.classList.add('late'); else if (left < 12 * 3600) row.classList.add('soon');
+        due.append(el('span', 'when', when(f.deadline)), el('span', 'left', left < 0 ? 'באיחור ' + hoursText(left) : 'נשארו ' + hoursText(left)));
+      }
+      var w = el('div', 'what');
+      var h = el('div', 'h'); h.append(el('span', null, 'סרט ' + f.n + ' מתוך ' + f.total));
+      if (f.test.length) h.append(chip('test', 'TEST'));
+      if (f.bonus) h.append(chip('bonus', 'בונוס חינם'));
+      if (f.bonusUnknown) h.append(chip('warn', 'בונוס עוד לא נרשם'));
+      if (f.vaultCoupon) h.append(chip('vault', 'Vault'));
+      w.append(h);
+      var who = el('div', 'who'); who.append(f.name ? bdi(f.name) : '', f.name ? ' · ' : '', bdi(f.email || 'בלי מייל'), ' · שילם ' + when(f.paidAt)); w.append(who);
+      var p = el('div', 'prod');
+      if (f.card) {
+        p.append(f.card.asin ? link(f.card.link, f.card.asin, 'asin') : link(f.card.link, f.card.link, 'asin'));
+        p.append(el('span', null, roles(f.card.giver, f.card.receiver)));
+        if (f.clock === 'card') p.append(el('span', 'who', 'הכרטיס נשמר ' + when(f.start)));
+      } else p.append(el('span', 'nocard', 'הלקוח עוד לא מילא את הכרטיס של הסרט הזה'));
+      w.append(p);
+      var order = byOrder[f.order];
+      var l = el('div', 'links');
+      l.append(link(f.cardsUrl, 'דף הכרטיסים של ההזמנה'));
+      if (f.stripeUrl) l.append(link(f.stripeUrl, 'התשלום ב-Stripe'));
+      l.append(copyButton(order.length > 1 ? 'העתק מייל מסירה (' + order.length + ' סרטים)' : 'העתק מייל מסירה', deliveryEmail(order), w));
+      if (order.some(function(x){ return !x.card; })) l.append(copyButton('העתק תזכורת למילוי כרטיס', reminderEmail(order), w));
+      w.append(l);
+      row.append(due, w); box.append(row);
+    });
+  }
+
+  /* ---------- vault ---------- */
+  function renderVault(){
+    var box = $('vault-rows'); box.textContent = '';
+    var now = Date.now() / 1000, real = data.vault.filter(function(v){ return !v.test.length; });
+    $('j-vault').textContent = String(real.length);
+    if (data.vaultError) { box.append(el('div', 'empty', 'לא הצלחתי לקרוא את בקשות ה-Vault מ-Stripe עכשיו. נסה לרענן. (' + data.vaultError.slice(0, 120) + ')')); return; }
+    if (!data.vault.length) { box.append(el('div', 'empty', 'אין עדיין בקשות מחברי Vault.')); return; }
+    data.vault.forEach(function(v){
+      var row = el('article', 'row wait');
+      var due = el('div', 'due'); due.append(el('span', 'when', 'בדוק חברות'), el('span', 'left', 'הוגש לפני ' + hoursText(now - v.claimedAt)));
+      var w = el('div', 'what');
+      var h = el('div', 'h'); h.append(el('span', null, 'סרט Vault חינם')); if (v.test.length) h.append(chip('test', 'TEST')); w.append(h);
+      var who = el('div', 'who'); who.append(v.name ? bdi(v.name) : '', v.name ? ' · ' : '', bdi(v.email), ' · הוגש ' + when(v.claimedAt)); w.append(who);
+      var p = el('div', 'prod');
+      if (v.link) p.append(link(v.link, v.asin || v.link, 'asin'));
+      if (v.giver) p.append(el('span', null, roles(v.giver, v.receiver)));
+      w.append(p);
+      row.append(due, w); box.append(row);
+    });
+  }
+
+  /* ---------- tables ---------- */
+  function cell(tr, text, num, dim){ var td = el('td', (num ? 'n' : '') + (dim ? ' zero' : ''), text); tr.append(td); return td; }
+  function renderSales(){
+    var tb = $('sales-table').tBodies[0], tf = $('sales-table').tFoot; tb.textContent = ''; tf.textContent = '';
+    function line(target, label, d){
+      var tr = el('tr'); cell(tr, label);
+      cell(tr, String(d.filmOrders), 1, !d.filmOrders); cell(tr, String(d.filmsPaid), 1, !d.filmsPaid); cell(tr, String(d.bonusFilms), 1, !d.bonusFilms);
+      cell(tr, usd(d.filmUsd), 1, !d.filmUsd); cell(tr, String(d.skillOrders), 1, !d.skillOrders); cell(tr, usd(d.skillUsd), 1, !d.skillUsd);
+      cell(tr, usd(d.filmUsd + d.skillUsd), 1, !(d.filmUsd + d.skillUsd)); target.append(tr);
+    }
+    data.days.slice().reverse().forEach(function(d){ line(tb, dayLabel(d.day), d); });
+    line(tf, 'מאז ההשקה', data.totals);
+    var r = $('refunds'); r.textContent = '';
+    if (data.refunds.length) {
+      r.append(el('h3', 'sub', 'החזרים'));
+      var l = el('div', 'list');
+      data.refunds.forEach(function(x){ var it = el('div', 'item'); it.append(el('span', 't', when(x.paidAt)), el('span', null, (x.kind === 'film' ? 'סרטים' : 'Skill') + ', הוחזר ' + usd(x.refunded) + ' מתוך ' + usd(x.usd) + (x.full ? ' (מלא, לא נספר)' : '')), bdi(x.email, 'm')); l.append(it); });
+      r.append(l);
+    }
+  }
+  function renderFunnel(){
+    var tb = $('funnel-table').tBodies[0], tf = $('funnel-table').tFoot; tb.textContent = ''; tf.textContent = '';
+    function line(target, label, d){
+      var tr = el('tr'); cell(tr, label);
+      cell(tr, String(d.opened), 1, !d.opened); cell(tr, String(d.openedFilm), 1, !d.openedFilm); cell(tr, String(d.openedSkill), 1, !d.openedSkill);
+      cell(tr, String(d.paidOfOpened), 1, !d.paidOfOpened); cell(tr, String(d.opened - d.paidOfOpened), 1, !(d.opened - d.paidOfOpened));
+      cell(tr, d.opened ? Math.round(100 * d.paidOfOpened / d.opened) + '%' : '·', 1, !d.opened); target.append(tr);
+    }
+    data.days.filter(function(d){ return d.day !== 'before'; }).slice().reverse().forEach(function(d){ line(tb, dayLabel(d.day), d); });
+    line(tf, 'מאז ההשקה', data.totals);
+    var box = $('unpaid-list'); box.textContent = '';
+    if (!data.unpaid.length) { box.append(el('div', 'empty', 'אין קופות פתוחות שלא שולמו מאז ההשקה.')); return; }
+    data.unpaid.forEach(function(u){
+      var it = el('div', 'item');
+      it.append(el('span', 't', when(u.created)), el('span', null, (u.kind === 'film' ? (u.qty === 1 ? 'סרט אחד' : u.qty + ' סרטים') : 'Skill') + ' · ' + usd(u.usd)), el('span', 't', u.status === 'open' ? 'הקופה עוד פתוחה' : 'הקופה פגה'));
+      if (u.email) it.append(bdi(u.email, 'm'));
+      if (u.failed) { var f = el('span', null, 'ניסה לשלם ונדחה: '); f.style.color = 'var(--late)'; f.append(bdi(u.failed)); it.append(f); }
+      box.append(it);
+    });
+  }
+
+  /* ---------- skill ---------- */
+  function renderSkill(){
+    var opened = Date.now() / 1000 >= data.kitOpenAt;
+    var waiting = data.skill.filter(function(s){ return s.beforeOpen; });
+    $('j-skill').textContent = String(data.skill.filter(function(x){ return !x.test.length; }).length);
+    $('h-skill').textContent = opened ? 'Skill: מי שקנה לפני הפתיחה' : 'Skill: מחכים לפתיחה ביום ראשון';
+    var lead = $('skill-lead'), body = $('skill-body'); body.textContent = '';
+    var openText = when(data.kitOpenAt);
+    if (!data.skill.length) { lead.textContent = 'עוד אף אחד לא קנה את ה-Skill. הקיט נפתח ' + openText + ' (1 בצהריים בניו יורק).'; return; }
+    lead.textContent = (opened ? 'הקיט נפתח ' + openText + '. ' : 'הקיט נפתח ' + openText + ' (1 בצהריים בניו יורק). ')
+      + waiting.length + (waiting.length === 1 ? ' קונה שילם' : ' קונים שילמו') + ' לפני הפתיחה, והם מקבלים את המייל "הקיט פתוח".'
+      + (data.skill.length > waiting.length ? ' ' + (data.skill.length - waiting.length) + ' קנו אחרי הפתיחה וקיבלו את הקיט מיד.' : '')
+      + (data.skill.some(function(x){ return x.test.length; }) ? ' הבדיקות שלך ברשימה ומסומנות TEST, ולא נספרות במכירות.' : '');
+    if (waiting.length) {
+      var pre = el('pre', 'emails', waiting.map(function(s){ return s.email; }).join('\n')); body.append(pre);
+      var btn = el('button', null, 'העתק את המיילים'); btn.type = 'button';
+      btn.addEventListener('click', function(){
+        var t = pre.textContent;
+        var done = function(){ btn.textContent = 'הועתק'; setTimeout(function(){ btn.textContent = 'העתק את המיילים'; }, 1800); };
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function(){ selectText(pre); });
+        else selectText(pre);
+      });
+      body.append(btn);
+    }
+    var l = el('div', 'list'); l.style.marginTop = '12px';
+    data.skill.forEach(function(s){ var it = el('div', 'item'); if (s.test.length) it.append(chip('test', 'TEST')); it.append(el('span', 't', when(s.paidAt)), s.name ? bdi(s.name) : '', bdi(s.email, 'm'), el('span', 't', usd(s.usd) + (s.beforeOpen ? '' : ' · אחרי הפתיחה'))); l.append(it); });
+    body.append(l);
+  }
+  function selectText(node){ var r = document.createRange(); r.selectNodeContents(node); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  /* ---------- tests ---------- */
+  var WHY = { 'test link (?test=1)': 'קישור הבדיקה', "Jay's own email": 'המייל שלך' };
+  function renderTests(){
+    var box = $('test-list'); box.textContent = '';
+    if (!data.tests.length && !data.testOpens) { box.append(el('div', 'empty', 'אין הזמנות בדיקה.')); return; }
+    data.tests.forEach(function(t){
+      var it = el('div', 'item');
+      it.append(el('span', 't', when(t.paidAt)), el('span', null, (t.kind === 'film' ? (t.qty === 1 ? 'סרט אחד' : t.qty + ' סרטים') + (t.bonus === 'yes' ? ' + בונוס' : '') : 'Skill') + ' · ' + usd(t.usd)), bdi(t.email, 'm'));
+      t.why.forEach(function(w){ var c = chip('test', WHY[w] || 'קוד '); if (!WHY[w]) c.append(bdi(w.replace(/^code /, ''))); it.append(c); });
+      it.append(el('span', 't', t.fullyRefunded ? 'הוחזר' : t.refunded ? 'הוחזר חלקית' : 'לא הוחזר'));
+      box.append(it);
+    });
+    if (data.testOpens) box.append(el('div', 'item t', data.testOpens + ' קופות בדיקה נפתחו מאז ההשקה ולא שולמו (לא נספרות).'));
+  }
+
+  function render(){
+    if (!data) return;
+    renderFilms(); renderVault(); renderSales(); renderFunnel(); renderSkill(); renderTests();
+  }
+
+  /* ---------- loading ---------- */
+  function showLock(msg){ $('app').hidden = true; $('lock').hidden = false; if (msg) $('lockmsg').textContent = msg; }
+  function load(){
+    if (busy || !key) return;
+    busy = true; $('reload').disabled = true; $('stamp').classList.remove('err');
+    if (!data) $('stamp').textContent = 'טוען…';
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: key, cache: 'no-store' })
+      .then(function(r){
+        if (r.status === 401) { store(KEY_STORE, null); key = ''; showLock('המפתח לא נכון. פתח שוב מהקישור המלא.'); throw null; }
+        if (!r.ok) throw new Error('השרת ענה ' + r.status);
+        return r.json();
+      })
+      .then(function(j){ data = j; lastLoad = Date.now(); $('stamp').textContent = 'עודכן ' + fmtTime.format(new Date(j.generatedAt * 1000)); render(); })
+      .catch(function(e){ if (e) { $('stamp').classList.add('err'); $('stamp').textContent = (data ? 'הרענון נכשל, מוצג מ-' + fmtTime.format(new Date(data.generatedAt * 1000)) : 'הטעינה נכשלה') + '. נסה שוב.'; } })
+      .then(function(){ busy = false; $('reload').disabled = false; });
+  }
+
+  $('keyform').addEventListener('submit', function(e){
+    e.preventDefault(); var v = $('keyin').value.trim().replace(/^.*#(k=)?/, ''); if (!v) return;
+    key = v; store(KEY_STORE, v); $('lock').hidden = true; $('app').hidden = false; load();
+  });
+  $('reload').addEventListener('click', load);
+
+  if (!key) showLock(); else { $('app').hidden = false; load(); }
+  setInterval(function(){ if (document.visibilityState === 'visible') { if (Date.now() - lastLoad > 115000) load(); else render(); } }, 60000);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible' && Date.now() - lastLoad > 60000) load(); });
+})();
+</script>
+</body>
+</html>

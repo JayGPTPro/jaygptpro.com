@@ -1,0 +1,127 @@
+import { addBusinessHours, build, classify, handle, ilDay, readCards, sha256hex, KIT_OPEN_AT, LAUNCH, SKILL_PRODUCT, VIDEO_PRODUCT, type Deps } from "./handler.ts";
+function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
+const U = (y: number, mo: number, d: number, h = 0, mi = 0) => Date.UTC(y, mo - 1, d, h, mi) / 1000;
+
+// deno-lint-ignore no-explicit-any
+function session(o: Record<string, any> = {}) {
+  const paidAt = o.paidAt ?? U(2026, 11, 20, 12, 29);
+  return {
+    id: o.id ?? "cs_live_" + Math.random().toString(36).slice(2),
+    created: o.created ?? paidAt - 20,
+    status: o.paid === false ? "open" : "complete",
+    payment_status: o.paid === false ? "unpaid" : "paid",
+    amount_total: o.amount ?? 9900, currency: o.currency ?? "usd", currency_conversion: o.conv ?? null,
+    customer_details: { email: o.email ?? "buyer@example.com", name: "Buyer" },
+    metadata: { project: "christmas_video", ...(o.meta || {}) },
+    discounts: o.discounts ?? [],
+    line_items: { data: [{ quantity: o.qty ?? 1, price: { product: o.skill ? SKILL_PRODUCT : VIDEO_PRODUCT } }] },
+    payment_intent: o.paid === false ? (o.declined ? { id: "pi_x", last_payment_error: { message: "Your card was declined." } } : null)
+      : { id: "pi_1", latest_charge: { created: paidAt, amount: o.chargeAmount ?? (o.amount ?? 9900), amount_refunded: o.refundedAmt ?? 0, refunded: !!o.refunded } },
+  };
+}
+const card = (link: string, g = "dad", r = "son", at?: number) => at ? [link, g, r, at] : [link, g, r];
+
+Deno.test("48 hours count business days only, Pacific time", () => {
+  // Fri 20.11 04:29 PST -> Tue 24.11 04:29 PST: the weekend does not count.
+  assert(addBusinessHours(U(2026, 11, 20, 12, 29), 48) === U(2026, 11, 24, 12, 29), "friday");
+  // Wed 25.11 10:00 PST -> Fri 27.11 10:00 PST.
+  assert(addBusinessHours(U(2026, 11, 25, 18), 48) === U(2026, 11, 27, 18), "midweek");
+  // Saturday: the clock starts Monday 00:00 PST and ends Wednesday 00:00 PST.
+  assert(addBusinessHours(U(2026, 11, 21, 15), 48) === U(2026, 11, 25, 8), "saturday");
+  // Thu 20:00 PST: 4 h Thursday, 24 h Friday, weekend, 20 h Monday -> Mon 20:00 PST.
+  assert(addBusinessHours(U(2026, 11, 27, 4), 48) === U(2026, 12, 1, 4), "thursday night");
+});
+
+Deno.test("a day is an Israel day", () => {
+  assert(ilDay(U(2026, 11, 20, 21, 59)) === "2026-11-20", "23:59 Israel");
+  assert(ilDay(U(2026, 11, 20, 22, 0)) === "2026-11-21", "00:00 Israel is the next day");
+});
+
+Deno.test("Jay's tests are marked: the test link, a TEST code, his own domain", () => {
+  const promos = { promo_x: { code: "XMASTEST2", coupon: "c1" }, promo_k: { code: "KITTEST1", coupon: "c2" }, promo_v: { code: "VAULTJOE", coupon: "VAULT_FIRST_FILM" } };
+  assert(classify(session({ meta: { test: "true" } }), promos)!.test.length === 1, "test link");
+  assert(classify(session({ discounts: [{ coupon: null, promotion_code: "promo_x" }] }), promos)!.test[0] === "code XMASTEST2", "xmastest");
+  assert(classify(session({ skill: true, discounts: [{ promotion_code: "promo_k" }] }), promos)!.test[0] === "code KITTEST1", "kittest");
+  assert(classify(session({ email: "INFO@jaygptpro.com" }), promos)!.test.length === 1, "own domain");
+  const real = classify(session({ discounts: [{ promotion_code: "promo_v" }] }), promos)!;
+  assert(real.test.length === 0 && real.vaultCoupon, "a Vault coupon order is real, and marked Vault");
+  assert(classify({ ...session(), metadata: {}, line_items: { data: [{ quantity: 1, price: { product: "prod_other" } }] } }, promos) === null, "not Christmas");
+});
+
+Deno.test("money is US dollars, also when the buyer saw shekels", () => {
+  const o = classify(session({ currency: "ils", amount: 33756, conv: { amount_total: 9900, source_currency: "usd" } }), {})!;
+  assert(o.usd === 9900, "converted back to USD");
+  const r = classify(session({ amount: 9900, refundedAmt: 4950 }), {})!;
+  assert(r.refunded === 4950 && !r.fullyRefunded, "half refunded");
+});
+
+Deno.test("cards: two per key, the save time when christmas-films writes one", () => {
+  const meta = { films_01: JSON.stringify([card("https://www.amazon.com/dp/B07S6K6B27"), card("https://shop.example.com/x", "mom", "partner", 1795180000)]), films_02: JSON.stringify([null, null]) };
+  const c = readCards(meta, 3);
+  assert(c[0]!.asin === "B07S6K6B27" && c[0]!.savedAt === null, "first card");
+  assert(c[1]!.asin === "" && c[1]!.savedAt === 1795180000 && c[1]!.receiver === "partner", "second card");
+  assert(c[2] === null, "third not filled");
+});
+
+Deno.test("the board: sales per day, films with the bonus, deadlines, Skill, tests, checkouts", () => {
+  const now = U(2026, 11, 21, 10);
+  const s1 = session({ id: "cs_a", qty: 2, amount: 19800, paidAt: U(2026, 11, 20, 12), meta: { bonus: "1",
+    films_01: JSON.stringify([card("https://www.amazon.com/dp/B000000001"), null]), films_02: JSON.stringify([card("https://www.amazon.com/dp/B000000003", "mom", "daughter", U(2026, 11, 20, 23)), null]) } });
+  const s2 = session({ id: "cs_b", qty: 1, paidAt: U(2026, 11, 20, 22, 30), meta: { bonus: "0" } });            // 00:30 Israel, 21.11
+  const s3 = session({ id: "cs_c", skill: true, amount: 19900, paidAt: U(2026, 11, 21, 9) });
+  const s4 = session({ id: "cs_t", meta: { test: "true", bonus: "1" } });                                          // Jay's test
+  const s5 = session({ id: "cs_r", refunded: true, paidAt: U(2026, 11, 20, 15) });                                 // refunded in full
+  const s6 = session({ id: "cs_o", paid: false, created: U(2026, 11, 21, 8), declined: true });
+  const s7 = session({ id: "cs_p", qty: 1, paidAt: U(2026, 11, 20, 13), meta: {} });                               // bonus not decided yet
+  const b = build({ sessions: [s1, s2, s3, s4, s5, s6, s7], promos: {}, vault: [], now });
+
+  const d20 = b.days.find((d) => d.day === "2026-11-20")!, d21 = b.days.find((d) => d.day === "2026-11-21")!;
+  assert(d20.filmOrders === 2 && d20.filmsPaid === 3 && d20.bonusFilms === 1 && d20.filmUsd === 29700, "20.11: s1 + s7, refund and test left out");
+  assert(d21.filmOrders === 1 && d21.skillOrders === 1 && d21.skillUsd === 19900, "21.11: s2 by Israel time, and the Skill");
+  assert(b.totals.filmOrders === 3 && b.totals.bonusFilms === 1, "totals");
+  assert(d21.opened === 3 && d21.paidOfOpened === 2, "21.11 by Israel time: s2, s3 paid, s6 opened and not paid");
+  assert(d20.opened === 3 && d20.paidOfOpened === 3, "20.11: s1, s5 (refunded later), s7; the test is not counted");
+  assert(b.unpaid.length === 1 && b.unpaid[0].failed === "Your card was declined.", "declined attempt shown");
+
+  const a = b.films.filter((f) => f.order === "cs_a").sort((x, y) => x.n - y.n);
+  assert(a.length === 3 && a[2].bonus && !a[0].bonus, "2 paid + the bonus as film 3");
+  assert(a[0].clock === "payment" && a[0].deadline === addBusinessHours(U(2026, 11, 20, 12), 48), "no save time: counted from payment");
+  assert(a[2].clock === "card" && a[2].deadline === addBusinessHours(U(2026, 11, 20, 23), 48), "save time: counted from the card");
+  assert(a[1].card === null && a[1].deadline === null, "an empty card has no clock yet");
+  assert(b.films[b.films.length - 1].deadline === null, "films without a card sort last");
+  assert(b.films.some((f) => f.order === "cs_t" && f.test.length), "test films are listed, marked");
+  assert(!b.films.some((f) => f.order === "cs_r"), "a refunded order has nothing to make");
+  assert(b.films.find((f) => f.order === "cs_p")!.bonusUnknown, "bonus not decided yet is flagged");
+
+  assert(b.skill.length === 1 && b.skill[0].beforeOpen && b.skill[0].paidAt < KIT_OPEN_AT, "Skill buyer waits for Sunday");
+  const k = build({ sessions: [s3, session({ id: "cs_kt", skill: true, amount: 0, discounts: [{ promotion_code: "promo_k" }] })], promos: { promo_k: { code: "KITTEST1", coupon: "c" } }, vault: [], now });
+  assert(k.skill.length === 2 && k.skill.find((x) => x.order === "cs_kt")!.test[0] === "code KITTEST1", "a Skill test is listed, marked");
+  assert(k.totals.skillOrders === 1 && k.totals.skillUsd === 19900, "and stays out of the sales numbers");
+  assert(b.tests.length === 1 && b.tests[0].why[0].startsWith("test link"), "the test order is listed apart");
+  assert(b.refunds.length === 1 && b.refunds[0].full, "the refund is listed");
+  assert(b.days[0].day === ilDay(LAUNCH), "the table starts on launch day");
+});
+
+Deno.test("Vault claims come from the customer metadata", () => {
+  const b = build({ sessions: [], promos: {}, now: U(2026, 11, 21), vault: [
+    { email: "Member@Example.com", name: "Mem", created: 1, metadata: { xmas_vault: "1", xmas_vault_at: "2026-11-21T08:00:00.000Z", xmas_vault_link: "https://www.amazon.com/dp/B0BSP12239", xmas_vault_roles: "dad to toddler" } },
+  ] });
+  const v = b.vault[0];
+  assert(v.email === "member@example.com" && v.asin === "B0BSP12239" && v.giver === "dad" && v.receiver === "toddler" && v.claimedAt === U(2026, 11, 21, 8), "claim");
+});
+
+Deno.test("the key: wrong or missing answers 401 and reads nothing from Stripe", async () => {
+  let calls = 0;
+  const deps: Deps = { sessions: () => { calls++; return Promise.resolve([]); }, promos: () => Promise.resolve({}), vault: () => Promise.resolve([]), now: () => 0, keyHash: await sha256hex("right-key") };
+  const post = (body: string) => new Request("https://x/f", { method: "POST", body, headers: { origin: "https://jaygptpro.com" } });
+  assert((await handle(post("wrong"), deps)).status === 401, "wrong key");
+  assert((await handle(post("{}"), deps)).status === 401, "the deploy probe's garbage body");
+  assert((await handle(post(""), deps)).status === 401, "empty");
+  assert(calls === 0, "no Stripe call without the key");
+  assert((await handle(new Request("https://x/f"), deps)).status === 405, "GET");
+  assert((await handle(new Request("https://x/f", { method: "OPTIONS", headers: { origin: "https://jaygptpro.com" } }), deps)).status === 204, "preflight");
+  const ok = await handle(post("right-key"), deps);
+  assert(ok.status === 200 && calls === 1, "right key");
+  assert(ok.headers.get("cache-control")!.includes("no-store"), "never cached");
+  assert(ok.headers.get("access-control-allow-origin") === "https://jaygptpro.com", "cors");
+});
