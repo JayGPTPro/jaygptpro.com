@@ -48,6 +48,7 @@ summary:before{content:"+";color:var(--gold);display:inline-block;width:22px}
 details[open] summary:before{content:"\2212"}
 details p{margin:10px 0 0 22px}
 .nope{display:none;text-align:center;padding:120px 0}
+.hold{display:none;text-align:center;padding:120px 0 90px}.hold .lead{max-width:620px;margin:0 auto 22px}.hold .fine{color:var(--dim)}
 footer{padding:50px 0 80px;text-align:center}
 @media (max-width:600px){.step{padding:76px 20px 18px}.step .n{left:20px;top:20px}}
 </style>
@@ -58,6 +59,13 @@ footer{padding:50px 0 80px;text-align:center}
   <div class="eyebrow">The Perfect Gift Kit</div>
   <h1>We could not open your kit</h1>
   <p class="lead" id="nopeMsg">Open the kit from the button in your email. If it still does not open, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we will send you a new link.</p>
+</div>
+
+<div class="wrap hold" id="hold">
+  <div class="eyebrow">The Perfect Gift Kit</div>
+  <h1>Your Skill opens <em>on Sunday.</em></h1>
+  <p class="lead">Your Christmas Film Skill and training open on Sunday, November 22. We'll email you the moment they're live. This link will work then too.</p>
+  <p class="fine">Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
 </div>
 
 <div id="kit">
@@ -132,6 +140,10 @@ Get the kit from https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas
 
 <script>
 (function(){
+  // 20.11.2026: the kit opens on Sunday 22.11 (Jay). OPEN=false shows the holding message and removes the kit from the
+  // page, so no step, message or download link is reachable. On Sunday: set OPEN=true (one line) and push.
+  var OPEN=false;
+  if(!OPEN){var k=document.getElementById('kit');if(k)k.remove();document.getElementById('hold').style.display='block';return;}
   var s=new URLSearchParams(location.search).get('s')||new URLSearchParams(location.search).get('session_id')||'';
   var API='https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-kit';
   function fail(msg){document.getElementById('kit').style.display='none';var n=document.getElementById('nope');n.style.display='block';if(msg)document.getElementById('nopeMsg').firstChild.textContent=msg+' ';}
