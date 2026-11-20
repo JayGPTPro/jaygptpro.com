@@ -521,7 +521,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <header class="duet" id="film">
   <div class="film" id="duet" aria-label="One film, two families. Drag the line to compare.">
     <video class="fv l" id="dl" muted playsinline autoplay loop preload="auto" poster="clips/safe.jpg"></video>
-    <div class="rh"><video class="fv" id="dr" muted playsinline autoplay loop preload="auto" poster="clips/md.jpg?v=13"></video><video class="fv" id="dr2" muted playsinline loop preload="auto"></video><i class="iris" id="iris"></i></div>
+    <div class="rh"><video class="fv" id="dr" muted playsinline autoplay loop preload="auto" poster="clips/md.jpg?v=14"></video><video class="fv" id="dr2" muted playsinline loop preload="auto"></video><i class="iris" id="iris"></i></div>
     <div class="half r"><span>Drop it into the film</span></div>
     <div class="seam" aria-hidden="true"><div class="knob"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1L1 7l6 6M15 1l6 6-6 6"/></svg></div></div>
     <div class="side l" id="sl" data-label="The original"></div><div class="side r" id="sr" data-label="Your product goes here"></div>
@@ -604,7 +604,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 <section>
   <div class="wrap split">
     <div class="collage rv">
-      <img class="back" src="img/holo-espresso.jpg?v=1" alt="An espresso machine appears above the phone, large and clear" loading="lazy">
+      <img class="back" src="img/holo-espresso.jpg?v=2" alt="An espresso machine appears above the phone, large and clear" loading="lazy">
       <img class="front" src="img/hug-md.jpg?v=1" alt="The husband and wife hugging after he opens his gift" loading="lazy">
       <span class="cap">First seconds: the product<br>Last seconds: the feeling</span>
     </div>
@@ -805,20 +805,20 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
 (function(){
   /* every film shares one timeline, so any two of them can play side by side, second for second */
   var FILMS=[
-    {id:'safe',g:'Dad',r:'Son',p:'Toy safe',img:'safe',full:'films/safe.mp4?v=13'},
-    {id:'md',g:'Mom',r:'Dad',p:'Espresso machine',img:'espresso',full:'films/md.mp4?v=13'},
-    {id:'mg',g:'Mom',r:'Daughter',p:'Karaoke speaker',img:'karaoke',full:'films/mg.mp4?v=13'},
-    {id:'dt',g:'Dad',r:'Toddler',p:'Learning puppy',img:'puppy',full:'films/dt.mp4?v=1'},
-    {id:'dm',g:'Dad',r:'Mom',p:'Photo frame',img:'frame',full:'films/dm.mp4?v=13'},
-    {id:'cam',g:'Dad',r:'Son',p:'Kids camera',img:'cam',full:'films/cam.mp4?v=13'},
-    {id:'mb',g:'Mom',r:'Son',p:'RC stunt car',img:'car',full:'films/mb.mp4?v=13'},
-    {id:'dg',g:'Dad',r:'Daughter',p:'Star projector',img:'projector',full:'films/dg.mp4?v=13'},
-    {id:'mt',g:'Mom',r:'Toddler',p:'Learning puppy',img:'puppy',full:'films/mt.mp4?v=1',tile:false}   /* same product as dt: one tile in the hero row, both families in the film pickers */
+    {id:'safe',g:'Dad',r:'Son',p:'Toy safe',img:'safe',full:'films/safe.mp4?v=14'},
+    {id:'md',g:'Mom',r:'Dad',p:'Espresso machine',img:'espresso',full:'films/md.mp4?v=14'},
+    {id:'mg',g:'Mom',r:'Daughter',p:'Karaoke speaker',img:'karaoke',full:'films/mg.mp4?v=14'},
+    {id:'dt',g:'Dad',r:'Toddler',p:'Learning puppy',img:'puppy',full:'films/dt.mp4?v=2'},
+    {id:'dm',g:'Dad',r:'Mom',p:'Photo frame',img:'frame',full:'films/dm.mp4?v=14'},
+    {id:'cam',g:'Dad',r:'Son',p:'Kids camera',img:'cam',full:'films/cam.mp4?v=14'},
+    {id:'mb',g:'Mom',r:'Son',p:'RC stunt car',img:'car',full:'films/mb.mp4?v=14'},
+    {id:'dg',g:'Dad',r:'Daughter',p:'Star projector',img:'projector',full:'films/dg.mp4?v=14'},
+    {id:'mt',g:'Mom',r:'Toddler',p:'Learning puppy',img:'puppy',full:'films/mt.mp4?v=2',tile:false}   /* same product as dt: one tile in the hero row, both families in the film pickers */
   ];
   var WALL=['cam','mg','mb','dg','dm','md'];   /* the toy safe stays the original at the top; one Dad to Son here is enough (Jay, 20.11) */
   function F(id){for(var i=0;i<FILMS.length;i++)if(FILMS[i].id===id)return FILMS[i];}
   var small=matchMedia('(max-width:900px)').matches,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function clip(id){return 'clips/'+id+(small?'-s':'')+'.mp4?v=13';}
+  function clip(id){return 'clips/'+id+(small?'-s':'')+'.mp4?v=14';}
   function pimg(f){return 'img/prod/'+f.img+'.webp';}
   function who(f){return f.g+'<i>→</i>'+f.r;}
   function play(v){var p=v.play();if(p&&p.catch)p.catch(function(){});}
@@ -871,7 +871,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     if(id===side.r){sr.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.32,.72,0,1)'});if(dragGhost)dragGhost.remove();return;}
     if(busy){if(dragGhost)dragGhost.remove();return;}
     busy=true;side.r=id;marks();nsFollow(id);track('film_product_switch',{product:id});
-    var v=rb;v.poster='clips/'+id+'.jpg?v=13';v.src=clip(id);v.load();
+    var v=rb;v.poster='clips/'+id+'.jpg?v=14';v.src=clip(id);v.load();
     var ready=new Promise(function(ok){v.addEventListener('loadeddata',ok,{once:true});setTimeout(ok,2500);});
     if(auto||x>.6||x<.3)seamTo(small?.5:.42);
     var st=stage.getBoundingClientRect(),offscreen=st.bottom<0||st.top>innerHeight;
@@ -917,7 +917,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   /* ---------- 01: the pinned film, one change per step ---------- */
   var pvs=document.querySelectorAll('#pscr video'),pf=0,pcur=null,ptag=document.getElementById('ptag'),adapt=document.getElementById('adapt'),adaptOn=false;
   function pset(id){if(pcur===id)return;pcur=id;var f=F(id),nx=pvs[1-pf],cu=pvs[pf],t=cu.currentTime||0;
-    nx.poster='clips/'+id+'.jpg?v=13';nx.preload='auto';nx.src=clip(id);nx.load();if(!cu.currentSrc){nx.classList.add('on');}
+    nx.poster='clips/'+id+'.jpg?v=14';nx.preload='auto';nx.src=clip(id);nx.load();if(!cu.currentSrc){nx.classList.add('on');}
     nx.addEventListener('loadeddata',function(){if(pcur!==id)return;ptag.innerHTML=tagH;nx.currentTime=t;if(adaptOn)play(nx);nx.classList.add('on');cu.classList.remove('on');setTimeout(function(){cu.pause();},700);pf=1-pf;},{once:true});
     var tagH='<img src="'+pimg(f)+'" alt=""><div><b>'+who(f)+'</b><small>'+f.p+'</small></div>';if(!cu.currentSrc)ptag.innerHTML=tagH;}
   var steps=document.querySelectorAll('.st');
@@ -925,14 +925,14 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
   /* ---------- 02: six films on one clock ---------- */
   var grid=document.getElementById('grid6'),tiles=[];
   WALL.forEach(function(id){var f=F(id),t=document.createElement('button');t.type='button';t.className='tile';
-    t.innerHTML='<div class="v"><video muted playsinline preload="none" poster="clips/'+id+'.jpg?v=13"></video><span class="pl"><svg width="11" height="13" viewBox="0 0 12 14" fill="#fff"><path d="M0 0l12 7-12 7z"/></svg></span></div><div class="cap"><span class="who">'+who(f)+'</span><span class="what"><img src="'+pimg(f)+'" alt="">'+f.p+'</span></div>';
+    t.innerHTML='<div class="v"><video muted playsinline preload="none" poster="clips/'+id+'.jpg?v=14"></video><span class="pl"><svg width="11" height="13" viewBox="0 0 12 14" fill="#fff"><path d="M0 0l12 7-12 7z"/></svg></span></div><div class="cap"><span class="who">'+who(f)+'</span><span class="what"><img src="'+pimg(f)+'" alt="">'+f.p+'</span></div>';
     t.setAttribute('aria-label','Watch the full film: '+f.g+' to '+f.r+', '+f.p);
     t.addEventListener('click',function(){openTheater(id);});grid.appendChild(t);tiles.push(t.querySelector('video'));});
   var wallOn=false,wallLoaded=false;
   function wallStart(){tiles.forEach(function(v){v.currentTime=0;if(wallOn)play(v);});}
   tiles[0].addEventListener('ended',wallStart);
   function wallLoad(){wallLoaded=true;var n=0,go=false;function ready(){if(++n===tiles.length&&!go){go=true;wallStart();}}
-    tiles.forEach(function(v,i){v.src='clips/'+WALL[i]+'-s.mp4?v=13';v.addEventListener('canplaythrough',ready,{once:true});v.load();});
+    tiles.forEach(function(v,i){v.src='clips/'+WALL[i]+'-s.mp4?v=14';v.addEventListener('canplaythrough',ready,{once:true});v.load();});
     setTimeout(function(){if(!go){go=true;wallStart();}},3000);}
 
   /* Switching the film mid-play: freeze the current frame on a canvas, load the new film at the
@@ -956,7 +956,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
     b.addEventListener('click',function(){thSet(f.id,true);});thc.appendChild(b);});
   function thSet(id,keep){if(thId===id)return;thId=id;var t=keep?tv.currentTime:0,go=keep?!tv.paused:true;
     [].forEach.call(thc.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)thc.scrollLeft=Math.max(0,b.offsetLeft-thc.clientWidth/2+b.offsetWidth/2);});
-    swapAt(tv,document.getElementById('tcv'),F(id).full,'clips/'+id+'.jpg?v=13',t,go);
+    swapAt(tv,document.getElementById('tcv'),F(id).full,'clips/'+id+'.jpg?v=14',t,go);
     if(keep)track('theater_switch',{film:id});}
   function openTheater(id){th.classList.add('open');document.body.style.overflow='hidden';dl.pause();rf.pause();thId=null;thSet(id,false);track('theater_open',{film:id});}
   function closeTheater(){th.classList.remove('open');document.body.style.overflow='';tv.pause();if(duetOn){play(dl);play(rf);}}
@@ -999,7 +999,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"
         nsSet(id,true);ring();maskOpen(old,px,py,R,function(){old.remove();ok();});}});}
   function nsSet(id,keep,rv){if(nId===id)return;nId=id;var f=F(id),t=keep?nv.currentTime:0,go=keep&&!nv.paused;
     [].forEach.call(ncast.children,function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);if(on)ncast.scrollLeft=Math.max(0,b.offsetLeft-ncast.clientWidth/2+b.offsetWidth/2);});
-    var poster='clips/'+id+'.jpg?v=13';nbtn.style.backgroundImage='url('+poster+')';
+    var poster='clips/'+id+'.jpg?v=14';nbtn.style.backgroundImage='url('+poster+')';
     swapAt(nv,document.getElementById('ncv'),f.full,poster,t,go,rv);
     document.getElementById('nswho').innerHTML=tagHTML(f);
     if(keep)track('showing_switch',{film:id});}
