@@ -7,135 +7,404 @@
 <title>Your Perfect Gift Kit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--night:#070b12;--night2:#0d1420;--panel:#111a29;--ink:#f6f0e4;--soft:#d6cfbf;--dim:#9a968a;--gold:#e9c784;--gold2:#b98a3e;--red:#a3232a;--line:rgba(233,199,132,.2);--hair:rgba(246,240,228,.12);
+/* 21.11.2026 v2: the kit page as a short course (Jay + ChatGPT review): four lessons, one shown at a time, a side
+   menu with real progress, each lesson only what it needs under its video. The Sunday gate at the bottom is unchanged. */
+:root{--night:#070b12;--night2:#0c121d;--panel:#101827;--ink:#f6f0e4;--soft:#d3ccbc;--dim:#aaa392;--gold:#e9c784;--gold2:#b98a3e;
+--green:#8fd19e;--line:rgba(233,199,132,.22);--hair:rgba(246,240,228,.11);--warn:#f0b37e;
 --serif:"DM Serif Display",Georgia,serif;--sans:"Hanken Grotesk",-apple-system,"Helvetica Neue",Arial,sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--night);color:var(--ink);font:18px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
-body:before{content:"";position:fixed;inset:0;background:radial-gradient(1100px 700px at 70% -10%,rgba(233,199,132,.09),transparent 60%);pointer-events:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--night);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
 a{color:var(--gold)}
-.wrap{position:relative;max-width:860px;margin:0 auto;padding:0 20px}
-.eyebrow{font:600 12px/1 var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
-h1,h2{font-family:var(--serif);font-weight:400;margin:0;letter-spacing:-.01em}
-h1{font-size:clamp(40px,7vw,72px);line-height:1.05;margin:16px 0 18px}
-h1 em,h2 em{font-style:normal;color:var(--gold)}
-h2{font-size:clamp(28px,4.4vw,40px);line-height:1.15}
+b,strong{color:var(--ink);font-weight:600}
 p{margin:0 0 14px;color:var(--soft)}
-.lead{font-size:clamp(18px,2vw,21px)}
-header{padding:64px 0 34px}
-.player{border-radius:16px;overflow:hidden;background:#000;box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px var(--line);aspect-ratio:16/9}
+h1,h2,h3{margin:0;font-weight:400}
+h1{font:400 clamp(32px,4.4vw,44px)/1.1 var(--serif);letter-spacing:-.01em;margin:6px 0 10px}
+h2{font:600 21px/1.3 var(--sans);margin:36px 0 12px}
+h3{font:600 17px/1.4 var(--sans);margin:22px 0 8px}
+ul,ol{margin:0 0 14px;padding-left:22px;color:var(--soft)}
+li{margin:6px 0}
+code,.mono{font:500 15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink)}
+
+/* layout */
+.app{display:grid;grid-template-columns:290px 1fr;min-height:100vh;background:linear-gradient(90deg,var(--night2) 289px,var(--hair) 289px,var(--hair) 290px,transparent 290px)}
+.side{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--hair);background:var(--night2);padding:30px 22px;display:flex;flex-direction:column;gap:22px}
+.brand{font:600 12px/1.4 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.hello{font:400 24px/1.2 var(--serif);margin-top:8px}
+.prog{font-size:14px;color:var(--dim)}
+.bar{height:4px;border-radius:4px;background:var(--hair);margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;gap:12px;align-items:flex-start;padding:11px 12px;border-radius:12px;text-decoration:none;color:var(--soft)}
+.nav a:hover{background:rgba(246,240,228,.04)}
+.nav a.on{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.num{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold2);color:var(--gold);font:600 13px/24px var(--sans);text-align:center;margin-top:1px}
+.nav a.done .num{background:var(--green);border-color:var(--green);color:#0b1a10;font-size:0}
+.nav a.done .num:before{content:"\2713";font-size:14px}
+.nt{font:600 15px/1.35 var(--sans)}
+.nl{display:block;font-size:13px;color:var(--dim);margin-top:2px}
+.nav .sep{height:1px;background:var(--hair);margin:10px 0}
+.cur{display:none}
+.main{padding:40px 48px 90px;min-width:0}
+.view{display:none;max-width:800px;margin:0 auto}
+.view.on{display:block}
+
+/* lesson */
+.welcome{border-bottom:1px solid var(--hair);padding-bottom:22px;margin-bottom:26px}
+.welcome .w1{font:400 28px/1.2 var(--serif);color:var(--ink);margin-bottom:6px}
+.welcome p{margin:0}
+.of{font:600 13px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.intro{font-size:18px;color:var(--soft);margin:0 0 18px}
+.player{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--line);margin:6px 0 8px}
 .player video{display:block;width:100%;height:100%}
-.vnote{font-size:15px;color:var(--dim);margin-top:12px;text-align:center}
-.step{position:relative;background:var(--panel);border:1px solid var(--hair);border-radius:18px;padding:28px 28px 22px 92px;margin:22px 0}
-.step .n{position:absolute;left:24px;top:26px;width:46px;height:46px;border-radius:50%;border:1px solid var(--gold2);color:var(--gold);font:400 24px/44px var(--serif);text-align:center}
-.step h2{margin-bottom:10px}
-.step ol{margin:6px 0 14px;padding-left:22px;color:var(--soft)}
-.step li{margin:6px 0}
-.step b{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:10px;font:700 16px/1 var(--sans);padding:16px 26px;border-radius:999px;text-decoration:none;border:0;cursor:pointer;background:linear-gradient(180deg,#f0d596,#d9b46a);color:#1a1206;box-shadow:0 10px 36px rgba(233,199,132,.22)}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(246,240,228,.35);box-shadow:none}
-.code{display:inline-block;font:700 16px var(--sans);letter-spacing:.12em;background:linear-gradient(180deg,#f0d596,#d9b46a);color:#1a1206;border-radius:999px;padding:3px 14px}
-.msg{position:relative;background:var(--night2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0 14px;font:500 16px/1.6 var(--sans);color:var(--ink);white-space:pre-wrap;word-break:break-word}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.ok{color:#8fd19e;font-size:15px}
-.fine{font-size:15px;color:var(--dim)}
-details{border-top:1px solid var(--hair);padding:16px 0}
-details:last-of-type{border-bottom:1px solid var(--hair)}
-summary{cursor:pointer;font-weight:600;color:var(--ink);list-style:none}
-summary::-webkit-details-marker{display:none}
-summary:before{content:"+";color:var(--gold);display:inline-block;width:22px}
-details[open] summary:before{content:"\2212"}
-details p{margin:10px 0 0 22px}
-.nope{display:none;text-align:center;padding:120px 0}
-.hold{display:none;text-align:center;padding:120px 0 90px}.hold .lead{max-width:620px;margin:0 auto 22px}.hold .fine{color:var(--dim)}
-footer{padding:50px 0 80px;text-align:center}
-@media (max-width:600px){.step{padding:76px 20px 18px}.step .n{left:20px;top:20px}}
+.soon{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--dim);background:#0a0f18}
+.player.missing video{display:none}.player.missing .soon{display:flex}
+
+/* boxes, kept for things you copy or fill */
+.msg{background:var(--night2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0;font:500 16px/1.6 var(--sans);color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.msg.empty{color:var(--dim)}
+.addr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.addr .msg{margin:0;padding:9px 14px;font:500 15px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.status{font-size:15px;color:var(--green)}
+.status.bad{color:var(--warn)}
+.note{font-size:15px;color:var(--dim)}
+.tag{display:inline-block;font:700 15px/1 var(--sans);letter-spacing:.1em;background:var(--gold);color:#1a1206;border-radius:6px;padding:4px 8px}
+details.more{margin:10px 0}
+details.more summary{cursor:pointer;color:var(--gold);font-size:15px;font-weight:600;list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary:before{content:"+ "}
+details.more[open] summary:before{content:"\2212  "}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:700 16px/1 var(--sans);padding:15px 24px;border-radius:999px;border:0;cursor:pointer;text-decoration:none;background:linear-gradient(180deg,#f0d596,#d9b46a);color:#1a1206}
+.btn:disabled{background:var(--panel);color:var(--dim);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--hair)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(246,240,228,.3);padding:11px 18px;font-size:15px}
+.btn.line{background:transparent;color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold2)}
+.next{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--hair);margin-top:40px;padding-top:24px}
+.next .back{color:var(--dim);text-decoration:none;font-size:15px}
+.next .back:hover{color:var(--soft)}
+
+/* the family picker */
+.fams{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 6px}
+.fam{position:relative;display:flex;flex-direction:column;justify-content:flex-start;padding:0;border:0;border-radius:12px;overflow:hidden;background:var(--panel);cursor:pointer;text-align:left;color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair);font:inherit}
+.fam img.r{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;filter:brightness(1.15) contrast(1.05);opacity:.9}
+.fam .cap{display:flex;gap:10px;align-items:center;padding:10px 12px 12px}
+.fam img.g{flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;filter:brightness(1.2);box-shadow:0 0 0 2px var(--gold2)}
+.fam .ft{display:block;font:600 16px/1.3 var(--sans)}
+.fam small{display:block;font-weight:400;color:var(--soft);font-size:13px;margin-top:3px}
+.fam:hover img.r{opacity:1}
+.fam[aria-checked="true"]{box-shadow:inset 0 0 0 2px var(--gold)}
+.fam[aria-checked="true"] img.r{opacity:1}
+.fam[aria-checked="true"]:after{content:"\2713";position:absolute;right:8px;top:8px;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1a1206;font:700 15px/28px var(--sans);text-align:center}
+input.link{width:100%;font:500 16px var(--sans);color:var(--ink);background:var(--night2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;outline:none}
+input.link:focus{border-color:var(--gold)}
+
+/* lists of changes */
+.changes{border-top:1px solid var(--hair);margin:8px 0 14px}
+.change{border-bottom:1px solid var(--hair);padding:14px 0}
+.change .ct{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.change .ct b{font-size:16px}
+.change .cost{font-size:14px;color:var(--dim)}
+.change .msg{margin:8px 0 0;padding:10px 14px;font-size:15px}
+.msg.example{border-style:dashed;background:transparent;color:var(--soft)}
+.ex{font-size:15px;color:var(--soft);margin:8px 0 0}
+.change .row{margin:8px 0 0}
+.steps{display:flex;flex-direction:column;gap:14px;margin:12px 0 16px}
+.st{display:flex;gap:14px;align-items:flex-start;color:var(--soft)}
+.st>div{flex:1;min-width:0}
+.st .addr{margin:10px 0 8px}
+.sn{flex:none;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1a1206;font:700 14px/28px var(--sans);text-align:center;margin-top:1px}
+.alt{border:1px solid var(--hair);border-radius:14px;padding:18px 20px;margin:22px 0 6px;background:rgba(246,240,228,.02)}
+.road li a{color:var(--ink);text-decoration:none}
+.road li a:hover b{color:var(--gold)}
+.checks{counter-reset:c;list-style:none;padding:0}
+.checks li{counter-increment:c;position:relative;padding-left:40px;margin:12px 0}
+.checks li:before{content:counter(c);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold2);color:var(--gold);font:600 13px/24px var(--sans);text-align:center}
+
+/* questions */
+details.q{border-top:1px solid var(--hair);padding:15px 0}
+details.q:last-of-type{border-bottom:1px solid var(--hair)}
+details.q summary{cursor:pointer;font-weight:600;color:var(--ink);list-style:none;display:flex;gap:10px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary:before{content:"+";color:var(--gold);width:14px;flex:none}
+details.q[open] summary:before{content:"\2212"}
+details.q p,details.q ul{margin:10px 0 0 24px}
+.help{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:34px}
+.help p{margin-bottom:16px}
+
+.nope,.hold{display:none;max-width:680px;margin:0 auto;text-align:center;padding:120px 20px}
+.nope h1,.hold h1{font-size:clamp(34px,5vw,52px)}
+.hold h1 em{font-style:normal;color:var(--gold)}
+.hold .lead,.nope .lead{font-size:19px}
+
+@media (max-width:900px){
+  .app{display:block;background:none}
+  .side{position:sticky;z-index:5;height:auto;padding:12px 16px 10px;gap:8px;border-right:0;border-bottom:1px solid var(--hair);background:rgba(12,18,29,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .side .hello,.side .hint{display:none}
+  .side .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .bar{margin-top:6px}
+  .nav{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .nav a{flex:none;padding:0;border-radius:999px;box-shadow:none;background:none!important}
+  .nav a .nt,.nav .nl,.nav .sep{display:none}
+  .nav a.on{box-shadow:none;padding:0}
+  .nav a.on .num{background:var(--gold);color:#1a1206;border-color:var(--gold)}
+  .fam .cap{gap:8px;padding:9px 10px 11px}
+  .fam img.g{width:36px;height:36px}
+  .fam .ft{font-size:15px}
+  .num{width:40px;height:40px;line-height:38px;font-size:15px;margin:0}
+  .nav{gap:10px}
+  .cur{display:block;font:600 14px/1.3 var(--sans);color:var(--ink);margin-top:2px}
+  .main{padding:22px 16px 70px}
+  .fams{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
 
-<div class="wrap nope" id="nope">
-  <div class="eyebrow">The Perfect Gift Kit</div>
-  <h1>We could not open your kit</h1>
-  <p class="lead" id="nopeMsg">Open the kit from the button in your email. If it still does not open, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we will send you a new link.</p>
+<div class="nope" id="nope">
+  <div class="brand">The Perfect Gift Kit</div>
+  <h1>We couldn't open your kit</h1>
+  <p class="lead" id="nopeMsg">Open the kit from the button in your email. If it still doesn't open, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and we'll send you a new link.</p>
 </div>
 
-<div class="wrap hold" id="hold">
-  <div class="eyebrow">The Perfect Gift Kit</div>
+<div class="hold" id="hold">
+  <div class="brand">The Perfect Gift Kit</div>
   <h1>Your Skill opens <em>on Sunday.</em></h1>
   <p class="lead">Your Christmas Film Skill and training open on Sunday, November 22, at 1 PM New York time. We'll email you the moment they're live. This link will work then too.</p>
-  <p class="fine">Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
+  <p class="note">Questions? Write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
 </div>
 
-<div id="kit">
-<header class="wrap">
-  <div class="eyebrow">The Perfect Gift Kit</div>
-  <h1><span id="hello">Welcome.</span> <em>Let's make your film.</em></h1>
-  <p class="lead">Four short steps. Claude does the hard parts for you. Watch the video once, then follow along below.</p>
-</header>
+<div class="app" id="kit">
+<aside class="side">
+  <div>
+    <div class="top"><div class="brand">The Perfect Gift Kit</div><div class="prog" id="progT">0 of 4 lessons done</div></div>
+    <div class="bar"><i id="progB"></i></div>
+    <div class="cur" id="curName"></div>
+  </div>
+  <nav class="nav" aria-label="Lessons">
+    <a href="#lesson-1" data-v="1"><span class="num">1</span><span><span class="nt">Start Here</span><span class="nl" data-len="1"></span></span></a>
+    <a href="#lesson-2" data-v="2"><span class="num">2</span><span><span class="nt">Set Up Your Kit</span><span class="nl" data-len="2"></span></span></a>
+    <a href="#lesson-3" data-v="3"><span class="num">3</span><span><span class="nt">Create Your First Film</span><span class="nl" data-len="3"></span></span></a>
+    <a href="#lesson-4" data-v="4"><span class="num">4</span><span><span class="nt">Edit and Use Your Films</span><span class="nl" data-len="4"></span></span></a>
+    <span class="sep"></span>
+    <a href="#help" data-v="help"><span class="num">?</span><span class="nt">Questions and Help</span></a>
+  </nav>
+  <p class="note hint">Keep this page. The link in your email always opens it.</p>
+</aside>
 
-<section class="wrap">
-  <div class="player"><video id="tut" controls preload="metadata" playsinline poster="tutorial.jpg?v=2" src="tutorial.mp4?v=2"></video></div>
-  <p class="vnote">The whole kit, step by step.</p>
+<main class="main">
+
+<!-- Lesson 1 -->
+<section class="view" id="v1">
+  <div class="welcome">
+    <div class="w1" id="hello2">Welcome to The Perfect Gift.</div>
+    <p>Watch these four short lessons to set up your kit and create a Christmas film featuring your product.</p>
+  </div>
+  <div class="of">Lesson 1 of 4</div>
+  <h1>Start Here</h1>
+  <p class="intro">Watch a sample Christmas film, get a quick look at what the Skill can do, and see what we'll cover in the next three lessons.</p>
+  <div class="player"><video controls preload="metadata" playsinline poster="ch1.jpg" src="ch1.mp4" data-l="1"></video><div class="soon">This video is on its way.</div></div>
+  <p style="margin-top:18px">You'll start with a ready-made Christmas film. Claude replaces the gift with your product and creates the new scenes to match. You'll get the full film and a shorter 30-second version for ads.</p>
+  <h2>What's next</h2>
+  <ul class="road">
+    <li><a href="#lesson-2"><b>Lesson 2. Set Up Your Kit:</b></a> set up Genrupt, connect it to Claude, and install the kit. Once.</li>
+    <li><a href="#lesson-3"><b>Lesson 3. Create Your First Film:</b></a> choose a family, paste your product link, and let Claude make the film.</li>
+    <li><a href="#lesson-4"><b>Lesson 4. Edit and Use Your Films:</b></a> check the result, make changes, make more films, and upload them.</li>
+  </ul>
+  <div class="next"><span></span><button class="btn" data-finish="1">Continue to Lesson 2</button></div>
 </section>
 
-<section class="wrap" style="padding-top:20px">
+<!-- Lesson 2 -->
+<section class="view" id="v2">
+  <div class="of">Lesson 2 of 4</div>
+  <h1>Set Up Your Kit</h1>
+  <p class="intro">Set up Genrupt, connect it to Claude, and install your kit. We'll go through each step together. You only do this once.</p>
+  <div class="player"><video controls preload="metadata" playsinline poster="ch2.jpg" src="ch2.mp4" data-l="2"></video><div class="soon">This video is on its way.</div></div>
 
-  <div class="step"><div class="n">1</div>
-    <h2>Get <em>Claude</em></h2>
-    <p>Claude is the AI assistant that makes the film for you on your computer.</p>
-    <ol>
-      <li>Download the <b>Claude app</b> for your computer at <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a> and sign in.</li>
-      <li>You need a paid Claude plan (Pro or higher). You can choose it in the app.</li>
-      <li>In the app, click <b>Code</b> at the top. That is where you will talk to Claude about your film.</li>
-    </ol>
+  <h2>Before you start</h2>
+  <ul>
+    <li><b>Claude Code with a paid Claude plan</b> (Pro or higher).</li>
+    <li><b>A Genrupt account with video credits.</b> You buy the credits from Genrupt, separately from this kit. You'll set this up below.</li>
+    <li><b>About 3 GB of free space</b> on your computer. The kit takes about 1 GB, and each film adds about half a GB.</li>
+  </ul>
+  <p>No API keys needed.</p>
+
+  <h2>1. Set up Genrupt</h2>
+  <p>Genrupt makes the new video clips for your films. Three steps:</p>
+  <div class="steps">
+    <div class="st"><span class="sn">1</span><div><b>Sign up.</b> Create your Genrupt account at <a href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">genrupt.com/l/aivault</a>.</div></div>
+    <div class="st"><span class="sn">2</span><div><b>Get credits.</b> Choose a monthly plan or buy credits, whichever suits you. On your first purchase, use the code <span class="tag">JAY20</span> to get 20% extra credits (first purchase only). A film uses a few dozen credits.</div></div>
+    <div class="st"><span class="sn">3</span><div><b>Connect it to Claude.</b> In the Claude app, click your name (bottom left), then <b>Settings</b>, <b>Connectors</b>, <b>Add custom connector</b>. Name it <b>Genrupt</b>, paste this address, click <b>Add</b>, then <b>Connect</b>, and sign in.
+      <div class="addr"><span class="msg" id="g">https://genrupt.com/api/agent/mcp</span><button class="btn ghost" data-copy="g">Copy</button></div>
+      <p class="note" style="margin:0">Genrupt now shows as Connected in Settings, Connectors. Stuck here? Go on anyway: Claude walks you through the connection.</p></div></div>
   </div>
+  <details class="more"><summary>Already using Higgsfield?</summary>
+    <p style="margin-top:10px">You can use it with this kit too. Add it the same way, with this address:</p>
+    <div class="addr"><span class="msg" id="h">https://mcp.higgsfield.ai/mcp</span><button class="btn ghost" data-copy="h">Copy</button></div>
+    <p class="note">The lessons show Genrupt, which we recommend: it cleans up your product photos before every clip. If both are connected, Claude uses Genrupt.</p>
+  </details>
 
-  <div class="step"><div class="n">2</div>
-    <h2>Connect your <em>video account</em></h2>
-    <p>The film's new clips are made on your own video account. We recommend Genrupt: the kit was built on it, and it sharpens your product photos before every clip.</p>
-    <ol>
-      <li><b>Genrupt</b> (recommended): create your account at <a href="https://genrupt.com/l/aivault" target="_blank" rel="noopener">genrupt.com/l/aivault</a>. When you buy credits for the first time, type the code <span class="code">JAY20</span> for 20% extra credits.</li>
-      <li><b>Higgsfield</b>: if you already have a Higgsfield plan, the kit works there too.</li>
-    </ol>
-    <p>Then connect it to Claude: in the Claude app click your name (bottom left), <b>Settings</b>, <b>Connectors</b>, <b>Add custom connector</b>. Paste the address and click <b>Add</b>, then <b>Connect</b>, and sign in.</p>
-    <div class="row"><span class="fine">Genrupt:</span> <span class="msg" style="margin:0;padding:8px 14px" id="g">https://genrupt.com/api/agent/mcp</span> <button class="btn ghost" data-copy="g">Copy</button></div>
-    <div class="row" style="margin-top:10px"><span class="fine">Higgsfield:</span> <span class="msg" style="margin:0;padding:8px 14px" id="h">https://mcp.higgsfield.ai/mcp</span> <button class="btn ghost" data-copy="h">Copy</button></div>
-    <p class="fine" style="margin-top:14px">Not sure? Skip this step. In step 3, Claude walks you through it.</p>
-  </div>
-
-  <div class="step"><div class="n">3</div>
-    <h2>Let Claude <em>set up the kit</em></h2>
-    <p>In the Claude app, click <b>Code</b>, start a new session in your <b>home</b> folder (or Documents), and paste this message. It has your personal kit code in it.</p>
+  <h2>2. Install the kit</h2>
+  <ol>
+    <li>In the Claude app, click <b>Code</b> and start a new session in your home folder.</li>
+    <li>Copy the setup message and paste it into the session.</li>
+  </ol>
+  <div class="row"><button class="btn" data-copy="setup">Copy Setup Message</button><span class="status" id="st-setup" hidden></span></div>
+  <p>The message includes your private kit code. Don't share it.</p>
+  <details class="more"><summary>Show the message</summary>
     <div class="msg" id="setup">Set up my Perfect Gift Kit. My kit code is <span class="kc">…</span>
 Get the kit from https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas-kit?s=<span class="kc">…</span> (the answer has a "kit" link to a zip). Unzip it into a folder called PerfectGift in my home folder, then open PerfectGift/skill/perfect-gift/SKILL.md and follow its first-time setup.</div>
-    <div class="row"><button class="btn" data-copy="setup">Copy the message</button><span class="ok" id="copied" hidden>Copied. Paste it into Claude.</span></div>
-    <p class="fine" style="margin-top:14px">Claude installs what it needs and downloads the film (a few minutes). When it asks to run something, say yes. When it says "All set", go to step 4.</p>
+  </details>
+
+  <div class="alt">
+    <h3 style="margin-top:0">Claude won't download the kit?</h3>
+    <p>Some Claude setups don't download files from links. Then download the kit yourself:</p>
+    <div class="steps">
+      <div class="st"><span class="sn">1</span><div>Click <b>Download the Kit</b>. A file called PerfectGift.zip lands in your Downloads folder.
+        <div class="row"><a class="btn ghost" id="dlKit" href="#" download>Download the Kit (zip)</a><span class="status" id="st-dl" hidden></span></div></div></div>
+      <div class="st"><span class="sn">2</span><div>Double-click PerfectGift.zip. A folder called <b>PerfectGift</b> appears next to it.</div></div>
+      <div class="st"><span class="sn">3</span><div>Copy this message and paste it into a new Claude Code session:
+        <div class="row"><button class="btn ghost" data-copy="setup2">Copy Message</button><span class="status" id="st-setup2" hidden></span></div>
+        <details class="more"><summary>Show the message</summary>
+          <div class="msg" id="setup2">Set up my Perfect Gift Kit. I downloaded and unzipped it myself: the PerfectGift folder is in my Downloads folder. Move that PerfectGift folder into my home folder, then open PerfectGift/skill/perfect-gift/SKILL.md and follow its first-time setup. My kit code is <span class="kc">…</span></div>
+        </details></div></div>
+    </div>
   </div>
 
-  <div class="step"><div class="n">4</div>
-    <h2>Make your <em>first film</em></h2>
-    <p>Pick who gives the gift and who gets it: Mom or Dad, to a son, a daughter, a husband or a wife. Then type this in Claude, with your own product's Amazon link and your family:</p>
-    <div class="msg" id="first">Make my Christmas film for https://www.amazon.com/dp/YOURASIN . Mom gives it to her son.</div>
-    <div class="row"><button class="btn ghost" data-copy="first">Copy</button></div>
-    <p style="margin-top:16px">Claude reads your listing, asks you one question about the price, and makes the film. It tells you the credits before every step that uses them. About half an hour later Claude opens a folder with two files: the full film, about a minute, and a 30-second cut for ads.</p>
-    <p class="fine">Want another family later? Just tell Claude, for example: "Make it Dad giving to our daughter." Several products? Paste all the links in one message.</p>
+  <h3>What happens next</h3>
+  <ul>
+    <li>Claude downloads the kit, installs what it needs, and downloads the film's scenes, music and voices. This usually takes a few minutes.</li>
+    <li>Claude may ask for permission to download files or install tools during setup. That's expected. Click <b>Allow</b> for these setup actions.</li>
+    <li>Genrupt asks once to confirm that the people in the film are AI actors made for this film. Claude asks you first. Say yes.</li>
+    <li>When Claude says <b>"All set"</b>, your kit is installed.</li>
+  </ul>
+  <p>If Claude stops halfway, tell it: "Continue setting up my Perfect Gift Kit."</p>
+
+  <div class="next"><a class="back" href="#lesson-1">Back to Lesson 1</a><button class="btn line" data-finish="2">Continue to Lesson 3</button></div>
+</section>
+
+<!-- Lesson 3 -->
+<section class="view" id="v3">
+  <div class="of">Lesson 3 of 4</div>
+  <h1>Create Your First Film</h1>
+  <p class="intro">Choose a family, add your Amazon product link, and send the message to Claude.</p>
+  <div class="player"><video controls preload="metadata" playsinline poster="ch3.jpg" src="ch3.mp4" data-l="3"></video><div class="soon">This video is on its way.</div></div>
+
+  <h2>1. Your Amazon product link</h2>
+  <input class="link" id="bLink" placeholder="Paste your Amazon product link" autocomplete="off" spellcheck="false" inputmode="url">
+  <p class="note" id="linkNote" style="margin-top:8px">Your product page on any Amazon store (amazon.com, .co.uk, .de, .ca...), a short a.co link, or just its ASIN for Amazon.com (like B0XXXXXXXX).</p>
+
+  <h2>2. Choose a family</h2>
+  <p>Choose one of the eight ready-made families: who gives the gift, and who opens it on Christmas morning.</p>
+  <div class="fams" role="radiogroup" aria-label="Family" id="fams"></div>
+  <p class="note">The toddler films need a product a 3-year-old can really use. If yours isn't, Claude tells you and suggests another family.</p>
+  <div class="alt" id="customBox">
+    <h3 style="margin-top:0">Want someone else in the film?</h3>
+    <p>Grandma, Grandpa, a 6-year-old, a teenager: tell Claude who gets the gift (Mom or Dad gives it). Claude creates the new person to look like part of the film's family, shows you a few options to pick from, and makes that person's scenes again.</p>
+    <p>It costs more than a ready-made family, because every scene with the new person is made again: about 250 Genrupt credits (around $12 to $15), once. Claude tells you the cost before it starts. After that, every film with this family costs the same as a ready-made one.</p>
+    <label for="bCustom" class="ex" style="display:block;margin-bottom:6px">Who gives it, and who gets it?</label>
+    <input class="link" id="bCustom" placeholder="For example: Dad gives it to his 14-year-old son" autocomplete="off">
   </div>
 
+  <h2>3. Your message to Claude</h2>
+  <div class="msg empty" id="first">Paste your product link and choose a family. Your message appears here.</div>
+  <div class="row"><button class="btn" data-copy="first" id="copyFirst" disabled>Copy Message</button><span class="status" id="st-first" hidden></span></div>
+  <p>Paste it into Claude Code, the same way you pasted the setup message.</p>
+
+  <h3>What happens next</h3>
+  <ul>
+    <li>Claude reads your listing and checks that the product fits the film before it spends any credits. If Amazon won't let Claude read the page, Claude asks you to save it from Chrome (File, Save Page As) and tells you exactly what to do.</li>
+    <li>It makes the new video clips on your Genrupt account, checks the product in them against your listing photos, and puts the film together.</li>
+    <li>Before every step that uses credits, Claude tells you the cost.</li>
+    <li>When the film is ready, Claude opens the folder with your two videos.</li>
+  </ul>
+  <p>A film uses a few dozen Genrupt credits, about $2 to $4 depending on your plan, and more if a clip needs another try or you ask for changes. In our test, the first film took under 15 minutes. If a clip doesn't match your product, Claude makes it again, up to three tries, and asks you before going past that.</p>
+  <p>Before you upload the film anywhere, watch it and make sure your product looks right. Lesson 4 shows what to check.</p>
+
+  <div class="next"><a class="back" href="#lesson-2">Back to Lesson 2</a><button class="btn line" data-finish="3">Continue to Lesson 4</button></div>
 </section>
 
-<section class="wrap" style="padding-top:30px">
-  <h2 style="margin-bottom:10px">Questions</h2>
-  <details><summary>Which file do I upload to Amazon?</summary><p>The full film (the file that ends in your ASIN) goes on your listing. The file that ends in "_30s" is the short cut, made for ads like Sponsored Brands video. Both are full HD.</p></details>
-  <details><summary>Does it work for every product?</summary><p>It works for a product that makes a good gift and is opened and used at home. If a product is not a good fit, Claude tells you before it spends any credits.</p></details>
-  <details><summary>What does Claude ask me about the people in the film?</summary><p>The people in the film are AI actors, made for this film. Genrupt asks you once to confirm that before it makes your first clip. Claude asks you, and confirms it for you when you say yes.</p></details>
-  <details><summary>How do I get updates?</summary><p>When we improve the film, tell Claude: "Update my Perfect Gift Kit." Your films and settings stay as they are.</p></details>
-  <details><summary>Can I make films for other sellers?</summary><p>The kit is for your own products. Making films for other sellers or reselling them is not included.</p></details>
-  <details><summary>I'm stuck.</summary><p>First tell Claude exactly what you see; it usually knows the fix. If not, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a> and include your kit code.</p></details>
+<!-- Lesson 4 -->
+<section class="view" id="v4">
+  <div class="of">Lesson 4 of 4</div>
+  <h1>Edit and Use Your Films</h1>
+  <p class="intro">Check your film, fix what needs fixing, make more films, and use your videos.</p>
+  <div class="player"><video controls preload="metadata" playsinline poster="ch4.jpg" src="ch4.mp4" data-l="4"></video><div class="soon">This video is on its way.</div></div>
+
+  <h2>Check your film</h2>
+  <p>Before you upload it, check these three things:</p>
+  <ol class="checks">
+    <li>The phone shows the right product photo and name.</li>
+    <li>The product that rises out of the phone is complete, with all its parts.</li>
+    <li>In the gift scene, it's your product, and it's used the right way.</li>
+  </ol>
+  <p>Claude checks the clips too, but AI can still make mistakes. You're the final quality check.</p>
+
+  <h2>Make changes</h2>
+  <p>Tell Claude what you'd like to fix, in plain words. It works on that part of the film and builds the film again. If new clips are needed, Claude shows you the credit cost first.</p>
+  <div class="changes">
+    <div class="change"><div class="ct"><b>Change the text on the phone</b><span class="cost">No video credits</span></div>
+      <div class="msg" id="c1">Make the product title on the phone shorter.</div><div class="row"><button class="btn ghost" data-copy="c1">Copy</button></div></div>
+    <div class="change"><div class="ct"><b>Change the product photo</b><span class="cost">No video credits</span></div>
+      <div class="msg" id="c2">Use a different photo of my product on the phone. Show me the options from my listing.</div><div class="row"><button class="btn ghost" data-copy="c2">Copy</button></div></div>
+    <div class="change"><div class="ct"><b>Fix the gift scene</b><span class="cost">A new video clip (uses credits)</span></div>
+      <p class="ex">Write what you see in your own words. For example:</p><div class="msg example">In the gift scene, the headphones are missing the left ear cup. Fix it.</div></div>
+    <div class="change"><div class="ct"><b>Change the family</b><span class="cost">A new video clip (uses credits)</span></div>
+      <p class="ex">Name the family you want. For example:</p><div class="msg example">Make the same film again with Dad giving it to his daughter.</div></div>
+  </div>
+
+  <h2>Make more films</h2>
+  <p>Send Claude a new Amazon product link and choose the family, like in Lesson 3. You don't install anything again.</p>
+  <p>Want Christmas films for several products? Send all the product links in one message. Claude makes a film for each one, with the same family for all or a different one per product, and shows you the estimated total credit cost before it starts.</p>
+  <p class="ex">For example, seven products in one message (with your own links):</p>
+  <div class="msg example">Make Christmas films for these products. Mom gives it to her son.
+https://www.amazon.com/dp/B0XXXXXXX1
+https://www.amazon.com/dp/B0XXXXXXX2
+https://www.amazon.com/dp/B0XXXXXXX3
+https://www.amazon.com/dp/B0XXXXXXX4
+https://www.amazon.com/dp/B0XXXXXXX5
+https://www.amazon.com/dp/B0XXXXXXX6
+https://www.amazon.com/dp/B0XXXXXXX7</div>
+
+  <h2>Where to use your films</h2>
+  <ul>
+    <li><b>The full film</b> (perfect_gift_B0XXXXXXXX.mp4) is made for your Amazon product page.</li>
+    <li><b>The 30-second version</b> (the file that ends in _30s) is made for ads, like Sponsored Brands video.</li>
+    <li>Both work on your Brand Store, your website and social media.</li>
+  </ul>
+  <p class="note">Amazon reviews videos before they go live, and approval isn't guaranteed. Check the requirements of the placement you use.</p>
+  <p>Claude opens the folder when a film is ready. To find it later, tell Claude: "Open my film folder."</p>
+
+  <div class="next"><a class="back" href="#lesson-3">Back to Lesson 3</a><button class="btn line" data-finish="4">Finish the Course</button></div>
 </section>
 
-<footer class="wrap"><p class="fine">Keep this page. It is your private kit page, and the link in your email always opens it.</p></footer>
+<!-- Questions and help -->
+<section class="view" id="vhelp">
+  <div class="of">Questions and Help</div>
+  <h1>Questions</h1>
+  <p class="intro">Find answers to common questions, or contact me for help.</p>
+
+  <details class="q"><summary>What do I need to use the kit?</summary><p>Claude Code with a paid Claude plan (Pro or higher), a Genrupt account with credits, and about 3 GB of free space on your computer. No API keys needed.</p></details>
+  <details class="q"><summary>How much does it cost to make a film?</summary><p>A few dozen Genrupt credits, about $2 to $4 depending on your plan. A clip that needs another try, or a change you ask for, uses more. Claude tells you the cost before every step that uses credits.</p></details>
+  <details class="q"><summary>How long does it take?</summary><p>Our test took under 15 minutes, from the first message to the finished film. Times vary with the product and with how long Genrupt takes to make the clips.</p></details>
+  <details class="q"><summary>Where are my finished videos?</summary><p>Claude opens the folder when your film is ready. To find it later, tell Claude "Open my film folder." On your computer it's in the PerfectGift folder, under engine, jobs: one folder for each product and family, with the videos inside its "out" folder.</p></details>
+  <details class="q"><summary>What if my product doesn't look right?</summary><p>Tell Claude exactly what's wrong, for example a missing part, the wrong color, or the product used the wrong way. Claude fixes that part of the film. A new clip uses credits, and Claude tells you the cost first.</p></details>
+  <details class="q"><summary>Can I make another film?</summary><p>Yes. You can make films for as many of your own products as you like. Each new film uses video credits, and Claude shows you the estimated cost before it starts. You don't install the kit again.</p></details>
+  <details class="q"><summary>Can I have a different family, like grandparents or a teenager?</summary><p>Yes, for the person who gets the gift (Mom or Dad gives it). Tell Claude who: Grandma, a teenager, a 6-year-old. Claude creates the new person, lets you pick from a few options, and makes their scenes again. That costs about 250 credits once, and Claude shows you the cost first. After that the family is saved for every film.</p></details>
+  <details class="q"><summary>Does it work for every product?</summary><p>The kit works best with products that make good gifts and can be shown naturally at home. Claude checks for possible problems before it makes the film, but you still need to watch the final result.</p></details>
+  <details class="q"><summary>Can I use the kit with Higgsfield?</summary><p>Yes. If you already have Higgsfield, connect it the same way as Genrupt (the address is in Lesson 2). The lessons show Genrupt, which we recommend because it cleans up your product photos before every clip.</p></details>
+  <details class="q"><summary>How do I update the kit?</summary><p>Tell Claude: "Update my Perfect Gift Kit." Your films and settings stay as they are.</p></details>
+  <details class="q"><summary>Can I make films for other sellers?</summary><p>The kit is licensed for your own products. Making films for other sellers or reselling the kit isn't included.</p></details>
+
+  <div class="help" id="help">
+    <h2 style="margin-top:0">Need help?</h2>
+    <p>Start by telling Claude what happened and what you expected. It usually knows the fix. Still stuck? Message me with a short description and, if you can, a screenshot.</p>
+    <div class="row"><a class="btn" href="https://wa.me/972535576816?text=Hi%20Jay%2C%20I%20bought%20the%20Perfect%20Gift%20Kit%20and%20I%20need%20help%20with%3A" target="_blank" rel="noopener">Message Jay on WhatsApp</a><a class="btn ghost" href="mailto:info@jaygptpro.com">info@jaygptpro.com</a></div>
+  </div>
+</section>
+
+</main>
 </div>
 
 <script>
@@ -152,14 +421,94 @@ Get the kit from https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/christmas
   document.querySelectorAll('.kc').forEach(function(e){e.textContent=s;});
   fetch(API+'?s='+encodeURIComponent(s)).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});}).then(function(x){
     if(!x.ok){fail(x.j&&x.j.message);return;}
-    if(x.j.name)document.getElementById('hello').textContent='Welcome, '+x.j.name+'.';
+    if(x.j.name)document.getElementById('hello2').textContent='Welcome, '+x.j.name+'.';
+    if(x.j.kit)document.getElementById('dlKit').href=x.j.kit+(x.j.kit.indexOf('?')<0?'?':'&')+'download=PerfectGift.zip';
   }).catch(function(){});
-  document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){
-    var t=document.getElementById(b.getAttribute('data-copy')).innerText.trim();
-    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){
-      if(b.getAttribute('data-copy')==='setup'){document.getElementById('copied').hidden=false;}else{var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o;},1600);}
-    }).catch(function(){var r=document.createRange();r.selectNodeContents(document.getElementById(b.getAttribute('data-copy')));var sel=getSelection();sel.removeAllRanges();sel.addRange(r);});
-  });});
+
+  // the kit zip: ask the server for a fresh signed link on each click (a link shown long ago may have expired)
+  document.getElementById('dlKit').addEventListener('click',function(e){e.preventDefault();var st=document.getElementById('st-dl');st.hidden=false;st.classList.remove('bad');st.textContent='Preparing your download...';
+    fetch(API+'?s='+encodeURIComponent(s)).then(function(r){return r.json();}).then(function(j){if(!j.kit)throw 0;
+      location.href=j.kit+(j.kit.indexOf('?')<0?'?':'&')+'download=PerfectGift.zip';st.textContent='Your download has started. Look in your Downloads folder.';})
+    .catch(function(){st.classList.add('bad');st.textContent="The download didn't start. Write to info@jaygptpro.com and we'll send you the kit.";});});
+
+  // views: one lesson at a time, by the address (#lesson-2), so Back and a refresh land on the same lesson
+  var KEY='pgkit_'+s.slice(-12),st={done:{},last:'1'};
+  try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.done)st=o;}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+  function want(){var h=location.hash.replace('#','');if(h==='help')return 'help';var m=h.match(/^lesson-([1-4])$/);return m?m[1]:null;}
+  function show(v,scroll){
+    document.querySelectorAll('.view').forEach(function(e){e.classList.toggle('on',e.id==='v'+v);});
+    document.querySelectorAll('.nav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-v')===v);});
+    document.querySelectorAll('.view:not(.on) video').forEach(function(x){x.pause();});
+    var nm={'1':'Lesson 1 of 4: Start Here','2':'Lesson 2 of 4: Set Up Your Kit','3':'Lesson 3 of 4: Create Your First Film','4':'Lesson 4 of 4: Edit and Use Your Films','help':'Questions and Help'};
+    document.getElementById('curName').textContent=nm[v]||'';
+    st.last=v;save();if(scroll)window.scrollTo(0,0);
+  }
+  function paint(){var n=0;
+    document.querySelectorAll('.nav a[data-v]').forEach(function(a){var d=!!st.done[a.getAttribute('data-v')];a.classList.toggle('done',d);if(d)n++;});
+    document.getElementById('progT').textContent=n+' of 4 lessons done';document.getElementById('progB').style.width=(n*25)+'%';}
+  window.addEventListener('hashchange',function(){var v=want();if(v)show(v,true);});
+  show(want()||st.last||'1',false);paint();
+  document.querySelectorAll('[data-finish]').forEach(function(b){b.addEventListener('click',function(){
+    var l=b.getAttribute('data-finish');st.done[l]=true;save();paint();
+    if(l==='4'){b.textContent='Done. Enjoy your films!';return;}
+    location.hash='lesson-'+(+l+1);});});
+
+  // video lengths in the menu come from the videos themselves; a video that is missing shows a quiet card
+  document.querySelectorAll('.player video').forEach(function(v){
+    function len(){var d=v.duration;if(!isFinite(d))return;var m=Math.floor(d/60),sec=Math.round(d%60);
+      var t=document.querySelector('[data-len="'+v.dataset.l+'"]');if(t)t.textContent=(m?m+' min ':'')+(sec?sec+' sec':'');}
+    if(v.readyState>=1)len();else v.addEventListener('loadedmetadata',len);
+    v.addEventListener('error',function(){v.parentNode.classList.add('missing');},true);});
+
+  // copy: clipboard first; if the browser refuses, select the text and say how to copy it
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-copy]');if(!b||b.disabled)return;
+    var id=b.getAttribute('data-copy'),el=document.getElementById(id),t=el.textContent.trim(),stl=document.getElementById('st-'+id);
+    function say(msg,bad){if(stl){stl.hidden=false;stl.textContent=msg;stl.classList.toggle('bad',!!bad);}}
+    function ok(){var o=b.dataset.label||b.textContent;b.dataset.label=o;b.textContent='Copied';setTimeout(function(){b.textContent=o;},1800);
+      say(id==='setup'?'Copied. Paste it into Claude.':'Copied. Paste it into Claude.');}
+    function sel(){var d=el.closest('details');if(d)d.open=true;var r=document.createRange();r.selectNodeContents(el);var x=getSelection();x.removeAllRanges();x.addRange(r);
+      say("Couldn't copy automatically. The text is selected: press Cmd+C (Ctrl+C on Windows).",true);}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok,sel);}else{sel();}
+  });
+
+  // Lesson 3: the message builder. Both the link and the family are needed before the message can be copied.
+  var FAM=[
+    {k:'woman-boy',g:'mom',r:'boy',t:'Mom \u2192 Son',a:'Her son, 8 to 12',m:'Mom gives it to her son.'},
+    {k:'woman-girl',g:'mom',r:'girl',t:'Mom \u2192 Daughter',a:'Her daughter, 8 to 12',m:'Mom gives it to her daughter.'},
+    {k:'woman-toddler',g:'mom',r:'toddler',t:'Mom \u2192 Toddler',a:'Her daughter, about 3',m:'Mom gives it to her little daughter, about 3 (Toddler).'},
+    {k:'woman-man',g:'mom',r:'dad',t:'Mom \u2192 Dad',a:'Her husband',m:'Mom gives it to Dad.'},
+    {k:'man-boy',g:'dad',r:'boy',t:'Dad \u2192 Son',a:'His son, 8 to 12',m:'Dad gives it to his son.'},
+    {k:'man-girl',g:'dad',r:'girl',t:'Dad \u2192 Daughter',a:'His daughter, 8 to 12',m:'Dad gives it to his daughter.'},
+    {k:'man-toddler',g:'dad',r:'toddler',t:'Dad \u2192 Toddler',a:'His daughter, about 3',m:'Dad gives it to his little daughter, about 3 (Toddler).'},
+    {k:'man-woman',g:'dad',r:'mom',t:'Dad \u2192 Mom',a:'His wife',m:'Dad gives it to Mom.'}];
+  var box=document.getElementById('fams'),pick=null;
+  FAM.forEach(function(f){var b=document.createElement('button');b.type='button';b.className='fam';b.setAttribute('role','radio');b.setAttribute('aria-checked','false');b.setAttribute('aria-label',f.t.replace('\u2192','gives to')+', '+f.a);b.dataset.k=f.k;
+    b.innerHTML='<img class="r" src="fam/'+f.r+'.jpg" alt="" loading="lazy"><span class="cap"><img class="g" src="fam/giver-'+f.g+'.jpg" alt=""><span class="ft">'+f.t+'<small>'+f.a+'</small></span></span>';
+    b.addEventListener('click',function(){pick=f;cus.value='';box.querySelectorAll('.fam').forEach(function(x){x.setAttribute('aria-checked',x===b?'true':'false');});build();});
+    box.appendChild(b);});
+  var inp=document.getElementById('bLink'),out=document.getElementById('first'),cb=document.getElementById('copyFirst'),note=document.getElementById('linkNote'),cus=document.getElementById('bCustom');
+  var NOTE=note.textContent;
+  // any Amazon store works: the link keeps its own store (the kit reads the page there), a short a.co / amzn.to link is
+  // passed on as it is (the kit opens it), and a bare ASIN means Amazon.com (tools/pg.py market_of, resolve_short)
+  var why='';
+  function link(v){v=(v||'').trim();why='';if(!v)return '';
+    if(/^[A-Z0-9]{10}$/i.test(v))return 'https://www.amazon.com/dp/'+v.toUpperCase();
+    var sh=v.match(/^(?:https?:\/\/)?(?:www\.)?((?:a\.co|amzn\.to|amzn\.eu|amzn\.asia)\/\S+)$/i);
+    if(sh)return 'https://'+sh[1];
+    var m=v.match(/amazon\.((?:com|co)\.[a-z]{2}|[a-z]{2,3})\/(?:.*\/)?(?:dp|gp\/product|gp\/aw\/d|d)\/([A-Z0-9]{10})(?:[/?#]|$)/i);
+    if(m)return 'https://www.amazon.'+m[1].toLowerCase()+'/dp/'+m[2].toUpperCase();
+    why="This doesn't look like an Amazon product link. Copy the address of your product page, or type its ASIN.";return null;}
+  function build(){var L=link(inp.value);
+    note.textContent=L===null?why:NOTE;
+    note.style.color=L===null?'var(--warn)':'';
+    var cv=(cus.value||'').trim().replace(/\.$/,'');
+    if(cv){box.querySelectorAll('.fam').forEach(function(x){x.setAttribute('aria-checked','false');});pick={m:'A custom family: '+cv+'. Show me the options first and tell me the cost.'};}
+    if(L&&pick){out.textContent='Make my Christmas film for this product:\n'+L+'\n'+pick.m;out.classList.remove('empty');cb.disabled=false;}
+    else{out.textContent=L===null?'Check your product link above.':(!L&&!pick?'Paste your product link and choose a family. Your message appears here.':(!L?'Now paste your product link.':'Now choose a family.'));out.classList.add('empty');cb.disabled=true;}
+    var stf=document.getElementById('st-first');if(stf)stf.hidden=true;}
+  inp.addEventListener('input',build);cus.addEventListener('input',function(){if(!cus.value.trim())pick=null;build();});build();
 })();
 </script>
 </body>
