@@ -125,3 +125,26 @@ Deno.test("the key: wrong or missing answers 401 and reads nothing from Stripe",
   assert(ok.headers.get("cache-control")!.includes("no-store"), "never cached");
   assert(ok.headers.get("access-control-allow-origin") === "https://jaygptpro.com", "cors");
 });
+
+Deno.test("a partner's orders are split out, and still counted in the totals", () => {
+  const now = U(2026, 11, 23, 12);
+  const s = [
+    session({ meta: { partner: "p1" }, qty: 2, amount: 19800 }),                  // partner, 2 films
+    session({ meta: { partner: "p1" }, skill: true, amount: 19900 }),             // partner, the Skill
+    session({ meta: { partner: "p1" }, amount: 9900, refunded: true }),           // partner, refunded in full
+    session({ meta: { partner: "p1", test: "true" } }),                           // partner test link
+    session({ meta: { partner: "p1" }, paid: false }),                            // opened, not paid
+    session({ amount: 9900 }),                                                        // Jay's own link
+  ];
+  const r = build({ sessions: s, promos: {}, vault: [], now });
+  const p = r.partners.find((x) => x.name === "p1")!;
+  assert(p.filmOrders === 1 && p.filmsPaid === 2 && p.filmUsd === 19800, "films: refunded and test orders drop out");
+  assert(p.skillOrders === 1 && p.skillUsd === 19900, "skill");
+  assert(p.refundedUsd === 9900, "the refund is shown");
+  assert(p.opened === 4, "checkouts opened: the test link does not count");
+  assert(p.orders.length === 3, "paid orders listed, the refunded one too");
+  assert(r.totals.filmUsd === 19800 + 9900 && r.totals.skillUsd === 19900, "totals still hold every real order");
+  assert(r.films.filter((f) => f.partner === "p1").length === 3, "his films are marked in the production list (2 paid + his test)");
+  const empty = build({ sessions: [session({ amount: 9900 })], promos: {}, vault: [], now });
+  assert(empty.partners.length === 1 && empty.partners[0].filmOrders === 0, "a known partner shows before the first order");
+});

@@ -17,6 +17,10 @@ export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
 export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";
 export const PROJECT = "christmas_video";
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
+// Partners who sell through their own copy of the page and their own Stripe links, which stamp
+// metadata.partner on every order (22.11.2026: partner p1, jaygptpro.com/xmas). Listed here so the
+// board shows a partner from day one, before the first order.
+export const PARTNERS = ["p1"];
 
 const H = 3600;
 // Israel is UTC+2 until 26.3.2027 and Pacific is UTC-8 until 14.3.2027, so for this launch
@@ -93,6 +97,7 @@ export type Order = {
   status: string;                  // Stripe: open, complete, expired
   failed: string;                  // a declined payment attempt, if any
   paymentIntent: string;
+  partner: string;                 // metadata.partner from a partner's own Stripe link, "" for Jay's links
   meta: Record<string, string>;
 };
 
@@ -134,7 +139,7 @@ export function classify(s: Any, promos: Record<string, Promo>): Order | null {
     email, name: String(s?.customer_details?.name || ""), films, skills, usd, refunded,
     fullyRefunded: !!charge?.refunded, bonus, vaultCoupon: coupons.includes(VAULT_COUPON), test,
     status: String(s?.status || ""), failed: !paid && pi?.last_payment_error ? String(pi.last_payment_error.message || pi.last_payment_error.code || "declined") : "",
-    paymentIntent: idOf(s?.payment_intent), meta,
+    paymentIntent: idOf(s?.payment_intent), partner: String(meta.partner || ""), meta,
   };
 }
 
@@ -199,7 +204,7 @@ export function build(input: Input) {
         vaultCoupon: o.vaultCoupon, email: o.email, name: o.name, paidAt: o.paidAt, card,
         clock: card ? (card.savedAt ? "card" : "payment") : null,
         start, deadline: start ? addBusinessHours(start, FILM_HOURS) : null,
-        test: o.test,
+        test: o.test, partner: o.partner,
         cardsUrl: `https://jaygptpro.com/christmas-video/thanks/?p=${total > 1 ? "pack" : "video"}&s=${o.id}`,
         stripeUrl: o.paymentIntent ? `https://dashboard.stripe.com/payments/${o.paymentIntent}` : "",
       });
@@ -222,13 +227,13 @@ export function build(input: Input) {
   // The Skill: who paid before the kit opens on Sunday 22.11 (they get the "kit is open" mail).
   // Jay's own tests are listed too, marked, so he sees them go through like a customer (20.11).
   const skill = all.filter((o) => o.paid && !o.fullyRefunded && o.kind === "skill").map((o) => ({
-    email: o.email, name: o.name, paidAt: o.paidAt, usd: net(o), beforeOpen: o.paidAt < KIT_OPEN_AT, order: o.id, test: o.test,
+    email: o.email, name: o.name, paidAt: o.paidAt, usd: net(o), beforeOpen: o.paidAt < KIT_OPEN_AT, order: o.id, test: o.test, partner: o.partner,
   })).sort((a, b) => a.paidAt - b.paidAt);
 
   // Checkouts opened since launch and not paid.
   const unpaid = real.filter((o) => !o.paid && o.created >= LAUNCH).map((o) => ({
     created: o.created, kind: o.kind, qty: o.kind === "film" ? o.films : o.skills, usd: o.usd, status: o.status,
-    email: o.email, failed: o.failed,
+    email: o.email, failed: o.failed, partner: o.partner,
   })).sort((a, b) => b.created - a.created);
 
   const refunds = real.filter((o) => o.paid && o.refunded > 0).map((o) => ({
@@ -241,9 +246,30 @@ export function build(input: Input) {
   })).sort((a, b) => b.paidAt - a.paidAt);
   const testOpens = all.filter((o) => o.test.length && !o.paid && o.created >= LAUNCH).length;
 
+  // Each partner's own sales (orders from their Stripe links). These orders are ALSO inside the
+  // day table and totals above; this only splits them out, by the same rules (real orders, USD,
+  // net of refunds, fully refunded orders drop out).
+  const partners = [...new Set([...PARTNERS, ...real.map((o) => o.partner).filter(Boolean)])].map((name) => {
+    const mine = real.filter((o) => o.partner === name);
+    const paid = mine.filter((o) => o.paid);
+    const kept = paid.filter((o) => !o.fullyRefunded);
+    const film = kept.filter((o) => o.kind === "film"), sk = kept.filter((o) => o.kind === "skill");
+    return {
+      name,
+      filmOrders: film.length, filmsPaid: film.reduce((a, o) => a + o.films, 0), filmUsd: film.reduce((a, o) => a + net(o), 0),
+      skillOrders: sk.length, skillUsd: sk.reduce((a, o) => a + net(o), 0),
+      refundedUsd: paid.reduce((a, o) => a + o.refunded, 0),
+      opened: mine.filter((o) => o.created >= LAUNCH).length,
+      orders: paid.map((o) => ({
+        paidAt: o.paidAt, kind: o.kind, qty: o.kind === "film" ? o.films : o.skills, usd: o.usd,
+        refunded: o.refunded, full: o.fullyRefunded, email: o.email, name: o.name,
+      })).sort((a, b) => b.paidAt - a.paidAt),
+    };
+  });
+
   return {
     generatedAt: now, launch: LAUNCH, kitOpenAt: KIT_OPEN_AT, bonusEnd: BONUS_END, filmHours: FILM_HOURS,
-    days, totals, films, vault, vaultError: input.vaultError || "", skill, unpaid, refunds, tests, testOpens,
+    days, totals, films, vault, vaultError: input.vaultError || "", skill, unpaid, refunds, tests, testOpens, partners,
   };
 }
 

@@ -90,6 +90,7 @@ h2{font:700 21px/1.25 var(--display);margin:0 0 4px;text-wrap:balance}
 .chip.vault{background:var(--ok-soft);color:var(--ok)}
 .chip.test{background:var(--test-soft);color:var(--test)}
 .chip.warn{background:var(--soon-soft);color:var(--soon)}
+.chip.partner{background:var(--line);color:var(--ink)}
 button.copy{font-size:13px;padding:2px 10px;border-radius:999px;background:transparent;color:var(--gold);border-color:var(--gold)}
 textarea.copybox{width:100%;font:13px/1.5 var(--mono);direction:ltr;text-align:left;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:6px}
 .toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 0 10px;cursor:pointer}
@@ -152,6 +153,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       <a href="#films">סרטים להכין <b id="j-films">·</b></a>
       <a href="#vault">Vault <b id="j-vault">·</b></a>
       <a href="#sales">מכירות</a>
+      <a href="#partners">שותפים <b id="j-partners">·</b></a>
       <a href="#funnel">מי שלא קנה</a>
       <a href="#skill">Skill <b id="j-skill">·</b></a>
       <a href="#tests">בדיקות</a>
@@ -180,6 +182,12 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
         <tbody></tbody><tfoot></tfoot>
       </table></div>
       <div id="refunds"></div>
+    </section>
+
+    <section id="partners" aria-labelledby="h-partners">
+      <h2 id="h-partners">שותפים</h2>
+      <p class="lead">מכירות שהגיעו דרך הדף של שותף (<bdi dir="ltr">jaygptpro.com/xmas</bdi>) ולינקי ה-Stripe שלו. בדולרים, אחרי החזרים, והזמנות בדיקה לא נספרות. המכירות האלה כבר בתוך "מכירות לפי יום" למעלה, כאן הן רק מופרדות.</p>
+      <div id="partner-body"></div>
     </section>
 
     <section id="funnel" aria-labelledby="h-funnel">
@@ -345,6 +353,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       if (f.bonus) h.append(chip('bonus', 'בונוס חינם'));
       if (f.bonusUnknown) h.append(chip('warn', 'בונוס עוד לא נרשם'));
       if (f.vaultCoupon) h.append(chip('vault', 'Vault'));
+      if (f.partner) h.append(chip('partner', 'דרך ' + pname(f.partner)));
       w.append(h);
       var who = el('div', 'who'); who.append(f.name ? bdi(f.name) : '', f.name ? ' · ' : '', bdi(f.email || 'בלי מייל'), ' · שילם ' + when(f.paidAt)); w.append(who);
       var p = el('div', 'prod');
@@ -422,8 +431,41 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       var it = el('div', 'item');
       it.append(el('span', 't', when(u.created)), el('span', null, (u.kind === 'film' ? (u.qty === 1 ? 'סרט אחד' : u.qty + ' סרטים') : 'Skill') + ' · ' + usd(u.usd)), el('span', 't', u.status === 'open' ? 'הקופה עוד פתוחה' : 'הקופה פגה'));
       if (u.email) it.append(bdi(u.email, 'm'));
+      if (u.partner) it.append(chip('partner', 'דרך ' + pname(u.partner)));
       if (u.failed) { var f = el('span', null, 'ניסה לשלם ונדחה: '); f.style.color = 'var(--late)'; f.append(bdi(u.failed)); it.append(f); }
       box.append(it);
+    });
+  }
+
+  /* ---------- partners ---------- */
+  var PARTNER_NAME = { p1: 'שותף 1' };
+  function pname(n){ return PARTNER_NAME[n] || n; }
+  function renderPartners(){
+    var body = $('partner-body'); body.textContent = '';
+    var list = data.partners || [];
+    $('j-partners').textContent = String(list.reduce(function(a, p){ return a + p.filmOrders + p.skillOrders; }, 0));
+    if (!list.length) { body.append(el('div', 'empty', 'אין שותפים.')); return; }
+    list.forEach(function(p){
+      body.append(el('h3', 'sub', pname(p.name)));
+      var box = el('div', 'tbl'), tb = el('table'), hd = el('thead'), hr = el('tr');
+      ['הזמנות סרט', 'סרטים ששולמו', 'הכנסות סרטים', 'הזמנות Skill', 'הכנסות Skill', 'סה״כ', 'הוחזר', 'קופות שנפתחו'].forEach(function(x){ hr.append(el('th', 'n', x)); });
+      hd.append(hr); tb.append(hd);
+      var bd = el('tbody'), tr = el('tr'), total = p.filmUsd + p.skillUsd;
+      cell(tr, String(p.filmOrders), 1, !p.filmOrders); cell(tr, String(p.filmsPaid), 1, !p.filmsPaid); cell(tr, usd(p.filmUsd), 1, !p.filmUsd);
+      cell(tr, String(p.skillOrders), 1, !p.skillOrders); cell(tr, usd(p.skillUsd), 1, !p.skillUsd); cell(tr, usd(total), 1, !total);
+      cell(tr, usd(p.refundedUsd), 1, !p.refundedUsd); cell(tr, String(p.opened), 1, !p.opened);
+      bd.append(tr); tb.append(bd); box.append(tb); body.append(box);
+      var l = el('div', 'list'); l.style.marginTop = '12px';
+      if (!p.orders.length) l.append(el('div', 'empty', 'עוד אין הזמנות דרך הדף של ' + pname(p.name) + '.'));
+      p.orders.forEach(function(o){
+        var it = el('div', 'item');
+        it.append(el('span', 't', when(o.paidAt)), el('span', null, (o.kind === 'film' ? (o.qty === 1 ? 'סרט אחד' : o.qty + ' סרטים') : 'Skill') + ' · ' + usd(o.usd)));
+        if (o.name) it.append(bdi(o.name));
+        it.append(bdi(o.email, 'm'));
+        if (o.refunded) it.append(el('span', 't', o.full ? 'הוחזר במלואו' : 'הוחזר ' + usd(o.refunded)));
+        l.append(it);
+      });
+      body.append(l);
     });
   }
 
@@ -452,7 +494,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       body.append(btn);
     }
     var l = el('div', 'list'); l.style.marginTop = '12px';
-    data.skill.forEach(function(s){ var it = el('div', 'item'); if (s.test.length) it.append(chip('test', 'TEST')); it.append(el('span', 't', when(s.paidAt)), s.name ? bdi(s.name) : '', bdi(s.email, 'm'), el('span', 't', usd(s.usd) + (s.beforeOpen ? '' : ' · אחרי הפתיחה'))); l.append(it); });
+    data.skill.forEach(function(s){ var it = el('div', 'item'); if (s.test.length) it.append(chip('test', 'TEST')); if (s.partner) it.append(chip('partner', 'דרך ' + pname(s.partner))); it.append(el('span', 't', when(s.paidAt)), s.name ? bdi(s.name) : '', bdi(s.email, 'm'), el('span', 't', usd(s.usd) + (s.beforeOpen ? '' : ' · אחרי הפתיחה'))); l.append(it); });
     body.append(l);
   }
   function selectText(node){ var r = document.createRange(); r.selectNodeContents(node); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
@@ -474,7 +516,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
 
   function render(){
     if (!data) return;
-    renderFilms(); renderVault(); renderSales(); renderFunnel(); renderSkill(); renderTests();
+    renderFilms(); renderVault(); renderSales(); renderPartners(); renderFunnel(); renderSkill(); renderTests();
   }
 
   /* ---------- loading ---------- */
