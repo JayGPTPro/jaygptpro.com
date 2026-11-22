@@ -1,8 +1,10 @@
 // Jay's private launch board for The Perfect Gift (jaygptpro.com/xmas-dash/).
 //
-// READ ONLY. This function never writes anywhere: every Stripe call it makes is a GET
-// (see index.ts, which has no other way to reach Stripe), it sends no mail and it has no
-// database. Everything it shows already lives in Stripe:
+// It reads Stripe, and writes ONE thing: Jay's "sent" mark on a film (22.11.2026, Jay asked for a
+// "sent" button). That mark goes on the order's own Checkout Session metadata (keys sent, sent2..)
+// or, for a Vault film claim, on the customer (xmas_vault_sent). index.ts can write nothing else:
+// no order, card, payment, price or customer field. It sends no mail and has no database.
+// Everything it shows lives in Stripe:
 //   - an order is a Checkout Session with metadata.project = "christmas_video";
 //   - its cards are on that session's metadata (films_01.., two cards per key), written by
 //     christmas-films; its free launch bonus is metadata.bonus = "1", frozen at payment;
@@ -87,6 +89,37 @@ export function readCards(meta: Record<string, string>, total: number): (Card | 
 }
 
 const idOf = (v: Any): string => (typeof v === "string" ? v : (v?.id || ""));
+
+// Which films of an order Jay marked as sent, and when: film number -> unix seconds.
+export function readSent(meta: Record<string, string>): Record<number, number> {
+  const out: Record<number, number> = {};
+  for (const [k, v] of Object.entries(meta || {})) {
+    if (!/^sent\d*$/.test(k)) continue;
+    for (const part of String(v || "").split(",")) {
+      const [n, t] = part.split(":");
+      const num = Number(n), at = parseInt(t || "", 36);
+      if (Number.isInteger(num) && num > 0 && at > 1e9) out[num] = at;
+    }
+  }
+  return out;
+}
+
+// The metadata patch that stores these marks: as few keys as fit (Stripe allows 500 characters a
+// value), and every sent key that is no longer needed is emptied (Stripe deletes a key set to "").
+export function sentPatch(old: Record<string, string>, marks: Record<number, number>): Record<string, string> {
+  const parts = Object.keys(marks).map(Number).sort((a, b) => a - b).map((n) => `${n}:${marks[n].toString(36)}`);
+  const values: string[] = [];
+  let cur = "";
+  for (const p of parts) {
+    if (cur && cur.length + 1 + p.length > 500) { values.push(cur); cur = ""; }
+    cur = cur ? cur + "," + p : p;
+  }
+  if (cur) values.push(cur);
+  const patch: Record<string, string> = {};
+  values.forEach((v, i) => { patch[i === 0 ? "sent" : "sent" + (i + 1)] = v; });
+  for (const k of Object.keys(old || {})) if (/^sent\d*$/.test(k) && !(k in patch)) patch[k] = "";
+  return patch;
+}
 
 export type Order = {
   id: string; kind: "film" | "skill"; created: number; paid: boolean; paidAt: number;
@@ -203,6 +236,7 @@ export function build(input: Input) {
   for (const o of all.filter((x) => x.paid && !x.fullyRefunded && x.kind === "film")) {
     const total = o.films + (o.bonus === "yes" ? 1 : 0);
     const cards = readCards(o.meta, total);
+    const sent = readSent(o.meta);
     for (let n = 1; n <= total; n++) {
       const card = cards[n - 1];
       const start = card ? (card.savedAt ?? o.paidAt) : null;
@@ -212,6 +246,7 @@ export function build(input: Input) {
         clock: card ? (card.savedAt ? "card" : "payment") : null,
         start, deadline: start ? addBusinessHours(start, FILM_HOURS) : null,
         test: o.test, partner: o.partner,
+        sentAt: sent[n] || null,
         cardsUrl: `https://jaygptpro.com/christmas-video/thanks/?p=${total > 1 ? "pack" : "video"}&s=${o.id}`,
         stripeUrl: o.paymentIntent ? `https://dashboard.stripe.com/payments/${o.paymentIntent}` : "",
       });
@@ -228,6 +263,7 @@ export function build(input: Input) {
       email, name: String(c?.name || ""), claimedAt: Math.floor(Date.parse(m.xmas_vault_at || "") / 1000) || Number(c?.created || 0),
       link: String(m.xmas_vault_link || ""), asin: asinOf(String(m.xmas_vault_link || "")), giver, receiver,
       test: email.endsWith("@jaygptpro.com") ? ["Jay's own email"] : [],
+      id: String(c?.id || ""), sentAt: Number(m.xmas_vault_sent) > 1e9 ? Number(m.xmas_vault_sent) : null,
     };
   }).sort((a, b) => a.claimedAt - b.claimedAt);
 
@@ -295,8 +331,43 @@ export type Deps = {
   promos: () => Promise<Record<string, Promo>>;
   vault: () => Promise<Any[]>;
   now: () => number;
+  // The sent mark. Reads give null when there is no such order or customer.
+  sessionMeta: (id: string) => Promise<Record<string, string> | null>;
+  setSessionMeta: (id: string, patch: Record<string, string>) => Promise<void>;
+  customerMeta: (id: string) => Promise<Record<string, string> | null>;
+  setCustomerMeta: (id: string, patch: Record<string, string>) => Promise<void>;
   keyHash?: string; // tests only; the deployed function always uses KEY_SHA256
 };
+
+const ORDER_ID = /^cs_(live|test)_[A-Za-z0-9]{20,200}$/;
+const CUSTOMER_ID = /^cus_[A-Za-z0-9]{6,60}$/;
+
+// Mark (or unmark) a film as sent. Only on a Christmas order, only film numbers 1..60, only the
+// sent keys; a Vault claim only on a customer who has one.
+async function mark(req: Request, b: Record<string, unknown>, deps: Deps): Promise<Response> {
+  const act = String(b.act || "");
+  const on = act === "sent" || act === "vault_sent";
+  if (act === "sent" || act === "unsent") {
+    const order = String(b.order || ""), n = Number(b.n);
+    if (!ORDER_ID.test(order) || !Number.isInteger(n) || n < 1 || n > 60) return json(req, { error: "bad film" }, 400);
+    const meta = await deps.sessionMeta(order);
+    if (!meta || meta.project !== PROJECT) return json(req, { error: "no such order" }, 404);
+    const marks = readSent(meta);
+    if (on) marks[n] = deps.now(); else delete marks[n];
+    await deps.setSessionMeta(order, sentPatch(meta, marks));
+    return json(req, { ok: true, order, n, sentAt: on ? marks[n] : null });
+  }
+  if (act === "vault_sent" || act === "vault_unsent") {
+    const customer = String(b.customer || "");
+    if (!CUSTOMER_ID.test(customer)) return json(req, { error: "bad customer" }, 400);
+    const meta = await deps.customerMeta(customer);
+    if (!meta || meta.xmas_vault !== "1") return json(req, { error: "no such claim" }, 404);
+    const at = on ? deps.now() : null;
+    await deps.setCustomerMeta(customer, { xmas_vault_sent: at ? String(at) : "" });
+    return json(req, { ok: true, customer, sentAt: at });
+  }
+  return json(req, { error: "unknown action" }, 400);
+}
 
 const ALLOWED = /^(https:\/\/(www\.)?jaygptpro\.com|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/;
 function cors(req: Request): Record<string, string> {
@@ -322,8 +393,13 @@ export async function sha256hex(s: string): Promise<string> {
 export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
   if (req.method !== "POST") return json(req, { error: "method not allowed" }, 405);
-  const key = (await req.text()).trim().slice(0, 200);
+  // The body is the key alone (read the board), or {"k": key, "act": ...} (the sent mark).
+  const body = (await req.text()).trim().slice(0, 2000);
+  let b: Record<string, unknown> | null = null;
+  if (body.startsWith("{")) { try { b = JSON.parse(body); } catch { b = null; } }
+  const key = String(b ? (b.k ?? "") : body).slice(0, 200);
   if (!key || (await sha256hex(key)) !== (deps.keyHash || KEY_SHA256)) return json(req, { error: "Unauthorized" }, 401);
+  if (b) return await mark(req, b, deps);
   const [sessions, promos] = await Promise.all([deps.sessions(), deps.promos()]);
   let vault: Any[] | null = null, vaultError = "";
   try { vault = await deps.vault(); } catch (e) { vaultError = String((e as Error)?.message || e); }

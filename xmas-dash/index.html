@@ -92,6 +92,13 @@ h2{font:700 21px/1.25 var(--display);margin:0 0 4px;text-wrap:balance}
 .chip.warn{background:var(--soon-soft);color:var(--soon)}
 .chip.partner{background:var(--line);color:var(--ink)}
 button.copy{font-size:13px;padding:2px 10px;border-radius:999px;background:transparent;color:var(--gold);border-color:var(--gold)}
+button.mark{font-size:13px;padding:3px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok);border-color:var(--ok);font-weight:700}
+button.mark.sure{background:var(--ok);color:var(--surface)}
+button.unmark{font-size:12.5px;padding:2px 10px;border-radius:999px;background:transparent;color:var(--muted)}
+details.done{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+details.done summary{cursor:pointer;font-weight:700;color:var(--ok)}
+details.done .list{margin-top:10px}
+.row.sent{opacity:.75}.row.sent .due .when{color:var(--ok)}
 textarea.copybox{width:100%;font:13px/1.5 var(--mono);direction:ltr;text-align:left;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:6px}
 .toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 0 10px;cursor:pointer}
 .toggle input{width:18px;height:18px;accent-color:var(--gold)}
@@ -223,7 +230,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
     </section>
 
   </main>
-  <footer class="wrap">הדף קורא מ-Stripe בלבד. הוא לא משנה שום הזמנה ולא שולח מיילים. מתעדכן לבד כל שתי דקות כשהוא פתוח.</footer>
+  <footer class="wrap">הדף קורא מ-Stripe, והדבר היחיד שהוא כותב הוא סימון "נשלח" על הסרט (על ההזמנה ב-Stripe). הוא לא משנה שום פרט אחר ולא שולח מיילים. מתעדכן לבד כל שתי דקות כשהוא פתוח.</footer>
 </div>
 
 <script>
@@ -317,27 +324,46 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
   }
 
   /* ---------- films ---------- */
+  /* ---------- the sent mark: two taps, then one write to Stripe ---------- */
+  function send(payload, btn){
+    btn.disabled = true; btn.textContent = 'שומר…';
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ k: key }, payload)), cache: 'no-store' })
+      .then(function(r){ return r.json().then(function(j){ if (!r.ok || !j.ok) throw new Error(j.error || r.status); }); })
+      .then(function(){ if (busy) setTimeout(load, 1500); else load(); })
+      .catch(function(e){ btn.disabled = false; btn.textContent = 'לא נשמר, נסה שוב'; $('stamp').classList.add('err'); $('stamp').textContent = 'הסימון לא נשמר (' + String(e.message || e).slice(0, 40) + ')'; });
+  }
+  function markButton(label, payload, cls){
+    var b = el('button', cls || 'mark', label); b.type = 'button'; var armed = null;
+    b.addEventListener('click', function(){
+      if (!armed) { b.classList.add('sure'); b.textContent = 'לחץ שוב לאישור'; armed = setTimeout(function(){ armed = null; b.classList.remove('sure'); b.textContent = label; }, 4000); return; }
+      clearTimeout(armed); armed = null; send(payload, b);
+    });
+    return b;
+  }
+
+  /* ---------- films ---------- */
   function renderFilms(){
-    var now = Date.now() / 1000, list = data.films;
+    var now = Date.now() / 1000, all = data.films;
+    var list = all.filter(function(f){ return !f.sentAt; }), done = all.filter(function(f){ return f.sentAt; });
     var tests = list.filter(function(f){ return f.test.length; }).length;
     var late = 0, soon = 0, nocard = 0;
     list.forEach(function(f){ if (!f.card) nocard++; else if (f.deadline < now) late++; else if (f.deadline - now < 12 * 3600) soon++; });
     $('clock-fallback').hidden = !list.some(function(f){ return f.clock === 'payment'; });
     var lead = $('films-lead'); lead.textContent = '';
-    if (!list.length) lead.textContent = 'אין כרגע סרט להכין. כל סרט ששולם, וגם סרט הבונוס, יופיע כאן עם הכרטיס והדדליין שלו, הקרוב ביותר למעלה.';
+    if (!list.length) lead.textContent = done.length ? 'כל הסרטים נמסרו. סרט חדש שישולם, וגם סרט הבונוס, יופיע כאן עם הכרטיס והדדליין שלו.' : 'אין כרגע סרט להכין. כל סרט ששולם, וגם סרט הבונוס, יופיע כאן עם הכרטיס והדדליין שלו, הקרוב ביותר למעלה.';
     else {
       lead.append(bdi(String(list.length)), list.length === 1 ? ' סרט מחכה' : ' סרטים מחכים');
       lead.append(tests ? (tests === list.length ? ', כולם מהזמנות הבדיקה שלך (מסומנים TEST).' : ', ' + tests + ' מהם מהזמנות הבדיקה שלך (מסומנים TEST).') : '.');
       if (late) { lead.append(' '); var b = el('b', null, late + ' באיחור.'); b.style.color = 'var(--late)'; lead.append(b); }
       if (soon) lead.append(' ' + soon + ' עם פחות מ-12 שעות.');
       if (nocard) lead.append(' ' + nocard + (nocard === 1 ? ' עוד בלי כרטיס, ולכן השעון שלו לא התחיל.' : ' עוד בלי כרטיס, ולכן השעון שלהם לא התחיל.'));
-      lead.append(' אין עדיין סימון "נשלח", אז סרט נשאר כאן גם אחרי שמסרת אותו.');
+      lead.append(' מסרת סרט? לחץ "סמן כנשלח" והוא עובר לרשימת הנמסרים.');
     }
     $('j-films').textContent = String(list.length);
     var byOrder = {};
-    list.forEach(function(f){ (byOrder[f.order] = byOrder[f.order] || []).push(f); });
+    all.forEach(function(f){ (byOrder[f.order] = byOrder[f.order] || []).push(f); });
     var box = $('film-rows'); box.textContent = '';
-    if (!list.length) { box.append(el('div', 'empty', 'אין סרטים להכין כרגע.')); return; }
+    if (!list.length) box.append(el('div', 'empty', done.length ? 'אין סרטים שמחכים. הכל נמסר.' : 'אין סרטים להכין כרגע.'));
     list.forEach(function(f){
       var row = el('article', 'row');
       var due = el('div', 'due');
@@ -365,6 +391,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       w.append(p);
       var order = byOrder[f.order];
       var l = el('div', 'links');
+      l.append(markButton('סמן כנשלח', { act: 'sent', order: f.order, n: f.n }));
       l.append(link(f.cardsUrl, 'דף הכרטיסים של ההזמנה'));
       if (f.stripeUrl) l.append(link(f.stripeUrl, 'התשלום ב-Stripe'));
       l.append(copyButton(order.length > 1 ? 'העתק מייל מסירה (' + order.length + ' סרטים)' : 'העתק מייל מסירה', deliveryEmail(order), w));
@@ -372,19 +399,35 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       w.append(l);
       row.append(due, w); box.append(row);
     });
+    if (done.length) {
+      var d = el('details', 'done'); d.append(el('summary', null, 'נמסרו (' + done.length + ')'));
+      var dl = el('div', 'list');
+      done.slice().sort(function(a, b){ return b.sentAt - a.sentAt; }).forEach(function(f){
+        var it = el('div', 'item');
+        it.append(el('span', 't', 'נמסר ' + when(f.sentAt)), el('span', null, 'סרט ' + f.n + ' מתוך ' + f.total + (f.bonus ? ' · בונוס' : '')));
+        if (f.test.length) it.append(chip('test', 'TEST'));
+        it.append(f.name ? bdi(f.name) : '', bdi(f.email || '', 'm'));
+        if (f.card && f.card.asin) it.append(link(f.card.link, f.card.asin, 'asin'));
+        it.append(markButton('בטל סימון', { act: 'unsent', order: f.order, n: f.n }, 'unmark'));
+        dl.append(it);
+      });
+      d.append(dl); box.append(d);
+    }
   }
 
   /* ---------- vault ---------- */
   function renderVault(){
     var box = $('vault-rows'); box.textContent = '';
     var now = Date.now() / 1000, films = data.vault || [], skills = data.vaultSkill || [];
-    var real = films.filter(function(v){ return !v.test.length; }).length + skills.filter(function(v){ return !v.test.length && !v.shared; }).length;
+    var real = films.filter(function(v){ return !v.test.length && !v.sentAt; }).length + skills.filter(function(v){ return !v.test.length && !v.shared; }).length;
     $('j-vault').textContent = String(real);
     if (data.vaultError) box.append(el('div', 'empty', 'לא הצלחתי לקרוא את בקשות הסרט מה-Vault מ-Stripe עכשיו. נסה לרענן. (' + data.vaultError.slice(0, 120) + ')'));
     if (!films.length && !skills.length && !data.vaultError) { box.append(el('div', 'empty', 'אין עדיין בקשות מחברי Vault.')); return; }
     films.forEach(function(v){
-      var row = el('article', 'row wait');
-      var due = el('div', 'due'); due.append(el('span', 'when', 'בדוק חברות'), el('span', 'left', 'הוגש לפני ' + hoursText(now - v.claimedAt)));
+      var row = el('article', v.sentAt ? 'row sent' : 'row wait');
+      var due = el('div', 'due');
+      if (v.sentAt) due.append(el('span', 'when', 'נמסר'), el('span', 'left', when(v.sentAt)));
+      else due.append(el('span', 'when', 'בדוק חברות'), el('span', 'left', 'הוגש לפני ' + hoursText(now - v.claimedAt)));
       var w = el('div', 'what');
       var h = el('div', 'h'); h.append(el('span', null, 'סרט Vault חינם')); if (v.test.length) h.append(chip('test', 'TEST')); w.append(h);
       var who = el('div', 'who'); who.append(v.name ? bdi(v.name) : '', v.name ? ' · ' : '', bdi(v.email), ' · הוגש ' + when(v.claimedAt)); w.append(who);
@@ -392,6 +435,7 @@ footer{color:var(--muted);font-size:13px;padding-block:0 32px}
       if (v.link) p.append(link(v.link, v.asin || v.link, 'asin'));
       if (v.giver) p.append(el('span', null, roles(v.giver, v.receiver)));
       w.append(p);
+      if (v.id) { var vl = el('div', 'links'); vl.append(v.sentAt ? markButton('בטל סימון', { act: 'vault_unsent', customer: v.id }, 'unmark') : markButton('סמן כנשלח', { act: 'vault_sent', customer: v.id })); w.append(vl); }
       row.append(due, w); box.append(row);
     });
     skills.forEach(function(v){
