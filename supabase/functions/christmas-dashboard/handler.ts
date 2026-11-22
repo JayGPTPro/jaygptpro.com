@@ -35,7 +35,7 @@ export const LAUNCH = Date.UTC(2026, 10, 19, 22, 0, 0) / 1000;      // Fri 20.11
 export const FETCH_FROM = Date.UTC(2026, 10, 17, 0, 0, 0) / 1000;   // the first Christmas links
 export const BONUS_START = Date.UTC(2026, 10, 19, 8, 0, 0) / 1000;  // as in christmas-films
 export const BONUS_END = Date.UTC(2026, 10, 24, 8, 0, 0) / 1000;
-export const KIT_OPEN_AT = Date.UTC(2026, 10, 22, 18, 0, 0) / 1000; // as in stripe-webhook
+export const KIT_OPEN_AT = Date.UTC(2026, 10, 22, 15, 20, 0) / 1000; // as in stripe-webhook
 // The promise to the buyer: each film within 48 hours, counted in business days, from the
 // moment its card is saved (buyer mail in stripe-webhook, "Due" row in christmas-films).
 export const FILM_HOURS = 48;

@@ -9,7 +9,7 @@ import "./cohort-calendar.js";
 
 // 20.11.2026 (Jay): the Skill opens Sunday 22.11 at 1 PM New York (18:00 UTC). Until then the buyer mail says when it
 // opens; from then on it is the normal "your kit is ready" mail. The kit page and the thanks page switch at the same minute.
-export const KIT_OPEN_AT = Date.UTC(2026, 10, 22, 18, 0, 0);
+export const KIT_OPEN_AT = Date.UTC(2026, 10, 22, 15, 20, 0); // 22.11 (Jay): opened early, "whoever buys from now, it is open"
 const WonkaCalendar = (globalThis as any).WonkaCalendar;
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

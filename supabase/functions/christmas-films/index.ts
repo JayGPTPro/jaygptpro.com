@@ -159,8 +159,7 @@ Deno.serve((req) =>
         cancel_url: "https://jaygptpro.com/christmas-video/#order",
         "metadata[project]": "christmas_video",
         "metadata[offer]": price === SKILL_PRICE_BF ? "bf_skill_199" : "skill_299",
-        // TEMP until Sun 22.11 (Skill hold). Was: "Your kit opens right after you pay, and the link is in your email too."
-        "custom_text[submit][message]": "Your Skill and training open on Sunday, November 22. The link will be in your email.",
+        "custom_text[submit][message]": "Your kit opens right after you pay, and the link is in your email too.",
         customer_creation: "if_required",
       });
       if (ref) body.set("client_reference_id", ref);
