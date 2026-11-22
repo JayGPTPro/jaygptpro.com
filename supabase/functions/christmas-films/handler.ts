@@ -32,8 +32,8 @@ export const SKILL_PRICE_FULL = "price_1Uc3M6RqcDuiISNTdJqMRrRa";  // $299
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
 // The Vault gifts are CLOSED until November's Vault episode goes up (Jay, 20.11.2026): every
-// Vault request is refused here, on the server, so a direct POST stops too. While closed, only
-// Jay's own addresses (@jaygptpro.com) pass, so the whole path can be tested live before it opens.
+// Vault film request is refused here, on the server, so a direct POST stops too. While closed,
+// only Jay's own addresses (@jaygptpro.com) pass, so the path can be tested live before it opens.
 // The public orders, the cards and the bonus do not pass through this switch.
 export const VAULT_OPEN = false;
 export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts open next week with November's Vault episode. Watch the Vault for the date.";
@@ -69,14 +69,7 @@ export type Deps = {
   resolveShort?: (url: string) => Promise<string>;             // where an amzn.to / a.co link leads
   now: () => number;                                           // unix seconds
   vaultOpen?: boolean;                                         // tests only; the deployed function uses VAULT_OPEN
-  // The AI Vault gifts (see "AI Vault gifts" below)
-  linkSecret: string;                                          // HMAC key of the personal links ("" = links off)
-  vaultMember: (email: string) => Promise<boolean | null>;     // on the member list? null: no list loaded
-  vaultFilm: (email: string) => Promise<VaultCard | null>;     // the free film this email claimed, if any
-  vaultSkillSession: (email: string) => Promise<string>;       // its completed free-Skill checkout, "" if none
-  vaultSkillCheckout: (price: string, email: string, success: string, cancel: string) => Promise<string>; // a $0 Checkout URL
-  mailTo: (to: string, subject: string, html: string) => Promise<boolean>; // a mail to a member
-  askAllowed: (email: string, now: number) => boolean;         // the ask limiter (makeAskLimiter)
+  askAllowed: (email: string, now: number) => boolean;         // the Vault film limiter (makeAskLimiter)
 };
 
 // 1 when this order carries the launch-day bonus film, else 0. Decided once and written to
@@ -183,66 +176,21 @@ export function receiverLabel(giver: string, receiver: string): string {
   return WHO[receiver] || receiver;
 }
 
-// AI Vault gifts (Jay, 20.11.2026): every active Vault member gets the Christmas Film Skill with
-// its training AND one Done For You film for one product, free, from November's Vault episode.
-//
-// Membership is proven by the member's own inbox. The page only ever ASKS for a link; the personal
-// link goes to the email, never to the screen, so knowing a member's address is not enough.
-//   - On the member list (a hashed Top Dog export in private Storage): the link is mailed at once.
-//   - Not on the list, or no list loaded: Jay gets a mail with an Approve button, and the member
-//     gets the link only after he presses it. Both answers look the same to whoever asked, so the
-//     page never tells a stranger whether an address is a member.
-// The personal link carries a signed token (email, name, expiry). With it the member takes the Skill
-// (a $0 Stripe Checkout with coupon VAULT_FREE_SKILL, email locked, so christmas-kit, the buyer mail
-// and the Sunday opening all work as for a paid order) and/or one film (one per email, recorded on
-// the Stripe customer as before). The film never stacks with the public bonus film, either way.
+// AI Vault gifts (Jay, 20-22.11.2026): from November's Vault episode, every Vault member gets the
+// Christmas Film Skill with its training and one Done For You film for one product, free.
+// OPEN by Jay's choice (22.11): no email check, so members who joined with another address are
+// never turned away. The Vault has ONE kit link of its own (a $0 Checkout with coupon
+// VAULT_FREE_SKILL and metadata.offer "vault_skill"), posted only inside the Vault on Circle; it
+// opens the kit page in its Vault mode, which holds the free-film form. A film request must carry
+// that kit code, so reading this public code alone opens nothing. One film per email, recorded
+// first and atomically, and never together with the public bonus film (in either order).
 export const VAULT_SKILL_COUPON = "VAULT_FREE_SKILL";
-export const VAULT_PAGE = "https://jaygptpro.com/christmas-video/vault/";
-export const KIT_PAGE = "https://jaygptpro.com/christmas-video/kit/?s=";
-export const MEMBER_LINK_DAYS = 21;
-export const APPROVE_LINK_DAYS = 14;
-const TEST_EMAIL = /@jaygptpro\.com$/i;
+export const VAULT_OFFER = "vault_skill";
+const TEST_EMAIL = /@jaygptpro\.com$/i;   // Jay's own addresses pass while VAULT_OPEN is false, for live tests
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/i;
-const VAULT_ACTIONS = ["ask", "approve", "me", "skill", "film"];
 
-export type VaultToken = { e: string; n: string; p: "member" | "approve"; x: number };
-const enc = new TextEncoder();
-function b64u(bytes: Uint8Array): string {
-  let bin = "";
-  for (const c of bytes) bin += String.fromCharCode(c);
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-function unb64u(s: string): Uint8Array {
-  s = s.replace(/-/g, "+").replace(/_/g, "/");
-  while (s.length % 4) s += "=";
-  return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-}
-async function hmac(secret: string, data: string): Promise<string> {
-  const k = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  return b64u(new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(data))));
-}
-export async function makeToken(secret: string, t: VaultToken): Promise<string> {
-  const body = b64u(enc.encode(JSON.stringify(t)));
-  return body + "." + await hmac(secret, body);
-}
-export async function readToken(secret: string, raw: unknown, purpose: VaultToken["p"], now: number): Promise<VaultToken | null> {
-  if (!secret || typeof raw !== "string" || raw.length > 800) return null;
-  const [body, sig, extra] = raw.split(".");
-  if (!body || !sig || extra !== undefined) return null;
-  const want = await hmac(secret, body);
-  if (want.length !== sig.length) return null;
-  let diff = 0;
-  for (let i = 0; i < want.length; i++) diff |= want.charCodeAt(i) ^ sig.charCodeAt(i);
-  if (diff) return null;
-  let t: Record<string, unknown>;
-  try { t = JSON.parse(new TextDecoder().decode(unb64u(body))); } catch { return null; }
-  if (t?.p !== purpose || typeof t?.e !== "string" || !EMAIL.test(t.e) || !(Number(t?.x) > now)) return null;
-  return { e: t.e, n: String(t.n || ""), p: purpose, x: Number(t.x) };
-}
-
-// Asking for a link mails someone (the member, or Jay), and anyone can call this function. So one
-// mail per email per 5 minutes, and at most 1000 asks an hour per server instance; extra asks get
-// the same answer and send nothing. In memory: enough to stop a script flooding one inbox.
+// Each film request mails Jay, and anyone can call this function. One request per email per
+// 5 minutes and at most 1000 an hour per server instance, so a script cannot flood his inbox.
 export function makeAskLimiter(perEmailSec = 300, perHour = 1000) {
   const last = new Map<string, number>();
   let hourStart = -Infinity, count = 0;
@@ -258,116 +206,39 @@ export function makeAskLimiter(perEmailSec = 300, perHour = 1000) {
   };
 }
 
-const btn = (href: string, label: string) =>
-  `<p><a href="${esc(href)}" style="display:inline-block;background:#d9ae63;color:#1a1206;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">${esc(label)}</a></p>`;
-async function mailMemberLink(email: string, name: string, deps: Deps): Promise<boolean> {
-  const t = await makeToken(deps.linkSecret, { e: email, n: name, p: "member", x: deps.now() + MEMBER_LINK_DAYS * 86400 });
-  // No name in the greeting: whoever asked typed it, and it may not be the member.
-  const html = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
-    + `<p>Hi,</p>`
-    + `<p>Here are your two Christmas gifts from the AI Vault: the Christmas Film Skill with its full training, and one Done For You Christmas film for one of your products.</p>`
-    + btn(VAULT_PAGE + "#t=" + t, "Open my gifts")
-    + `<p>This link is yours alone, so please keep it to yourself. It works for ${MEMBER_LINK_DAYS} days; after that, just ask for a new one on the same page.</p>`
-    + `<p>Jay</p></div>`;
-  return await deps.mailTo(email, "Your AI Vault Christmas gifts", html);
-}
-const sameAnswer = () => json({ ok: true, message: "Check your inbox. Your private link is on its way to the email you use in the Vault. If it is not there within a few minutes, we are checking your membership by hand, and it arrives within a day." });
-
 async function vault(b: Record<string, unknown>, deps: Deps): Promise<Response> {
-  const action = String(b?.vault);
-  if (!VAULT_ACTIONS.includes(action)) {
-    // the old one-card form (vault: true) had no membership proof; it is gone
-    return json({ error: "closed", message: VAULT_CLOSED_MESSAGE }, 403);
-  }
-  if (!deps.linkSecret) throw new Error("vault: no link secret");
-  const open = deps.vaultOpen ?? VAULT_OPEN;
-  const closedFor = (email: string) => !open && !TEST_EMAIL.test(email);
   const closed = () => json({ error: "closed", message: VAULT_CLOSED_MESSAGE }, 403);
-  const now = deps.now();
-
-  if (action === "ask") {
-    const email = String(b?.email || "").trim().toLowerCase();
-    const name = String(b?.name || "").trim().replace(/\s+/g, " ").slice(0, 80);
-    if (!name) return json({ error: "name", message: "Please write your name." }, 400);
-    if (!EMAIL.test(email)) return json({ error: "email", message: "Please write the email you use in the Vault." }, 400);
-    if (closedFor(email)) return closed();
-    if (!deps.askAllowed(email, now)) return sameAnswer();
-    const listed = await deps.vaultMember(email);
-    if (listed === true) {
-      if (!await mailMemberLink(email, name, deps)) return json({ error: "mail", message: "That did not go through. Please write to info@jaygptpro.com." }, 502);
-      return sameAnswer();
-    }
-    const t = await makeToken(deps.linkSecret, { e: email, n: name, p: "approve", x: now + APPROVE_LINK_DAYS * 86400 });
-    const rows: [string, string][] = [
-      ["Email", email],
-      ["Name", name],
-      ["Member list", listed === null ? "No member list is loaded, so every request comes to you." : "NOT on the member list. Maybe they joined with another email."],
-      ["If this is an active Vault member", "Press Approve. Their private link goes to this email, and only to it."],
-      ["If not", "Ignore this mail. Nothing is sent."],
-    ];
-    const html = `<h2>AI Vault gifts: approve ${esc(email)}?</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
-      + rows.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("") + "</table>"
-      + btn(VAULT_PAGE + "#approve=" + t, "Approve and send their link");
-    // No reply-to here: a reply quotes the Approve button, and the asker must never hold it.
-    if (!await deps.mail(`Vault check: ${email} asks for the Christmas gifts`, html, "")) {
-      return json({ error: "mail", message: "That did not go through. Please write to info@jaygptpro.com." }, 502);
-    }
-    return sameAnswer();
-  }
-
-  if (action === "approve") {
-    const t = await readToken(deps.linkSecret, b?.t, "approve", now);
-    if (!t) return json({ error: "link", message: "This approve link is not valid or has expired." }, 400);
-    if (closedFor(t.e)) return closed();
-    if (!await mailMemberLink(t.e, t.n, deps)) return json({ error: "mail", message: "The mail to the member did not go out. Try again in a minute." }, 502);
-    return json({ ok: true, email: t.e, name: t.n });
-  }
-
-  // Everything below is the member, holding the personal link from their inbox.
-  const t = await readToken(deps.linkSecret, b?.t, "member", now);
-  if (!t) return json({ error: "link", message: "This private link is not valid or has expired. Ask for a new one below." }, 401);
-  if (closedFor(t.e)) return closed();
-  const email = t.e;
-
-  if (action === "me") {
-    const [kitSession, film, bonus] = await Promise.all([deps.vaultSkillSession(email), deps.vaultFilm(email), deps.bonusOrder(email)]);
-    return json({
-      ok: true, email, name: t.n,
-      skill: kitSession ? { claimed: true, kit: KIT_PAGE + kitSession } : { claimed: false },
-      film: film ? { claimed: true, link: film.link, giver: film.giver, receiver: film.receiver } : { claimed: false, bonus },
-    });
-  }
-
-  if (action === "skill") {
-    const had = await deps.vaultSkillSession(email);
-    if (had) return json({ error: "claimed", message: "Your free Skill is already yours.", kit: KIT_PAGE + had }, 409);
-    const url = await deps.vaultSkillCheckout(now < BF_END ? SKILL_PRICE_BF : SKILL_PRICE_FULL, email,
-      VAULT_PAGE + "?k={CHECKOUT_SESSION_ID}", VAULT_PAGE + "#t=" + String(b.t));
-    return json({ ok: true, url });
-  }
-
-  // action === "film": one free film for one product, never with the public bonus film
+  if (b?.vault !== "film") return closed();   // the older Vault forms are gone
+  const email = String(b?.email || "").trim().toLowerCase();
+  const name = String(b?.name || "").trim().replace(/\s+/g, " ").slice(0, 80);
   const giver = String(b?.giver || ""), receiver = String(b?.receiver || "");
+  if (!name) return json({ error: "name", message: "Please write your name." }, 400);
+  if (!EMAIL.test(email)) return json({ error: "email", message: "Please write your email, so your film can reach you." }, 400);
+  if (!(deps.vaultOpen ?? VAULT_OPEN) && !TEST_EMAIL.test(email)) return closed();
   const link = await cleanProduct(b?.link, deps);
   if (!link) return json({ error: "link", message: "Please paste your product's Amazon link or its ASIN." }, 400);
   if (!(GIVERS as readonly string[]).includes(giver)) return json({ error: "giver", message: "Pick who gives the gift." }, 400);
   if (!(RECEIVERS as readonly string[]).includes(receiver)) return json({ error: "receiver", message: "Pick who receives it." }, 400);
-  const taken = () => json({ error: "claimed", message: "Your free Vault film is already on its way. More films are $99 each on the film page." }, 409);
+  const noKit = () => json({ error: "kit", message: "Open this form from the Vault's kit link." }, 403);
+  if (!validSession(b?.s)) return noKit();
+  if (!deps.askAllowed(email, deps.now())) return json({ error: "slow", message: "We got your request a moment ago. If you need to change it, write to info@jaygptpro.com." }, 429);
+  const kit = await deps.order(b.s as string);
+  if (!kit || !kit.paid || kit.metadata.offer !== VAULT_OFFER) return noKit();
+  const taken = () => json({ error: "claimed", message: "This email already has its free Vault film on the way. More films are $99 each on the film page." }, 409);
   if (await deps.vaultClaimed(email)) return taken();
   if (await deps.bonusOrder(email)) {
-    return json({ error: "bonus", message: "Your order with this email already includes a free bonus film, so the Vault film does not apply. More films are $99 each on the film page." }, 409);
+    return json({ error: "bonus", message: "Your film order with this email already includes a free bonus film, so the Vault film does not add to it. More films are $99 each on the film page." }, 409);
   }
-  const name = t.n || email;
   // Recorded FIRST and atomically, so two requests at the same moment cannot both win a film.
   // A recorded claim is on Jay's board even if the mail below fails.
   if (!await deps.vaultClaimOnce(email, { name, link, giver, receiver })) return taken();
   const rows: [string, string][] = [
-    ["Vault email", email],
+    ["Email", email],
     ["Name", name],
     ["Product link", link],
     ["Who gives", WHO[giver]],
     ["Who receives", receiverLabel(giver, receiver)],
-    ["Membership", "Checked: they used the private link that was mailed to this address."],
+    ["From", "The Vault kit page (the open link posted in the Vault). One free film per email; not checked against a member list."],
     ["Due", "Within 2 business days of this mail."],
   ];
   const html = `<h2>AI Vault free film: ready to make</h2><table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`

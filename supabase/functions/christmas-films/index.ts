@@ -1,42 +1,15 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { handle, makeAskLimiter, VIDEO_PRODUCT, VAULT_COUPON, VAULT_SKILL_COUPON, BONUS_START, BONUS_END, SKILL_PRICE_BF, type Order } from "./handler.ts";
+import { handle, makeAskLimiter, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, SKILL_PRICE_BF, type Order } from "./handler.ts";
 
 const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const resendKey = Deno.env.get("RESEND_API_KEY") || "";
 const NOTIFY_TO = "info@jaygptpro.com";
-const sbUrl = Deno.env.get("SUPABASE_URL") || "";
-const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 async function sha256hex(s: string): Promise<string> {
   const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
   return Array.from(d, (b) => b.toString(16).padStart(2, "0")).join("");
 }
-// The Vault's personal links are signed (HMAC) with a key made from the Stripe secret: no new secret
-// to set, and rotating the Stripe key retires every link, which is what you want then anyway.
-const linkSecret = stripeKey ? "christmas-vault-link-v1:" + stripeKey : "";
 const askAllowed = makeAskLimiter();
-
-// The Vault member list: a Top Dog export, stored as SHA-256 of each lowercased email in the
-// PRIVATE bucket christmas-vault (members.json = { "sha256": [...] }). No file: null, and every
-// request goes to Jay to approve. Any read failure counts as no list, never as "not a member".
-const MEMBERS_PATH = "christmas-vault/members.json";
-let members: { at: number; set: Set<string> | null } = { at: 0, set: null };
-async function memberSet(): Promise<Set<string> | null> {
-  if (Date.now() - members.at < 60_000) return members.set;
-  let set: Set<string> | null = null;
-  try {
-    const res = await fetch(`${sbUrl}/storage/v1/object/authenticated/${MEMBERS_PATH}`, { headers: { Authorization: `Bearer ${sbKey}`, apikey: sbKey } });
-    if (res.ok) {
-      const list = (await res.json())?.sha256;
-      if (Array.isArray(list) && list.length) set = new Set(list.map((x: unknown) => String(x).toLowerCase()));
-    } else {
-      await res.body?.cancel();
-      if (res.status !== 400 && res.status !== 404) console.error("vault members list:", res.status);
-    }
-  } catch (e) { console.error("vault members list error:", e); }
-  members = { at: Date.now(), set };
-  return set;
-}
 
 async function resend(to: string, subject: string, html: string, replyTo?: string): Promise<boolean> {
   if (!resendKey) { console.error("christmas-films: RESEND_API_KEY is not set"); return false; }
@@ -188,49 +161,7 @@ Deno.serve((req) =>
       if (!res.ok) throw new Error(`stripe save ${res.status}: ${await res.text()}`);
     },
     mail: (subject, html, replyTo) => resend(NOTIFY_TO, subject, html, replyTo),
-    mailTo: (to, subject, html) => resend(to, subject, html, NOTIFY_TO),
-    linkSecret,
     askAllowed,
-    vaultMember: async (email) => {
-      const set = await memberSet();
-      return set ? set.has(await sha256hex(email.trim().toLowerCase())) : null;
-    },
-    vaultFilm: async (email) => {
-      const res = await stripe(`customers?${new URLSearchParams({ email, limit: "100" })}`);
-      if (!res.ok) throw new Error(`stripe customers ${res.status}`);
-      const c = ((await res.json())?.data || []).find((c: any) => c?.metadata?.xmas_vault === "1");
-      if (!c) return null;
-      const [giver = "", receiver = ""] = String(c.metadata.xmas_vault_roles || "").split(" to ");
-      return { name: String(c.name || ""), link: String(c.metadata.xmas_vault_link || ""), giver, receiver };
-    },
-    // The member's completed free-Skill checkout: its id is the key of their kit page.
-    vaultSkillSession: async (email) => {
-      const q = new URLSearchParams({ limit: "100", status: "complete", "customer_details[email]": email, "created[gte]": String(BONUS_START - 86400) });
-      const res = await stripe(`checkout/sessions?${q}`);
-      if (!res.ok) throw new Error(`stripe list ${res.status}`);
-      const x = ((await res.json())?.data || []).find((x: any) => x?.metadata?.offer === "vault_skill" && x?.payment_status === "paid");
-      return x ? String(x.id) : "";
-    },
-    // $0 with coupon VAULT_FREE_SKILL (100% off, Skill product only, no promotion code: only this
-    // function can apply it). Stripe needs no card and answers payment_status "paid", so
-    // christmas-kit, the webhook's buyer mail and the Sunday opening treat it like a paid order.
-    vaultSkillCheckout: async (price, email, success, cancel) => {
-      const body = new URLSearchParams({
-        mode: "payment",
-        "line_items[0][price]": price, "line_items[0][quantity]": "1",
-        "discounts[0][coupon]": VAULT_SKILL_COUPON,
-        customer_email: email,
-        success_url: success,
-        cancel_url: cancel,
-        "metadata[project]": "christmas_video",
-        "metadata[offer]": "vault_skill",
-        "custom_text[submit][message]": "Free with your AI Vault membership. Your kit link arrives in your email.",
-        customer_creation: "if_required",
-      });
-      const res = await stripe("checkout/sessions", body);
-      if (!res.ok) throw new Error(`stripe vault checkout ${res.status}: ${await res.text()}`);
-      return String((await res.json())?.url || "");
-    },
   }).catch((e) => {
     console.error("christmas-films error:", e);
     return new Response(JSON.stringify({ error: "server" }), { status: 500, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" } });
