@@ -1,4 +1,4 @@
-import { addBusinessHours, build, classify, handle, ilDay, readCards, sha256hex, KIT_OPEN_AT, LAUNCH, SKILL_PRODUCT, VIDEO_PRODUCT, type Deps } from "./handler.ts";
+import { addBusinessHours, build, classify, handle, ilDay, readCards, readSent, sentPatch, sha256hex, KIT_OPEN_AT, LAUNCH, SKILL_PRODUCT, VIDEO_PRODUCT, type Deps } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const U = (y: number, mo: number, d: number, h = 0, mi = 0) => Date.UTC(y, mo - 1, d, h, mi) / 1000;
 
@@ -112,7 +112,8 @@ Deno.test("Vault claims come from the customer metadata", () => {
 
 Deno.test("the key: wrong or missing answers 401 and reads nothing from Stripe", async () => {
   let calls = 0;
-  const deps: Deps = { sessions: () => { calls++; return Promise.resolve([]); }, promos: () => Promise.resolve({}), vault: () => Promise.resolve([]), now: () => 0, keyHash: await sha256hex("right-key") };
+  const deps: Deps = { sessions: () => { calls++; return Promise.resolve([]); }, promos: () => Promise.resolve({}), vault: () => Promise.resolve([]), now: () => 0, keyHash: await sha256hex("right-key"),
+    sessionMeta: () => Promise.resolve(null), setSessionMeta: () => { calls++; return Promise.resolve(); }, customerMeta: () => Promise.resolve(null), setCustomerMeta: () => { calls++; return Promise.resolve(); } };
   const post = (body: string) => new Request("https://x/f", { method: "POST", body, headers: { origin: "https://jaygptpro.com" } });
   assert((await handle(post("wrong"), deps)).status === 401, "wrong key");
   assert((await handle(post("{}"), deps)).status === 401, "the deploy probe's garbage body");
@@ -170,4 +171,56 @@ Deno.test("the Vault's one shared kit link is its own row, not a test and not a 
   const b = build({ sessions: [shared], promos: {}, vault: [], now: U(2026, 11, 22, 12) });
   assert(b.vaultSkill.length === 1 && b.vaultSkill[0].shared && b.vaultSkill[0].test.length === 0, "shared row, not TEST");
   assert(b.totals.skillOrders === 0 && b.skill.length === 0 && b.tests.length === 0 && b.unpaid.length === 0, "no sale, no buyer, no test row");
+});
+
+Deno.test("sent marks: stored compactly, read back, overflow to a second key, old keys emptied", () => {
+  const t0 = U(2026, 11, 22, 15);
+  const p1 = sentPatch({}, { 2: t0, 1: t0 + 60 });
+  assert(p1.sent === "1:" + (t0 + 60).toString(36) + ",2:" + t0.toString(36) && Object.keys(p1).length === 1, "one key, sorted");
+  const back = readSent(p1);
+  assert(back[1] === t0 + 60 && back[2] === t0, "read back");
+  const many: Record<number, number> = {};
+  for (let n = 1; n <= 60; n++) many[n] = t0 + n;
+  const p2 = sentPatch({}, many);
+  assert(p2.sent.length <= 500 && p2.sent2 && p2.sent2.length <= 500, "60 films fit in two keys");
+  assert(Object.keys(readSent(p2)).length === 60, "all 60 read back");
+  const p3 = sentPatch(p2, { 1: t0 });
+  assert(p3.sent === "1:" + t0.toString(36) && p3.sent2 === "", "the unused second key is emptied (Stripe deletes it)");
+  assert(Object.keys(readSent({ sent: "", project: "x", films_01: "[]" })).length === 0, "nothing marked");
+});
+
+Deno.test("the board shows each film's sent time from the order", () => {
+  const s = session({ id: "cs_m", qty: 2, meta: { sent: "2:" + U(2026, 11, 22, 16).toString(36) } });
+  const b = build({ sessions: [s], promos: {}, vault: [{ id: "cus_abcdef12", email: "m@example.com", metadata: { xmas_vault: "1", xmas_vault_sent: String(U(2026, 11, 22, 17)) } }], now: U(2026, 11, 22, 18) });
+  const f = b.films.filter((x) => x.order === "cs_m").sort((a, c) => a.n - c.n);
+  assert(f[0].sentAt === null && f[1].sentAt === U(2026, 11, 22, 16), "film 2 sent, film 1 not");
+  assert(b.vault[0].id === "cus_abcdef12" && b.vault[0].sentAt === U(2026, 11, 22, 17), "Vault claim sent");
+});
+
+Deno.test("the sent mark: key-checked, Christmas orders only, sent keys only", async () => {
+  const ORDER = "cs_live_" + "b".repeat(40), OTHER = "cs_live_" + "c".repeat(40);
+  const writes: [string, Record<string, string>][] = [];
+  const metas: Record<string, Record<string, string>> = { [ORDER]: { project: "christmas_video", films_01: "[]", sent: "1:" + (1795300000).toString(36) }, [OTHER]: { project: "donna" } };
+  const deps: Deps = { sessions: () => Promise.resolve([]), promos: () => Promise.resolve({}), vault: () => Promise.resolve([]), now: () => 1795350000, keyHash: await sha256hex("right-key"),
+    sessionMeta: (id) => Promise.resolve(metas[id] || null), setSessionMeta: (id, p) => { writes.push([id, p]); return Promise.resolve(); },
+    customerMeta: (id) => Promise.resolve<Record<string, string> | null>(id === "cus_member1" ? { xmas_vault: "1" } : id === "cus_other12" ? {} : null), setCustomerMeta: (id, p) => { writes.push([id, p]); return Promise.resolve(); } };
+  const post = (b: unknown) => new Request("https://x/f", { method: "POST", body: JSON.stringify(b) });
+  assert((await handle(post({ k: "wrong", act: "sent", order: ORDER, n: 2 }), deps)).status === 401, "wrong key");
+  assert((await handle(post({}), deps)).status === 401, "the deploy probe's {}");
+  assert(writes.length === 0, "nothing written without the key");
+  assert((await handle(post({ k: "right-key", act: "sent", order: OTHER, n: 1 }), deps)).status === 404, "not a Christmas order");
+  assert((await handle(post({ k: "right-key", act: "sent", order: ORDER, n: 0 }), deps)).status === 400, "film 0");
+  assert((await handle(post({ k: "right-key", act: "sent", order: "pi_123", n: 1 }), deps)).status === 400, "not an order id");
+  assert((await handle(post({ k: "right-key", act: "delete", order: ORDER, n: 1 }), deps)).status === 400, "unknown action");
+  assert(writes.length === 0, "refusals write nothing");
+  const r = await handle(post({ k: "right-key", act: "sent", order: ORDER, n: 2 }), deps);
+  assert(r.status === 200 && writes.length === 1 && writes[0][0] === ORDER, "marked");
+  const m = readSent(writes[0][1]);
+  assert(m[1] === 1795300000 && m[2] === 1795350000 && Object.keys(writes[0][1]).every((k) => /^sent\d*$/.test(k)), "keeps film 1, adds film 2, sent keys only");
+  await handle(post({ k: "right-key", act: "unsent", order: ORDER, n: 1 }), deps);
+  assert(Object.keys(readSent(writes[1][1])).length === 0, "unmarked");
+  assert((await handle(post({ k: "right-key", act: "vault_sent", customer: "cus_other12" }), deps)).status === 404, "no Vault claim on that customer");
+  assert((await handle(post({ k: "right-key", act: "vault_sent", customer: "cus_member1" }), deps)).status === 200 && writes[2][1].xmas_vault_sent === "1795350000", "Vault claim marked");
+  await handle(post({ k: "right-key", act: "vault_unsent", customer: "cus_member1" }), deps);
+  assert(writes[3][1].xmas_vault_sent === "", "Vault claim unmarked");
 });
