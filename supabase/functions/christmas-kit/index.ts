@@ -30,6 +30,7 @@ Deno.serve((req) =>
         refunded: Boolean(charge?.refunded),
         email: s?.customer_details?.email || s?.customer_email || "",
         name: s?.customer_details?.name || "",
+        vault: s?.metadata?.offer === "vault_skill",
       };
     },
     manifest: async (): Promise<Manifest> => {

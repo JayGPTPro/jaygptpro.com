@@ -11,7 +11,7 @@
 export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";
 export const SIGN_SECONDS = 6 * 3600;
 
-export type Order = { paid: boolean; skill: boolean; refunded: boolean; email: string; name: string };
+export type Order = { paid: boolean; skill: boolean; refunded: boolean; email: string; name: string; vault?: boolean };
 export type Manifest = { version: string; kit: string; files: { p: string; rel?: string; size: number; sha: string }[] };
 export type Deps = {
   order: (sessionId: string) => Promise<Order | null>;                        // null: no such session
@@ -59,6 +59,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     email: maskEmail(o.email),
     version: m.version,
     kit: signed[m.kit],
+    vault: o.vault === true, // the AI Vault's shared session (metadata.offer "vault_skill"): the page adds the Vault sections
   };
   if (wantFiles) {
     const missing = m.files.filter((f) => !signed[f.p]).map((f) => f.p);

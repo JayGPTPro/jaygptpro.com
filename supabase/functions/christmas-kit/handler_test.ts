@@ -41,3 +41,9 @@ Deno.test("a malformed code is refused before Stripe is asked", async () => {
   }
   assert(asked === 0, "stripe asked");
 });
+
+Deno.test("vault is true only for the Vault's shared session", async () => {
+  const a = await (await handle(get("s=" + S), world().deps)).json();
+  const b = await (await handle(get("s=" + S), world({ vault: true }).deps)).json();
+  assert(a.vault === false && b.vault === true, JSON.stringify([a.vault, b.vault]));
+});
