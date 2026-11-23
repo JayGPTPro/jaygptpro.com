@@ -13,6 +13,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#e7dcc3">
 <script>document.documentElement.className += " js";</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Permanent+Marker&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -242,12 +244,47 @@ footer b{color:var(--fy)}
 .js .log div:not(.in){clip-path:inset(0 0 100% 0)}
 .js .log div.in{animation:lines .9s steps(8,end) both}
 
+/* scroll level A: hanging tags, printed titles, odometer prices */
+@keyframes swing{0%{transform:rotate(-7deg)}35%{transform:rotate(4deg)}60%{transform:rotate(-2deg)}80%{transform:rotate(.7deg)}100%{transform:rotate(0)}}
+.js .tag.in{animation:swing .95s cubic-bezier(.3,.7,.4,1) both;transform-origin:20px 20px}
+.js section:not(.doors) .head h2:not(.in){clip-path:inset(0 0 100% 0)}
+.js .head h2.in{animation:print .3s var(--out) both}
+.odo{display:inline-block;height:1em;line-height:1;overflow:hidden;vertical-align:-.1em}
+.odo i{display:block;font-style:normal;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.odo b{display:block;height:1em;line-height:1;font-weight:inherit}
+.tag.in .odo i{transform:translateY(calc((var(--d) + 10) * -1em))}
+
+/* scroll level B: the shutter and the shelf */
+section.doors{position:relative;margin-top:64px;padding:48px 0 30px;background:var(--kraft-2);border-block:3px solid var(--ink);overflow:hidden}
+.doors.pinned{height:calc(100vh - 54px);min-height:600px;padding:0;display:flex;flex-direction:column;justify-content:center}
+.doors .head{margin-bottom:10px}
+.shelf-wrap{position:relative;overflow-x:auto;scrollbar-width:none;padding-bottom:12px}
+.shelf-wrap::-webkit-scrollbar{display:none}
+.doors.pinned .shelf-wrap{overflow:visible}
+.shelf-track{position:relative;display:flex;gap:30px;padding:46px 32px 18px;width:max-content}
+.shelf-track::before{content:"";position:absolute;left:0;right:0;top:0;height:12px;background:var(--ink);box-shadow:0 4px 0 rgba(20,18,16,.18)}
+.peg{position:relative;flex:none;width:320px}
+.peg::before{content:"";position:absolute;left:20px;top:-46px;width:2px;height:52px;background:var(--ink);z-index:3}
+.peg:nth-child(odd) .tag{rotate:-1deg}
+.peg:nth-child(even) .tag{rotate:.8deg}
+.peg .tag{min-height:300px}
+.peg .code .sc{display:none}
+.shutter{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:repeating-linear-gradient(180deg,#a3a8a2 0 12px,#7d837e 12px 14px,#b8bcb6 14px 25px,#8a908b 25px 27px);border-bottom:22px solid #555a56}
+.shutter .spray{font-family:"Permanent Marker",cursive;color:var(--red);font-size:clamp(56px,9vw,140px);line-height:1;transform:rotate(-4deg)}
+.shutter .hint{font-weight:900;font-size:15px;background:var(--fy);border:2px solid var(--ink);padding:9px 14px;transform:rotate(1.5deg)}
+.shutter .handle{position:absolute;bottom:-14px;left:50%;width:130px;height:10px;margin-left:-65px;background:#2e312f;border-radius:3px}
+
 @media (max-width:900px){
   .hero-grid{grid-template-columns:1fr}
   .sign{max-width:420px}
   .signup{grid-template-columns:1fr}
   footer .wrap{grid-template-columns:1fr}
   .tip{justify-self:start}
+}
+@media (max-width:760px){
+  .peg{width:280px;scroll-snap-align:start}
+  .shelf-wrap{scroll-snap-type:x mandatory;scroll-padding-left:16px}
 }
 @media (max-width:560px){
   .hero{padding-top:30px}
@@ -270,6 +307,7 @@ footer b{color:var(--fy)}
   .js .tag .stamp,.js .tag .sk{opacity:.92}
   .js .tag .was path{stroke-dashoffset:0}
   .js .log div{clip-path:none}
+  .js .head h2{clip-path:none}
 }
 </style>
 <!-- Google Analytics -->
@@ -327,6 +365,13 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   </section>
 
   <div class="strip" aria-label="Newest deals"><div class="track" id="ticker"></div></div>
+
+  <section class="doors" id="doors" hidden>
+    <div class="wrap">
+      <div class="head"><h2>Top 10 on the shelf</h2><span class="marker">biggest drops right now</span></div>
+    </div>
+    <div class="shelf-wrap"><div class="shelf-track" id="shelf"></div></div>
+  </section>
 
   <section id="ours">
     <div class="wrap">
@@ -482,6 +527,16 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       return '<div class="stamp" aria-label="'+(d.discount_upto?'up to ':'')+d.discount_pct+' percent off">'+(d.discount_upto?'<span class="up">up to</span>':'')+'<span class="pct">'+d.discount_pct+'%</span><span class="off">off</span></div>';
     return '<div class="stamp word"><span class="pct">'+esc(d.discount_short || "Deal")+'</span></div>';
   }
+  // the new price rolls into place like a pump counter, one wheel per digit
+  function odometer(text){
+    var k = 0, strip = "";
+    for (var n = 0; n < 20; n++) strip += "<b>" + (n % 10) + "</b>";
+    var wheels = String(text).split("").map(function(ch){
+      if (!/[0-9]/.test(ch)) return esc(ch);
+      return '<span class="odo"><i style="--d:'+ch+';transition-delay:'+(0.3 + 0.07*(k++))+'s">'+strip+'</i></span>';
+    }).join("");
+    return '<span class="now" aria-label="'+esc(text)+'"><span aria-hidden="true">'+wheels+'</span></span>';
+  }
   var STRIKE = '<svg viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true"><path d="M2 11 C 30 4, 60 13, 98 5"/></svg>';
 
   function card(d){
@@ -492,7 +547,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     var code = d.code
       ? '<button class="code" data-code="'+esc(d.code)+'" data-name="'+esc(d.name)+'" aria-label="Copy code '+esc(d.code)+'"><span class="sc" aria-hidden="true">✂</span><span>'+esc(d.code)+'</span><i>Copy</i></button>'
       : '<span class="nocode">No code needed</span>';
-    var price = d.price_now ? '<p class="price">'+(d.price_was ? '<span class="was">'+esc(d.price_was)+STRIKE+'</span>' : '')+'<span>'+esc(d.price_now)+'</span></p>' : '';
+    var price = d.price_now ? '<p class="price">'+(d.price_was ? '<span class="was">'+esc(d.price_was)+STRIKE+'</span>' : '')+odometer(d.price_now)+'</p>' : '';
     var cust = d.existing_customers === true ? '<span class="cust yes">Works for existing users too</span>'
              : d.existing_customers === false ? '<span class="cust no">New users only</span>' : '';
     return '<article class="tag'+(isLive(d)?'':' over')+'">' +
@@ -576,6 +631,60 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     $("log-sec").hidden = !keys.length;
     watchIn($("log"));
   }
+  function renderShelf(){
+    var top = DATA.deals.filter(isLive).slice().sort(function(a,b){
+      return (b.pick?1:0)-(a.pick?1:0) || (b.discount_pct||0)-(a.discount_pct||0);
+    }).slice(0,10);
+    if (top.length < 4) return;
+    $("shelf").innerHTML = top.map(function(d){ return '<div class="peg">'+card(d)+'</div>'; }).join("");
+    $("doors").hidden = false;
+    watchIn($("shelf"));
+    // its title was observed while the section was still hidden; observe it again now it is on the page
+    var h = document.querySelector("#doors h2");
+    if (io){ io.unobserve(h); io.observe(h); } else h.classList.add("in");
+  }
+
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // shelf strip runs faster while you scroll fast, then settles back
+  function stripSpeed(){
+    if (reduce) return;
+    var track = $("ticker"), lastY = scrollY, lastT = performance.now(), rate = 1, anim = null;
+    (function loop(){
+      var now = performance.now(), y = scrollY;
+      var v = Math.abs(y - lastY) / Math.max(16, now - lastT) * 1000;
+      lastY = y; lastT = now;
+      rate += ((1 + Math.min(v / 450, 6)) - rate) * 0.12;
+      if (!anim) anim = track.getAnimations ? track.getAnimations()[0] : null;
+      if (anim) anim.playbackRate = rate;
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  // the shutter rolls up as you scroll, then the shelf slides sideways (desktop only)
+  function setupDoors(){
+    if (reduce || !window.gsap || !window.ScrollTrigger || $("doors").hidden) return;
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.matchMedia().add("(min-width: 761px)", function(){
+      var doors = $("doors"), track = $("shelf");
+      doors.classList.add("pinned");
+      var sh = document.createElement("div");
+      sh.className = "shutter";
+      sh.innerHTML = '<span class="spray">Doors open</span><span class="hint">Scroll to open the shelf</span><span class="handle"></span>';
+      doors.appendChild(sh);
+      function dist(){ return Math.max(0, track.scrollWidth - window.innerWidth + 32); }
+      var slide = Math.max(0.6, dist() / window.innerHeight);
+      var tl = gsap.timeline({ scrollTrigger: {
+        trigger: doors, start: "top 54px", end: function(){ return "+=" + Math.round(window.innerHeight * 0.85 + dist()); },
+        pin: true, scrub: 0.6, invalidateOnRefresh: true
+      }});
+      tl.to(sh, { yPercent: -104, ease: "power1.in", duration: 0.85 })
+        .to(track, { x: function(){ return -dist(); }, ease: "none", duration: slide });
+      return function(){ sh.remove(); doors.classList.remove("pinned"); gsap.set(track, { clearProps: "x" }); };
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+  }
+
   function renderTicker(){
     var items = DATA.deals.filter(isLive).slice().sort(function(a,b){ return Date.parse(b.added_at||0)-Date.parse(a.added_at||0); }).slice(0,16);
     if (!items.length){ document.querySelector(".strip").hidden = true; return; }
@@ -631,12 +740,16 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       io = new IntersectionObserver(function(entries){
         entries.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
       }, { threshold: .25 });
+      document.querySelectorAll(".head h2").forEach(function(h){ io.observe(h); });
+    } else {
+      document.querySelectorAll(".head h2").forEach(function(h){ h.classList.add("in"); });
     }
     fetch("deals.json?v=" + Math.floor(Date.now()/6e5), { cache: "no-cache" })
       .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function(d){
         DATA = d;
-        renderStats(); renderTicker(); renderHouse(); renderChips(); renderGrid(); renderWatch(); renderLog();
+        renderStats(); renderTicker(); renderShelf(); renderHouse(); renderChips(); renderGrid(); renderWatch(); renderLog();
+        stripSpeed(); setupDoors();
       })
       .catch(function(){
         $("empty").hidden = false;
