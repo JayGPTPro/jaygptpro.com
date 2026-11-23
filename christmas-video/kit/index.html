@@ -62,6 +62,23 @@ code,.mono{font:500 15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:v
 .player.missing video{display:none}.player.missing .soon{display:flex}
 /* the AI Vault's Christmas Studio: shown only when christmas-kit answers vault:true for this kit code */
 body:not(.vault) .vault-only{display:none!important}
+.nav .grp{display:flex;align-items:center;gap:10px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);padding:18px 12px 8px;border-top:1px solid var(--hair);margin-top:8px}
+.nav .grp .gn{flex:none;width:22px;height:22px;border-radius:6px;background:var(--gold);color:#1a1206;font:700 12px/22px var(--sans);letter-spacing:0;text-align:center}
+body.vault .nav .grp~a:not(.studio){margin-left:10px}
+body.vault .buyer-only{display:none!important}
+.gifts3{display:flex;flex-direction:column;gap:14px;margin:22px 0}
+.g3{display:flex;gap:16px;align-items:flex-start;border:1px solid var(--line);border-radius:16px;background:var(--night2);padding:20px 22px;text-decoration:none;color:var(--soft)}
+.g3:hover{border-color:rgba(233,199,132,.5)}
+.g3 .sn{width:32px;height:32px;line-height:32px;font-size:15px}
+.g3 b{display:block;font:400 22px/1.25 var(--serif);color:var(--ink);margin-bottom:6px}
+.g3 span.go3{display:inline-block;margin-top:8px;color:var(--gold);font-weight:600;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.two>div{border:1px solid var(--line);border-radius:16px;background:var(--night2);padding:18px 20px;color:var(--soft)}
+.two h3{margin:0 0 4px;font:400 21px/1.25 var(--serif);color:var(--ink)}
+.two ul{margin:10px 0 0;padding-left:18px}.two li{margin:6px 0}
+.two .price{margin-top:12px;color:var(--ink)}.two .price b{color:var(--gold);font-size:20px}
+.rules{margin:10px 0 0;padding-left:18px;color:var(--soft)}.rules li{margin:6px 0}
+@media (max-width:760px){.two{grid-template-columns:1fr}.nav .grp{display:none}}
 .fc{border:1px solid var(--line);border-radius:16px;background:var(--night2);padding:24px;margin:18px 0 14px}
 .fc label{display:block;font:600 13px/1 var(--sans);letter-spacing:.06em;color:#d9d3c5;margin:20px 0 9px}
 .fc label:first-child{margin-top:0}
@@ -199,15 +216,19 @@ details.q p,details.q ul{margin:10px 0 0 24px}
     <div class="cur" id="curName"></div>
   </div>
   <nav class="nav" aria-label="Lessons">
+    <a class="vault-only studio" href="#studio" data-v="vault"><span class="num">&#9733;</span><span class="nt">Your Christmas Studio</span></a>
+    <span class="grp vault-only"><span class="gn">1</span>The Perfect Gift Skill</span>
     <a href="#lesson-1" data-v="1"><span class="num">1</span><span><span class="nt">Start Here</span><span class="nl" data-len="1"></span></span></a>
     <a href="#lesson-2" data-v="2"><span class="num">2</span><span><span class="nt">Set Up Your Kit</span><span class="nl" data-len="2"></span></span></a>
     <a href="#lesson-3" data-v="3"><span class="num">3</span><span><span class="nt">Create Your First Film</span><span class="nl" data-len="3"></span></span></a>
     <a href="#lesson-4" data-v="4"><span class="num">4</span><span><span class="nt">Edit and Use Your Films</span><span class="nl" data-len="4"></span></span></a>
-    <span class="sep vault-only"></span>
-    <a class="vault-only" href="#christmas-images" data-v="images"><span class="num">&#9733;</span><span class="nt">Christmas Images</span></a>
+    <a class="vault-only" href="#help" data-v="help"><span class="num">?</span><span class="nt">Questions and Help</span></a>
+    <span class="grp vault-only"><span class="gn">2</span>Done For You</span>
     <a class="vault-only" href="#free-film" data-v="film"><span class="num">&#9733;</span><span class="nt">Your Free Film</span></a>
-    <span class="sep"></span>
-    <a href="#help" data-v="help"><span class="num">?</span><span class="nt">Questions and Help</span></a>
+    <span class="grp vault-only"><span class="gn">3</span>Christmas Images</span>
+    <a class="vault-only" href="#christmasify" data-v="images"><span class="num">&#9733;</span><span class="nt">Christmasify Your Images</span></a>
+    <span class="sep buyer-only"></span>
+    <a class="buyer-only" href="#help" data-v="help"><span class="num">?</span><span class="nt">Questions and Help</span></a>
   </nav>
   <p class="note hint" id="hint">Keep this page. The link in your email always opens it.</p>
 </aside>
@@ -398,18 +419,17 @@ https://www.amazon.com/dp/B0XXXXXXX7</div>
   <div class="next"><a class="back" href="#lesson-3">Back to Lesson 3</a><button class="btn line" data-finish="4">Finish the Course</button></div>
 </section>
 
-<!-- AI Vault only: Christmas images -->
-<section class="view vault-only" id="vimages">
-  <div class="of">AI Vault bonus</div>
-  <h1>Christmas Images</h1>
-  <p class="intro">The Santa Skill turns your product photos into Christmas images for your listing, your ads and your social posts.</p>
-  <div class="player"><video controls preload="metadata" playsinline poster="christmas-images.jpg" src="christmas-images.mp4"></video><div class="soon">This video is on its way.</div></div>
-  <h2>Install it</h2>
-  <p>Paste this into Claude Code:</p>
-  <div class="addr"><span class="msg" id="santa">npx skills add JayGPTPro/santa-skill -g</span><button class="btn ghost" data-copy="santa">Copy</button></div>
-  <p style="margin-top:18px">Using Codex? Use this one instead:</p>
-  <div class="addr"><span class="msg" id="santa-cx">npx skills add JayGPTPro/santa-skill-codex -g -a codex</span><button class="btn ghost" data-copy="santa-cx">Copy</button></div>
-  <p style="margin-top:18px">The full guide is on <a href="https://jaygptpro.com/claude/santa-skill.html" target="_blank" rel="noopener" style="color:var(--gold)">the Santa Skill page</a>.</p>
+<!-- AI Vault only: the intro to the three gifts -->
+<section class="view vault-only" id="vvault">
+  <div class="of">AI Vault</div>
+  <h1>Your Christmas Studio</h1>
+  <p class="intro">Three Christmas gifts for your products, all on this page.</p>
+  <div class="player" id="studio-player"><video controls preload="metadata" playsinline poster="studio.jpg?v=2" src="studio.mp4"></video><div class="soon">This video is on its way.</div></div>
+  <div class="gifts3">
+    <a class="g3" href="#lesson-1"><span class="sn">1</span><div><b>The Perfect Gift Skill</b>A one-minute Christmas film with your product as the gift, plus a 30-second version for ads. Claude makes it from your Amazon link. Four short lessons show you how.<br><span class="go3">Start Lesson 1</span></div></a>
+    <a class="g3" href="#free-film"><span class="sn">2</span><div><b>One free Christmas film, done for you</b>Tell us the product and the family. We make the film and email it to you. Nothing to set up.<br><span class="go3">Order your free film</span></div></a>
+    <a class="g3" href="#christmasify"><span class="sn">3</span><div><b>The Santa Skill</b>Turns your listing's lifestyle photos into Christmas versions. Same product, and the main image is never touched. One product or your whole catalog.<br><span class="go3">Christmasify your images</span></div></a>
+  </div>
 </section>
 
 <!-- AI Vault only: one Done For You film -->
@@ -431,6 +451,66 @@ https://www.amazon.com/dp/B0XXXXXXX7</div>
     <div class="ok" id="vf-ok"></div>
   </div>
   <p>Want more films made for you? <a href="https://jaygptpro.com/christmas-video/" style="color:var(--gold)">Order them here</a>.</p>
+</section>
+
+<!-- AI Vault only: the Santa Skill, everything on this page -->
+<section class="view vault-only" id="vimages">
+  <div class="of">AI Vault bonus</div>
+  <h1>Christmasify Your Images</h1>
+  <p class="intro">The Santa Skill turns your listing's lifestyle photos into Christmas versions. Type one ASIN or paste your whole catalog. The product stays exactly as it is, and the main image is never touched.</p>
+  <div class="player"><video controls preload="metadata" playsinline poster="christmasify.jpg?v=2" src="christmasify.mp4?v=2"></video><div class="soon">This video is on its way.</div></div>
+
+  <h2>Get the Santa Skill</h2>
+  <p>It runs in Claude Code or in Codex. Pick the one you use. Here is what each one needs.</p>
+  <div class="two">
+    <div><h3>Claude Code</h3>Draws with your OpenAI key.
+      <ul><li>Claude Code, the desktop app or the terminal.</li>
+      <li>An OpenAI API key on a verified organization. The skill draws with gpt-image-2, and a verified organization unlocks it. Never connected OpenAI to Claude Code? <a href="https://jaygptpro.com/openai/" target="_blank" rel="noopener" style="color:var(--gold)">This guide walks you through it.</a></li>
+      <li>Python 3 with the openai and Pillow packages. The first run prints the exact install line if anything is missing.</li></ul>
+      <div class="price"><b>~9&cent;</b> an image, on your OpenAI account.</div></div>
+    <div><h3>Codex</h3>Draws with your ChatGPT plan. No API key.
+      <ul><li>Codex, signed in with your ChatGPT account.</li>
+      <li>A ChatGPT plan. The images come out of your plan's usage limits, so a big catalog may take more than one session.</li>
+      <li>Python 3 with Pillow and opencv-python-headless. The first run checks for them.</li>
+      <li>Node, for the one-line install.</li></ul>
+      <div class="price"><b>$0</b> extra: it runs inside your ChatGPT plan.</div></div>
+  </div>
+
+  <h2>Install it once</h2>
+  <h3 style="margin-top:18px">Claude Code</h3>
+  <div class="steps">
+    <div class="st"><span class="sn">1</span><div><b>Download the skill.</b><div class="row" style="margin-top:10px"><a class="btn ghost" href="/claude/santa-skill.zip" download>Download santa-skill.zip</a></div></div></div>
+    <div class="st"><span class="sn">2</span><div><b>Paste this into Claude Code.</b> Claude asks before it writes to that folder: click Allow. Then open a new session.
+      <div class="msg" id="santa-inst">Install the santa-skill skill from my Downloads: unzip santa-skill.zip (or take the santa-skill folder, if it is already unzipped) into ~/.claude/skills, so that ~/.claude/skills/santa-skill/SKILL.md exists.</div>
+      <div class="row"><button class="btn ghost" data-copy="santa-inst">Copy</button></div></div></div>
+  </div>
+  <p class="note">Have Node? This one line installs it instead:</p>
+  <div class="addr"><span class="msg" id="santa">npx skills add JayGPTPro/santa-skill -g</span><button class="btn ghost" data-copy="santa">Copy</button></div>
+  <h3 style="margin-top:22px">Codex</h3>
+  <p>Paste this into your terminal:</p>
+  <div class="addr"><span class="msg" id="santa-cx">npx skills add JayGPTPro/santa-skill-codex -g -a codex</span><button class="btn ghost" data-copy="santa-cx">Copy</button></div>
+
+  <h2>Run it, for every listing</h2>
+  <p>In Claude Code:</p>
+  <div class="addr"><span class="msg" id="santa-run">/santa-skill [ASIN]</span><button class="btn ghost" data-copy="santa-run">Copy</button></div>
+  <p style="margin-top:14px">In Codex:</p>
+  <div class="addr"><span class="msg" id="santa-run-cx">$santa-skill [ASIN]</span><button class="btn ghost" data-copy="santa-run-cx">Copy</button></div>
+  <p style="margin-top:14px">Replace [ASIN] with yours, or paste a whole list of product links. It fetches your images, decides which ones to change and which to skip, and runs them with no questions.</p>
+
+  <h2>What you get</h2>
+  <ul class="rules">
+    <li>A christmas folder with the new images, about 1024 px. Amazon accepts 1000 px and up; for a crisp zoom, upscale to 1600 or more before you upload.</li>
+    <li>A before and after page with a one-line verdict for each image, and one page for the whole catalog.</li>
+    <li>Your originals stay as they are, so you swap the Christmas images in for Q4 and back out in January.</li>
+  </ul>
+
+  <h2>What it never does</h2>
+  <ul class="rules">
+    <li>It never touches the main image. Amazon wants it on pure white.</li>
+    <li>It never changes the product: same shape, color, angle, label and screen.</li>
+    <li>It never changes the people. Faces, poses and hands stay as shot. Only a summer scene gets winter clothes.</li>
+    <li>One Santa hat at most, on one adult, never on a child or the product. Snow only where snow belongs.</li>
+  </ul>
 </section>
 
 <!-- Questions and help -->
@@ -478,7 +558,7 @@ https://www.amazon.com/dp/B0XXXXXXX7</div>
     if(x.j.name)document.getElementById('hello2').textContent='Welcome, '+x.j.name+'.';
     if(x.j.vault===true){document.body.classList.add('vault');
       document.getElementById('hint').textContent='Keep this page. Its link is in the AI Vault episode.';
-      var v=want()||last0;if(v==='images'||v==='film')show(v,false);}
+      var v=want()||last0;if(v==='images'||v==='film'||v==='vault')show(v,false);else if(!want()&&!fresh0)show('vault',false);}
     if(x.j.kit)document.getElementById('dlKit').href=x.j.kit+(x.j.kit.indexOf('?')<0?'?':'&')+'download=PerfectGift.zip';
   }).catch(function(){});
 
@@ -492,13 +572,13 @@ https://www.amazon.com/dp/B0XXXXXXX7</div>
   var KEY='pgkit_'+s.slice(-12),st={done:{},last:'1'};
   try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.done)st=o;}catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
-  function want(){var h=location.hash.replace('#','');if(h==='help')return 'help';if(document.body.classList.contains('vault')){if(h==='christmas-images')return 'images';if(h==='free-film')return 'film';}var m=h.match(/^lesson-([1-4])$/);return m?m[1]:null;}
+  function want(){var h=location.hash.replace('#','');if(h==='help')return 'help';if(document.body.classList.contains('vault')){if(h==='christmasify'||h==='christmas-images')return 'images';if(h==='studio')return 'vault';if(h==='free-film')return 'film';}var m=h.match(/^lesson-([1-4])$/);return m?m[1]:null;}
   function show(v,scroll){
-    if((v==='images'||v==='film')&&!document.body.classList.contains('vault'))v='1';   // Vault views exist only for the Vault's kit code
+    if((v==='images'||v==='film'||v==='vault')&&!document.body.classList.contains('vault'))v='1';   // Vault views exist only for the Vault's kit code
     document.querySelectorAll('.view').forEach(function(e){e.classList.toggle('on',e.id==='v'+v);});
     document.querySelectorAll('.nav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-v')===v);});
     document.querySelectorAll('.view:not(.on) video').forEach(function(x){x.pause();});
-    var nm={'1':'Lesson 1 of 4: Start Here','2':'Lesson 2 of 4: Set Up Your Kit','3':'Lesson 3 of 4: Create Your First Film','4':'Lesson 4 of 4: Edit and Use Your Films','help':'Questions and Help','images':'Christmas Images','film':'Your Free Film'};
+    var nm={'1':'Lesson 1 of 4: Start Here','2':'Lesson 2 of 4: Set Up Your Kit','3':'Lesson 3 of 4: Create Your First Film','4':'Lesson 4 of 4: Edit and Use Your Films','help':'Questions and Help','images':'Christmasify Your Images','film':'Your Free Film','vault':'Your Christmas Studio'};
     document.getElementById('curName').textContent=nm[v]||'';
     st.last=v;save();if(scroll)window.scrollTo(0,0);
   }
@@ -506,7 +586,7 @@ https://www.amazon.com/dp/B0XXXXXXX7</div>
     document.querySelectorAll('.nav a[data-v]').forEach(function(a){var d=!!st.done[a.getAttribute('data-v')];a.classList.toggle('done',d);if(d)n++;});
     document.getElementById('progT').textContent=n+' of 4 lessons done';document.getElementById('progB').style.width=(n*25)+'%';}
   window.addEventListener('hashchange',function(){var v=want();if(v)show(v,true);});
-  var last0=st.last;show(want()||st.last||'1',false);paint();
+  var last0=st.last,fresh0=!!(function(){try{return localStorage.getItem(KEY);}catch(e){return null;}})();show(want()||st.last||'1',false);paint();
   document.querySelectorAll('[data-finish]').forEach(function(b){b.addEventListener('click',function(){
     var l=b.getAttribute('data-finish');st.done[l]=true;save();paint();
     if(l==='4'){b.textContent='Done. Enjoy your films!';return;}
