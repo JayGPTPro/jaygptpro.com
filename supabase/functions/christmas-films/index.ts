@@ -101,6 +101,14 @@ Deno.serve((req) =>
     // One free film per email, recorded atomically: Stripe runs one request per Idempotency-Key, and
     // any other request with the same key (in flight, replayed, or with other details) is not fresh.
     // The key lives 24 hours; after that, vaultClaimed (checked first) refuses a second claim.
+    // The product key is letters, digits and ":" only (vaultProductKey), so it is safe in the query.
+    vaultProductClaimed: async (product) => {
+      if (!/^[a-z]+:[A-Za-z0-9]+$/.test(product)) throw new Error("bad product key");
+      const q = new URLSearchParams({ query: `metadata['xmas_vault_product']:'${product}'`, limit: "1" });
+      const res = await stripe(`customers/search?${q}`);
+      if (!res.ok) throw new Error(`stripe customer search ${res.status}`);
+      return ((await res.json())?.data || []).length > 0;
+    },
     vaultClaimOnce: async (email, card) => {
       const body = new URLSearchParams({
         email, name: card.name,
@@ -108,6 +116,7 @@ Deno.serve((req) =>
         "metadata[xmas_vault_at]": new Date().toISOString(),
         "metadata[xmas_vault_link]": card.link,
         "metadata[xmas_vault_roles]": `${card.giver} to ${card.receiver}`,
+        "metadata[xmas_vault_product]": card.product || "",
       });
       const res = await fetch("https://api.stripe.com/v1/customers", {
         method: "POST", body,
