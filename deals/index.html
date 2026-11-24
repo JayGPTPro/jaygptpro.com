@@ -194,6 +194,7 @@ select{appearance:none;height:42px;border-radius:12px;border:1px solid var(--lin
   .card .pct{margin-top:8px;font-size:50px}
   .card .t{margin-top:6px;font-size:14.5px}
   .card .one{display:none}
+  .card .note{display:none}
   .card .bottom{padding-top:12px}
   .card .meta{margin-top:8px}
 }
@@ -221,6 +222,15 @@ select{appearance:none;height:42px;border-radius:12px;border:1px solid var(--lin
 .b.new{background:var(--lime);color:var(--lime-ink)}
 .b.only{background:linear-gradient(180deg,#f3d58b,#c99b3c);color:#1a1405}
 .b.ex{border:1px solid var(--line-2);color:var(--txt)}
+.b.tm{background:#f2f2f0;color:#0b0b0b}
+.b.tn{border:1px dashed var(--line-2);color:var(--mute)}
+.b.au{border:1px solid rgba(212,255,0,.45);color:var(--lime)}
+.card .note{margin-top:4px;font-size:12.5px;color:var(--mute-2);line-height:1.35}
+.card .pay{margin-top:6px;font-size:14px;line-height:1.35;color:var(--txt)}
+.card .pay b{color:var(--lime);font-weight:800;margin-right:6px}
+.card .meta a{color:var(--mute-2);text-decoration:underline;text-underline-offset:2px}
+.card .meta a:hover{color:var(--lime)}
+.t10 .tm{display:inline-block;align-self:flex-start;margin-top:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#f2f2f0;color:#0b0b0b;padding:3px 7px;border-radius:5px}
 .b.hot{background:rgba(255,77,61,.14);color:var(--red)}
 .card .pct{margin-top:12px;font-family:var(--display);font-weight:800;font-variation-settings:"wdth" 75;font-size:60px;line-height:.85;color:var(--lime);letter-spacing:-.02em}
 .card .pct small{font-size:.33em;margin-left:4px;color:var(--txt)}
@@ -455,6 +465,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
           <select id="sort">
             <option value="pick">Featured</option>
             <option value="pct">Biggest discount</option>
+            <option value="save">Biggest saving ($)</option>
             <option value="ends">Ending soonest</option>
             <option value="new">Newest</option>
             <option value="az">A to Z</option>
@@ -593,26 +604,31 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   }
   function shareUrl(d){ return SITE + "d/" + encodeURIComponent(d.id) + "/"; }
 
+  function mostNew(){ if (mostNew.v === undefined){ var l = live(); mostNew.v = l.filter(isNew).length > l.length / 2; } return mostNew.v; }
   function card(d){
     var e = endsInfo(d), b = [];
     if (d.exclusive) b.push('<span class="b only">Only here</span>');
-    if (isNew(d)) b.push('<span class="b new">New</span>');
+    if (isNew(d) && !mostNew()) b.push('<span class="b new">New</span>');
+    if (d.terms) b.push('<span class="b tm">'+esc(d.terms)+'</span>');
     if (d.existing_customers === true) b.push('<span class="b ex">✓ Existing users</span>');
     if (e.hot) b.push('<span class="b hot">'+esc(e.t)+'</span>');
+    if (d.audience === "Amazon sellers") b.push('<span class="b au">For Amazon sellers</span>');
     var code = d.code ? '<button class="code" data-code="'+esc(d.code)+'" data-name="'+esc(d.name)+'"><span>'+esc(d.code)+'</span><i>Copy</i></button>' : '<span class="nocode">No code needed</span>';
-    var price = d.price_now ? '<p class="price">'+(d.price_was ? '<s>'+esc(d.price_was)+'</s>' : '')+esc(d.price_now)+'</p>' : '';
+    var price = d.you_pay ? '<p class="pay"><b>You pay</b>'+esc(d.you_pay)+'</p>'
+      : d.price_now ? '<p class="price">'+(d.price_was ? '<s>'+esc(d.price_was)+'</s>' : '')+esc(d.price_now)+'</p>' : '';
+    var report = 'mailto:info@jaygptpro.com?subject=' + encodeURIComponent("Problem with the " + d.name + " deal") + '&body=' + encodeURIComponent("What's wrong (ended, code doesn't work, different price):\n\n");
     return '<article class="card'+(isLive(d)?'':' over')+'" id="deal-'+esc(d.id)+'">' +
-      '<div class="hd">'+logo(d)+'<div class="who"><h3>'+esc(d.name)+'</h3><span class="cat">'+esc(d.category)+'</span></div></div>' +
+      '<div class="hd">'+logo(d)+'<div class="who"><h3>'+esc(d.name)+'</h3><span class="cat">'+esc(d.tool_line || d.category)+'</span></div></div>' +
       (b.length ? '<div class="badges">'+b.join("")+'</div>' : '') +
-      pct(d, "pct") + '<p class="t">'+esc(d.deal_title)+'</p>' + price + '<p class="one">'+esc(d.one_liner)+'</p>' +
+      pct(d, "pct") + '<p class="t">'+esc(d.deal_title)+'</p>' + price + (d.terms_note ? '<p class="note">'+esc(d.terms_note)+'</p>' : '') + (d.tool_line ? '' : '<p class="one">'+esc(d.one_liner)+'</p>') +
       '<div class="bottom">'+code+'<button class="share" data-share="'+esc(d.id)+'" aria-label="Share '+esc(d.name)+'">'+SHARE_SVG+'</button><a class="get" href="'+esc(safeUrl(d.url))+'" target="_blank" rel="noopener sponsored" data-name="'+esc(d.name)+'">Get deal</a></div>' +
-      '<div class="meta"><span class="'+(e.hot?'hot':'')+'">'+esc(e.hot?'Hurry':e.t)+'</span><span>Checked '+esc(d.checked_at ? fmtDate(d.checked_at) : "")+'</span></div>' +
+      '<div class="meta"><span class="'+(e.hot?'hot':'')+'">'+esc(e.hot?'Hurry':e.t)+'</span><span>Checked '+esc(d.checked_at ? fmtDate(d.checked_at) : "")+' · <a href="'+report+'" data-report="'+esc(d.id)+'">Report</a></span></div>' +
       '</article>';
   }
   function t10(d, i){
     var j = jobFor(d.category);
     return '<article class="t10"><span class="rk">'+String(i+1).padStart(2,"0")+'</span>' +
-      '<div class="win"><div class="wb"><i></i><i></i><i></i><span>'+esc(d.domain||"")+'</span></div><div class="duo">'+logo(d).replace('class="lg"','class="lg bl"')+'<img loading="lazy" alt="'+esc(d.name)+' website" src="shots/'+encodeURIComponent(d.id)+'.webp" onerror="this.onerror=null;this.parentNode.classList.add(\'noshot\');this.src=\'img/'+j.img+'.webp\'"></div></div>' + pct(d, "big") +
+      '<div class="win"><div class="wb"><i></i><i></i><i></i><span>'+esc(d.domain||"")+'</span></div><div class="duo">'+logo(d).replace('class="lg"','class="lg bl"')+'<img loading="lazy" alt="'+esc(d.name)+' website" src="shots/'+encodeURIComponent(d.id)+'.webp" onerror="this.onerror=null;this.parentNode.classList.add(\'noshot\');this.src=\'img/'+j.img+'.webp\'"></div></div>' + pct(d, "big") + (d.terms ? '<span class="tm">'+esc(d.terms)+'</span>' : '') +
       '<h3>'+logo(d)+esc(d.name)+'</h3><p class="d">'+esc(d.deal_title)+'</p>' +
       '<div class="row"><a class="btn lime sm get-t" href="'+esc(safeUrl(d.url))+'" target="_blank" rel="noopener sponsored" data-name="'+esc(d.name)+'">Get deal</a><button class="share" data-share="'+esc(d.id)+'" aria-label="Share">'+SHARE_SVG+'</button></div></article>';
   }
@@ -634,7 +650,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       pct: function(a,b){ return (b.discount_pct||0)-(a.discount_pct||0); },
       ends: function(a,b){ return (endOfDay(a.ends)||9e15)-(endOfDay(b.ends)||9e15); },
       "new": function(a,b){ return Date.parse(b.added_at||0)-Date.parse(a.added_at||0); },
-      az: function(a,b){ return a.name.localeCompare(b.name); } };
+      az: function(a,b){ return a.name.localeCompare(b.name); },
+      save: function(a,b){ return (b.saving_usd||0)-(a.saving_usd||0); } };
     list.sort(by[state.sort]);
     var plain = state.g === "all" && state.cat === "all" && !q && !state.job && !state.existing;
     if (state.sort === "pick" && plain){
@@ -998,6 +1015,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     if (t.closest("[data-clear-job]")){ state.job = null; renderJobs(); renderChips(); renderGrid(false); return; }
     var ch = t.closest(".chip"); if (ch){ var jc = ch.getAttribute("data-jc"), jj = JOBS.filter(function(x){ return x.id === jc; })[0] || null;
       state.job = jj && state.job !== jj ? jj : null; state.cat = "all"; renderJobs(); renderChips(); renderGrid(false); if (jj) track("job_chip", { job: jj.id }); return; }
+    var rp = t.closest("[data-report]"); if (rp){ track("deal_report", { tool: rp.getAttribute("data-report") }); return; }
     var w = t.closest("[data-wa]"); if (w){ waOpen(w.getAttribute("data-wa")); return; }
     var a = t.closest(".get, .get-t, .gold-t .btn"); if (a){ track("deal_click", { tool: a.getAttribute("data-name") }); try { fbq("trackCustom","DealClick",{ tool: a.getAttribute("data-name") }); } catch(e){} waNudge(); }
   });
