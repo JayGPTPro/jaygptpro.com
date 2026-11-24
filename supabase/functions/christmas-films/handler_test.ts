@@ -281,22 +281,28 @@ Deno.test("vault film: a flood of requests sends one mail per email, then a cap"
   assert(lim("c@x.com", 1000 + 3600), "a new hour");
 });
 
-Deno.test("vault closed (as deployed now): members are refused on the server; Jay's own addresses pass; public orders work", async () => {
-  assert(VAULT_OPEN === false, "the deployed switch is closed until the episode");
+Deno.test("vault open (as deployed since 24.11): a member's request goes through", async () => {
+  assert(VAULT_OPEN === true, "the deployed switch is open");
   const w = vaultKit();
   delete w.deps.vaultOpen;   // as deployed
+  const r = await handle(post(film), w.deps);
+  assert(r.status === 200 && w.mails.length === 1, "member film accepted: " + r.status);
+  const old = await handle(post({ ...film, vault: true, email: "x@example.com" }), w.deps);
+  assert(old.status === 403, "the old one-card form stays gone");
+});
+Deno.test("vault switch closed: members are refused on the server; Jay's own addresses pass; public orders work", async () => {
+  const w = vaultKit({ open: false });
   for (const body of [film, { ...film, vault: true }, { ...film, vault: "ask" }, { ...film, vault: "skill" }]) {
     const r = await handle(post(body), w.deps);
     const j = await r.json();
-    assert(r.status === 403 && j.error === "closed" && /next week/.test(j.message), JSON.stringify(body) + " " + JSON.stringify(j));
+    assert(r.status === 403 && j.error === "closed" && /not open/.test(j.message), JSON.stringify(body) + " " + JSON.stringify(j));
   }
   assert(w.mails.length === 0 && w.vaultRecords.length === 0, "nothing sent or stored");
   for (const fake of ["x@jaygptpro.com.evil.com", "x@evil-jaygptpro.com", "jaygptpro@example.com"]) {
     assert((await handle(post({ ...film, email: fake }), w.deps)).status === 403, "not Jay's: " + fake);
   }
   assert((await handle(post({ ...film, email: "info+vault@jaygptpro.com" }), w.deps)).status === 200, "Jay's test address passes");
-  const c = world(1, true, BEFORE);
-  delete c.deps.vaultOpen;
+  const c = world(1, true, BEFORE, { open: false });
   const cr = await handle(post({ s: S, n: 1, link: "B07S6K6B27", giver: "dad", receiver: "son" }), c.deps);
   assert(cr.status === 200 && (await cr.json()).ok === true, "a paid card still saves");
   assert((await handle(post({ checkout: "skill" }), c.deps)).status === 200, "the Skill checkout still opens");

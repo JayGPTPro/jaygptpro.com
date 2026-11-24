@@ -31,12 +31,12 @@ export const SKILL_PRICE_BF = "price_1UdWhjRqcDuiISNTODc4cSas";    // $199
 export const SKILL_PRICE_FULL = "price_1Uc3M6RqcDuiISNTdJqMRrRa";  // $299
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
-// The Vault gifts are CLOSED until November's Vault episode goes up (Jay, 20.11.2026): every
-// Vault film request is refused here, on the server, so a direct POST stops too. While closed,
-// only Jay's own addresses (@jaygptpro.com) pass, so the path can be tested live before it opens.
-// The public orders, the cards and the bonus do not pass through this switch.
-export const VAULT_OPEN = false;
-export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts open next week with November's Vault episode. Watch the Vault for the date.";
+// The Vault gifts switch. OPEN since November's Vault episode (Jay, 24.11.2026: "מאשר לפתוח").
+// Set it to false to close them again: every Vault film request is then refused here, on the
+// server, and only Jay's own addresses (@jaygptpro.com) pass, for tests. The public orders, the
+// cards and the bonus never pass through this switch.
+export const VAULT_OPEN = true;
+export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts are not open right now. Questions? Write to info@jaygptpro.com.";
 export const GIVERS = ["mom", "dad"] as const;
 export const RECEIVERS = ["son", "daughter", "toddler", "partner"] as const;   // toddler: Jay, 19.11.2026 (a child of about 3)
 const LINK_MAX = 190; // two cards must fit one 500-character metadata value
