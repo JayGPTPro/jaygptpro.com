@@ -141,6 +141,10 @@ section{padding:64px 0 0}
 .job{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 10px 14px;text-align:center;transition:border-color .2s,transform .2s}
 .job:hover{border-color:rgba(212,255,0,.4);transform:translateY(-3px)}
 .job img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px}
+.job .ji{display:block;position:relative;border-radius:12px;overflow:hidden}
+.job .ji img{display:block}
+.job .ji video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s ease;pointer-events:none}
+.job .ji.live video{opacity:1}
 .job b{display:block;margin-top:8px;font-size:14px;font-weight:700;line-height:1.2}
 .job span{display:block;font-size:12px;color:var(--mute);margin-top:2px}
 .job.on{border-color:var(--lime)}
@@ -466,7 +470,9 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
 (function(){
   "use strict";
   var BF = Date.parse("2026-11-27T00:00:00-05:00");
+  var CM_START = Date.parse("2026-11-30T00:00:00-05:00");
   var CM_END = Date.parse("2026-12-01T00:00:00-05:00");
+  var NOW_OFF = (function(){ var m = location.search.match(/[?&]now=([^&]+)/), t = m && Date.parse(decodeURIComponent(m[1])); return t ? t - Date.now() : 0; })();
   var DAY = 864e5;
   var SITE = "https://jaygptpro.com/deals/";
   var state = { g:"all", cat:"all", q:"", sort:"pick", existing:false, job:null };
@@ -498,11 +504,14 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   /* countdown */
   var units = [["d","Days"],["h","Hrs"],["m","Min"],["s","Sec"]];
   $("clock").innerHTML = units.map(function(u,i){ return (i?'<span class="sep">:</span>':'')+'<div class="u"><b id="k-'+u[0]+'">00</b><small>'+u[1]+'</small></div>'; }).join("");
+  var phase = "";
   function tick(){
-    var now = Date.now(), target, label;
-    if (now < BF){ target = BF; label = "Until Black Friday starts"; }
-    else if (now < CM_END){ target = CM_END; label = "Live now · until Cyber Monday ends"; }
-    else { target = now; label = "Cyber Monday is over. Some deals run longer."; }
+    var now = Date.now() + NOW_OFF, target, label, head, ph;
+    if (now < BF){ ph = "pre"; target = BF; head = "Black<br>Friday"; label = "Until Black Friday starts"; }
+    else if (now < CM_START){ ph = "bf"; target = CM_START; head = "Black<br>Friday"; label = "Live now · Cyber Monday starts in"; }
+    else if (now < CM_END){ ph = "cm"; target = CM_END; head = "Cyber<br>Monday"; label = "Last day · deals end in"; }
+    else { ph = "after"; target = now; head = "Cyber<br>Week"; label = "Cyber Monday is over. These deals are still live."; }
+    if (ph !== phase){ phase = ph; document.querySelector(".hero h1").innerHTML = head; $("clock").style.display = ph === "after" ? "none" : ""; }
     $("clock-label").textContent = label;
     var s = Math.max(0, Math.floor((target - now)/1000));
     var v = { d: Math.floor(s/86400), h: Math.floor(s%86400/3600), m: Math.floor(s%3600/60), s: s%60 };
@@ -510,10 +519,10 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   }
 
   /* helpers */
-  function isLive(d){ var e = endOfDay(d.ends); return !e || e > Date.now(); }
+  function isLive(d){ var e = endOfDay(d.ends); return !e || e > Date.now() + NOW_OFF; }
   function endsInfo(d){
     if (!d.ends) return { t: "No end date posted", hot:false };
-    var left = endOfDay(d.ends) - Date.now();
+    var left = endOfDay(d.ends) - (Date.now() + NOW_OFF);
     if (left < 0) return { t: "Ended " + fmtDate(d.ends), hot:false };
     if (left < DAY) return { t: "Ends today", hot:true };
     if (left < 3*DAY) return { t: "Ends in " + Math.ceil(left/DAY) + " days", hot:true };
@@ -611,7 +620,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     var l = live();
     $("jobs").innerHTML = JOBS.map(function(j){
       var n = l.filter(function(d){ return j.re.test(d.category); }).length;
-      return '<button class="job'+(state.job===j?' on':'')+'" data-job="'+j.id+'"><img loading="lazy" alt="" src="img/'+j.img+'.webp"><b>'+esc(j.name)+'</b><span>'+(n ? n+' deal'+(n>1?'s':'') : 'Soon')+'</span></button>';
+      return '<button class="job'+(state.job===j?' on':'')+'" data-job="'+j.id+'"><i class="ji"><img loading="lazy" alt="" src="img/'+j.img+'.webp"><video muted playsinline preload="none" src="img/jm-'+j.id+'.mp4"></video></i><b>'+esc(j.name)+'</b><span>'+(n ? n+' deal'+(n>1?'s':'') : 'Soon')+'</span></button>';
     }).join("");
   }
   function renderHouse(){
@@ -724,6 +733,35 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     window.addEventListener("scroll", go, { passive: true });
   }
   /* Jay's box: the door opens by itself, then it sways in place, and the scroll turns it in 3D */
+  /* job icons come alive: hover on desktop, one pass when seen on touch screens */
+  function jobPlay(btn, on, once){
+    var w = btn && btn.querySelector(".ji"), v = w && w.querySelector("video"); if (!v) return;
+    if (on){
+      w.dataset.want = "1"; v.loop = !once;
+      v.onplaying = function(){ if (w.dataset.want === "1") w.classList.add("live"); };
+      v.onended = function(){ w.dataset.want = "0"; w.classList.remove("live"); };
+      var pr = v.play(); if (pr && pr.catch) pr.catch(function(){});
+    } else {
+      w.dataset.want = "0"; w.classList.remove("live");
+      setTimeout(function(){ if (w.dataset.want !== "1"){ v.pause(); try { v.currentTime = 0; } catch(e){} } }, 260);
+    }
+  }
+  function setupJobMotion(){
+    var box = $("jobs"); if (!box || reduce) return;
+    if (matchMedia("(hover: hover)").matches){
+      box.addEventListener("mouseover", function(e){ var b = e.target.closest(".job"); if (b && !b.contains(e.relatedTarget)) jobPlay(b, true); });
+      box.addEventListener("mouseout", function(e){ var b = e.target.closest(".job"); if (b && !b.contains(e.relatedTarget)) jobPlay(b, false); });
+      box.addEventListener("focusin", function(e){ jobPlay(e.target.closest(".job"), true); });
+      box.addEventListener("focusout", function(e){ jobPlay(e.target.closest(".job"), false); });
+    } else if ("IntersectionObserver" in window){
+      var io = new IntersectionObserver(function(en){
+        if (!en[0].isIntersecting) return; io.disconnect();
+        [].forEach.call(box.querySelectorAll(".job"), function(b, i){ setTimeout(function(){ jobPlay(b, true, true); }, i * 260); });
+      }, { threshold: .6 });
+      io.observe(box);
+    }
+  }
+
   function setupBox(){
     var c = $("boxc"), pk = $("pack"); if (!c) return;
     var ctx = c.getContext("2d"), D = 61, O = 54, door = [], orbit = [], last = "", t0 = 0, introDone = false;
@@ -865,6 +903,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     tick(); setInterval(tick, 1000);
     setupMotion();
     setupBox();
+    setupJobMotion();
     scrub("bagc2", "bag", 73, 560, document.querySelector(".alerts .bagw"), function(){ var r = document.querySelector(".alerts").getBoundingClientRect(); return (innerHeight - r.top) / (innerHeight + r.height * .6); });
     fetch("deals.json?v=" + Math.floor(Date.now()/6e5), { cache: "no-cache" })
       .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
