@@ -31,12 +31,12 @@ export const SKILL_PRICE_BF = "price_1UdWhjRqcDuiISNTODc4cSas";    // $199
 export const SKILL_PRICE_FULL = "price_1Uc3M6RqcDuiISNTdJqMRrRa";  // $299
 // The Vault "first film free" coupon. An order that used it is the member's free film.
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
-// The Vault gifts are CLOSED until November's Vault episode goes up (Jay, 20.11.2026): every
-// Vault film request is refused here, on the server, so a direct POST stops too. While closed,
-// only Jay's own addresses (@jaygptpro.com) pass, so the path can be tested live before it opens.
-// The public orders, the cards and the bonus do not pass through this switch.
-export const VAULT_OPEN = false;
-export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts open next week with November's Vault episode. Watch the Vault for the date.";
+// The Vault gifts switch. OPEN since November's Vault episode (Jay, 24.11.2026: "מאשר לפתוח").
+// Set it to false to close them again: every Vault film request is then refused here, on the
+// server, and only Jay's own addresses (@jaygptpro.com) pass, for tests. The public orders, the
+// cards and the bonus never pass through this switch.
+export const VAULT_OPEN = true;
+export const VAULT_CLOSED_MESSAGE = "The AI Vault gifts are not open right now. Questions? Write to info@jaygptpro.com.";
 export const GIVERS = ["mom", "dad"] as const;
 export const RECEIVERS = ["son", "daughter", "toddler", "partner"] as const;   // toddler: Jay, 19.11.2026 (a child of about 3)
 const LINK_MAX = 190; // two cards must fit one 500-character metadata value
@@ -53,7 +53,7 @@ export type Order = {
   paidAt: number;                    // unix seconds, when the payment went through (0: unknown)
   vault: boolean;                    // paid (or not) with the Vault first-film coupon
 };
-export type VaultCard = { name: string; link: string; giver: string; receiver: string };
+export type VaultCard = { name: string; link: string; giver: string; receiver: string; product?: string };
 export type Deps = {
   order: (sessionId: string) => Promise<Order | null>;                       // null: no such session
   saveMeta: (sessionId: string, patch: Record<string, string>) => Promise<void>;
@@ -61,6 +61,7 @@ export type Deps = {
   // Did this email pay for another film order in the bonus window, opened before this one?
   earlierFilmOrder: (email: string, created: number, sessionId: string) => Promise<boolean>;
   vaultClaimed: (email: string) => Promise<boolean>;           // has this email taken the Vault free film?
+  vaultProductClaimed: (product: string) => Promise<boolean>;  // has this product (vaultProductKey) had a Vault free film?
   // Records the member's one free film, atomically: true for exactly one request per email, even
   // when several arrive at the same moment; false when this email already has it. Throws on failure.
   vaultClaimOnce: (email: string, card: VaultCard) => Promise<boolean>;
@@ -206,6 +207,18 @@ export function makeAskLimiter(perEmailSec = 300, perHour = 1000) {
   };
 }
 
+// One free Vault film per PRODUCT too (Fred's review, 23.11; Jay: "fix what you can"), so one product
+// cannot collect films through several emails. The product is the ASIN for any Amazon link (any
+// marketplace, any link form), else the cleaned link. Only letters, digits and ":" so it is safe
+// inside a Stripe search query. Not atomic across two emails in the same minute (Stripe search
+// lags), which is fine: Jay reviews every free film before it is made.
+export async function vaultProductKey(link: string): Promise<string> {
+  const asin = (link.match(/\/dp\/([A-Z0-9]{10})$/) || [])[1];
+  if (asin) return "asin:" + asin;
+  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(link.toLowerCase())));
+  return "url:" + Array.from(d.slice(0, 12), (x) => x.toString(16).padStart(2, "0")).join("");
+}
+
 async function vault(b: Record<string, unknown>, deps: Deps): Promise<Response> {
   const closed = () => json({ error: "closed", message: VAULT_CLOSED_MESSAGE }, 403);
   if (b?.vault !== "film") return closed();   // the older Vault forms are gone
@@ -226,12 +239,16 @@ async function vault(b: Record<string, unknown>, deps: Deps): Promise<Response> 
   if (!kit || !kit.paid || kit.metadata.offer !== VAULT_OFFER) return noKit();
   const taken = () => json({ error: "claimed", message: "This email already has its free Vault film on the way. More films are $99 each on the film page." }, 409);
   if (await deps.vaultClaimed(email)) return taken();
+  const product = await vaultProductKey(link);
+  if (await deps.vaultProductClaimed(product)) {
+    return json({ error: "product", message: "This product already has its free Vault film on the way. Pick another product, or order more films for $99 each on the film page." }, 409);
+  }
   if (await deps.bonusOrder(email)) {
     return json({ error: "bonus", message: "Your film order with this email already includes a free bonus film, so the Vault film does not add to it. More films are $99 each on the film page." }, 409);
   }
   // Recorded FIRST and atomically, so two requests at the same moment cannot both win a film.
   // A recorded claim is on Jay's board even if the mail below fails.
-  if (!await deps.vaultClaimOnce(email, { name, link, giver, receiver })) return taken();
+  if (!await deps.vaultClaimOnce(email, { name, link, giver, receiver, product })) return taken();
   const rows: [string, string][] = [
     ["Email", email],
     ["Name", name],

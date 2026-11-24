@@ -1,4 +1,4 @@
-import { handle, cleanLink, readFilms, VAULT_OPEN, VAULT_OFFER, makeAskLimiter, type VaultCard, BONUS_START, BONUS_END, BF_END, SKILL_PRICE_BF, SKILL_PRICE_FULL, type Deps, type Order } from "./handler.ts";
+import { handle, cleanLink, readFilms, VAULT_OPEN, VAULT_OFFER, makeAskLimiter, vaultProductKey, type VaultCard, BONUS_START, BONUS_END, BF_END, SKILL_PRICE_BF, SKILL_PRICE_FULL, type Deps, type Order } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const S = "cs_live_" + "a".repeat(40);
 const BEFORE = BONUS_START - 3600; // an order placed before launch day: no bonus, as before
@@ -13,6 +13,7 @@ function world(qty = 5, paid = true, created = BEFORE, opts: { vault?: boolean; 
     mail: (s, h, r) => { mails.push(s); mailsHtml.push(h); replyTo.push(r); return Promise.resolve(true); },
     earlierFilmOrder: () => Promise.resolve(!!opts.earlier),
     vaultClaimed: (e) => Promise.resolve(!!opts.vaultClaimed || vaultRecords.includes(e)),
+    vaultProductClaimed: (p) => Promise.resolve(Object.values(films).some((c) => c.product === p)),
     vaultClaimOnce: (e, c) => { if (vaultRecords.includes(e)) return Promise.resolve(false); vaultRecords.push(e); films[e] = c; return Promise.resolve(true); },
     bonusOrder: () => Promise.resolve(!!opts.bonusOrder),
     skillCheckout: (price) => { checkouts.push(price); return Promise.resolve("https://checkout.stripe.com/c/pay/cs_test_x"); },
@@ -280,23 +281,50 @@ Deno.test("vault film: a flood of requests sends one mail per email, then a cap"
   assert(lim("c@x.com", 1000 + 3600), "a new hour");
 });
 
-Deno.test("vault closed (as deployed now): members are refused on the server; Jay's own addresses pass; public orders work", async () => {
-  assert(VAULT_OPEN === false, "the deployed switch is closed until the episode");
+Deno.test("vault open (as deployed since 24.11): a member's request goes through", async () => {
+  assert(VAULT_OPEN === true, "the deployed switch is open");
   const w = vaultKit();
   delete w.deps.vaultOpen;   // as deployed
+  const r = await handle(post(film), w.deps);
+  assert(r.status === 200 && w.mails.length === 1, "member film accepted: " + r.status);
+  const old = await handle(post({ ...film, vault: true, email: "x@example.com" }), w.deps);
+  assert(old.status === 403, "the old one-card form stays gone");
+});
+Deno.test("vault switch closed: members are refused on the server; Jay's own addresses pass; public orders work", async () => {
+  const w = vaultKit({ open: false });
   for (const body of [film, { ...film, vault: true }, { ...film, vault: "ask" }, { ...film, vault: "skill" }]) {
     const r = await handle(post(body), w.deps);
     const j = await r.json();
-    assert(r.status === 403 && j.error === "closed" && /next week/.test(j.message), JSON.stringify(body) + " " + JSON.stringify(j));
+    assert(r.status === 403 && j.error === "closed" && /not open/.test(j.message), JSON.stringify(body) + " " + JSON.stringify(j));
   }
   assert(w.mails.length === 0 && w.vaultRecords.length === 0, "nothing sent or stored");
   for (const fake of ["x@jaygptpro.com.evil.com", "x@evil-jaygptpro.com", "jaygptpro@example.com"]) {
     assert((await handle(post({ ...film, email: fake }), w.deps)).status === 403, "not Jay's: " + fake);
   }
   assert((await handle(post({ ...film, email: "info+vault@jaygptpro.com" }), w.deps)).status === 200, "Jay's test address passes");
-  const c = world(1, true, BEFORE);
-  delete c.deps.vaultOpen;
+  const c = world(1, true, BEFORE, { open: false });
   const cr = await handle(post({ s: S, n: 1, link: "B07S6K6B27", giver: "dad", receiver: "son" }), c.deps);
   assert(cr.status === 200 && (await cr.json()).ok === true, "a paid card still saves");
   assert((await handle(post({ checkout: "skill" }), c.deps)).status === 200, "the Skill checkout still opens");
+});
+
+Deno.test("vault film: one free film per PRODUCT too, whatever email or link form asks for it", async () => {
+  const w = vaultKit();
+  w.deps.askAllowed = () => true;
+  assert((await handle(post(film), w.deps)).status === 200, "first film for B000000009");
+  for (const link of ["B000000009", "https://www.amazon.co.uk/Some-Name/dp/b000000009/ref=sr_1?x=1", "amazon.com/gp/product/B000000009"]) {
+    const r = await handle(post({ ...film, email: "other" + link.length + "@example.com", link }), w.deps);
+    const j = await r.json();
+    assert(r.status === 409 && j.error === "product" && /another product/.test(j.message), link + " " + JSON.stringify(j));
+  }
+  assert(w.mails.length === 1 && w.vaultRecords.length === 1, "nothing more recorded or mailed");
+  assert((await handle(post({ ...film, email: "new@example.com", link: "B000000010" }), w.deps)).status === 200, "another product is fine");
+  assert(w.films["new@example.com"].product === "asin:B000000010", "the product key is recorded with the claim");
+});
+Deno.test("vault product key: the ASIN for Amazon, a short hash for other shops, safe for a search query", async () => {
+  assert(await vaultProductKey("https://www.amazon.com/dp/B07S6K6B27") === "asin:B07S6K6B27", "amazon");
+  assert(await vaultProductKey("https://www.amazon.de/dp/B07S6K6B27") === "asin:B07S6K6B27", "other marketplace, same product");
+  const a = await vaultProductKey("https://shop.example.com/p/teddy-bear"), b = await vaultProductKey("https://SHOP.example.com/p/Teddy-Bear");
+  assert(/^url:[0-9a-f]{24}$/.test(a) && a === b, a + " " + b);
+  assert(a !== await vaultProductKey("https://shop.example.com/p/other"), "different products differ");
 });
