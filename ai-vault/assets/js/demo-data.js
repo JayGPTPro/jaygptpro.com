@@ -158,7 +158,7 @@ window.VAULT_DEMO.challenge = (function () {
 
 /* round 5: community QA, WhatsApp groups, programs catalog, member deals */
 window.VAULT_DEMO.whatsapp = {
-  updates_url: "https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs",
+  updates_url: "https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY",
   community_url: ""  /* private group, admin approval. Jay pastes the invite link here (or in the DB) */
 };
 

@@ -6,7 +6,7 @@
 -- ===== 1. WhatsApp links =====
 insert into feature_flags (key, enabled, payload) values
   ('whatsapp_links', true,
-   '{"community_url": "", "updates_url": "https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs"}')
+   '{"community_url": "", "updates_url": "https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY"}')
 on conflict (key) do nothing;
 
 create or replace function get_whatsapp_links()
