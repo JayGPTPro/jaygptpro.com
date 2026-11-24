@@ -117,7 +117,8 @@ section{padding:64px 0 0}
 .t10 .win .wb{height:22px;display:flex;align-items:center;gap:5px;padding:0 9px;background:#1b1b1b;font-size:10px;font-weight:600;color:var(--mute)}
 .t10 .win .wb i{width:7px;height:7px;border-radius:50%;background:#333}
 .t10 .win .wb span{margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.t10 .duo{aspect-ratio:16/10;background:#0b0b0b;overflow:hidden}
+.t10 .duo{aspect-ratio:16/10;background:#0b0b0b;overflow:hidden;position:relative}
+.t10 .duo .bl{display:none}
 .t10 .duo img{width:100%;height:100%;object-fit:cover;object-position:top;filter:grayscale(1) brightness(.62) contrast(1.05);transition:filter .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
 .t10:hover .duo img{filter:none;transform:scale(1.04)}
 .t10 .duo.noshot{background:#0d0d0d;display:grid;place-items:center}
@@ -181,6 +182,21 @@ select{appearance:none;height:42px;border-radius:12px;border:1px solid var(--lin
 .chips.fade-l{-webkit-mask:linear-gradient(90deg,transparent,#000 64px);mask:linear-gradient(90deg,transparent,#000 64px)}
 .chips.fade-l.fade-r{-webkit-mask:linear-gradient(90deg,transparent,#000 64px,#000 calc(100% - 64px),transparent);mask:linear-gradient(90deg,transparent,#000 64px,#000 calc(100% - 64px),transparent)}
 .more-wrap{display:flex;justify-content:center;margin-top:22px}
+@media (max-width:720px){
+  .t10 .duo .bl{display:grid;position:absolute;z-index:2;left:50%;top:50%;width:64px;height:64px;border-radius:16px;transform:translate(-50%,-50%);font-size:24px;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+  .t10 .duo .bl img{padding:8px;filter:none;object-fit:contain;object-position:center;transform:none}
+  .t10 .duo > img{filter:grayscale(1) brightness(.4) blur(1px)}
+  .t10 .duo.noshot .bl{display:none}
+  .card{min-height:0;padding:14px 14px 12px;border-radius:16px}
+  .card .hd .lg{width:34px;height:34px}
+  .card .badges{margin-top:8px}
+  .card .pct{margin-top:8px;font-size:50px}
+  .card .t{margin-top:6px;font-size:14.5px}
+  .card .one{display:none}
+  .card .bottom{padding-top:12px}
+  .card .meta{margin-top:8px}
+}
+
 .more-wrap .btn[hidden]{display:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;height:32px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:600;color:var(--mute);border:1px solid var(--line-2)}
@@ -511,8 +527,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   var JOBS = [
     { id:"video", name:"AI video", img:"j-video", re:/video|avatar/i },
     { id:"image", name:"AI images", img:"j-image", re:/image/i },
-    { id:"ads", name:"Ads & UGC", img:"j-ads", re:/ads|ugc|ppc/i },
-    { id:"amazon", name:"Amazon research", img:"j-amazon", re:/product|keyword|amazon|research/i },
+    { id:"ads", name:"Ads & UGC", img:"j-ads", re:/ads|ugc|ppc|multichannel|email/i },
+    { id:"amazon", name:"Amazon research", img:"j-amazon", re:/product|keyword|amazon|research|course/i },
     { id:"voice", name:"Voice & audio", img:"j-voice", re:/voice|audio/i },
     { id:"writing", name:"Writing & SEO", img:"j-writing", re:/writing|seo/i },
     { id:"auto", name:"Automation", img:"j-auto", re:/automation|agent|scraping|data|builder|lifetime/i },
@@ -593,7 +609,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   function t10(d, i){
     var j = jobFor(d.category);
     return '<article class="t10"><span class="rk">'+String(i+1).padStart(2,"0")+'</span>' +
-      '<div class="win"><div class="wb"><i></i><i></i><i></i><span>'+esc(d.domain||"")+'</span></div><div class="duo"><img loading="lazy" alt="'+esc(d.name)+' website" src="shots/'+encodeURIComponent(d.id)+'.webp" onerror="this.onerror=null;this.parentNode.classList.add(\'noshot\');this.src=\'img/'+j.img+'.webp\'"></div></div>' + pct(d, "big") +
+      '<div class="win"><div class="wb"><i></i><i></i><i></i><span>'+esc(d.domain||"")+'</span></div><div class="duo">'+logo(d).replace('class="lg"','class="lg bl"')+'<img loading="lazy" alt="'+esc(d.name)+' website" src="shots/'+encodeURIComponent(d.id)+'.webp" onerror="this.onerror=null;this.parentNode.classList.add(\'noshot\');this.src=\'img/'+j.img+'.webp\'"></div></div>' + pct(d, "big") +
       '<h3>'+logo(d)+esc(d.name)+'</h3><p class="d">'+esc(d.deal_title)+'</p>' +
       '<div class="row"><a class="btn lime sm get-t" href="'+esc(safeUrl(d.url))+'" target="_blank" rel="noopener sponsored" data-name="'+esc(d.name)+'">Get deal</a><button class="share" data-share="'+esc(d.id)+'" aria-label="Share">'+SHARE_SVG+'</button></div></article>';
   }
@@ -654,13 +670,15 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   }
   function renderChips(){
     var l = live().filter(function(d){ return state.g === "all" || d.group === state.g; });
-    var counts = {}; l.forEach(function(d){ counts[d.category] = (counts[d.category]||0)+1; });
-    var cats = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
-    if (state.cat !== "all" && !counts[state.cat]) state.cat = "all";
-    $("chips").innerHTML = (state.job ? '<button class="chip" data-clear-job aria-pressed="true">'+esc(state.job.name)+' ✕</button>' : '') +
-      '<button class="chip" data-c="all" aria-pressed="'+(state.cat==="all" && !state.job)+'">All<sup>'+l.length+'</sup></button>' +
-      cats.map(function(c){ return '<button class="chip" data-c="'+esc(c)+'" aria-pressed="'+(state.cat===c)+'">'+esc(c)+'<sup>'+counts[c]+'</sup></button>'; }).join("");
+    var html = '<button class="chip" data-c="all" aria-pressed="'+(!state.job)+'">All<sup>'+l.length+'</sup></button>';
+    JOBS.forEach(function(j){
+      var n = l.filter(function(d){ return j.re.test(d.category); }).length; if (!n) return;
+      html += '<button class="chip" data-jc="'+j.id+'" aria-pressed="'+(state.job===j)+'">'+esc(j.name)+'<sup>'+n+'</sup></button>';
+    });
+    state.cat = "all";
+    $("chips").innerHTML = html;
   }
+
   function renderTop(){
     var top = live().slice().sort(featured).slice(0,10);
     if (top.length < 4) return;
@@ -694,7 +712,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
     $("soon").innerHTML = w.map(function(d){ return '<span>'+logo(d)+esc(d.name)+(d.last_year?' <em>· last year '+esc(d.last_year)+'</em>':'')+'</span>'; }).join("");
     $("watch").hidden = !w.length;
     var nv = DATA.never_on_sale || [];
-    if (nv.length){ $("never").hidden = false; $("never").innerHTML = "<b>Don't wait for:</b> " + esc(nv.join(", ")) + ". They never run a Black Friday sale."; }
+    if (nv.length){ $("never").hidden = false; $("never").innerHTML = "<b>Don't wait for:</b> " + esc(nv.join(", ")) + ". They rarely run a Black Friday sale."; }
   }
   function renderBelts(){
     var items = live().slice().sort(function(x,y){ return (y.discount_pct||0)-(x.discount_pct||0); }).slice(0,14);
@@ -912,7 +930,7 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
 
   /* motion */
   function countUp(nodes){
-    if (!G || reduce) return;
+    if (!G || reduce || matchMedia("(max-width: 720px)").matches) return;
     nodes.forEach(function(n){ var to = +n.getAttribute("data-to"), o = { v:0 }; G.to(o, { v: to, duration: 1, ease: "power2.out", onUpdate: function(){ n.textContent = Math.round(o.v); } }); });
   }
   function reveal(nodes){
@@ -972,7 +990,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       state.job = state.job === j ? null : j; state.cat = "all"; state.g = "all"; resetGroup(); renderJobs(); renderChips(); renderGrid(false);
       if (state.job) $("all").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); track("job_tile", { job: j.id }); return; }
     if (t.closest("[data-clear-job]")){ state.job = null; renderJobs(); renderChips(); renderGrid(false); return; }
-    var ch = t.closest(".chip"); if (ch){ state.cat = ch.getAttribute("data-c"); renderChips(); renderGrid(false); return; }
+    var ch = t.closest(".chip"); if (ch){ var jc = ch.getAttribute("data-jc"), jj = JOBS.filter(function(x){ return x.id === jc; })[0] || null;
+      state.job = jj && state.job !== jj ? jj : null; state.cat = "all"; renderJobs(); renderChips(); renderGrid(false); if (jj) track("job_chip", { job: jj.id }); return; }
     var w = t.closest("[data-wa]"); if (w){ waOpen(w.getAttribute("data-wa")); return; }
     var a = t.closest(".get, .get-t, .gold-t .btn"); if (a){ track("deal_click", { tool: a.getAttribute("data-name") }); try { fbq("trackCustom","DealClick",{ tool: a.getAttribute("data-name") }); } catch(e){} waNudge(); }
   });
