@@ -360,8 +360,6 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       </div>
       <div class="hero-obj hx" aria-hidden="true">
         <div class="pack" id="pack"><img id="box0" src="box/00.webp" alt="Jay GPT Pro collectible figure, Black Friday edition"><canvas id="boxc" width="640" height="640"></canvas></div>
-        <div class="stat c1"><b id="c-live">38</b>live deals</div>
-        <div class="stat c2"><b id="c-codes">13</b>with codes</div>
       </div>
     </div>
   </section>
@@ -640,8 +638,8 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   }
   function renderStats(){
     var l = live();
-    $("c-live").textContent = l.length;
-    $("c-codes").textContent = l.filter(function(d){ return d.code; }).length;
+    if ($("c-live")) $("c-live").textContent = l.length;
+    if ($("c-codes")) $("c-codes").textContent = l.filter(function(d){ return d.code; }).length;
     var top = l.reduce(function(m,d){ return Math.max(m, d.discount_pct||0); }, 0);
     if (top){
       if (G && !reduce){ var o = { v: 0 }; G.to(o, { v: top, duration: 1.4, delay: .5, ease: "power3.out", onUpdate: function(){ $("tape").textContent = "Up to " + Math.round(o.v) + "% off"; } }); }
