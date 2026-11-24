@@ -132,6 +132,21 @@ h1 .ln>span{display:block}
 .row.small .item h3{font-size:clamp(22px,2vw,30px)}
 .row.small .obj{aspect-ratio:4/3}
 
+/* ---------- latest posts, filled from /archive/latest.json ---------- */
+.latest{padding:70px 0 20px;border-top:1px solid var(--line)}
+.latest h2{font-size:clamp(40px,5.6vw,84px);margin-bottom:36px}
+.posts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.post{display:flex;flex-direction:column;gap:10px;background:#0b0d0f;border:1px solid var(--line);border-radius:4px 18px 18px 18px;padding:20px;transition:border-color .3s,background .3s}
+.post time{font-size:13px;color:var(--mute)}
+.post b{font-family:var(--display);font-stretch:75%;font-weight:800;text-transform:uppercase;font-size:26px;line-height:1}
+.post p{font-size:15px;color:var(--soft)}
+.post:hover{border-color:var(--ac);background:#0b1a24}
+.post:hover b{color:var(--ac)}
+.all{display:inline-flex;gap:8px;margin-top:22px;font-weight:600;color:var(--soft)}
+.all:hover{color:var(--ac)}
+.all i{font-style:normal}
+@media (max-width:900px){.posts{grid-template-columns:1fr}}
+
 /* ---------- messages ---------- */
 .said{padding:80px 0}
 .said h2{font-size:clamp(40px,5.6vw,84px);margin-bottom:40px}
@@ -201,7 +216,7 @@ footer a:hover{color:var(--txt)}
 
 <header class="top"><div class="wrap">
   <a class="brand" href="/">JAY GPT PRO</a>
-  <nav class="nav" aria-label="Main"><a href="#shelf">The shelf</a><a href="/skills-kit/">Free skills</a><a href="#about">About</a></nav>
+  <nav class="nav" aria-label="Main"><a href="#shelf">The shelf</a><a href="/archive/">AI tips</a><a href="/skills-kit/">Free skills</a><a href="/about/">About</a></nav>
   <a class="btn btn-wa btn-sm" href="https://chat.whatsapp.com/ILX65p1yWcaIG3c9WGHpTY" target="_blank" rel="noopener" data-track="wa_top">Join the group</a>
 </div></header>
 
@@ -271,6 +286,12 @@ footer a:hover{color:var(--txt)}
   </div>
 </div></section>
 
+<section class="latest" id="latest" hidden><div class="wrap">
+  <h2 class="d">Latest from<br><span class="ac">the group.</span></h2>
+  <div class="posts" id="posts"></div>
+  <a class="all" href="/archive/" data-track="latest_all">All the tips <i>→</i></a>
+</div></section>
+
 <section class="said"><div class="wrap">
   <h2 class="d">From the group.</h2>
   <div class="chat">
@@ -297,7 +318,8 @@ footer a:hover{color:var(--txt)}
     <p>Jay Margaliot teaches Amazon sellers and business owners to build AI employees with Claude Code, without code.</p>
     <p>I learned to make AI run real parts of my business. Now I teach other owners to do the same, in my community, on stages and in webinars.</p>
     <div class="links">
-      <a href="mailto:info@jaygptpro.com?subject=Speaking" data-track="book_speaking">Book me to speak</a>
+      <a href="/about/#speaking" data-track="book_speaking">Book me to speak</a>
+      <a href="/about/" data-track="about_page">More about me</a>
       <a href="https://www.linkedin.com/in/jay-margaliot/" target="_blank" rel="noopener" data-track="social_linkedin">LinkedIn</a>
       <a href="https://www.youtube.com/@Jay_Margaliot" target="_blank" rel="noopener" data-track="social_youtube">YouTube</a>
       <a href="https://www.instagram.com/jay_margaliot" target="_blank" rel="noopener" data-track="social_instagram">Instagram</a>
@@ -337,8 +359,23 @@ footer a:hover{color:var(--txt)}
     if ("IntersectionObserver" in window){
       var seenSec = {};
       var so = new IntersectionObserver(function(es){ es.forEach(function(en){ var k = en.target.dataset.sec; if (en.isIntersecting && !seenSec[k]){ seenSec[k] = 1; ev("section_view", { section: k }); } }); }, { threshold: .35 });
-      [["#hero","hero"],[".proof","proof"],["#shelf","shelf"],[".said","messages"],["#about","about"],[".end","end"]].forEach(function(p){ var el = document.querySelector(p[0]); if (el){ el.dataset.sec = p[1]; so.observe(el); } });
+      [["#hero","hero"],[".proof","proof"],["#shelf","shelf"],["#latest","latest"],[".said","messages"],["#about","about"],[".end","end"]].forEach(function(p){ var el = document.querySelector(p[0]); if (el){ el.dataset.sec = p[1]; so.observe(el); } });
     }
+
+    /* latest posts: the archive's daily build writes latest.json; the section stays hidden if it is missing */
+    fetch("/archive/latest.json").then(function(r){ return r.ok ? r.json() : []; }).then(function(list){
+      if (!list.length) return;
+      var box = document.getElementById("posts");
+      list.forEach(function(p, i){
+        var a = document.createElement("a"); a.className = "post"; a.href = p.url; a.setAttribute("data-track", "latest_post_" + (i + 1));
+        var t = document.createElement("time"); t.textContent = new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        var b = document.createElement("b"); b.textContent = p.title;
+        var d = document.createElement("p"); d.textContent = p.text;
+        a.appendChild(t); a.appendChild(b); a.appendChild(d); box.appendChild(a);
+      });
+      document.getElementById("latest").hidden = false;
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }).catch(function(){});
 
     /* shelf: the light over an item switches on at hover (desktop) or when it reaches mid-screen (touch) */
     var items = [].slice.call(document.querySelectorAll(".item"));
