@@ -224,3 +224,29 @@ Deno.test("the sent mark: key-checked, Christmas orders only, sent keys only", a
   await handle(post({ k: "right-key", act: "vault_unsent", customer: "cus_member1" }), deps);
   assert(writes[3][1].xmas_vault_sent === "", "Vault claim unmarked");
 });
+
+Deno.test("a Black Friday 1+1 cart: only its film's share counts, open carts are not orders, the film can be marked sent", async () => {
+  const cart = (o: Record<string, any> = {}) => ({
+    ...session({ amount: 49700, ...o }),
+    metadata: { project: "bf11", items: "wonka,xmas", free: "xmas", courses: "wonka" },
+    line_items: { data: [
+      { quantity: 1, amount_total: 49700, price: { product: "prod_Vgptu7pxmb7d1I" } },
+      { quantity: 1, amount_total: o.filmCents ?? 0, price: { product: VIDEO_PRODUCT } },
+    ] },
+  });
+  const free = classify(cart(), {})!;
+  assert(free && free.kind === "film" && free.films === 1 && free.usd === 0, `free film counts $0, got ${JSON.stringify(free?.usd)}`);
+  const paidFilm = classify({ ...cart({ amount: 59600, filmCents: 9900 }), line_items: { data: [
+    { quantity: 1, amount_total: 49700, price: { product: "prod_Vgptu7pxmb7d1I" } },
+    { quantity: 1, amount_total: 9900, price: { product: VIDEO_PRODUCT } },
+  ] } }, {})!;
+  assert(paidFilm.usd === 9900, `paid film counts its own $99, got ${paidFilm.usd}`);
+  assert(classify(cart({ paid: false }), {}) === null, "an open Black Friday cart is not a Christmas checkout");
+  const ORDER = "cs_live_" + "d".repeat(40);
+  const writes: unknown[] = [];
+  const deps: Deps = { sessions: () => Promise.resolve([]), promos: () => Promise.resolve({}), vault: () => Promise.resolve([]), now: () => 1795350000, keyHash: await sha256hex("k"),
+    sessionMeta: () => Promise.resolve({ project: "bf11" }), setSessionMeta: (id, p) => { writes.push([id, p]); return Promise.resolve(); },
+    customerMeta: () => Promise.resolve(null), setCustomerMeta: () => Promise.resolve() };
+  const r = await handle(new Request("https://x/f", { method: "POST", body: JSON.stringify({ k: "k", act: "sent", order: ORDER, n: 1 }) }), deps);
+  assert(r.status === 200 && writes.length === 1, `marked, got ${r.status}`);
+});
