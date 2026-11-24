@@ -7,10 +7,10 @@
 // The rule (Jay, 24.11): sort the cart from the priciest down, pair neighbours, the second of every pair is
 // free. One payment for the whole cart, every item its own line, free items at $0. Each item once.
 //
-// Delivery runs in stripe-webhook, keyed on the session metadata this writes (project=bf11, items, courses).
-// Four items ride on products that already exist: Donna (its welcome checks for the cross-sell product), the
-// Skill (christmas-kit checks the Skill product), the film (christmas-films counts the film product), the call.
-// The other six are Black Friday products of their own.
+// Delivery: Jay delivers every Black Friday product by hand (25.11.2026). stripe-webhook reads the session
+// metadata this writes (project=bf11, items, free, courses), grants nothing, and mails Jay the order with his
+// to-dos and the buyer a confirmation (an email from Jay within 24 hours). The Skill and the film still ride
+// on their own products, so the kit page and the film card Jay sends open for this order's session id.
 
 export const BF_PROJECT = "bf11";
 // The offer runs as Black Friday, then as Cyber Monday, until Tue 1.12.2026 00:00 New York (EST, UTC-5).

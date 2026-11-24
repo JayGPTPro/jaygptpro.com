@@ -904,54 +904,50 @@ const bf = (email: string, items: string, free: string, amount: number, courses:
 const toJay = () => sendState.mails.filter((m: any) => String(m.to).includes('info@jaygptpro.com'));
 const toBuyer = (e: string) => sendState.mails.filter((m: any) => String(m.to).includes(e));
 
-console.log('\nBF1. Wonka + Donna (Donna free): Wonka cohort, Donna as the cross-sell, both welcomes, both order mails');
+console.log('\nBF1. Wonka + Donna (Donna free): delivered by hand, so no access, no welcome; Jay gets the to-dos, the buyer the 24-hour line');
 reset();
-sendState.stripeLineItems = ['prod_something_else', 'prod_VdK0WmRf7Cgnvy'];   // ignored: the metadata decides
+sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT', 'prod_UxhPy8Tfpeiwv6'];   // even real course products: the metadata decides
 res = await post(bf('bf1@buyer.com', 'wonka,donna', 'donna', 49700, 'donna,wonka'));
-row = DB.allowed_emails.find(r => r.email === 'bf1@buyer.com');
 check('http 200', res.status === 200, `got ${res.status}`);
-check('Wonka cohort', row?.round === WONKA_NOW, JSON.stringify(row));
-check('addon_donna', row?.addon_donna === true, JSON.stringify(row));
-check('Wonka welcome and Donna add-on welcome', sendState.calls.some(c => c.url.includes('send-welcome-wonka')) && sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
-check('one buyer mail, one mail to Jay naming the free item', toBuyer('bf1@buyer.com').length === 1 && toJay().length === 1 && JSON.stringify(toJay()[0]).includes('Donna Challenge (FREE, 1+1)'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
+check('no access row, no payment row', !DB.allowed_emails.length && !DB.stripe_customers.length, JSON.stringify([DB.allowed_emails, DB.stripe_customers]));
+check('no welcome of any kind', sendState.calls.length === 0, JSON.stringify(sendState.calls.map(c => c.url)));
+check('Jay first, naming the free item and the enrolment to do', String(sendState.mails[0]?.to).includes('info@jaygptpro.com') && JSON.stringify(sendState.mails[0]).includes('Donna Challenge (FREE, 1+1)') && JSON.stringify(sendState.mails[0]).includes('Enrol them in the Wonka Bootcamp'), JSON.stringify(sendState.mails[0]).slice(0, 300));
+check('buyer: one mail, the 24-hour promise, no links', toBuyer('bf1@buyer.com').length === 1 && JSON.stringify(toBuyer('bf1@buyer.com')[0]).includes('Within 24 hours') && !JSON.stringify(toBuyer('bf1@buyer.com')[0]).includes('href'), JSON.stringify(toBuyer('bf1@buyer.com')));
 
-console.log('\nBF2. Vault + call, no course: no access row, no welcome, the two mails');
+console.log('\nBF2. Vault + call: no access row, no Calendly anywhere');
 reset();
-res = await post(bf('bf2@buyer.com', 'vault,call', 'call', 99700, 'none'));
+res = await post(bf('bf2@buyer.com', 'vault,call', 'call', 100000, 'none'));
 check('http 200', res.status === 200, `got ${res.status}`);
 check('no allowed_emails row (not dropped into a Donna cohort)', !DB.allowed_emails.some(r => r.email === 'bf2@buyer.com'), JSON.stringify(DB.allowed_emails));
-check('no welcome', sendState.calls.length === 0, JSON.stringify(sendState.calls));
-check('buyer mail has the Calendly link, Jay mail has the Vault to-do', JSON.stringify(toBuyer('bf2@buyer.com')).includes('calendly.com') && JSON.stringify(toJay()).includes('add a year'), JSON.stringify(sendState.mails).slice(0, 400));
+check('no Calendly, the Vault to-do for Jay', !JSON.stringify(sendState.mails).includes('calendly') && JSON.stringify(toJay()).includes('add a year'), JSON.stringify(sendState.mails).slice(0, 400));
 
-console.log('\nBF3. Skill + Wonka: the Christmas route does not swallow the Wonka seat');
+console.log('\nBF3. Skill + film + Wonka: the Christmas route does not take it, and Jay gets the kit and film links to send');
 reset();
-sendState.stripeLineItems = ['prod_VdK0WmRf7Cgnvy', 'prod_UxhJATVn8CEfCT'];
-res = await post(bf('bf3@buyer.com', 'wonka,gift', 'gift', 49700, 'wonka'));
-row = DB.allowed_emails.find(r => r.email === 'bf3@buyer.com');
-check('Wonka cohort', row?.round === WONKA_NOW, JSON.stringify(row));
-check('buyer mail carries the kit link', JSON.stringify(toBuyer('bf3@buyer.com')).includes('christmas-video/kit/?s=cs_bf_1'), JSON.stringify(sendState.mails).slice(0, 400));
+sendState.stripeLineItems = ['prod_VdK0WmRf7Cgnvy', 'prod_VdK0ykqQR23ctI', 'prod_UxhJATVn8CEfCT'];
+res = await post(bf('bf3@buyer.com', 'wonka,gift,xmas', 'gift', 59600, 'wonka'));
+check('no Christmas mails, no access', !JSON.stringify(sendState.mails).includes('New Christmas order') && !DB.allowed_emails.length, JSON.stringify(sendState.mails.map((m: any) => m.subject)));
+check('kit and film links in Jay mail only', JSON.stringify(toJay()).includes('christmas-video/kit/?s=cs_bf_1') && JSON.stringify(toJay()).includes('thanks/?p=video&amp;s=cs_bf_1') && !JSON.stringify(toBuyer('bf3@buyer.com')).includes('christmas-video'), JSON.stringify(sendState.mails).slice(0, 400));
 
-console.log('\nBF4. Vault + Donna: Donna weekly cohort, no add-on');
+console.log('\nBF4. Stripe replays the event after Jay was mailed: still no access, ever');
 reset();
-res = await post(bf('bf4@buyer.com', 'vault,donna', 'donna', 99700, 'donna'));
-row = DB.allowed_emails.find(r => r.email === 'bf4@buyer.com');
-check('Donna wk_ cohort', String(row?.round || '').startsWith('wk_'), JSON.stringify(row));
-check('no add-on', !row?.addon_donna && !sendState.calls.some(c => c.url.includes('donna-addon')), JSON.stringify(sendState.calls.map(c => c.url)));
+await post(bf('bf4@buyer.com', 'donna', '', 29700, 'donna'));
+await post(bf('bf4@buyer.com', 'donna', '', 29700, 'donna'));
+check('no access row after two deliveries', !DB.allowed_emails.length && sendState.calls.length === 0, JSON.stringify(DB.allowed_emails));
 
 console.log('\nBF5. The PaymentIntent event of a Black Friday payment does nothing');
 reset();
 res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_bf_1', amount: 49700, currency: 'usd', metadata: { project: 'bf11', items: 'wonka,donna', courses: 'donna,wonka' } } } });
 check('no row, no mail', DB.stripe_customers.length === 0 && DB.allowed_emails.length === 0 && sendState.mails.length === 0, JSON.stringify(DB.stripe_customers));
 
-console.log('\nBF6. Refund of a no-course cart never revokes a course held another way');
+console.log('\nBF6. A Black Friday refund (even with Donna in it) never revokes a course held another way');
 reset();
 DB.allowed_emails.push({ email: 'bf6@student.com', round: 'round1', welcome_email_sent_at: '2026-04-02T00:00:00Z' });
 res = await post({ type: 'charge.refunded', data: { object: { id: 'ch_bf', payment_intent: 'pi_bf_6', amount: 99700, amount_refunded: 99700, refunded: true, currency: 'usd', created: 1794700000,
-  billing_details: { email: 'bf6@student.com', name: 'Student' }, refunds: { data: [{ created: 1794700000, reason: 'requested_by_customer' }] }, metadata: { project: 'bf11', items: 'vault,call', courses: 'none' } } } });
+  billing_details: { email: 'bf6@student.com', name: 'Student' }, refunds: { data: [{ created: 1794700000, reason: 'requested_by_customer' }] }, metadata: { project: 'bf11', items: 'donna,vault', courses: 'donna' } } } });
 row = DB.allowed_emails.find(r => r.email === 'bf6@student.com');
 check('access kept', !row?.access_revoked_at, JSON.stringify(row));
 
-console.log('\nBF7. Jay mail fails: 500, and the retry grants nothing twice');
+console.log('\nBF7. All mail fails: 500, and the retry sends the mails');
 reset();
 sendState.mailOk = false;
 res = await post(bf('bf7@buyer.com', 'wonka', '', 49700, 'wonka'));
@@ -960,7 +956,7 @@ const welcomesBefore = sendState.calls.length;
 sendState.mailOk = true; sendState.mails = [];
 res = await post(bf('bf7@buyer.com', 'wonka', '', 49700, 'wonka'));
 check('retry 200', res.status === 200, `got ${res.status}`);
-check('no second welcome', sendState.calls.length === welcomesBefore, `before ${welcomesBefore}, after ${sendState.calls.length}`);
+check('no welcome at all', sendState.calls.length === 0 && welcomesBefore === 0, `before ${welcomesBefore}, after ${sendState.calls.length}`);
 check('order mails go out on the retry', toJay().length === 1, JSON.stringify(sendState.mails.map((m: any) => m.to)));
 
 console.log('\nBF8. Only the buyer mail fails: 200 (no retry, no second mail to Jay), and Jay is told to send the steps');
@@ -968,7 +964,7 @@ reset();
 (sendState as any).mailFailTo = 'bf8@buyer.com';
 res = await post(bf('bf8@buyer.com', 'vault,call', 'call', 100000, 'none'));
 check('http 200', res.status === 200, `got ${res.status}`);
-check('order mail + ACTION mail to Jay', toJay().length === 2 && JSON.stringify(toJay()[1]).includes('did not get their Black Friday mail'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
+check('order mail + a note to Jay', toJay().length === 2 && JSON.stringify(toJay()[1]).includes('did not get their Black Friday confirmation'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
 
 console.log('\nBF9. Jay mail fails: the buyer is not mailed on that try');
 reset();
