@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/logo.png">
-<link rel="preload" as="image" href="/home/store-closed.webp" fetchpriority="high">
+<link rel="preload" as="image" href="/home/box/d00.webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500..800&family=Big+Shoulders+Display:wght@300;400;800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -85,23 +85,30 @@ img,canvas{display:block;max-width:100%}
 .btn-sm{padding:9px 14px;font-size:14px;border-radius:8px}
 .btn-xl{font-size:19px;padding:18px 28px}
 
-/* ---------- hero: the aisle. Tall track, sticky stage; scrolling opens the box door ---------- */
-.hero{position:relative;height:200vh}
-.stage{position:sticky;top:60px;height:calc(100vh - 60px);min-height:560px;overflow:hidden;background:#000}
-.scene{position:absolute;inset:0}
-.scene img,.scene canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 50%}
-.scene canvas{opacity:0}
-.scene.live canvas{opacity:1}
-.stage::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.82) 0,rgba(0,0,0,.5) 36%,transparent 60%),linear-gradient(0deg,rgba(5,6,7,1) 0,transparent 16%)}
-.stage .wrap{position:relative;z-index:2;height:100%;display:flex;align-items:center}
+/* ---------- hero: one collector box on a black stage. Door opens on load, then the box turns with the mouse and the scroll ---------- */
+.hero{position:relative;overflow:hidden;background:radial-gradient(60% 70% at 74% 46%,rgba(31,182,255,.16),transparent 70%),var(--bg)}
+.hero-grid{min-height:calc(100svh - 96px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:20px;padding:30px 0 60px}
+.copy{position:relative;z-index:2}
 .kick{font-size:14px;color:var(--soft);margin-bottom:18px}
 .kick b{color:var(--ac);font-weight:600}
-h1{font-size:clamp(58px,9.2vw,150px)}
+h1{font-size:clamp(58px,8.6vw,146px)}
 h1 .ln{display:block;overflow:hidden;padding-top:.06em}
 h1 .ln>span{display:block}
 .sub{max-width:34ch;font-size:clamp(17px,1.5vw,20px);color:#e3e7ea;margin:26px 0 30px}
 .cta-note{display:block;margin-top:14px;font-size:14px;color:var(--soft)}
-.scrollcue{position:absolute;z-index:2;right:var(--pad);bottom:26px;font-family:var(--thin);font-weight:300;font-size:15px;letter-spacing:.22em;color:var(--soft);text-transform:uppercase}
+.stagebox{position:relative;justify-self:center;width:min(100%,78vh,700px);aspect-ratio:1/1;perspective:1400px}
+.num{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);font-family:var(--thin);font-weight:800;font-size:min(46vh,420px);line-height:1;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:1.5px rgba(31,182,255,.3);pointer-events:none;user-select:none;white-space:nowrap}
+.beam{position:absolute;left:14%;right:14%;top:-34%;height:96%;background:conic-gradient(from 180deg at 50% 0%,transparent 160deg,rgba(150,220,255,.16) 176deg,rgba(150,220,255,.22) 180deg,rgba(150,220,255,.16) 184deg,transparent 200deg);filter:blur(6px);pointer-events:none}
+.floor{position:absolute;left:8%;right:8%;bottom:4%;height:12%;background:radial-gradient(closest-side,rgba(31,182,255,.5),transparent);filter:blur(16px);pointer-events:none}
+.pack{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.pack img,.pack canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:lighten;-webkit-mask:radial-gradient(56% 54% at 50% 50%,#000 80%,transparent 100%);mask:radial-gradient(56% 54% at 50% 50%,#000 80%,transparent 100%)}
+.pack img,.pack canvas{transform:scale(1.16)}
+.pack canvas{opacity:0}
+.pack.ready canvas{opacity:1}
+.pack.ready #box0{opacity:0}
+.glare{position:absolute;inset:10% 22%;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.14) 48%,transparent 60%);background-size:260% 100%;background-position:var(--gx,100%) 0;opacity:.9}
+.ed{position:absolute;right:-4px;top:12%;writing-mode:vertical-rl;font-family:var(--thin);font-weight:400;font-size:14px;letter-spacing:.3em;color:var(--mute)}
+.scrollcue{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);font-family:var(--thin);font-weight:400;font-size:14px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase;white-space:nowrap}
 
 /* ---------- proof: one line of text ---------- */
 .proof{border-bottom:1px solid var(--line);padding:24px 0;font-size:15px;color:var(--mute)}
@@ -178,12 +185,10 @@ footer a:hover{color:var(--txt)}
 
 @media (max-width:900px){
   .nav{display:none}
-  .hero{height:auto}
-  .stage{position:relative;top:0;height:auto;min-height:0;background:var(--bg)}
-  .scene{position:relative;height:62vh;min-height:380px}
-  .scene img,.scene canvas{object-position:79% 50%}
-  .stage::before{background:linear-gradient(0deg,var(--bg) 0,transparent 30%);height:62vh;min-height:380px;bottom:auto}
-  .stage .wrap{display:block;height:auto;margin-top:-14px;padding-bottom:34px}
+  .hero-grid{grid-template-columns:1fr;min-height:0;padding:8px 0 40px;gap:0}
+  .stagebox{width:min(92vw,430px);order:-1;margin:0 auto 10px}
+  .num{font-size:62vw}
+  .ed{display:none}
   h1{font-size:clamp(54px,17vw,96px)}
   .sub{margin:18px 0 22px}
   .scrollcue{display:none}
@@ -206,7 +211,6 @@ footer a:hover{color:var(--txt)}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
-  .hero{height:auto}.stage{position:relative;top:0;height:86vh}
 }
 </style>
 </head>
@@ -222,12 +226,8 @@ footer a:hover{color:var(--txt)}
 
 <main>
 <section class="hero" id="hero">
-  <div class="stage">
-    <div class="scene" id="scene">
-      <img src="/home/store-closed.webp" width="1600" height="900" alt="A collectors' toy store at night. On the shelf, a boxed action figure of Jay Margaliot labeled Jay GPT Pro, AI Edition, next to boxed robot assistants." fetchpriority="high">
-      <canvas id="door" width="1280" height="720" aria-hidden="true"></canvas>
-    </div>
-    <div class="wrap"><div class="copy">
+  <div class="wrap hero-grid">
+    <div class="copy">
       <p class="kick"><b>Jay Margaliot</b> · AI for eCommerce sellers</p>
       <h1 class="d"><span class="ln"><span>I build AI</span></span><span class="ln"><span>employees.</span></span><span class="ln"><span class="ac">You can too.</span></span></h1>
       <p class="sub">Ten years selling online. Now I show Amazon sellers and business owners how to put AI to work, without code.</p>
@@ -236,9 +236,20 @@ footer a:hover{color:var(--txt)}
         Join the free WhatsApp group
       </a>
       <span class="cta-note">AI tools and hacks, a few times a week. Admins only, no spam.</span>
-    </div></div>
-    <span class="scrollcue" aria-hidden="true">Scroll to open the box</span>
+    </div>
+    <div class="stagebox" id="stagebox">
+      <span class="num" aria-hidden="true">001</span>
+      <div class="beam" aria-hidden="true"></div>
+      <div class="floor" aria-hidden="true"></div>
+      <div class="pack" id="pack">
+        <img id="box0" src="/home/box/d00.webp" width="900" height="900" alt="Jay Margaliot as a collectible vinyl figure in a black and sky blue box labeled Jay GPT Pro, AI Edition" fetchpriority="high">
+        <canvas id="boxc" width="900" height="900" aria-hidden="true"></canvas>
+        <div class="glare" aria-hidden="true"></div>
+      </div>
+      <span class="ed" aria-hidden="true">AI EDITION · NO. 001</span>
+    </div>
   </div>
+  <span class="scrollcue" aria-hidden="true">Move the mouse · Scroll</span>
 </section>
 
 <section class="proof" aria-label="Proof"><div class="wrap">
@@ -342,7 +353,7 @@ footer a:hover{color:var(--txt)}
 
 <script>
 (function(){
-  var MOB = matchMedia("(max-width: 900px)").matches, FRAMES = MOB ? 25 : 50, DIR = MOB ? "/home/door-m/" : "/home/door/";
+  var D = 61, O = 55;
   function init(){
     var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     var desk = matchMedia("(min-width: 901px)").matches;
@@ -397,12 +408,47 @@ footer a:hover{color:var(--txt)}
       new IntersectionObserver(function(es){ s.e = es[0].isIntersecting; upd(); }).observe(eb);
     }
 
-    /* door frames: loaded after the first paint, drawn on a canvas over the still */
-    var scene = document.getElementById("scene"), cv = document.getElementById("door"); if (MOB){ cv.width = 960; cv.height = 540; } var ctx = cv.getContext("2d"), fr = [], last = -1, want = 0;
-    function draw(i){ var f = fr[i]; if (!f || !f.complete || !f.naturalWidth) return; if (i === last) return; ctx.drawImage(f, 0, 0, cv.width, cv.height); last = i; scene.classList.add("live"); }
-    function setP(p){ want = Math.round(Math.max(0, Math.min(1, p)) * (FRAMES - 1)); draw(want); }
-    if (FRAMES && !reduce){
-      for (var i = 0; i < FRAMES; i++){ (function(i){ var im = new Image(); im.decoding = "async"; im.onload = function(){ if (i === want) draw(i); }; im.src = DIR + String(i).padStart(2, "0") + ".webp"; fr[i] = im; })(i); }
+    /* the box: the door opens once on load, then the box turns. The mouse picks the angle across the screen,
+       and scrolling takes over as the hero leaves. Frames load after the first paint. */
+    var pack = document.getElementById("pack"), cv = document.getElementById("boxc"), ctx = cv.getContext("2d");
+    var door = [], orbit = [], lastKey = "", t0 = 0, introDone = false, cur = 0, mouseX = null, mouseY = 0, mouseT = 0;
+    function img(src, cb){ var im = new Image(); im.decoding = "async"; if (cb) im.onload = cb; im.src = src; return im; }
+    function draw(im, key){ if (!im || !im.complete || !im.naturalWidth || key === lastKey) return; ctx.clearRect(0, 0, 900, 900); ctx.drawImage(im, 0, 0, 900, 900); lastKey = key; pack.classList.add("ready"); }
+    if (reduce){ document.getElementById("box0").src = "/home/box/d" + String(D - 1).padStart(2, "0") + ".webp"; }
+    else if (D){
+      if (matchMedia("(hover: hover)").matches) window.addEventListener("pointermove", function(e){
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        mouseX = Math.max(-1, Math.min(1, e.clientX / innerWidth * 2 - 1)); mouseY = Math.max(-1, Math.min(1, e.clientY / innerHeight * 2 - 1)); mouseT = performance.now();
+      }, { passive: true });
+      for (var i = 0; i < D; i++) door[i] = img("/home/box/d" + String(i).padStart(2, "0") + ".webp");
+      for (var j = 0; j < O; j++) orbit[j] = img("/home/box/o" + String(j).padStart(2, "0") + ".webp");
+      setTimeout(function(){ t0 = performance.now(); requestAnimationFrame(loop); }, 350);
+    }
+    var hero = document.getElementById("hero"), tiltX = 0, tiltY = 0;
+    function loop(now){
+      var h = hero.offsetHeight, p = Math.min(1, Math.max(0, scrollY / (h * .75)));
+      var intro = Math.min(1, (now - t0) / 2400);
+      if (!introDone && (intro >= 1 || p > .03)) introDone = true;
+      if (!introDone){ var k = Math.round(intro * (D - 1)); draw(door[k], "d" + k); }
+      else if (O){
+        var base = p * (O - 1), target, live = mouseX !== null && now - mouseT < 3000;
+        if (live){
+          var m = (mouseX + 1) / 2 * (O - 1);
+          target = m + (base - m) * Math.min(1, p * 2.5);
+        } else {
+          var sway = (Math.sin(now / 1700) + 1) / 2 * Math.min(18, O - 1) * (1 - Math.min(1, p * 3));
+          target = sway + base;
+        }
+        cur += (target - cur) * .1;
+        var f = Math.round(Math.max(0, Math.min(O - 1, cur)));
+        draw(orbit[f], "o" + f);
+        /* a little real tilt on top of the frames, and the glare follows the angle */
+        var tx = live ? -mouseY * 4 : 0, ty = live ? mouseX * 5 : 0;
+        tiltX += (tx - tiltX) * .08; tiltY += (ty - tiltY) * .08;
+        pack.style.transform = "translateY(" + (-p * 40).toFixed(1) + "px) rotateX(" + tiltX.toFixed(2) + "deg) rotateY(" + tiltY.toFixed(2) + "deg) scale(" + (1 + p * .06).toFixed(3) + ")";
+        pack.style.setProperty("--gx", (100 - cur / Math.max(1, O - 1) * 100).toFixed(1) + "%");
+      } else draw(door[D - 1], "d" + (D - 1));
+      requestAnimationFrame(loop);
     }
 
     if (reduce || !window.gsap || !window.ScrollTrigger) return;
@@ -411,14 +457,10 @@ footer a:hover{color:var(--txt)}
     /* load: headline lines print upward out of their own line box and stop */
     gsap.fromTo("h1 .ln>span", { yPercent: 105 }, { yPercent: 0, duration: .7, ease: "power4.out", stagger: .09 });
 
-    if (FRAMES){
-      if (desk) ScrollTrigger.create({ trigger: "#hero", start: "top top", end: "bottom bottom", scrub: true, onUpdate: function(st){ setP(st.progress * 1.12); } });
-      else ScrollTrigger.create({ trigger: "#scene", start: "top 60px", end: "bottom 35%", scrub: true, onUpdate: function(st){ setP(st.progress); } });
-    }
     if (desk){
-      /* slow push toward the box while the door opens */
-      gsap.fromTo("#scene", { scale: 1 }, { scale: 1.08, transformOrigin: "74% 50%", ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom bottom", scrub: true } });
-      gsap.fromTo(".scrollcue", { opacity: 1 }, { opacity: 0, ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "12% top", scrub: true } });
+      gsap.fromTo(".scrollcue", { opacity: 1 }, { opacity: 0, ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "20% top", scrub: true } });
+      /* the big 001 drifts slower than the box: depth without a second image */
+      gsap.fromTo(".num", { yPercent: 0 }, { yPercent: 18, ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: true } });
     }
 
     /* price tags get slapped on as each shelf row arrives */
