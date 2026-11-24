@@ -51,6 +51,32 @@ h1 em{font-style:normal;color:var(--lime)}
 .cl-d{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .cl-d i{font-style:normal;color:var(--soft);font-weight:600;font-size:13px;margin:0 7px 0 1px}
 .clock[hidden]{display:none}
+.endat{margin-top:8px;font-size:12.5px;color:var(--soft)}
+.cue{display:none}
+/* details panel */
+.iveil{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
+.iveil.on{opacity:1;pointer-events:auto}
+.info{position:fixed;z-index:190;left:50%;top:50%;width:min(560px,calc(100% - 32px));max-height:86vh;overflow:auto;background:var(--s1);border:1px solid var(--line2);border-radius:26px;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.info.on{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+.info .ix{position:absolute;top:12px;right:12px;z-index:2;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:20px;line-height:34px;text-align:center}
+.i-im{aspect-ratio:16/9;overflow:hidden;background:var(--s2)}
+.i-im img{width:100%;height:100%;object-fit:cover}
+.i-bd{padding:18px 22px 22px}
+.i-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.i-tags .cc{margin:0}
+.i-g{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--lime)}
+.info h3{margin-top:8px;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.i-l{margin-top:6px;color:var(--mute);font-size:15.5px}
+.i-h{margin-top:16px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.info ul{margin-top:8px;list-style:none;display:grid;gap:8px}
+.info li{position:relative;padding-left:22px;font-size:15px;line-height:1.45}
+.info li::before{content:"✓";position:absolute;left:0;top:0;color:var(--lime);font-weight:900}
+.i-after{margin-top:14px;font-size:13.5px;color:var(--mute)}
+.i-ft{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.i-ft .pill{background:var(--lime);color:var(--ink)}
+.i-pg{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--txt);text-decoration:underline;text-underline-offset:3px}
+.i-note{margin-top:4px;font-size:12.5px;color:var(--soft)}
+.card .det{text-decoration:underline;text-underline-offset:3px}
 
 /* ===== the pair station ===== */
 .station{margin-top:20px;background:var(--s1);border:1px solid var(--line);border-radius:28px;padding:16px 18px 18px;position:relative}
@@ -172,6 +198,8 @@ footer a{color:var(--mute)}
   .station .st-sum .lbl{font-size:10.5px}
   .station .st-sum .big{font-size:26px}
   .station .save{display:none}
+  .station .cue{display:block;margin-top:2px;font-size:11.5px;font-weight:700;color:var(--lime)}
+  .station.open .cue{display:none}
   .station .co{margin:0;width:auto;height:44px;padding:0 18px;font-size:14px}
   .station.open{display:block;padding:14px 16px 18px;left:0;right:0;bottom:0;border-radius:26px 26px 0 0;cursor:default}
   .station.open .st-hd{display:flex}
@@ -199,13 +227,18 @@ footer a{color:var(--mute)}
   h1{font-size:44px}
   .sub{font-size:16px}
   .draft{display:none}
-  .cards{grid-template-columns:1fr 1fr;gap:10px}
-  .card .bd{padding:11px 12px 13px}
-  .card h3{font-size:15px}
-  .card p{display:none}
+  .cards{grid-template-columns:1fr;gap:10px}
+  .card{flex-direction:row}
+  .card .im{width:116px;flex:none;aspect-ratio:auto}
+  .card .bd{padding:11px 12px 12px}
+  .card h3{font-size:15.5px}
+  .card p{font-size:13px;line-height:1.38}
   .pr b{font-size:18px}
-  .card .ft{flex-direction:column;align-items:stretch;gap:8px}
-  .card .add{width:100%}
+  .card .ft{padding-top:10px}
+  .card .bs{font-size:10px;padding:4px 7px;top:8px;left:8px}
+  .card .st{top:8px;right:8px}
+  .info{left:0;right:0;top:auto;bottom:0;width:100%;max-height:90vh;border-radius:24px 24px 0 0;transform:translateY(100%)}
+  .info.on{transform:none}
   .best .bd{padding:18px}
   .best h2{font-size:26px}
   .grp{margin-top:34px}
@@ -234,6 +267,7 @@ footer a{color:var(--mute)}
       <h1>Buy one.<br><em>Get one free.</em></h1>
       <p class="sub">Pick any two. <b>You pay for the pricier one.</b> The other one is free.</p>
       <p class="clock" id="clock"><span class="cl-l" id="cl-l">Black Friday ends in</span><span class="cl-d" id="cl-d"></span></p>
+      <p class="endat" id="endat"></p>
     </div>
     <section class="station" id="station" aria-label="Your pair" aria-live="polite"></section>
   </aside>
@@ -246,6 +280,8 @@ footer a{color:var(--mute)}
 
 <footer><div class="wrap">Prices shown after the usual discount, regular price crossed out. © 2026 Jay GPT Pro LLC · <a href="/privacy-policy.html">Privacy</a></div></footer>
 <div class="veil" id="veil"></div>
+<div class="iveil" id="iveil"></div>
+<div class="info" id="info" role="dialog" aria-modal="true" aria-label="Product details"></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -261,13 +297,28 @@ footer a{color:var(--mute)}
     { id:"donna",  g:"learn", m:"Donna",      name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna.webp", url:"/claude-code-challenge-join/", line:"Build Donna, your AI chief of staff: email, calendar and tasks." },
     { id:"wonka",  g:"learn", m:"Wonka",      name:"Wonka Bootcamp",         price:497,  was:697,  cc:1, img:"x/wonka.webp", url:"/wonka/", line:"Build Wonka, your AI creative director for Amazon listing images." },
     { id:"vault",  g:"jay",   m:"Vault",      name:"The AI Vault, 1 year",   price:1000, was:1200, img:"x/vault-dark.webp", url:"https://www.topdog.community/checkout/ai-vault", line:"A full year in the Vault: monthly AI episodes, the library and the community." },
-    { id:"call",   g:"jay",   m:"1 call",     name:"1:1 AI call",            price:400,  was:null, img:"x/call.webp?v=2",  url:"/call/", line:"One call with Jay about putting AI to work in your business." },
+    { id:"call",   g:"jay",   m:"1 call",     name:"1:1 AI call",            price:400,  was:null, img:"x/call.webp?v=2",  url:"/call/", line:"One 45-minute call with Jay about putting AI to work in your business." },
     { id:"calls4", g:"jay",   m:"4 calls",    name:"4 AI calls",             price:1200, was:1600, img:"x/calls4.webp?v=2", url:"/call/", line:"Four calls with Jay. Each one picks up where the last one ended." },
     { id:"xmas",   g:"dfy",   m:"Xmas film",  name:"Christmas film for your product", price:99, was:null, img:"x/xmas-sb.webp", url:"/christmas-video/", line:"Your product stars in The Perfect Gift. A finished Christmas film, made for you." },
     { id:"build",  g:"impl",   m:"Workflow",   name:"Custom AI workflow",     price:3000, was:null, img:"x/build-dark.webp", url:"implementation/#workflow", line:"Four sessions to set up one AI workflow around how your business runs." },
     { id:"images", g:"impl",   m:"Images",     name:"Product image system",   price:3000, was:null, img:"x/images-dark.webp", url:"implementation/#images", line:"An AI process for your product images, set up in your business." },
     { id:"video",  g:"impl",   m:"Video",      name:"Product video & ads system", price:3000, was:null, img:"x/video-dark.webp", url:"implementation/#video", line:"An AI process for product videos, UGC and ads, set up in your business." }
   ];
+  /* What you get, shown in the details panel. page = the product's own page, only where it explains more. */
+  var GET = {
+    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film", "The training series that walks you through it"],
+    donna:  ["A 5-day challenge: you build Donna in Claude Code Desktop", "Email, calendar, tasks, invoices, routines and business memory", "Made for people who are not technical"],
+    wonka:  ["A 10-day bootcamp: you build Wonka, your AI creative director", "Main image, secondary images and A+ for your Amazon listings", "The skills, the workflows and the training"],
+    vault:  ["The monthly AI episodes and the full library", "The Vault community and the mastermind groups", "Already a member? The year is added when your current period ends, and your monthly plan stops"],
+    call:   ["One 45-minute call with Jay on Zoom", "About putting AI to work in your business", "You leave with clear next steps"],
+    calls4: ["Four calls with Jay", "Each call picks up where the last one ended"],
+    xmas:   ["Your product stars in The Perfect Gift, a finished Christmas film", "Made for you, from your Amazon listing"],
+    build:  ["Four sessions with Jay to set up one AI workflow inside your business", "A workflow that runs on your own tools, and a team that knows how to use it"],
+    images: ["An AI process for your product images, set up in your business with your team", "A process your team runs for every product: listing images and lifestyle shots"],
+    video:  ["An AI process for product videos, UGC-style videos and video ads, set up with your team", "A process your team runs for every product, from the listing video to the ad"]
+  };
+  var PAGE = { donna:["/claude-code-challenge-join/","The Donna Challenge page",1], wonka:["/wonka/","The Wonka Bootcamp page",1],
+    build:["implementation/#workflow","More about this implementation",0], images:["implementation/#images","More about this implementation",0], video:["implementation/#video","More about this implementation",0] };
   var GROUPS = [
     { id:"learn", name:"Learn it",     line:"Courses and skills. You build it yourself, in Claude Code." },
     { id:"jay",   name:"With Jay",     line:"The Vault community and calls with Jay." },
@@ -310,6 +361,7 @@ footer a{color:var(--mute)}
       $("eb").textContent = ph === "bf" ? "Black Friday 2026 · Everything in the store" : ph === "cm" ? "Cyber Monday 2026 · Same deal, until Monday night" : "The 1+1 has ended";
       $("cl-l").textContent = name + " ends in";
       $("clock").hidden = ph === "over";
+      $("endat").textContent = ph === "bf" ? "Ends Friday, Nov 27 at 11:59 PM New York time" : ph === "cm" ? "Ends Monday, Nov 30 at 11:59 PM New York time" : "";
       document.title = name + " 1+1 · Buy one, get one free · Jay GPT Pro";
     }
     var s = Math.max(0, Math.floor((end - now)/1000)), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), sc = s%60;
@@ -333,7 +385,7 @@ footer a{color:var(--mute)}
             (BEST.indexOf(p.id) >= 0 ? '<span class="bs">★ Best seller</span>' : '') + '<span class="st"></span>' +
             '<div class="bd">'+(p.cc ? CC : '')+'<h3>'+esc(p.name)+'</h3><p>'+esc(p.line)+'</p>' +
             '<div class="ft"><div class="pr">'+(p.was ? '<s>'+money(p.was)+'</s>' : '')+'<b>'+money(p.price)+'</b></div><button class="add">Add</button></div>' +
-            '<a class="det" href="'+p.url+'" target="_blank" rel="noopener" data-more="'+p.id+'">Details ↗</a></div></article>';
+            '<button class="det" data-info="'+p.id+'">Details</button></div></article>';
         }).join("") + '</div></section>';
     }).join("");
   }
@@ -353,8 +405,9 @@ footer a{color:var(--mute)}
     var free = pr && pr[1] ? cardHtml(pr[1], true) : '<div class="ghost"><div><b>+1</b><small>'+(pr ? (cand ? 'Add one more. Anything up to '+money(pr[0].price)+' is free' : 'Add one more. The cheaper one is free') : 'Pick a second one. It\'s free')+'</small></div></div>';
     var slots = '<div class="slots"><div class="slot p"><span class="lab">You pay</span>'+paid+'</div><span class="op">+</span><div class="slot f"><span class="lab">Free</span>'+free+'</div></div>';
     var sum = '<div class="st-sum"><div><div class="lbl">'+(c.pairs.length > 1 ? 'You pay, all pairs' : 'You pay')+'</div><div class="big" id="big">'+money(c.pay)+'</div>' +
-      (c.reg > c.pay ? '<div class="was">Regular price <s>'+money(c.reg)+'</s></div>' : '<div class="was">&nbsp;</div>') + '</div>' +
-      (c.reg > c.pay ? '<span class="save">You save '+money(c.reg - c.pay)+'</span>' : '') + '</div>';
+      (c.reg > c.pay ? '<div class="was">Regular price <s>'+money(c.reg)+'</s> · '+money(c.reg - c.pay)+' saved in total</div>' : '<div class="was">&nbsp;</div>') +
+      '<div class="cue">Tap to see your cart ▲</div></div>' +
+      (c.off ? '<span class="save">1+1 saves '+money(c.off)+'</span>' : '') + '</div>';
     var brk = c.off ? '<div class="brk"><div><span>After the usual discount</span><b>'+money(c.full)+'</b></div><div><span>1+1 free</span><b>−'+money(c.off)+'</b></div></div>' : '';
     if (!n) sum = '';
     return hd + slots + sum + brk + '<button class="co" data-co'+(n ? '' : ' disabled')+'>'+(n ? 'Check out' : 'Pick any two')+'</button>' +
@@ -399,6 +452,17 @@ footer a{color:var(--mute)}
     try { localStorage.setItem("bf11_cart", JSON.stringify(cart)); history.replaceState(null, "", (cart.length ? "?pick=" + cart.join(",") : location.pathname) + location.hash); } catch(e){}
   }
 
+  function infoHtml(p){
+    var inC = cart.indexOf(p.id) >= 0, pg = PAGE[p.id], g = GROUPS.filter(function(x){ return x.id === p.g; })[0];
+    return '<button class="ix" data-iclose aria-label="Close">×</button><div class="i-im"><img src="'+p.img+'" alt=""></div><div class="i-bd">' +
+      '<div class="i-tags"><span class="i-g">'+esc(g.name)+'</span>'+(p.cc ? CC : '')+'</div><h3>'+esc(p.name)+'</h3><p class="i-l">'+esc(p.line)+'</p>' +
+      '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
+      '<p class="i-after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
+      '<div class="i-ft"><div class="pr">'+(p.was ? '<s>'+money(p.was)+'</s>' : '')+'<b>'+money(p.price)+'</b></div><button class="pill" data-pa="'+p.id+'">'+(inC ? 'Remove from cart' : 'Add to cart')+'</button></div>' +
+      (pg ? '<a class="i-pg" href="'+pg[0]+'" target="_blank" rel="noopener" data-more="'+p.id+'">'+esc(pg[1])+' ↗</a>'+(pg[2] ? '<p class="i-note">Opens in a new tab. Come back here for the 1+1 price.</p>' : '') : '') + '</div>';
+  }
+  function openInfo(id){ $("info").innerHTML = infoHtml(byId[id]); $("info").classList.add("on"); $("iveil").classList.add("on"); track("bf11_info", { item: id }); }
+  function closeInfo(){ $("info").classList.remove("on"); $("iveil").classList.remove("on"); }
   function freeName(c){ var f = c.items.filter(function(p){ return c.free[p.id]; }); return f.length ? f[f.length-1].m + " is free" : ""; }
   function add(id){
     if (cart.indexOf(id) >= 0) return;
@@ -412,6 +476,9 @@ footer a{color:var(--mute)}
   document.addEventListener("click", function(e){
     var t = e.target;
     if (t.closest("a")){ var mo = t.closest("[data-more]"); if (mo) track("bf11_details", { item: mo.getAttribute("data-more") }); return; }
+    var inf = t.closest("[data-info]"); if (inf){ openInfo(inf.getAttribute("data-info")); return; }
+    if (t.closest("[data-iclose]") || t.closest("#iveil")){ closeInfo(); return; }
+    var pa = t.closest("[data-pa]"); if (pa){ var pid = pa.getAttribute("data-pa"); if (cart.indexOf(pid) >= 0) remove(pid); else add(pid); closeInfo(); return; }
     var bu = t.closest("[data-bundle]"); if (bu){ var nw = bu.getAttribute("data-bundle").split(",").filter(function(id){ return cart.indexOf(id) < 0; });
       if (!nw.length) return; nw.forEach(function(id){ cart.push(id); }); render(nw[nw.length-1]); track("bf11_best_add"); note("Donna + Wonka in. Donna is free"); return; }
     var rm = t.closest("[data-rm]"); if (rm){ remove(rm.getAttribute("data-rm")); return; }
@@ -422,7 +489,7 @@ footer a{color:var(--mute)}
     if (docked() && t.closest("#station") && !$("station").classList.contains("open")){ openSt(true); return; }
     var cd = t.closest("[data-t]"); if (cd){ var id = cd.getAttribute("data-t"); if (cart.indexOf(id) >= 0) remove(id); else add(id); }
   });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape") openSt(false); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape"){ openSt(false); closeInfo(); } });
 
   /* Check out: the server (bf11-checkout) prices the cart from its own list and opens one Stripe
      Checkout for all of it. The page sends ids only. */
