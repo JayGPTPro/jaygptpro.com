@@ -840,6 +840,11 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
   function setupBox(){
     var c = $("boxc"), pk = $("pack"); if (!c) return;
     var ctx = c.getContext("2d"), D = 61, O = 54, door = [], orbit = [], last = "", t0 = 0, introDone = false;
+    var cur = 0, mouseX = null, mouseT = 0;
+    if (matchMedia("(hover: hover)").matches) window.addEventListener("pointermove", function(e){
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      mouseX = Math.max(-1, Math.min(1, e.clientX / innerWidth * 2 - 1)); mouseT = performance.now();
+    }, { passive: true });
     function img(src, cb){ var im = new Image(); im.onload = cb || null; im.src = src; return im; }
     function draw(im, key){ if (!im || !im.complete || !im.naturalWidth || key === last) return; ctx.clearRect(0,0,640,640); ctx.drawImage(im,0,0,640,640); last = key; }
     door[0] = img("box/00.webp", function(){ draw(door[0], "d0"); pk.classList.add("ready"); });
@@ -855,8 +860,16 @@ src="https://www.facebook.com/tr?id=1392254213967766&ev=PageView&noscript=1"></n
       if (!introDone && (intro >= 1 || p > .02)) introDone = true;
       if (!introDone){ var k = Math.round(intro * (D - 1)); draw(door[k], "d" + k); }
       else if (O){
-        var sway = (Math.sin(now / 1600) + 1) / 2 * Math.min(16, O - 1) * (1 - Math.min(1, p * 3));
-        var f = Math.round(Math.min(O - 1, sway + p * (O - 1)));
+        var base = p * (O - 1), target;
+        if (mouseX !== null && now - mouseT < 3000){
+          var m = (mouseX + 1) / 2 * (O - 1);          // mouse picks the angle across the screen
+          target = m + (base - m) * Math.min(1, p * 2.5); // scrolling takes over as the hero leaves
+        } else {
+          var sway = (Math.sin(now / 1600) + 1) / 2 * Math.min(16, O - 1) * (1 - Math.min(1, p * 3));
+          target = sway + base;
+        }
+        cur += (target - cur) * .12;
+        var f = Math.round(Math.max(0, Math.min(O - 1, cur)));
         draw(orbit[f], "o" + f);
       } else draw(door[D - 1], "d" + (D - 1));
       requestAnimationFrame(loop);
