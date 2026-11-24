@@ -227,6 +227,82 @@ const ADDON_PRODUCTS = new Set([DONNA_ADDON_PRODUCT]);
 // being consulted.
 const DONNA_ADDON_TOTALS_USD = new Set([94700, 74700, 94900, 74900, 324900]);
 
+// Black Friday 1+1 (24.11.2026). The bf11-checkout function makes one Checkout for a whole
+// cart and stamps the session and its PaymentIntent with project=bf11, items (priciest
+// first), free and courses. Jay delivers every Black Friday product by hand (25.11.2026:
+// he enrols each buyer himself, no Calendly, everyone hears from him within 24 hours).
+// So a bf11 payment grants nothing here: it sends Jay one order mail with what to do for
+// each item, then the buyer one confirmation. It must also never reach the course flow
+// below, where an unknown product falls through to a Donna cohort.
+const BF_PROJECT = 'bf11';
+const BF_NAMES: Record<string, string> = {
+  gift: 'The Perfect Gift Skill', donna: 'Donna Challenge', wonka: 'Wonka Bootcamp', vault: 'The AI Vault, 1 year',
+  call: '1:1 AI call', calls4: '4 AI calls', xmas: 'Christmas film for your product', build: 'Custom AI workflow',
+  images: 'Product image system', video: 'Product video & ads system',
+};
+
+async function notifyBfOrder(session: any, items: string[], freeIds: string[]): Promise<boolean> {
+  const key = Deno.env.get('RESEND_API_KEY') || '';
+  if (!key) { console.error('bf11 order: RESEND_API_KEY is not set, cannot notify.'); return false; }
+  const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[c]);
+  const sid = encodeURIComponent(String(session?.id || ''));
+  const email = session?.customer_email || session?.customer_details?.email || '';
+  const name = session?.customer_details?.name || '';
+  const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
+  const pi = session?.payment_intent || '';
+  const label = (id: string) => `${BF_NAMES[id] || id}${freeIds.includes(id) ? ' (FREE, 1+1)' : ''}`;
+  // What is Jay's to do for each item. The kit page and the film card already work with this
+  // order's session id, so the links are ready to paste into his mail to the buyer.
+  const forJay: Record<string, string> = {
+    donna: 'Enrol them in the Donna Challenge.',
+    wonka: 'Enrol them in the Wonka Bootcamp.',
+    gift: `Send them their kit link: https://jaygptpro.com/christmas-video/kit/?s=${sid}`,
+    xmas: `Send them the film card to fill in: https://jaygptpro.com/christmas-video/thanks/?p=video&s=${sid}`,
+    call: 'Email them to set up the call.',
+    calls4: 'Email them to set up the 4 calls.',
+    vault: 'Add them to the Vault for a year. Already a member: add a year from the end of their current period and cancel the monthly plan.',
+    build: 'Email them to start the custom AI workflow.',
+    images: 'Email them to start the product image system.',
+    video: 'Email them to start the product video & ads system.',
+  };
+  const send = async (to: string, subject: string, html: string, replyTo?: string): Promise<boolean> => {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'Jay Margaliot <info@jaygptpro.com>', to: [to], reply_to: replyTo || undefined, subject, html }),
+      });
+      if (!res.ok) console.error('bf11 mail failed:', to === CHRISTMAS_NOTIFY_TO ? 'to Jay' : 'to buyer', res.status, await res.text());
+      return res.ok;
+    } catch (e) { console.error('bf11 mail error:', e); return false; }
+  };
+  // Jay's mail first. If it fails the caller answers 500 and Stripe retries, and the buyer has
+  // not been mailed yet, so the retry does not send the buyer a second copy.
+  const rows: [string, string][] = [
+    ['Paid', `${amount} USD`],
+    ['Buyer', `${name} <${email}>`],
+    ...items.map(id => [label(id), forJay[id] || 'Contact the buyer.'] as [string, string]),
+    ['Promised to the buyer', 'An email from you with the next steps within 24 hours.'],
+    ['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')],
+  ];
+  const table = (r: [string, string][]) => `<table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
+    + r.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('') + `</table>`;
+  const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount} USD)`;
+  if (!(await send(CHRISTMAS_NOTIFY_TO, subject, `<h2>New Black Friday 1+1 order: reply within 24 hours</h2>${table(rows)}`, email))) return false;
+  if (!email) return true;
+  const lis = items.map(id => `<li>${esc(label(id))}</li>`).join('');
+  const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
+    + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
+    + `<p>Thank you for your Black Friday order:</p><ul style="padding-left:20px">${lis}</ul>`
+    + `<p>Within 24 hours you'll get an email from me with the next steps for each one.</p>`
+    + `<p>Any question, just reply to this email.</p><p>Jay</p></div>`;
+  if (!(await send(email, 'Your Black Friday order', buyerHtml, CHRISTMAS_NOTIFY_TO))) {
+    // Jay has the order, so no retry (it would mail him twice). He writes to the buyer anyway.
+    await send(CHRISTMAS_NOTIFY_TO, `The buyer did not get their Black Friday confirmation (${email})`,
+      `<p>The order confirmation did not go out to ${esc(email)}. Your mail with the next steps covers it.</p>`, email);
+  }
+  return true;
+}
+
 const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
   'plink_1TRshDRqcDuiISNTcGBCP4yl': 'bina_r1',
   'plink_1TRshHRqcDuiISNT5UgwSDd0': 'bina_r2',
@@ -756,6 +832,11 @@ Deno.serve(async (req: Request) => {
         console.log('Christmas video refund, not a course. Nothing to revoke.', { charge: charge.id });
         return new Response(JSON.stringify({ received: true, skipped: CHRISTMAS_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
       }
+      // The same for Black Friday: nothing was granted from it here (Jay enrols by hand), so nothing is taken away.
+      if (String(charge?.metadata?.project || '') === BF_PROJECT) {
+        console.log('Black Friday refund. Jay delivers these by hand, nothing to revoke here.', { charge: charge.id });
+        return new Response(JSON.stringify({ received: true, skipped: BF_PROJECT }), { headers: { 'Content-Type': 'application/json' } });
+      }
       const paymentId = charge.payment_intent || charge.id;
       const refundedAmount = charge.amount_refunded || 0;
       const fullyRefunded = charge.refunded === true;
@@ -879,6 +960,19 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!paymentId) return new Response(JSON.stringify({ error: 'No payment ID found' }), { status: 400 });
+
+    // Black Friday 1+1 (see BF_PROJECT): mails only, never the course flow. Only the session
+    // event acts: it carries the buyer and the total. The PaymentIntent event is skipped.
+    const bfMeta = event.data?.object?.metadata || {};
+    if (String(bfMeta.project || '') === BF_PROJECT) {
+      if (isSessionEvent) {
+        const items = String(bfMeta.items || '').split(',').filter(Boolean);
+        const free = String(bfMeta.free || '').split(',').filter(Boolean);
+        console.log('Black Friday order, delivered by hand. Mails only.', { paymentId, items });
+        if (!(await notifyBfOrder(event.data.object, items, free))) return new Response(JSON.stringify({ error: 'bf11 order mail failed' }), { status: 500 });
+      }
+      return new Response(JSON.stringify({ received: true, skipped: `${BF_PROJECT} ${event.type}` }), { headers: { 'Content-Type': 'application/json' } });
+    }
 
     // Christmas video, routes 1 and 2: the payment link, and the PaymentIntent's metadata.
     const eventMetaProject = String(event.data?.object?.metadata?.project || '');
@@ -1199,6 +1293,7 @@ Deno.serve(async (req: Request) => {
         return new Response(JSON.stringify({ error: 'donna addon welcome failed' }), { status: 500 });
       }
     }
+
 
     return new Response(JSON.stringify({ received: true, email: customerEmail, amount: amountPaid, isBina, round: canonicalRound, eventType: event.type }), { headers: { 'Content-Type': 'application/json' } });
   } catch (err) {

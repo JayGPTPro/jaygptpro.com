@@ -18,6 +18,7 @@ export const KEY_SHA256 = "1533231fe52dcb9896517c53044c04a7c4f7598ce4b577dcaa878
 export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
 export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";
 export const PROJECT = "christmas_video";
+export const BF_PROJECT = "bf11"; // the Black Friday 1+1 store, one checkout for a whole cart
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
 // Partners who sell through their own copy of the page and their own Stripe links, which stamp
 // metadata.partner on every order (22.11.2026: partner p1, jaygptpro.com/xmas). Listed here so the
@@ -140,14 +141,20 @@ export type Order = {
 };
 
 export function classify(s: Any, promos: Record<string, Promo>): Order | null {
-  let films = 0, skills = 0;
+  let films = 0, skills = 0, ours = 0, all = 0;
   for (const it of (s?.line_items?.data || [])) {
-    const p = idOf(it?.price?.product), q = Number(it?.quantity ?? 1);
-    if (p === VIDEO_PRODUCT) films += q;
-    if (p === SKILL_PRODUCT) skills += q;
+    const p = idOf(it?.price?.product), q = Number(it?.quantity ?? 1), amt = Number(it?.amount_total ?? 0);
+    all += amt;
+    if (p === VIDEO_PRODUCT) { films += q; ours += amt; }
+    if (p === SKILL_PRODUCT) { skills += q; ours += amt; }
   }
   if (s?.metadata?.project !== PROJECT && !films && !skills) return null;
   if (!films && !skills) return null; // a Christmas session we cannot read the items of
+  // A Black Friday 1+1 cart (bf11-checkout, 24.11.2026) can hold a film or the Skill next to other
+  // products. Only a PAID cart is an order here (an open cart is not a Christmas checkout), and only
+  // the Christmas lines' share of it is Christmas money: a free film in the cart earns $0.
+  const bf = s?.metadata?.project === BF_PROJECT;
+  if (bf && s?.payment_status !== "paid") return null;
   const email = String(s?.customer_details?.email || s?.customer_email || "").toLowerCase();
   const codes: string[] = [], coupons: string[] = [];
   for (const d of (s?.discounts || [])) {
@@ -164,8 +171,9 @@ export function classify(s: Any, promos: Record<string, Promo>): Order | null {
   const charge = pi && typeof pi.latest_charge === "object" ? pi.latest_charge : null;
   const paid = s?.payment_status === "paid" || (s?.status === "complete" && s?.payment_status === "no_payment_required");
   const conv = s?.currency_conversion;
-  const usd = conv && String(conv.source_currency || "").toLowerCase() === "usd" ? Number(conv.amount_total)
+  let usd = conv && String(conv.source_currency || "").toLowerCase() === "usd" ? Number(conv.amount_total)
     : String(s?.currency || "").toLowerCase() === "usd" ? Number(s?.amount_total ?? 0) : null;
+  if (bf && usd != null) usd = all > 0 ? Math.round(usd * ours / all) : 0;
   const refunded = !charge || usd == null ? 0 : charge.refunded ? usd
     : charge.amount > 0 ? Math.round(usd * Number(charge.amount_refunded || 0) / Number(charge.amount)) : 0;
   const meta = (s?.metadata || {}) as Record<string, string>;
@@ -351,7 +359,7 @@ async function mark(req: Request, b: Record<string, unknown>, deps: Deps): Promi
     const order = String(b.order || ""), n = Number(b.n);
     if (!ORDER_ID.test(order) || !Number.isInteger(n) || n < 1 || n > 60) return json(req, { error: "bad film" }, 400);
     const meta = await deps.sessionMeta(order);
-    if (!meta || meta.project !== PROJECT) return json(req, { error: "no such order" }, 404);
+    if (!meta || (meta.project !== PROJECT && meta.project !== BF_PROJECT)) return json(req, { error: "no such order" }, 404);
     const marks = readSent(meta);
     if (on) marks[n] = deps.now(); else delete marks[n];
     await deps.setSessionMeta(order, sentPatch(meta, marks));

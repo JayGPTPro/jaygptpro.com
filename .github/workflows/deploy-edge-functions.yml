@@ -84,7 +84,9 @@ jobs:
               # Stripe session id in the request is the key. It answers 400 to this probe.
               # christmas-kit too (18.11.2026): the Perfect Gift Kit's page and setup call it with the session id;
               # a POST is refused with 405, and it only hands out signed links for a paid, unrefunded Skill order.
-              *:401|cardcom-webhook:*|stripe-webhook:*|christmas-films:400|christmas-kit:405) ;;
+              # bf11-checkout (24.11.2026): the Black Friday store's Check out button calls it with the cart's ids.
+              # It only ever makes a Stripe Checkout for prices it holds itself, and answers 400 to an empty cart.
+              *:401|cardcom-webhook:*|stripe-webhook:*|christmas-films:400|christmas-kit:405|bf11-checkout:400) ;;
               *) echo "::error::$s answered $code to a garbage key, expected 401"; exit 1 ;;
             esac
           done
