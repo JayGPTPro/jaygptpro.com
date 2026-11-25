@@ -9,8 +9,13 @@
 <meta property="og:description" content="Pick any two. You pay for the pricier one. The other one is free.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://jaygptpro.com/black-friday/">
+<meta property="og:image" content="https://jaygptpro.com/black-friday/x/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://jaygptpro.com/black-friday/">
 <meta name="theme-color" content="#000000">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -39,8 +44,9 @@ img{display:block;max-width:100%}
 .ends b{color:var(--txt)}
 
 /* layout: the station stays on screen, the products scroll next to it */
-.layout{display:grid;grid-template-columns:440px minmax(0,1fr);gap:48px;align-items:start;padding-top:32px}
-.left{position:sticky;top:72px}
+.layout{display:grid;grid-template-columns:440px minmax(0,1fr);gap:48px;align-items:stretch;padding-top:32px}
+.left{position:relative}
+.left .station{position:sticky;top:72px;max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:none}
 .eb{font-size:14px;font-weight:700;color:var(--lime)}
 h1{margin-top:6px;font-weight:800;font-size:clamp(44px,4.6vw,64px);line-height:.98;letter-spacing:-.045em}
 h1 em{font-style:normal;color:var(--lime)}
@@ -88,18 +94,18 @@ h1 em{font-style:normal;color:var(--lime)}
 .dots button[aria-pressed=true]{background:var(--txt);color:#000;border-color:var(--txt)}
 .st-hd .clr{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--mute)}
 .st-hd .clr:hover{color:var(--txt)}
-.slots{margin-top:10px;display:grid;grid-template-columns:1fr 34px 1fr;align-items:center}
+.slots{margin-top:10px;display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);align-items:center}
 .slot{position:relative}
 .slot .lab{display:block;margin-bottom:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:center}
 .slot.f .lab{color:var(--lime)}
 .op{text-align:center;font-size:26px;font-weight:800;color:var(--soft);padding-top:22px}
-.ghost{aspect-ratio:3/4;border-radius:20px;border:1.5px dashed var(--line2);display:grid;place-items:center;text-align:center;padding:12px;color:var(--soft)}
+.ghost{aspect-ratio:4/5;border-radius:20px;border:1.5px dashed var(--line2);display:grid;place-items:center;text-align:center;padding:12px;color:var(--soft)}
 .ghost b{display:block;font-size:64px;font-weight:300;letter-spacing:-.04em;line-height:1;color:#3a3a3e}
 .ghost small{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.3}
 .slot.f .ghost{border-color:rgba(212,255,0,.45)}
 .slot.f .ghost b{color:rgba(212,255,0,.35)}
 .slot.f .ghost small{color:var(--lime)}
-.sc{position:relative;aspect-ratio:3/4;border-radius:20px;overflow:hidden;background:var(--s2);border:1px solid var(--line2);display:flex;flex-direction:column}
+.sc{position:relative;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:var(--s2);border:1px solid var(--line2);display:flex;flex-direction:column}
 .sc img{width:100%;flex:1;min-height:0;object-fit:cover}
 .sc .nm{padding:9px 11px 10px;background:var(--s2)}
 .sc .nm b{display:block;font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -144,7 +150,7 @@ h1 em{font-style:normal;color:var(--lime)}
 .grp-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .grp-h h2{font-size:26px;font-weight:800;letter-spacing:-.03em}
 .grp-h p{color:var(--mute);font-size:15px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:14px}
 .card{position:relative;background:var(--s1);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .25s,transform .3s cubic-bezier(.2,.8,.2,1)}
 .card:hover{transform:translateY(-3px);border-color:var(--line2)}
 .card .im{aspect-ratio:4/3;overflow:hidden;background:var(--s2)}
@@ -175,9 +181,19 @@ h1 em{font-style:normal;color:var(--lime)}
 .card.in .bs{display:none}
 footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--soft);font-size:12px}
 footer a{color:var(--mute)}
-.toast{position:fixed;left:50%;top:68px;transform:translate(-50%,-140px);z-index:220;background:var(--txt);color:#000;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;transition:transform .4s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);text-align:center}
+.toast{position:fixed;left:50%;top:68px;width:max-content;transform:translate(-50%,-140px);z-index:220;background:var(--txt);color:#000;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;transition:transform .4s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);text-align:center}
 .toast.on{transform:translate(-50%,0)}
 .veil{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* short laptop screens: a smaller pair so Check out stays on screen */
+@media (min-width:981px) and (max-height:960px){
+  h1{font-size:48px}
+  .station{padding:12px 16px 14px}
+  .ghost,.sc{aspect-ratio:1/1}
+  .ghost b{font-size:48px}
+  .st-sum .big{font-size:38px}
+  .rule{display:none}
+}
 
 /* ===== small screens: the station docks at the bottom and opens up ===== */
 @media (max-width:980px){
@@ -201,13 +217,13 @@ footer a{color:var(--mute)}
   .station .cue{display:block;margin-top:2px;font-size:11.5px;font-weight:700;color:var(--lime)}
   .station.open .cue{display:none}
   .station .co{margin:0;width:auto;height:44px;padding:0 18px;font-size:14px}
-  .station.open{display:block;padding:14px 16px 18px;left:0;right:0;bottom:0;border-radius:26px 26px 0 0;cursor:default}
+  .station.open{display:block;padding:14px 16px calc(18px + env(safe-area-inset-bottom));left:0;right:0;bottom:0;border-radius:26px 26px 0 0;cursor:default}
   .station.open .st-hd{display:flex}
   .station.open .brk,.station.open .rule,.station.open .after,.station.open .was,.station.open .ghost small{display:block}
   .station.open .slot .lab{display:block}
   .station.open .sc .nm{display:block}
   .station.open .sc .x{display:block}
-  .station.open .slots{margin-top:10px;grid-template-columns:1fr 30px 1fr}
+  .station.open .slots{margin:10px auto 0;max-width:440px;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr)}
   .station.open .ghost,.station.open .sc{aspect-ratio:3/4;border-radius:18px}
   .station.open .ghost{padding:12px}
   .station.open .ghost b{font-size:52px}
@@ -221,6 +237,16 @@ footer a{color:var(--mute)}
   .veil.on{opacity:1;pointer-events:auto}
   .best{grid-template-columns:1fr}
   .best .duo{height:220px}
+  .left .station{position:fixed;max-height:88vh;top:auto}
+}
+@media (max-width:980px) and (max-height:500px){
+  .station.open .ghost,.station.open .sc{aspect-ratio:4/3}
+}
+@media (max-width:400px){
+  .station{padding:9px 10px;gap:8px}
+  .station .slots{grid-template-columns:42px 14px 42px}
+  .station .st-sum .big{font-size:22px}
+  .station .co{padding:0 14px}
 }
 @media (max-width:560px){
   .wrap{width:calc(100% - 24px)}
@@ -236,7 +262,8 @@ footer a{color:var(--mute)}
   .pr b{font-size:18px}
   .card .ft{padding-top:10px}
   .card .bs{font-size:10px;padding:4px 7px;top:8px;left:8px}
-  .card .st{top:8px;right:8px}
+  .card .st{top:8px;left:8px;right:auto}
+  .i-bd{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
   .info{left:0;right:0;top:auto;bottom:0;width:100%;max-height:90vh;border-radius:24px 24px 0 0;transform:translateY(100%)}
   .info.on{transform:none}
   .best .bd{padding:18px}
@@ -269,7 +296,7 @@ footer a{color:var(--mute)}
       <p class="clock" id="clock"><span class="cl-l" id="cl-l">Black Friday ends in</span><span class="cl-d" id="cl-d"></span></p>
       <p class="endat" id="endat"></p>
     </div>
-    <section class="station" id="station" aria-label="Your pair" aria-live="polite"></section>
+    <section class="station" id="station" aria-label="Your cart" tabindex="0"></section>
   </aside>
 
   <main class="right">
@@ -281,8 +308,9 @@ footer a{color:var(--mute)}
 <footer><div class="wrap">Prices shown after the usual discount, regular price crossed out. © 2026 Jay GPT Pro LLC · <a href="/privacy-policy.html">Privacy</a></div></footer>
 <div class="veil" id="veil"></div>
 <div class="iveil" id="iveil"></div>
-<div class="info" id="info" role="dialog" aria-modal="true" aria-label="Product details"></div>
-<div class="toast" id="toast" role="status"></div>
+<div class="info" id="info" role="dialog" aria-modal="true" aria-label="Product details" hidden></div>
+<div class="toast" id="toast" aria-hidden="true"></div>
+<p class="sr" id="sr" role="status" aria-live="polite"></p>
 
 <script>
 (function(){
@@ -295,10 +323,10 @@ footer a{color:var(--mute)}
   var P = [
     { id:"gift",   g:"learn", m:"Gift Skill", name:"The Perfect Gift Skill", price:199,  was:299,  cc:1, img:"x/gift.webp",  url:"/christmas-video/", line:"The Claude Code skill and the training to make Christmas films for your own products." },
     { id:"donna",  g:"learn", m:"Donna",      name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna.webp", url:"/claude-code-challenge-join/", line:"Build Donna, your AI chief of staff: email, calendar and tasks." },
-    { id:"wonka",  g:"learn", m:"Wonka",      name:"Wonka Bootcamp",         price:497,  was:697,  cc:1, img:"x/wonka.webp", url:"/wonka/", line:"Build Wonka, your AI creative director for Amazon listing images." },
+    { id:"wonka",  g:"learn", m:"Wonka",      name:"Wonka Bootcamp",         price:497,  was:997,  cc:1, img:"x/wonka.webp", url:"/wonka/", line:"Build Wonka, your AI creative director for Amazon listing images." },
     { id:"vault",  g:"jay",   m:"Vault",      name:"The AI Vault, 1 year",   price:1000, was:1200, img:"x/vault-dark.webp", url:"https://www.topdog.community/checkout/ai-vault", line:"A full year in the Vault: monthly AI episodes, the library and the community." },
     { id:"call",   g:"jay",   m:"1 call",     name:"1:1 AI call",            price:400,  was:null, img:"x/call.webp?v=2",  url:"/call/", line:"One 45-minute call with Jay about putting AI to work in your business." },
-    { id:"calls4", g:"jay",   m:"4 calls",    name:"4 AI calls",             price:1200, was:1600, img:"x/calls4.webp?v=2", url:"/call/", line:"Four calls with Jay. Each one picks up where the last one ended." },
+    { id:"calls4", g:"jay",   m:"4 calls",    name:"4 AI calls",             price:1200, was:1600, img:"x/calls4.webp?v=2", url:"/call/", line:"Four 45-minute calls with Jay. Each one picks up where the last one ended." },
     { id:"xmas",   g:"dfy",   m:"Xmas film",  name:"Christmas film for your product", price:99, was:null, img:"x/xmas-sb.webp", url:"/christmas-video/", line:"Your product stars in The Perfect Gift. A finished Christmas film, made for you." },
     { id:"build",  g:"impl",   m:"Workflow",   name:"Custom AI workflow",     price:3000, was:null, img:"x/build-dark.webp", url:"implementation/#workflow", line:"Four sessions to set up one AI workflow around how your business runs." },
     { id:"images", g:"impl",   m:"Images",     name:"Product image system",   price:3000, was:null, img:"x/images-dark.webp", url:"implementation/#images", line:"An AI process for your product images, set up in your business." },
@@ -306,12 +334,12 @@ footer a{color:var(--mute)}
   ];
   /* What you get, shown in the details panel. page = the product's own page, only where it explains more. */
   var GET = {
-    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film", "The training series that walks you through it"],
-    donna:  ["A 5-day challenge: you build Donna in Claude Code Desktop", "Email, calendar, tasks, invoices, routines and business memory", "Made for people who are not technical"],
+    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film", "The training series that walks you through it", "Not included: the tools you run it with, a paid Claude plan and video generation credits"],
+    donna:  ["A 5-day challenge: you build Donna in Claude Code Desktop", "Email, calendar, tasks, routines and business memory", "Made for people who are not technical"],
     wonka:  ["A 10-day bootcamp: you build Wonka, your AI creative director", "Main image, secondary images and A+ for your Amazon listings", "The skills, the workflows and the training"],
-    vault:  ["The monthly AI episodes and the full library", "The Vault community and the mastermind groups", "Already a member? The year is added when your current period ends, and your monthly plan stops"],
+    vault:  ["The monthly AI episodes and the full library", "The Vault community and the mastermind groups", "A private 1:1 strategy call with Jay every quarter", "Already a member? The year is added when your current period ends, and your monthly plan stops"],
     call:   ["One 45-minute call with Jay on Zoom", "About putting AI to work in your business", "You leave with clear next steps"],
-    calls4: ["Four calls with Jay", "Each call picks up where the last one ended"],
+    calls4: ["Four 45-minute calls with Jay on Zoom", "Each call picks up where the last one ended"],
     xmas:   ["Your product stars in The Perfect Gift, a finished Christmas film", "Made for you, from your Amazon listing"],
     build:  ["Four sessions with Jay to set up one AI workflow inside your business", "A workflow that runs on your own tools, and a team that knows how to use it"],
     images: ["An AI process for your product images, set up in your business with your team", "A process your team runs for every product: listing images and lifestyle shots"],
@@ -327,8 +355,8 @@ footer a{color:var(--mute)}
   ];
   /* ===================== */
 
-  var byId = {}; P.forEach(function(p, i){ p.ord = i; byId[p.id] = p; });
-  var cart = [], view = -1, G = null;
+  var byId = Object.create(null); P.forEach(function(p, i){ p.ord = i; byId[p.id] = p; });
+  var cart = [], view = -1, G = null, ready = false, busy = false, lastTap = {};
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -362,7 +390,9 @@ footer a{color:var(--mute)}
       $("cl-l").textContent = name + " ends in";
       $("clock").hidden = ph === "over";
       $("endat").textContent = ph === "bf" ? "Ends Friday, Nov 27 at 11:59 PM New York time" : ph === "cm" ? "Ends Monday, Nov 30 at 11:59 PM New York time" : "";
-      document.title = name + " 1+1 · Buy one, get one free · Jay GPT Pro";
+      document.title = ph === "over" ? "The 1+1 has ended · Jay GPT Pro" : name + " 1+1 · Buy one, get one free · Jay GPT Pro";
+      if (ph === "over") $("ev").textContent = "· 1+1";
+      if (ready) render();
     }
     var s = Math.max(0, Math.floor((end - now)/1000)), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), sc = s%60;
     function two(n){ return String(n).padStart(2,"0"); }
@@ -384,8 +414,8 @@ footer a{color:var(--mute)}
           return '<article class="card" id="c-'+p.id+'" data-t="'+p.id+'"><div class="im"><img src="'+p.img+'" alt="'+esc(p.name)+'" loading="lazy"></div>' +
             (BEST.indexOf(p.id) >= 0 ? '<span class="bs">★ Best seller</span>' : '') + '<span class="st"></span>' +
             '<div class="bd">'+(p.cc ? CC : '')+'<h3>'+esc(p.name)+'</h3><p>'+esc(p.line)+'</p>' +
-            '<div class="ft"><div class="pr">'+(p.was ? '<s>'+money(p.was)+'</s>' : '')+'<b>'+money(p.price)+'</b></div><button class="add">Add</button></div>' +
-            '<button class="det" data-info="'+p.id+'">Details</button></div></article>';
+            '<div class="ft"><div class="pr">'+(p.was ? '<s><span class="sr">Regular price </span>'+money(p.was)+'</s>' : '')+'<b><span class="sr">Now </span>'+money(p.price)+'</b></div><button class="add" aria-label="Add '+esc(p.name)+'">Add</button></div>' +
+            '<button class="det" data-info="'+p.id+'" aria-label="Details: '+esc(p.name)+'">Details</button></div></article>';
         }).join("") + '</div></section>';
     }).join("");
   }
@@ -406,10 +436,11 @@ footer a{color:var(--mute)}
     var slots = '<div class="slots"><div class="slot p"><span class="lab">You pay</span>'+paid+'</div><span class="op">+</span><div class="slot f"><span class="lab">Free</span>'+free+'</div></div>';
     var sum = '<div class="st-sum"><div><div class="lbl">'+(c.pairs.length > 1 ? 'You pay, all pairs' : 'You pay')+'</div><div class="big" id="big">'+money(c.pay)+'</div>' +
       (c.reg > c.pay ? '<div class="was">Regular price <s>'+money(c.reg)+'</s> · '+money(c.reg - c.pay)+' saved in total</div>' : '<div class="was">&nbsp;</div>') +
-      '<div class="cue">Tap to see your cart ▲</div></div>' +
+      '<div class="cue">'+(n % 2 ? 'Add one more, it\'s free ▲' : 'Tap to see your cart ▲')+'</div></div>' +
       (c.off ? '<span class="save">1+1 saves '+money(c.off)+'</span>' : '') + '</div>';
-    var brk = c.off ? '<div class="brk"><div><span>After the usual discount</span><b>'+money(c.full)+'</b></div><div><span>1+1 free</span><b>−'+money(c.off)+'</b></div></div>' : '';
+    var brk = c.off ? '<div class="brk"><div><span>'+(c.reg > c.full ? 'After the usual discount' : 'Price')+'</span><b>'+money(c.full)+'</b></div><div><span>1+1 free</span><b>−'+money(c.off)+'</b></div></div>' : '';
     if (!n) sum = '';
+    if (phase === "over") return hd + slots + sum + brk + '<button class="co" disabled>The 1+1 has ended</button>';
     return hd + slots + sum + brk + '<button class="co" data-co'+(n ? '' : ' disabled')+'>'+(n ? 'Check out' : 'Pick any two')+'</button>' +
       (n ? '<p class="after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' : '') +
       '<p class="rule">Picking more? We pair them from the priciest down. In every pair, the cheaper one is free.</p>';
@@ -418,6 +449,7 @@ footer a{color:var(--mute)}
   /* FLIP: remember where every card was, render, then move each card from there */
   var lastFree = {};
   function render(addedId){
+    G = G || window.gsap || null;
     var c = calc(cart);
     if (!c.pairs.length) view = -1;
     else if (addedId) view = c.pairOf[addedId];
@@ -444,12 +476,12 @@ footer a{color:var(--mute)}
             { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: before[id] ? .55 : .65, ease: "power3.inOut", clearProps: "transform" });
         } else if (id === addedId){ G.fromTo(el, { scale: .6, opacity: 0 }, { scale: 1, opacity: 1, duration: .4, ease: "back.out(1.8)" }); }
         var st = el.querySelector(".stamp");
-        if (st && !lastFree[id]) G.fromTo(st, { scale: 2.2, rotation: -30, opacity: 0 }, { scale: 1, rotation: -12, opacity: 1, duration: .18, ease: "power4.in", delay: .55 });
+        if (st && !lastFree[id]) G.fromTo(st, { scale: 2.2, rotation: -30, opacity: 0 }, { scale: 1, rotation: -12, opacity: 1, duration: .18, ease: "power4.in", delay: .55, clearProps: "transform,opacity" });
       });
       var big = $("big"); if (addedId && big) G.fromTo(big, { scale: 1.08 }, { scale: 1, duration: .4, ease: "power2.out", delay: .5 });
     }
     lastFree = c.free;
-    try { localStorage.setItem("bf11_cart", JSON.stringify(cart)); history.replaceState(null, "", (cart.length ? "?pick=" + cart.join(",") : location.pathname) + location.hash); } catch(e){}
+    try { localStorage.setItem("bf11_cart", JSON.stringify(cart)); } catch(e){}
   }
 
   function infoHtml(p){
@@ -459,19 +491,23 @@ footer a{color:var(--mute)}
       '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
       '<p class="i-after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
       '<div class="i-ft"><div class="pr">'+(p.was ? '<s>'+money(p.was)+'</s>' : '')+'<b>'+money(p.price)+'</b></div><button class="pill" data-pa="'+p.id+'">'+(inC ? 'Remove from cart' : 'Add to cart')+'</button></div>' +
-      (pg ? '<a class="i-pg" href="'+pg[0]+'" target="_blank" rel="noopener" data-more="'+p.id+'">'+esc(pg[1])+' ↗</a>'+(pg[2] ? '<p class="i-note">Opens in a new tab. Come back here for the 1+1 price.</p>' : '') : '') + '</div>';
+      (pg ? '<a class="i-pg" href="'+pg[0]+'"'+(pg[2] ? ' target="_blank" rel="noopener"' : '')+' data-more="'+p.id+'">'+esc(pg[1])+(pg[2] ? ' ↗' : ' →')+'</a>'+(pg[2] ? '<p class="i-note">Opens in a new tab. Come back here for the 1+1 price.</p>' : '') : '') + '</div>';
   }
-  function openInfo(id){ $("info").innerHTML = infoHtml(byId[id]); $("info").classList.add("on"); $("iveil").classList.add("on"); track("bf11_info", { item: id }); }
-  function closeInfo(){ $("info").classList.remove("on"); $("iveil").classList.remove("on"); }
-  function freeName(c){ var f = c.items.filter(function(p){ return c.free[p.id]; }); return f.length ? f[f.length-1].m + " is free" : ""; }
+  var infoFrom = null;
+  function openInfo(id){ infoFrom = document.activeElement; $("info").innerHTML = infoHtml(byId[id]); $("info").classList.add("on"); $("info").removeAttribute("hidden"); $("iveil").classList.add("on"); lockScroll(true); var x = $("info").querySelector(".ix"); if (x) x.focus(); track("bf11_info", { item: id }); }
+  function closeInfo(){ if (!$("info").classList.contains("on")) return; $("info").classList.remove("on"); $("iveil").classList.remove("on"); lockScroll($("station").classList.contains("open")); setTimeout(function(){ if (!$("info").classList.contains("on")) $("info").setAttribute("hidden", ""); }, 300); if (infoFrom && infoFrom.focus) infoFrom.focus(); infoFrom = null; }
+  function lockScroll(on){ document.documentElement.style.overflow = on ? "hidden" : ""; }
+  /* what became free with this change, named as on the cards */
+  function freeNews(before, c){ var f = c.items.filter(function(p){ return c.free[p.id] && !before.free[p.id]; }); return f.length ? f.map(function(p){ return p.name; }).join(" and ") + (f.length > 1 ? " are" : " is") + " free." : ""; }
   function add(id){
-    if (cart.indexOf(id) >= 0) return;
-    cart.push(id); render(id); track("bf11_add", { item: id, n: cart.length });
-    var c = calc(cart); note(byId[id].m + " added" + (cart.length > 1 && !(cart.length % 2) ? ". " + freeName(c) : ""));
+    if (cart.indexOf(id) >= 0 || busy) return;
+    var b4 = calc(cart); cart.push(id); render(id); track("bf11_add", { item: id, n: cart.length });
+    var c = calc(cart), self = c.free[id], fn = freeNews({ free: Object.assign({}, b4.free, self ? { [id]: 1 } : {}) }, c);
+    note(byId[id].name + " added." + (self ? " It's free." : "") + (fn ? " " + fn : !self && cart.length % 2 ? " Add one more, the cheaper one is free." : ""));
   }
-  function remove(id){ var i = cart.indexOf(id); if (i >= 0){ cart.splice(i,1); render(); track("bf11_remove", { item: id }); } }
-  function note(t){ if (docked() && !$("station").classList.contains("open")) toast(t); }
-  function openSt(on){ $("station").classList.toggle("open", on); $("veil").classList.toggle("on", on); }
+  function remove(id){ if (busy) return; var i = cart.indexOf(id); if (i >= 0){ cart.splice(i,1); render(); track("bf11_remove", { item: id }); note(byId[id].name + " removed."); } }
+  function note(t){ $("sr").textContent = t; if (docked() && !$("station").classList.contains("open")) toast(t); }
+  function openSt(on){ $("station").classList.toggle("open", on); $("veil").classList.toggle("on", on); lockScroll(on); if (on) $("station").focus({ preventScroll: true }); }
 
   document.addEventListener("click", function(e){
     var t = e.target;
@@ -480,41 +516,55 @@ footer a{color:var(--mute)}
     if (t.closest("[data-iclose]") || t.closest("#iveil")){ closeInfo(); return; }
     var pa = t.closest("[data-pa]"); if (pa){ var pid = pa.getAttribute("data-pa"); if (cart.indexOf(pid) >= 0) remove(pid); else add(pid); closeInfo(); return; }
     var bu = t.closest("[data-bundle]"); if (bu){ var nw = bu.getAttribute("data-bundle").split(",").filter(function(id){ return cart.indexOf(id) < 0; });
-      if (!nw.length) return; nw.forEach(function(id){ cart.push(id); }); render(nw[nw.length-1]); track("bf11_best_add"); note("Donna + Wonka in. Donna is free"); return; }
-    var rm = t.closest("[data-rm]"); if (rm){ remove(rm.getAttribute("data-rm")); return; }
-    if (t.closest("[data-clear]")){ cart = []; render(); return; }
-    var vw = t.closest("[data-view]"); if (vw){ view = +vw.getAttribute("data-view"); render(); return; }
+      if (!nw.length || busy) return; var b4 = calc(cart); nw.forEach(function(id){ cart.push(id); }); render(nw[nw.length-1]); track("bf11_best_add"); note("Donna + Wonka in." + (freeNews(b4, calc(cart)) ? " " + freeNews(b4, calc(cart)) : "")); return; }
+    var rm = t.closest("[data-rm]"); if (rm){ remove(rm.getAttribute("data-rm")); $("station").focus({ preventScroll: true }); return; }
+    if (t.closest("[data-clear]")){ if (busy) return; cart = []; render(); note("Cart cleared."); $("station").focus({ preventScroll: true }); return; }
+    var vw = t.closest("[data-view]"); if (vw){ view = +vw.getAttribute("data-view"); render(); var vb = $("station").querySelector('[data-view="'+view+'"]'); if (vb) vb.focus(); return; }
     var co = t.closest("[data-co]"); if (co){ if (cart.length && !co.disabled) checkout(co); return; }
     if (t.closest("#veil") || t.closest(".st-close")){ openSt(false); return; }
     if (docked() && t.closest("#station") && !$("station").classList.contains("open")){ openSt(true); return; }
-    var cd = t.closest("[data-t]"); if (cd){ var id = cd.getAttribute("data-t"); if (cart.indexOf(id) >= 0) remove(id); else add(id); }
+    var cd = t.closest("[data-t]"); if (cd){ var id = cd.getAttribute("data-t"), now = e.timeStamp; if (lastTap[id] && now - lastTap[id] < 400) return; lastTap[id] = now; if (cart.indexOf(id) >= 0) remove(id); else add(id); }
   });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape"){ openSt(false); closeInfo(); } });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if ($("info").classList.contains("on")) closeInfo(); else openSt(false); return; }
+    if ((e.key === "Enter" || e.key === " ") && e.target === $("station") && docked() && !$("station").classList.contains("open")){ e.preventDefault(); openSt(true); return; }
+    if (e.key === "Tab" && $("info").classList.contains("on")){ var fs = $("info").querySelectorAll("button,a[href]"), a = fs[0], z = fs[fs.length-1]; if (e.shiftKey && document.activeElement === a){ e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z){ e.preventDefault(); a.focus(); } }
+  });
 
   /* Check out: the server (bf11-checkout) prices the cart from its own list and opens one Stripe
      Checkout for all of it. The page sends ids only. */
   var CO_URL = "https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/bf11-checkout";
   function checkout(btn){
+    if (busy || phase === "over") return;
+    busy = true;
     track("bf11_checkout", { n: cart.length });
     document.querySelectorAll("[data-co]").forEach(function(b){ b.disabled = true; b.textContent = "Opening checkout..."; });
-    function restore(msg){ render(); toast(msg || "Checkout did not open. Try again."); }
+    function restore(msg){ busy = false; render(); toast(msg || "Checkout did not open. Try again."); }
     fetch(CO_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) })
       .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
       .then(function(x){ if (x.ok && x.d && x.d.url){ location.href = x.d.url; return; } restore(x.d && x.d.message); })
       .catch(function(){ restore(); });
   }
   /* Back from Stripe: the browser restores the page as it was left, button frozen on "Opening checkout..." */
-  window.addEventListener("pageshow", function(e){ if (e.persisted) render(); });
+  function loadSaved(){ var s = []; try { s = JSON.parse(localStorage.getItem("bf11_cart") || "[]"); } catch(e){} return Array.isArray(s) ? s.filter(function(id, i){ return typeof id === "string" && byId[id] && s.indexOf(id) === i; }) : []; }
+  window.addEventListener("pageshow", function(e){ if (e.persisted){ busy = false; cart = loadSaved(); render(); } });
+  /* the same store open in another tab: keep both carts the same */
+  window.addEventListener("storage", function(e){ if (e.key === "bf11_cart" && !busy){ cart = loadSaved(); render(); } });
 
   function init(){
     G = window.gsap || null;
     tick(); setInterval(tick, 1000);
     build();
-    var q = location.search, mp = q.match(/[?&]pick=([^&]+)/), ad = q.match(/[?&]add=([^&]+)/), saved = [];
-    try { saved = JSON.parse(localStorage.getItem("bf11_cart") || "[]"); } catch(e){}
-    (mp ? decodeURIComponent(mp[1]).split(",") : saved).concat(ad ? decodeURIComponent(ad[1]).split(",") : []).forEach(function(id){ if (byId[id] && cart.indexOf(id) < 0) cart.push(id); });
+    var q = new URLSearchParams(location.search), incoming = [];
+    ["pick","add"].forEach(function(k){ (q.get(k) || "").split(",").forEach(function(id){ id = id.trim(); if (byId[id] && incoming.indexOf(id) < 0) incoming.push(id); }); });
+    loadSaved().concat(incoming).forEach(function(id){ if (cart.indexOf(id) < 0) cart.push(id); });
+    ready = true;
     render();
-    if (/[?&]canceled=1/.test(q)) toast("Checkout canceled. Your cart is still here.");
+    var news = incoming.filter(function(id){ return cart.indexOf(id) >= 0; });
+    if (q.has("canceled")) toast("Checkout canceled. Your cart is still here.");
+    else if (news.length) toast(news.map(function(id){ return byId[id].name; }).join(" + ") + (news.length > 1 ? " are" : " is") + " in your cart.");
+    /* keep utm and the rest for analytics, drop only the cart params */
+    if (q.has("pick") || q.has("add") || q.has("canceled")){ ["pick","add","canceled"].forEach(function(k){ q.delete(k); }); var qs = q.toString(); try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch(e){} }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

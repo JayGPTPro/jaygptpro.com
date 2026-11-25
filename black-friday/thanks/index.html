@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Thank you · Black Friday 1+1 · Jay GPT Pro</title>
+<title>Thank you · 1+1 · Jay GPT Pro</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,14 +27,18 @@ li{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:
 .foot{margin-top:36px;color:var(--mute);font-size:15px}
 .foot a{color:var(--txt)}
 </style>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-M4RK6H5NMH');</script>
 </head>
 <body>
 <div class="wrap">
-  <a class="brand" href="/">Jay GPT Pro <span>· Black Friday 1+1</span></a>
+  <a class="brand" href="/">Jay GPT Pro <span>· 1+1</span></a>
   <h1>You're in. <em>Thank you.</em></h1>
   <p class="lead">Your payment went through. Within 24 hours you'll get an email from Jay with the next steps for each item below.</p>
   <ul id="list"></ul>
   <p class="foot">A confirmation is on its way to your inbox. Any question, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
+  <p class="foot"><a href="/black-friday/">Back to the store</a></p>
 </div>
 <script>
 (function () {
@@ -45,7 +49,12 @@ li{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:
     call: "1:1 AI call", calls4: "4 AI calls", xmas: "Christmas film for your product", build: "Custom AI workflow",
     images: "Product image system", video: "Product video & ads system"
   };
-  var ids = (q.get("items") || "").split(",").filter(function (id) { return NAMES[id]; });
+  var ids = (q.get("items") || "").split(",").filter(function (id) { return Object.prototype.hasOwnProperty.call(NAMES, id); });
+  // One purchase event per order (a reload of this page does not count it again).
+  try {
+    var key = "bf11_done_" + (q.get("s") || q.get("items") || "x");
+    if (ids.length && !sessionStorage.getItem(key)) { sessionStorage.setItem(key, "1"); gtag("event", "bf11_purchase", { items: ids.join(","), n: ids.length }); }
+  } catch (e) {}
   // The second item of every pair is the free one (the list arrives priciest first).
   var list = document.getElementById("list");
   if (!ids.length) {
