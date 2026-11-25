@@ -9,7 +9,7 @@
 <meta property="og:description" content="Black Friday 1+1 at Jay GPT Pro. Wonka + Donna for $497. Everything in the store is 1+1.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://jaygptpro.com/black-friday/">
-<meta property="og:image" content="https://jaygptpro.com/black-friday/x/og.jpg?v=2">
+<meta property="og:image" content="https://jaygptpro.com/black-friday/x/og.jpg?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -168,6 +168,11 @@ footer a{color:var(--mute)}
 .info .ix{position:absolute;top:12px;right:12px;z-index:2;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:20px;line-height:34px;text-align:center}
 .i-im{aspect-ratio:16/9;overflow:hidden;background:var(--s2)}
 .i-im img{width:100%;height:100%;object-fit:cover}
+/* Donna and Wonka: their round folder avatars, shown whole on a soft backdrop */
+img.av{object-fit:contain!important;padding:7%;background:radial-gradient(65% 65% at 50% 42%,#2b2b30 0%,#151517 70%)}
+.i-im img.av{padding:4%}
+.bar .th img.av{padding:0;background:#f5f5f7;border-radius:50%}
+.sc:has(img.av) .stamp{top:auto;bottom:48px;transform:translateX(-50%) rotate(-8deg);font-size:17px;padding:4px 11px;border-radius:9px;bottom:56px}
 .i-bd{padding:18px 22px 22px}
 .i-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .i-tags .cc{margin:0}
@@ -214,6 +219,7 @@ footer a{color:var(--mute)}
   .card .ft{padding-top:10px}
   .card .bs{font-size:10px;padding:4px 7px;top:8px;left:8px}
   .card .st{top:8px;left:8px;right:auto}
+  .sc:has(img.av) .stamp{font-size:13px;padding:3px 8px;bottom:52px}
   .info{left:0;right:0;top:auto;bottom:0;width:100%;max-height:90vh;border-radius:24px 24px 0 0;transform:translateY(100%)}
   .info.on{transform:none}
   .i-bd{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
@@ -274,9 +280,9 @@ footer a{color:var(--mute)}
   var P = [
     { id:"gift",   g:"learn", name:"The Perfect Gift Skill", price:199,  was:null, later:"$299 from Dec 1", cc:1, img:"x/gift.webp",
       head:"One Skill. A Christmas film for every product you sell.", line:"Turn your product into the gift in a Christmas story, with a 30-second cut for Sponsored Brands ads. Pay for the Skill once and use it across your catalog. Video generation costs extra." },
-    { id:"donna",  g:"learn", name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna.webp",
+    { id:"donna",  g:"learn", name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna-av.webp", av:1,
       head:"Stop starting your day in your inbox.", line:"In 5 days, you build an AI chief of staff that sorts your emails, drafts replies in your voice, preps your meetings and reminds you what you promised. No code." },
-    { id:"wonka",  g:"learn", name:"Wonka Bootcamp",         price:497,  was:997,  cc:1, img:"x/wonka.webp",
+    { id:"wonka",  g:"learn", name:"Wonka Bootcamp",         price:497,  was:997,  cc:1, img:"x/wonka-av.webp", av:1,
       head:"Stop paying for image sets you never test.", line:"Give Wonka your ASIN. He researches your niche, creates your main image, gallery and A+ from your real product, and tests them against your live listing with 100 AI tasters. You approve." },
     { id:"vault",  g:"jay",   name:"The AI Vault, 1 year",   price:1000, was:1200, img:"x/vault-dark.webp",
       head:"AI changes every week. You don't have to chase it alone.", line:"A new AI episode every month, the full library, a community of 250+ sellers, and a private 1:1 call with Jay every quarter." },
@@ -327,6 +333,7 @@ footer a{color:var(--mute)}
   function toast(t){ var e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(function(){ e.classList.remove("on"); }, 2400); }
   var CC = '<span class="cc"><img src="img/claude.svg" alt="">Claude Code</span>';
   function phone(){ return matchMedia("(max-width:980px)").matches; }
+  function imgTag(p, alt, extra){ return '<img src="'+p.img+'" alt="'+esc(alt || "")+'"'+(p.av ? ' class="av"' : '')+(extra || '')+'>'; }
   function priceHtml(p, big){
     return '<div class="pr">'+(p.was ? '<s><span class="sr">Regular price </span>'+money(p.was)+'</s>' : '')+'<b><span class="sr">Now </span>'+money(p.price)+'</b>' +
       (p.was ? '<span class="sv">You save '+money(p.was - p.price)+'</span>' : p.later ? '<span class="lt">'+esc(p.later)+'</span>' : '')+'</div>';
@@ -367,7 +374,7 @@ footer a{color:var(--mute)}
     $("groups").innerHTML = GROUPS.map(function(g){
       return '<section class="grp"><div class="grp-h"><h3>'+esc(g.name)+'</h3><p>'+esc(g.line)+'</p></div><div class="cards">' +
         P.filter(function(p){ return p.g === g.id; }).map(function(p){
-          return '<article class="card" id="c-'+p.id+'" data-t="'+p.id+'"><div class="im"><img src="'+p.img+'" alt="'+esc(p.name)+'" loading="lazy"></div>' +
+          return '<article class="card" id="c-'+p.id+'" data-t="'+p.id+'"><div class="im">'+imgTag(p, p.name, ' loading="lazy"')+'</div>' +
             (TOP.indexOf(p.id) >= 0 ? '<span class="bs">★ Best seller</span>' : '') + '<span class="st"></span>' +
             '<div class="bd">'+(p.cc ? CC : '')+'<span class="nmx">'+esc(p.name)+'</span><h4>'+esc(p.head)+'</h4><p>'+esc(p.line)+'</p>' +
             '<div class="ft">'+priceHtml(p)+'<button class="add" aria-label="Add '+esc(p.name)+'">Add</button></div>' +
@@ -378,7 +385,7 @@ footer a{color:var(--mute)}
 
   /* ---------- the station ---------- */
   function cardHtml(p, isFree, fixed){
-    return '<div class="sc"'+(fixed ? '' : ' data-sc="'+p.id+'"')+'><img src="'+p.img+'" alt=""><div class="nm"><b>'+esc(p.name)+'</b><span>'+(p.was && !isFree ? '<s>'+money(p.was)+'</s>' : '')+money(p.price)+'</span></div>' +
+    return '<div class="sc"'+(fixed ? '' : ' data-sc="'+p.id+'"')+'>'+imgTag(p)+'<div class="nm"><b>'+esc(p.name)+'</b><span>'+(p.was && !isFree ? '<s>'+money(p.was)+'</s>' : '')+money(p.price)+'</span></div>' +
       (isFree ? '<span class="stamp">FREE</span>' : '') + (fixed ? '' : '<button class="x" data-rm="'+p.id+'" aria-label="Remove '+esc(p.name)+'">×</button>') + '</div>';
   }
   function topHtml(){
@@ -417,7 +424,7 @@ footer a{color:var(--mute)}
       'The Perfect Gift Skill opens right after you pay. For the rest, you get an email from Jay within 24 hours with the next steps.';
   }
   function barHtml(c){
-    var th = c.items.slice(0, 4).map(function(p){ return '<img src="'+p.img+'" alt=""'+(c.free[p.id] ? ' class="fr"' : '')+'>'; }).join("");
+    var th = c.items.slice(0, 4).map(function(p){ return '<img src="'+p.img+'" alt=""'+(c.free[p.id] || p.av ? ' class="'+(c.free[p.id] ? 'fr ' : '')+(p.av ? 'av' : '')+'"' : '')+'>'; }).join("");
     var tip = c.items.length % 2 ? 'Add one more, it\'s free' : (c.reg > c.pay ? 'You save ' + money(c.reg - c.pay) : '');
     return '<div class="th">'+th+'</div><div class="tx"><small>You pay</small><b>'+money(c.pay)+'</b>'+(tip ? '<i>'+tip+'</i>' : '')+'</div><button class="co" data-co>Check out</button>';
   }
@@ -481,7 +488,7 @@ footer a{color:var(--mute)}
   /* ---------- details panel, and the "free one first?" question ---------- */
   function infoHtml(p){
     var inC = cart.indexOf(p.id) >= 0, pg = PAGE[p.id], g = GROUPS.filter(function(x){ return x.id === p.g; })[0];
-    return '<button class="ix" data-iclose aria-label="Close">×</button><div class="i-im"><img src="'+p.img+'" alt=""></div><div class="i-bd">' +
+    return '<button class="ix" data-iclose aria-label="Close">×</button><div class="i-im">'+imgTag(p)+'</div><div class="i-bd">' +
       '<div class="i-tags"><span class="i-g">'+esc(g.name)+'</span>'+(p.cc ? CC : '')+'</div><h3>'+esc(p.name)+'</h3><p class="i-l">'+esc(p.head)+' '+esc(p.line)+'</p>' +
       '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") !== 0; }).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
       (GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") === 0; }).map(function(x){ return '<p class="i-after"><b style="color:var(--txt)">Not included:</b>'+esc(x.slice(13))+'.</p>'; }).join("") +
