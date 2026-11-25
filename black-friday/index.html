@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Black Friday 1+1 · Buy one, get one free · Jay GPT Pro</title>
-<meta name="description" content="Black Friday at Jay GPT Pro: buy one, get one free on everything. Courses, the AI Vault, calls and AI implementation in your business. Pick any two, you pay for the pricier one.">
-<meta property="og:title" content="Black Friday 1+1 at Jay GPT Pro">
-<meta property="og:description" content="Pick any two. You pay for the pricier one. The other one is free.">
+<title>Black Friday 1+1 · Hire two AI employees, pay for one · Jay GPT Pro</title>
+<meta name="description" content="Black Friday 1+1 at Jay GPT Pro. Wonka creates your Amazon images, Donna runs your day, and this week Donna is free. Everything in the store is 1+1: pick any two and the cheaper one is free.">
+<meta property="og:title" content="Hire two AI employees. Pay for one.">
+<meta property="og:description" content="Black Friday 1+1 at Jay GPT Pro. Wonka + Donna for $497. Everything in the store is 1+1.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://jaygptpro.com/black-friday/">
-<meta property="og:image" content="https://jaygptpro.com/black-friday/x/og.jpg">
+<meta property="og:image" content="https://jaygptpro.com/black-friday/x/og.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -22,7 +22,7 @@
 <style>
 :root{
   --bg:#000;--s1:#0e0e10;--s2:#151517;--s3:#1c1c1f;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);
-  --txt:#f5f5f7;--mute:#a1a1a6;--soft:#6e6e73;--lime:#d4ff00;--ink:#0b0d00;
+  --txt:#f5f5f7;--mute:#a1a1a6;--soft:#8a8a90;--lime:#d4ff00;--ink:#0b0d00;
   --f:"Geist",-apple-system,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -32,34 +32,135 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 img{display:block;max-width:100%}
 :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:10px}
-.wrap{width:min(1280px,100% - 40px);margin-inline:auto}
+.wrap{width:min(1240px,100% - 40px);margin-inline:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* top */
 .top{position:sticky;top:0;z-index:60;background:rgba(0,0,0,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
 .top .wrap{height:56px;display:flex;align-items:center;gap:12px}
 .brand{font-weight:800;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
 .brand span{color:var(--mute);font-weight:600}
-.draft{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--soft);border:1px dashed var(--line2);border-radius:6px;padding:3px 7px}
-.ends{margin-left:auto;font-size:13px;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
-.ends b{color:var(--txt)}
 
-/* layout: the station stays on screen, the products scroll next to it */
-.layout{display:grid;grid-template-columns:440px minmax(0,1fr);gap:48px;align-items:stretch;padding-top:32px}
-.left{position:relative}
-.left .station{position:sticky;top:72px;max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:none}
+/* ===== the top block: the offer on the left, the cart on the right ===== */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:56px;align-items:center;padding:36px 0 8px}
 .eb{font-size:14px;font-weight:700;color:var(--lime)}
-h1{margin-top:6px;font-weight:800;font-size:clamp(44px,4.6vw,64px);line-height:.98;letter-spacing:-.045em}
+h1{margin-top:8px;font-weight:800;font-size:clamp(44px,5vw,72px);line-height:.98;letter-spacing:-.045em}
 h1 em{font-style:normal;color:var(--lime)}
-.sub{margin-top:12px;font-size:17px;color:var(--mute);line-height:1.4;max-width:36ch}
+.sub{margin-top:16px;font-size:19px;color:var(--mute);line-height:1.45;max-width:34ch}
 .sub b{color:var(--txt);font-weight:700}
-.clock{margin-top:14px;display:inline-flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:8px 14px;border:1px solid var(--line2);border-radius:999px}
-.cl-l{font-size:13px;font-weight:700;color:var(--mute)}
-.cl-d{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.cl-d i{font-style:normal;color:var(--soft);font-weight:600;font-size:13px;margin:0 7px 0 1px}
-.clock[hidden]{display:none}
-.endat{margin-top:8px;font-size:12.5px;color:var(--soft)}
-.cue{display:none}
-/* details panel */
+.cd{margin-top:18px;display:inline-block;font-size:14px;font-weight:600;color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:8px 14px;font-variant-numeric:tabular-nums}
+.cd b{color:var(--txt);font-weight:800}
+
+/* ===== the station (the cart) ===== */
+.station{background:var(--s1);border:1px solid var(--line2);border-radius:28px;padding:18px 20px 20px;position:relative}
+.station::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;background:radial-gradient(70% 50% at 50% 0%,rgba(212,255,0,.09),transparent 70%)}
+.st-hd{display:flex;align-items:center;gap:10px;min-height:26px}
+.st-hd .t{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.kick{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--lime)}
+.st-t{margin-top:2px;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.dots{display:flex;gap:6px}
+.dots button{height:24px;min-width:24px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:800;color:var(--mute);border:1px solid var(--line2)}
+.dots button[aria-pressed=true]{background:var(--txt);color:#000;border-color:var(--txt)}
+.st-hd .clr{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--mute)}
+.st-hd .clr:hover{color:var(--txt)}
+.slots{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);align-items:center}
+.slot{position:relative}
+.slot .lab{display:block;margin-bottom:6px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:center}
+.slot.f .lab{color:var(--lime)}
+.op{text-align:center;font-size:24px;font-weight:800;color:var(--soft);padding-top:20px}
+.ghost{aspect-ratio:1/1;border-radius:18px;border:1.5px dashed var(--line2);display:grid;place-items:center;text-align:center;padding:12px;color:var(--soft)}
+.ghost b{display:block;font-size:48px;font-weight:300;letter-spacing:-.04em;line-height:1;color:#3a3a3e}
+.ghost small{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.3}
+.slot.f .ghost{border-color:rgba(212,255,0,.45)}
+.slot.f .ghost b{color:rgba(212,255,0,.35)}
+.slot.f .ghost small{color:var(--lime)}
+.sc{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:var(--s2);border:1px solid var(--line2);display:flex;flex-direction:column}
+.sc img{width:100%;flex:1;min-height:0;object-fit:cover}
+.sc .nm{padding:8px 11px 9px;background:var(--s2)}
+.sc .nm b{display:block;font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc .nm span{display:block;margin-top:1px;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.sc .nm s{font-size:12px;font-weight:500;color:var(--soft);margin-right:5px}
+.sc .x{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:15px;line-height:28px;text-align:center;z-index:3}
+.slot.f .sc{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime),0 18px 40px rgba(212,255,0,.08)}
+.slot.f .sc .nm span{color:var(--soft);text-decoration:line-through}
+.stamp{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-12deg);z-index:2;background:var(--lime);color:var(--ink);font-size:24px;font-weight:900;letter-spacing:.02em;padding:7px 15px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.st-sum{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.st-sum .lbl{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.st-sum .big{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st-sum .big s{font-size:22px;font-weight:600;color:var(--soft);letter-spacing:-.02em;margin-left:8px}
+.save{display:inline-block;background:var(--lime);color:var(--ink);font-size:17px;font-weight:900;padding:8px 13px;border-radius:12px;white-space:nowrap}
+.brk{margin-top:10px;font-size:13.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.brk div{display:flex;justify-content:space-between;padding:1px 0}
+.brk b{color:var(--txt);font-weight:600}
+.co{margin-top:14px;width:100%;height:54px;border-radius:999px;background:var(--lime);color:var(--ink);font-weight:800;font-size:16.5px;transition:transform .12s,opacity .2s}
+.co:hover{opacity:.92}.co:active{transform:scale(.98)}
+.co:disabled{background:var(--s3);color:var(--soft);cursor:default}
+.after{margin-top:10px;font-size:13px;color:var(--mute);text-align:center;line-height:1.4}
+.why{margin-top:12px;font-size:13.5px;color:var(--mute);line-height:1.45}
+.why b{color:var(--txt)}
+.rule{margin-top:10px;font-size:13px;color:var(--soft);text-align:center;line-height:1.4}
+.rule a{color:var(--txt);text-decoration:underline;text-underline-offset:3px}
+
+/* ===== the store ===== */
+.store{padding:56px 0 120px}
+.store-h h2{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.store-h p{margin-top:6px;color:var(--mute);font-size:16px}
+.grp{margin-top:40px}
+.grp-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.grp-h h3{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.grp-h p{color:var(--mute);font-size:15px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{position:relative;background:var(--s1);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .25s,transform .3s cubic-bezier(.2,.8,.2,1)}
+.card:hover{transform:translateY(-3px);border-color:var(--line2)}
+.card .im{aspect-ratio:16/10;overflow:hidden;background:var(--s2)}
+.card .im img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.card:hover .im img{transform:scale(1.04)}
+.card .bd{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
+.cc{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:11px;font-weight:700;border:1px solid rgba(217,119,87,.5);background:rgba(217,119,87,.1);border-radius:999px;padding:2px 8px 2px 5px;margin-bottom:7px}
+.cc img{width:12px;height:12px}
+.card .nmx{font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.card h4{margin-top:4px;font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.card p{margin-top:6px;font-size:14px;color:var(--mute);line-height:1.45}
+.card .ft{margin-top:auto;padding-top:14px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.pr{line-height:1.15;font-variant-numeric:tabular-nums}
+.pr s{font-size:14px;color:var(--soft);margin-right:6px}
+.pr b{font-size:23px;font-weight:800;letter-spacing:-.02em}
+.pr .sv{display:block;margin-top:3px;font-size:13px;font-weight:800;color:var(--lime)}
+.pr .lt{display:block;margin-top:3px;font-size:12.5px;font-weight:600;color:var(--soft)}
+.card .add{height:38px;padding:0 16px;border-radius:999px;background:var(--txt);color:#000;font-size:13.5px;font-weight:800;white-space:nowrap}
+.card:hover .add{background:var(--lime)}
+.card .det{margin-top:10px;font-size:13px;font-weight:700;color:var(--mute);align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
+.card .det:hover{color:var(--txt)}
+.card .st{position:absolute;top:10px;right:10px;z-index:2;font-size:11.5px;font-weight:900;letter-spacing:.04em;padding:5px 9px;border-radius:999px;visibility:hidden}
+.card.pay{border-color:var(--txt)}
+.card.pay .st{visibility:visible;background:var(--txt);color:#000}
+.card.free{border-color:var(--lime)}
+.card.free .st{visibility:visible;background:var(--lime);color:var(--ink)}
+.card.free .pr b{text-decoration:line-through;color:var(--soft)}
+.card.in .add{background:transparent;color:var(--txt);border:1px solid var(--line2)}
+.card .bs{position:absolute;top:10px;left:10px;z-index:2;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);color:#fff}
+.card.can{border-color:rgba(212,255,0,.5);border-style:dashed}
+.card.in .bs{display:none}
+
+/* ===== the bar: shows once the cart above is out of sight ===== */
+.bar{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));z-index:120;width:min(720px,calc(100% - 20px));transform:translate(-50%,calc(100% + 40px));transition:transform .35s cubic-bezier(.2,.8,.2,1);background:rgba(22,22,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line2);border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.6);padding:10px 10px 10px 12px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.bar.on{transform:translate(-50%,0)}
+.bar .th{display:flex;flex:none}
+.bar .th img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:2px solid #161618}
+.bar .th img+img{margin-left:-12px}
+.bar .th .fr{outline:2px solid var(--lime)}
+.bar .tx{min-width:0;flex:1;line-height:1.2}
+.bar .tx small{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.bar .tx b{font-size:22px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar .tx i{display:block;font-style:normal;font-size:12px;font-weight:700;color:var(--lime);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .co{margin:0;width:auto;height:46px;padding:0 22px;font-size:15px;flex:none}
+
+footer{border-top:1px solid var(--line);padding:22px 0 110px;color:var(--soft);font-size:12px}
+footer a{color:var(--mute)}
+.toast{position:fixed;left:50%;top:68px;width:max-content;transform:translate(-50%,-140px);z-index:220;background:var(--txt);color:#000;font-weight:800;font-size:14px;padding:10px 16px;border-radius:18px;transition:transform .4s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);text-align:center}
+.toast.on{transform:translate(-50%,0)}
+
+/* details panel and the "free one first?" question */
 .iveil{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
 .iveil.on{opacity:1;pointer-events:auto}
 .info{position:fixed;z-index:190;left:50%;top:50%;width:min(560px,calc(100% - 32px));max-height:86vh;overflow:auto;background:var(--s1);border:1px solid var(--line2);border-radius:26px;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .25s}
@@ -79,199 +180,49 @@ h1 em{font-style:normal;color:var(--lime)}
 .info li::before{content:"✓";position:absolute;left:0;top:0;color:var(--lime);font-weight:900}
 .i-after{margin-top:14px;font-size:13.5px;color:var(--mute)}
 .i-ft{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.i-ft .pill{background:var(--lime);color:var(--ink)}
+.i-ft .pill,.q-act .pill{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 18px;border-radius:999px;font-weight:800;font-size:14px;background:var(--lime);color:var(--ink);white-space:nowrap}
+.q-act{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.q-act .pill.gh{background:transparent;color:var(--txt);border:1px solid var(--line2)}
 .i-pg{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--txt);text-decoration:underline;text-underline-offset:3px}
 .i-note{margin-top:4px;font-size:12.5px;color:var(--soft)}
-.card .det{text-decoration:underline;text-underline-offset:3px}
 
-/* ===== the pair station ===== */
-.station{margin-top:20px;background:var(--s1);border:1px solid var(--line);border-radius:28px;padding:16px 18px 18px;position:relative}
-.station::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;background:radial-gradient(70% 50% at 50% 0%,rgba(212,255,0,.08),transparent 70%)}
-.st-hd{display:flex;align-items:center;gap:10px;min-height:28px}
-.st-hd .t{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-.dots{display:flex;gap:6px}
-.dots button{height:24px;min-width:24px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:800;color:var(--mute);border:1px solid var(--line2)}
-.dots button[aria-pressed=true]{background:var(--txt);color:#000;border-color:var(--txt)}
-.st-hd .clr{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--mute)}
-.st-hd .clr:hover{color:var(--txt)}
-.slots{margin-top:10px;display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);align-items:center}
-.slot{position:relative}
-.slot .lab{display:block;margin-bottom:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:center}
-.slot.f .lab{color:var(--lime)}
-.op{text-align:center;font-size:26px;font-weight:800;color:var(--soft);padding-top:22px}
-.ghost{aspect-ratio:4/5;border-radius:20px;border:1.5px dashed var(--line2);display:grid;place-items:center;text-align:center;padding:12px;color:var(--soft)}
-.ghost b{display:block;font-size:64px;font-weight:300;letter-spacing:-.04em;line-height:1;color:#3a3a3e}
-.ghost small{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.3}
-.slot.f .ghost{border-color:rgba(212,255,0,.45)}
-.slot.f .ghost b{color:rgba(212,255,0,.35)}
-.slot.f .ghost small{color:var(--lime)}
-.sc{position:relative;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:var(--s2);border:1px solid var(--line2);display:flex;flex-direction:column}
-.sc img{width:100%;flex:1;min-height:0;object-fit:cover}
-.sc .nm{padding:9px 11px 10px;background:var(--s2)}
-.sc .nm b{display:block;font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sc .nm span{display:block;margin-top:2px;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
-.sc .nm s{font-size:12px;font-weight:500;color:var(--soft);margin-right:5px}
-.sc .x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:15px;line-height:26px;text-align:center;z-index:3}
-.slot.f .sc{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime),0 18px 40px rgba(212,255,0,.08)}
-.slot.f .sc .nm span{color:var(--soft);text-decoration:line-through}
-.stamp{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-12deg);z-index:2;background:var(--lime);color:var(--ink);font-size:26px;font-weight:900;letter-spacing:.02em;padding:8px 16px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
-.st-sum{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-.st-sum .lbl{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-.st-sum .big{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
-.st-sum .was{font-size:13px;color:var(--soft);margin-top:4px}
-.save{display:inline-block;background:var(--lime);color:var(--ink);font-size:14px;font-weight:900;padding:7px 11px;border-radius:10px;white-space:nowrap}
-.brk{margin-top:10px;font-size:13.5px;color:var(--mute);font-variant-numeric:tabular-nums}
-.brk div{display:flex;justify-content:space-between;padding:1px 0}
-.brk b{color:var(--txt);font-weight:600}
-.co{margin-top:14px;width:100%;height:52px;border-radius:999px;background:var(--lime);color:var(--ink);font-weight:800;font-size:16px;transition:transform .12s,opacity .2s}
-.co:hover{opacity:.92}.co:active{transform:scale(.98)}
-.co:disabled{background:var(--s3);color:var(--soft);cursor:default}
-.after{margin-top:10px;font-size:13px;color:var(--mute);text-align:center;line-height:1.4}
-.rule{margin-top:10px;font-size:12.5px;color:var(--soft);text-align:center;line-height:1.4}
-.st-close{display:none}
-
-/* ===== the products ===== */
-.right{padding-bottom:80px}
-.best{display:grid;grid-template-columns:240px minmax(0,1fr);background:var(--s1);border:1px solid var(--line);border-radius:28px;overflow:hidden}
-.best .duo{display:grid;grid-template-columns:1fr 1fr}
-.best .duo img{width:100%;height:100%;object-fit:cover}
-.best .bd{padding:22px 24px}
-.kick{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--lime)}
-.best h2{margin-top:6px;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
-.best p{margin-top:6px;color:var(--mute);font-size:15px}
-.best .eq{margin-top:12px;font-size:15px;color:var(--mute);font-variant-numeric:tabular-nums}
-.best .eq b{color:var(--txt)}
-.best .eq i{font-style:normal;background:var(--lime);color:var(--ink);font-weight:800;padding:1px 6px;border-radius:5px}
-.pill{display:inline-flex;align-items:center;justify-content:center;height:42px;padding:0 18px;border-radius:999px;font-weight:800;font-size:14px;background:var(--txt);color:#000;white-space:nowrap;transition:background .2s}
-.pill:hover{background:var(--lime)}
-.pill.on{background:transparent;color:var(--txt);border:1px solid var(--line2)}
-.best .pill{margin-top:14px}
-.grp{margin-top:44px}
-.grp-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.grp-h h2{font-size:26px;font-weight:800;letter-spacing:-.03em}
-.grp-h p{color:var(--mute);font-size:15px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:14px}
-.card{position:relative;background:var(--s1);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .25s,transform .3s cubic-bezier(.2,.8,.2,1)}
-.card:hover{transform:translateY(-3px);border-color:var(--line2)}
-.card .im{aspect-ratio:4/3;overflow:hidden;background:var(--s2)}
-.card .im img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
-.card:hover .im img{transform:scale(1.04)}
-.card .bd{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
-.cc{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:11px;font-weight:700;border:1px solid rgba(217,119,87,.5);background:rgba(217,119,87,.1);border-radius:999px;padding:2px 8px 2px 5px;margin-bottom:7px}
-.cc img{width:12px;height:12px}
-.card h3{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
-.card p{margin-top:5px;font-size:14px;color:var(--mute);line-height:1.42}
-.card .ft{margin-top:auto;padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pr{line-height:1.1;font-variant-numeric:tabular-nums}
-.pr s{display:block;font-size:12.5px;color:var(--soft)}
-.pr b{font-size:21px;font-weight:800;letter-spacing:-.02em}
-.card .add{height:36px;padding:0 15px;border-radius:999px;background:var(--txt);color:#000;font-size:13.5px;font-weight:800;white-space:nowrap}
-.card:hover .add{background:var(--lime)}
-.card .det{margin-top:9px;font-size:13px;font-weight:700;color:var(--mute);align-self:flex-start}
-.card .det:hover{color:var(--txt)}
-.card .st{position:absolute;top:10px;right:10px;z-index:2;font-size:11.5px;font-weight:900;letter-spacing:.04em;padding:5px 9px;border-radius:999px;visibility:hidden}
-.card.pay{border-color:var(--txt)}
-.card.pay .st{visibility:visible;background:var(--txt);color:#000}
-.card.free{border-color:var(--lime)}
-.card.free .st{visibility:visible;background:var(--lime);color:var(--ink)}
-.card.free .pr b{text-decoration:line-through;color:var(--soft)}
-.card.in .add{background:transparent;color:var(--txt);border:1px solid var(--line2)}
-.card .bs{position:absolute;top:10px;left:10px;z-index:2;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);color:#fff}
-.card.can{border-color:rgba(212,255,0,.5);border-style:dashed}
-.card.in .bs{display:none}
-footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--soft);font-size:12px}
-footer a{color:var(--mute)}
-.toast{position:fixed;left:50%;top:68px;width:max-content;transform:translate(-50%,-140px);z-index:220;background:var(--txt);color:#000;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;transition:transform .4s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);text-align:center}
-.toast.on{transform:translate(-50%,0)}
-.veil{display:none}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-/* short laptop screens: a smaller pair so Check out stays on screen */
-@media (min-width:981px) and (max-height:960px){
-  h1{font-size:48px}
-  .station{padding:12px 16px 14px}
-  .ghost,.sc{aspect-ratio:1/1}
-  .ghost b{font-size:48px}
-  .st-sum .big{font-size:38px}
-  .rule{display:none}
-}
-
-/* ===== small screens: the station docks at the bottom and opens up ===== */
 @media (max-width:980px){
-  .layout{grid-template-columns:1fr;gap:0;padding-top:24px}
-  .left{position:static}
+  .hero{grid-template-columns:1fr;gap:26px;padding-top:26px}
   .intro{text-align:center}
   .sub{margin-inline:auto}
-  .right{padding-top:24px;padding-bottom:150px}
-  .station{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:120;margin:0;padding:10px 12px;border-radius:22px;background:rgba(22,22,24,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 50px rgba(0,0,0,.6);max-height:88vh;overflow:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;cursor:pointer}
-  .station::before{display:none}
-  .station .st-hd,.station .brk,.station .rule,.station .after,.station .slot .lab,.station .was,.station .sc .nm,.station .sc .x,.station .ghost small{display:none}
-  .station .slots{margin:0;grid-template-columns:52px 18px 52px}
-  .station .op{padding:0;font-size:16px}
-  .station .ghost,.station .sc{border-radius:12px;aspect-ratio:1/1;padding:0}
-  .station .ghost b{font-size:20px}
-  .station .stamp{font-size:10px;padding:3px 5px;border-radius:5px;top:auto;bottom:4px;transform:translateX(-50%) rotate(-6deg)}
-  .station .st-sum{margin:0;padding:0;border:0;display:block}
-  .station .st-sum .lbl{font-size:10.5px}
-  .station .st-sum .big{font-size:26px}
-  .station .save{display:none}
-  .station .cue{display:block;margin-top:2px;font-size:11.5px;font-weight:700;color:var(--lime)}
-  .station.open .cue{display:none}
-  .station .co{margin:0;width:auto;height:44px;padding:0 18px;font-size:14px}
-  .station.open{display:block;padding:14px 16px calc(18px + env(safe-area-inset-bottom));left:0;right:0;bottom:0;border-radius:26px 26px 0 0;cursor:default}
-  .station.open .st-hd{display:flex}
-  .station.open .brk,.station.open .rule,.station.open .after,.station.open .was,.station.open .ghost small{display:block}
-  .station.open .slot .lab{display:block}
-  .station.open .sc .nm{display:block}
-  .station.open .sc .x{display:block}
-  .station.open .slots{margin:10px auto 0;max-width:440px;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr)}
-  .station.open .ghost,.station.open .sc{aspect-ratio:3/4;border-radius:18px}
-  .station.open .ghost{padding:12px}
-  .station.open .ghost b{font-size:52px}
-  .station.open .stamp{font-size:20px;padding:6px 12px;top:40%;bottom:auto;transform:translate(-50%,-50%) rotate(-12deg)}
-  .station.open .st-sum{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex}
-  .station.open .st-sum .big{font-size:40px}
-  .station.open .save{display:inline-block}
-  .station.open .co{margin-top:14px;width:100%;height:50px}
-  .station.open .st-close{display:block;margin:0 auto 8px;width:44px;height:5px;border-radius:3px;background:#444}
-  .veil{display:block;position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .3s}
-  .veil.on{opacity:1;pointer-events:auto}
-  .best{grid-template-columns:1fr}
-  .best .duo{height:220px}
-  .left .station{position:fixed;max-height:88vh;top:auto}
-}
-@media (max-width:980px) and (max-height:500px){
-  .station.open .ghost,.station.open .sc{aspect-ratio:4/3}
-}
-@media (max-width:400px){
-  .station{padding:9px 10px;gap:8px}
-  .station .slots{grid-template-columns:42px 14px 42px}
-  .station .st-sum .big{font-size:22px}
-  .station .co{padding:0 14px}
+  .station{max-width:560px;width:100%;margin-inline:auto}
+  .cards{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
 }
 @media (max-width:560px){
   .wrap{width:calc(100% - 24px)}
   h1{font-size:44px}
-  .sub{font-size:16px}
-  .draft{display:none}
+  .sub{font-size:17px}
+  .cd{font-size:13px;padding:7px 12px}
+  .station{padding:14px 14px 16px;border-radius:24px}
+  .st-t{font-size:22px}
+  .st-sum .big{font-size:38px}
+  .save{font-size:15px}
+  .store{padding-top:44px}
+  .store-h h2{font-size:28px}
   .cards{grid-template-columns:1fr;gap:10px}
   .card{flex-direction:row}
-  .card .im{width:116px;flex:none;aspect-ratio:auto}
+  .card .im{width:112px;flex:none;aspect-ratio:auto}
   .card .bd{padding:11px 12px 12px}
-  .card h3{font-size:15.5px}
-  .card p{font-size:13px;line-height:1.38}
-  .pr b{font-size:18px}
+  .card h4{font-size:15.5px}
+  .card p{font-size:13px;line-height:1.4}
+  .pr b{font-size:19px}
   .card .ft{padding-top:10px}
   .card .bs{font-size:10px;padding:4px 7px;top:8px;left:8px}
   .card .st{top:8px;left:8px;right:auto}
-  .i-bd{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
   .info{left:0;right:0;top:auto;bottom:0;width:100%;max-height:90vh;border-radius:24px 24px 0 0;transform:translateY(100%)}
   .info.on{transform:none}
-  .best .bd{padding:18px}
-  .best h2{font-size:26px}
-  .grp{margin-top:34px}
-  .grp-h h2{font-size:22px}
-  .ends{display:none}
+  .i-bd{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+  .bar{gap:10px;padding:8px 8px 8px 10px}
+  .bar .th img{width:38px;height:38px}
+  .bar .tx b{font-size:19px}
+  .bar .co{height:44px;padding:0 16px;font-size:14px}
 }
+@media (max-width:380px){ .bar .th{display:none} }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 <!-- Google Analytics -->
@@ -283,30 +234,29 @@ footer a{color:var(--mute)}
 <header class="top">
   <div class="wrap">
     <a class="brand" href="/">Jay GPT Pro <span id="ev">· Black Friday</span></a>
-    <span class="ends" id="ends"></span>
   </div>
 </header>
 
-<div class="wrap layout">
-  <aside class="left">
-    <div class="intro">
-      <p class="eb" id="eb">Black Friday 2026 · Everything in the store</p>
-      <h1>Buy one.<br><em>Get one free.</em></h1>
-      <p class="sub">Pick any two. <b>You pay for the pricier one.</b> The other one is free.</p>
-      <p class="clock" id="clock"><span class="cl-l" id="cl-l">Black Friday ends in</span><span class="cl-d" id="cl-d"></span></p>
-      <p class="endat" id="endat"></p>
-    </div>
-    <section class="station" id="station" aria-label="Your cart" tabindex="0"></section>
-  </aside>
+<section class="wrap hero">
+  <div class="intro">
+    <p class="eb" id="eb">Black Friday 1+1 · Everything in the store</p>
+    <h1>Hire two AI employees.<br><em>Pay for one.</em></h1>
+    <p class="sub">Wonka creates your Amazon images. Donna runs your day. <b>This week, Donna is free.</b></p>
+    <p class="cd" id="cd"></p>
+  </div>
+  <section class="station" id="station" aria-label="Your cart" tabindex="-1"></section>
+</section>
 
-  <main class="right">
-    <section class="best" id="best"></section>
-    <div id="groups"></div>
-  </main>
-</div>
+<main class="wrap store" id="store">
+  <div class="store-h">
+    <h2>Everything in the store is 1+1</h2>
+    <p>Pick any two. The cheaper one is free.</p>
+  </div>
+  <div id="groups"></div>
+</main>
 
 <footer><div class="wrap">Prices shown after the usual discount, regular price crossed out. © 2026 Jay GPT Pro LLC · <a href="/privacy-policy.html">Privacy</a></div></footer>
-<div class="veil" id="veil"></div>
+<div class="bar" id="bar" aria-hidden="true"></div>
 <div class="iveil" id="iveil"></div>
 <div class="info" id="info" role="dialog" aria-modal="true" aria-label="Product details" hidden></div>
 <div class="toast" id="toast" aria-hidden="true"></div>
@@ -316,35 +266,47 @@ footer a{color:var(--mute)}
 (function(){
   "use strict";
   /* ===== EDIT HERE ===== */
-  /* Black Friday runs until the end of Friday, then the same deal runs as Cyber Monday until the end of Monday (New York time). */
+  /* Black Friday runs until the end of Friday, then the same deal runs as Cyber Monday until the end of Monday (New York time).
+     bf11-checkout stops taking orders at the same moment (OFFER_END). */
   var BF_END = Date.parse("2026-11-28T00:00:00-05:00"), CM_END = Date.parse("2026-12-01T00:00:00-05:00");
-  var BEST = ["donna","wonka"];
-  /* price = after the usual discount. was = regular price (crossed out). */
+  var TOP = ["wonka","donna"];   /* the pair in the top block: Wonka is paid, Donna is free */
+  /* price = after the usual discount. was = regular price (crossed out). later = a price that starts later (never crossed out). */
   var P = [
-    { id:"gift",   g:"learn", m:"Gift Skill", name:"The Perfect Gift Skill", price:199,  was:299,  cc:1, img:"x/gift.webp",  url:"/christmas-video/", line:"The Claude Code skill and the training to make Christmas films for your own products." },
-    { id:"donna",  g:"learn", m:"Donna",      name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna.webp", url:"/claude-code-challenge-join/", line:"Build Donna, your AI chief of staff: email, calendar and tasks." },
-    { id:"wonka",  g:"learn", m:"Wonka",      name:"Wonka Bootcamp",         price:497,  was:997,  cc:1, img:"x/wonka.webp", url:"/wonka/", line:"Build Wonka, your AI creative director for Amazon listing images." },
-    { id:"vault",  g:"jay",   m:"Vault",      name:"The AI Vault, 1 year",   price:1000, was:1200, img:"x/vault-dark.webp", url:"https://www.topdog.community/checkout/ai-vault", line:"A full year in the Vault: monthly AI episodes, the library and the community." },
-    { id:"call",   g:"jay",   m:"1 call",     name:"1:1 AI call",            price:400,  was:null, img:"x/call.webp?v=2",  url:"/call/", line:"One 45-minute call with Jay about putting AI to work in your business." },
-    { id:"calls4", g:"jay",   m:"4 calls",    name:"4 AI calls",             price:1200, was:1600, img:"x/calls4.webp?v=2", url:"/call/", line:"Four 45-minute calls with Jay. Each one picks up where the last one ended." },
-    { id:"xmas",   g:"dfy",   m:"Xmas film",  name:"Christmas film for your product", price:99, was:null, img:"x/xmas-sb.webp", url:"/christmas-video/", line:"Your product stars in The Perfect Gift. A finished Christmas film, made for you." },
-    { id:"build",  g:"impl",   m:"Workflow",   name:"Custom AI workflow",     price:3000, was:null, img:"x/build-dark.webp", url:"implementation/#workflow", line:"Four sessions to set up one AI workflow around how your business runs." },
-    { id:"images", g:"impl",   m:"Images",     name:"Product image system",   price:3000, was:null, img:"x/images-dark.webp", url:"implementation/#images", line:"An AI process for your product images, set up in your business." },
-    { id:"video",  g:"impl",   m:"Video",      name:"Product video & ads system", price:3000, was:null, img:"x/video-dark.webp", url:"implementation/#video", line:"An AI process for product videos, UGC and ads, set up in your business." }
+    { id:"gift",   g:"learn", name:"The Perfect Gift Skill", price:199,  was:null, later:"$299 from Dec 1", cc:1, img:"x/gift.webp",
+      head:"One Skill. A Christmas film for every product you sell.", line:"Turn your product into the gift in a Christmas story, with a 30-second cut for Sponsored Brands ads. Pay for the Skill once and use it across your catalog. Video generation costs extra." },
+    { id:"donna",  g:"learn", name:"Donna Challenge",        price:297,  was:497,  cc:1, img:"x/donna.webp",
+      head:"Stop starting your day in your inbox.", line:"In 5 days, you build an AI chief of staff that sorts your emails, drafts replies in your voice, preps your meetings and reminds you what you promised. No code." },
+    { id:"wonka",  g:"learn", name:"Wonka Bootcamp",         price:497,  was:997,  cc:1, img:"x/wonka.webp",
+      head:"Stop paying for image sets you never test.", line:"Give Wonka your ASIN. He researches your niche, creates your main image, gallery and A+ from your real product, and tests them against your live listing with 100 AI tasters. You approve." },
+    { id:"vault",  g:"jay",   name:"The AI Vault, 1 year",   price:1000, was:1200, img:"x/vault-dark.webp",
+      head:"AI changes every week. You don't have to chase it alone.", line:"A new AI episode every month, the full library, a community of 250+ sellers, and a private 1:1 call with Jay every quarter." },
+    { id:"call",   g:"jay",   name:"1:1 AI call",            price:400,  was:null, img:"x/call.webp?v=2",
+      head:"Stuck on AI? Leave with a clear next step.", line:"45 minutes with Jay on your business, your tools and your bottleneck." },
+    { id:"calls4", g:"jay",   name:"4 AI calls",             price:1200, was:1600, img:"x/calls4.webp?v=2",
+      head:"Don't just get a plan. Get it done.", line:"Four 45-minute calls. Try it, come back, fix what didn't work. Each call starts where the last one ended." },
+    { id:"xmas",   g:"dfy",   name:"Christmas film for your product", price:99, was:null, img:"x/xmas-sb.webp",
+      head:"Your product, starring in a Christmas film. Nothing to learn.", line:"Send your Amazon link. In 2 business days you get the full film plus a 30-second ad cut, checked scene by scene against your real product." },
+    { id:"build",  g:"impl",  name:"Custom AI workflow",     price:3000, was:null, img:"x/build-dark.webp",
+      head:"One task eats hours of your week. Hand it to AI.", line:"In four sessions, Jay builds the workflow on your tools, tests it on your real work and shows your team how to run it." },
+    { id:"images", g:"impl",  name:"Product image system",   price:3000, was:null, img:"x/images-dark.webp",
+      head:"New product? No new round with the designer.", line:"Jay sets up a process your team can use for every product: listing images and lifestyle shots that look like your brand." },
+    { id:"video",  g:"impl",  name:"Product video & ads system", price:3000, was:null, img:"x/video-dark.webp",
+      head:"Video for every product, without filming every product.", line:"Listing videos, UGC-style videos and ads, from one process your team runs itself." }
   ];
-  /* What you get, shown in the details panel. page = the product's own page, only where it explains more. */
+  /* What you get, shown in the details panel. */
   var GET = {
-    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film", "The training series that walks you through it", "Not included: the tools you run it with, a paid Claude plan and video generation credits"],
+    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film, plus a 30-second cut for Sponsored Brands ads", "The training series that walks you through it", "In the 1+1, your access comes by email from Jay within 24 hours", "Not included: video generation and a paid Claude plan. You pay those tools directly"],
     donna:  ["A 5-day challenge: you build Donna in Claude Code Desktop", "Email, calendar, tasks, routines and business memory", "Made for people who are not technical"],
     wonka:  ["A 10-day bootcamp: you build Wonka, your AI creative director", "Main image, secondary images and A+ for your Amazon listings", "The skills, the workflows and the training"],
     vault:  ["The monthly AI episodes and the full library", "The Vault community and the mastermind groups", "A private 1:1 strategy call with Jay every quarter", "Already a member? The year is added when your current period ends, and your monthly plan stops"],
     call:   ["One 45-minute call with Jay on Zoom", "About putting AI to work in your business", "You leave with clear next steps"],
     calls4: ["Four 45-minute calls with Jay on Zoom", "Each call picks up where the last one ended"],
-    xmas:   ["Your product stars in The Perfect Gift, a finished Christmas film", "Made for you, from your Amazon listing"],
+    xmas:   ["Your product stars in The Perfect Gift, a finished Christmas film", "The full film plus a 30-second cut for Sponsored Brands ads", "Made for you from your Amazon listing, in 2 business days"],
     build:  ["Four sessions with Jay to set up one AI workflow inside your business", "A workflow that runs on your own tools, and a team that knows how to use it"],
     images: ["An AI process for your product images, set up in your business with your team", "A process your team runs for every product: listing images and lifestyle shots"],
     video:  ["An AI process for product videos, UGC-style videos and video ads, set up with your team", "A process your team runs for every product, from the listing video to the ad"]
   };
+  /* The product's own page, only where it explains more. 1 = opens in a new tab. */
   var PAGE = { donna:["/claude-code-challenge-join/","The Donna Challenge page",1], wonka:["/wonka/","The Wonka Bootcamp page",1],
     build:["implementation/#workflow","More about this implementation",0], images:["implementation/#images","More about this implementation",0], video:["implementation/#video","More about this implementation",0] };
   var GROUPS = [
@@ -362,9 +324,13 @@ footer a{color:var(--mute)}
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
   function money(n){ return "$" + Math.round(n).toLocaleString("en-US"); }
   function track(n, p){ try { gtag("event", n, p || {}); } catch(e){} }
-  function toast(t){ var e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(function(){ e.classList.remove("on"); }, 2200); }
+  function toast(t){ var e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(function(){ e.classList.remove("on"); }, 2400); }
   var CC = '<span class="cc"><img src="img/claude.svg" alt="">Claude Code</span>';
-  function docked(){ return matchMedia("(max-width:980px)").matches; }
+  function phone(){ return matchMedia("(max-width:980px)").matches; }
+  function priceHtml(p, big){
+    return '<div class="pr">'+(p.was ? '<s><span class="sr">Regular price </span>'+money(p.was)+'</s>' : '')+'<b><span class="sr">Now </span>'+money(p.price)+'</b>' +
+      (p.was ? '<span class="sv">You save '+money(p.was - p.price)+'</span>' : p.later ? '<span class="lt">'+esc(p.later)+'</span>' : '')+'</div>';
+  }
 
   /* the 1+1 rule: priciest first, pair neighbours, the second of each pair is free */
   function calc(ids){
@@ -378,6 +344,7 @@ footer a{color:var(--mute)}
     return { items:items, pairs:pairs, free:free, pairOf:pairOf, full:full, off:off, pay:full-off, reg:reg };
   }
 
+  /* ---------- phases: Black Friday, then Cyber Monday, then ended ---------- */
   var NOW_OFF = (function(){ var m = location.search.match(/[?&]now=([^&]+)/), t = m && Date.parse(decodeURIComponent(m[1])); return t ? t - Date.now() : 0; })();
   var phase = "";
   function tick(){
@@ -385,69 +352,88 @@ footer a{color:var(--mute)}
     var name = ph === "bf" ? "Black Friday" : "Cyber Monday", end = ph === "bf" ? BF_END : CM_END;
     if (ph !== phase){
       phase = ph;
-      $("ev").textContent = "· " + name;
-      $("eb").textContent = ph === "bf" ? "Black Friday 2026 · Everything in the store" : ph === "cm" ? "Cyber Monday 2026 · Same deal, until Monday night" : "The 1+1 has ended";
-      $("cl-l").textContent = name + " ends in";
-      $("clock").hidden = ph === "over";
-      $("endat").textContent = ph === "bf" ? "Ends Friday, Nov 27 at 11:59 PM New York time" : ph === "cm" ? "Ends Monday, Nov 30 at 11:59 PM New York time" : "";
-      document.title = ph === "over" ? "The 1+1 has ended · Jay GPT Pro" : name + " 1+1 · Buy one, get one free · Jay GPT Pro";
-      if (ph === "over") $("ev").textContent = "· 1+1";
+      $("ev").textContent = ph === "over" ? "· 1+1" : "· " + name;
+      $("eb").textContent = ph === "over" ? "The 1+1 has ended" : name + " 1+1 · Everything in the store";
+      document.title = ph === "over" ? "The 1+1 has ended · Jay GPT Pro" : name + " 1+1 · Hire two AI employees, pay for one · Jay GPT Pro";
       if (ready) render();
     }
-    var s = Math.max(0, Math.floor((end - now)/1000)), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), sc = s%60;
-    function two(n){ return String(n).padStart(2,"0"); }
-    $("cl-d").innerHTML = (d ? d + '<i>d</i>' : '') + two(h) + '<i>h</i>' + two(m) + '<i>m</i>' + two(sc) + '<i>s</i>';
-    $("ends").innerHTML = ph === "over" ? "The 1+1 has ended" : name + ' ends in <b>' + (d ? d + 'd ' : '') + h + 'h ' + m + 'm</b>';
+    var s = Math.max(0, Math.floor((end - now)/1000)), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60);
+    $("cd").innerHTML = ph === "over" ? "The 1+1 has ended" :
+      (ph === "bf" ? "Ends Fri, Nov 27, 11:59 PM New York" : "Ends Mon, Nov 30, 11:59 PM New York") + ' · <b>' + (d ? d + 'd ' + h + 'h ' + m + 'm' : h ? h + 'h ' + m + 'm' : m + 'm ' + (s%60) + 's') + '</b>';
   }
 
   /* ---------- products ---------- */
   function build(){
-    var bc = calc(BEST), d = byId.donna, w = byId.wonka;
-    $("best").innerHTML = '<div class="duo"><img src="'+d.img+'" alt="Donna"><img src="'+w.img+'" alt="Wonka"></div>' +
-      '<div class="bd"><span class="kick">★ Most popular pair</span><h2>Donna + Wonka</h2>' +
-      '<p>Your AI chief of staff and your AI creative director. Both built in Claude Code.</p>' +
-      '<p class="eq">Wonka <b>'+money(w.price)+'</b> + Donna <i>FREE</i> = <b>'+money(bc.pay)+'</b> · regular <s>'+money(bc.reg)+'</s></p>' +
-      '<button class="pill" id="best-btn" data-bundle="donna,wonka">Put this pair in</button></div>';
     $("groups").innerHTML = GROUPS.map(function(g){
-      return '<section class="grp"><div class="grp-h"><h2>'+esc(g.name)+'</h2><p>'+esc(g.line)+'</p></div><div class="cards">' +
+      return '<section class="grp"><div class="grp-h"><h3>'+esc(g.name)+'</h3><p>'+esc(g.line)+'</p></div><div class="cards">' +
         P.filter(function(p){ return p.g === g.id; }).map(function(p){
           return '<article class="card" id="c-'+p.id+'" data-t="'+p.id+'"><div class="im"><img src="'+p.img+'" alt="'+esc(p.name)+'" loading="lazy"></div>' +
-            (BEST.indexOf(p.id) >= 0 ? '<span class="bs">★ Best seller</span>' : '') + '<span class="st"></span>' +
-            '<div class="bd">'+(p.cc ? CC : '')+'<h3>'+esc(p.name)+'</h3><p>'+esc(p.line)+'</p>' +
-            '<div class="ft"><div class="pr">'+(p.was ? '<s><span class="sr">Regular price </span>'+money(p.was)+'</s>' : '')+'<b><span class="sr">Now </span>'+money(p.price)+'</b></div><button class="add" aria-label="Add '+esc(p.name)+'">Add</button></div>' +
+            (TOP.indexOf(p.id) >= 0 ? '<span class="bs">★ Best seller</span>' : '') + '<span class="st"></span>' +
+            '<div class="bd">'+(p.cc ? CC : '')+'<span class="nmx">'+esc(p.name)+'</span><h4>'+esc(p.head)+'</h4><p>'+esc(p.line)+'</p>' +
+            '<div class="ft">'+priceHtml(p)+'<button class="add" aria-label="Add '+esc(p.name)+'">Add</button></div>' +
             '<button class="det" data-info="'+p.id+'" aria-label="Details: '+esc(p.name)+'">Details</button></div></article>';
         }).join("") + '</div></section>';
     }).join("");
   }
 
   /* ---------- the station ---------- */
-  function cardHtml(p, isFree){
-    return '<div class="sc" data-sc="'+p.id+'"><img src="'+p.img+'" alt=""><div class="nm"><b>'+esc(p.name)+'</b><span>'+(p.was && !isFree ? '<s>'+money(p.was)+'</s>' : '')+money(p.price)+'</span></div>' +
-      (isFree ? '<span class="stamp">FREE</span>' : '') + '<button class="x" data-rm="'+p.id+'" aria-label="Remove '+esc(p.name)+'">×</button></div>';
+  function cardHtml(p, isFree, fixed){
+    return '<div class="sc"'+(fixed ? '' : ' data-sc="'+p.id+'"')+'><img src="'+p.img+'" alt=""><div class="nm"><b>'+esc(p.name)+'</b><span>'+(p.was && !isFree ? '<s>'+money(p.was)+'</s>' : '')+money(p.price)+'</span></div>' +
+      (isFree ? '<span class="stamp">FREE</span>' : '') + (fixed ? '' : '<button class="x" data-rm="'+p.id+'" aria-label="Remove '+esc(p.name)+'">×</button>') + '</div>';
+  }
+  function topHtml(){
+    /* empty cart: the most popular pair, ready to buy in one tap */
+    var c = calc(TOP), w = byId.wonka, d = byId.donna, over = phase === "over";
+    return '<div class="st-hd"><span class="kick">★ Most popular pair</span></div><h2 class="st-t">Wonka + Donna free</h2>' +
+      '<div class="slots"><div class="slot p"><span class="lab">You pay</span>'+cardHtml(w, false, 1)+'</div><span class="op">+</span><div class="slot f"><span class="lab">Free</span>'+cardHtml(d, true, 1)+'</div></div>' +
+      '<div class="st-sum"><div><div class="lbl">Both for</div><div class="big">'+money(c.pay)+'<s><span class="sr">Regular price </span>'+money(c.reg)+'</s></div></div><span class="save">You save '+money(c.reg - c.pay)+'</span></div>' +
+      (over ? '<button class="co" disabled>The 1+1 has ended</button>' : '<button class="co" data-getboth>Get both for '+money(c.pay)+'</button>') +
+      '<p class="why"><b>Why is Donna free?</b> Wonka takes the image work off your plate. Donna takes the emails, calendar and follow-ups. They work better together, so this week you pay for one.</p>' +
+      '<p class="rule">Or <a href="#store" data-tostore>pick any two below</a>. The cheaper one is free.</p>';
   }
   function stationHtml(c){
-    var n = c.items.length, pr = n ? c.pairs[view] : null;
-    var hd = '<span class="st-close" aria-hidden="true"></span><div class="st-hd"><span class="t">'+(c.pairs.length > 1 ? 'Your pairs' : 'Your pair')+'</span>' +
-      (c.pairs.length > 1 ? '<span class="dots">'+c.pairs.map(function(_, i){ return '<button data-view="'+i+'" aria-pressed="'+(i===view)+'">'+(i+1)+'</button>'; }).join("")+'</span>' : '') +
-      (n ? '<button class="clr" data-clear>Clear</button>' : '') + '</div>';
-    var paid = pr ? cardHtml(pr[0], false) : '<div class="ghost"><div><b>1</b><small>Pick anything</small></div></div>';
-    var cand = pr && P.some(function(q){ return cart.indexOf(q.id) < 0 && q.price <= pr[0].price; });
-    var free = pr && pr[1] ? cardHtml(pr[1], true) : '<div class="ghost"><div><b>+1</b><small>'+(pr ? (cand ? 'Add one more. Anything up to '+money(pr[0].price)+' is free' : 'Add one more. The cheaper one is free') : 'Pick a second one. It\'s free')+'</small></div></div>';
-    var slots = '<div class="slots"><div class="slot p"><span class="lab">You pay</span>'+paid+'</div><span class="op">+</span><div class="slot f"><span class="lab">Free</span>'+free+'</div></div>';
-    var sum = '<div class="st-sum"><div><div class="lbl">'+(c.pairs.length > 1 ? 'You pay, all pairs' : 'You pay')+'</div><div class="big" id="big">'+money(c.pay)+'</div>' +
-      (c.reg > c.pay ? '<div class="was">Regular price <s>'+money(c.reg)+'</s> · '+money(c.reg - c.pay)+' saved in total</div>' : '<div class="was">&nbsp;</div>') +
-      '<div class="cue">'+(n % 2 ? 'Add one more, it\'s free ▲' : 'Tap to see your cart ▲')+'</div></div>' +
-      (c.off ? '<span class="save">1+1 saves '+money(c.off)+'</span>' : '') + '</div>';
+    var n = c.items.length;
+    if (!n) return topHtml();
+    var pr = c.pairs[view];
+    var hd = '<div class="st-hd"><span class="t">'+(c.pairs.length > 1 ? 'Your pairs' : 'Your pair')+'</span>' +
+      (c.pairs.length > 1 ? '<span class="dots">'+c.pairs.map(function(_, i){ return '<button data-view="'+i+'" aria-pressed="'+(i===view)+'" aria-label="Pair '+(i+1)+'">'+(i+1)+'</button>'; }).join("")+'</span>' : '') +
+      '<button class="clr" data-clear>Clear</button></div>';
+    var cand = P.some(function(q){ return cart.indexOf(q.id) < 0 && q.price <= pr[0].price; });
+    var free = pr[1] ? cardHtml(pr[1], true) : '<div class="ghost"><div><b>+1</b><small>'+(cand ? 'Add one more. Anything up to '+money(pr[0].price)+' is free' : 'Add one more. The cheaper one is free')+'</small></div></div>';
+    var slots = '<div class="slots"><div class="slot p"><span class="lab">You pay</span>'+cardHtml(pr[0], false)+'</div><span class="op">+</span><div class="slot f"><span class="lab">Free</span>'+free+'</div></div>';
+    var sum = '<div class="st-sum"><div><div class="lbl">'+(c.pairs.length > 1 ? 'You pay, all pairs' : 'You pay')+'</div><div class="big" id="big">'+money(c.pay) +
+      (c.reg > c.pay ? '<s><span class="sr">Regular price </span>'+money(c.reg)+'</s>' : '')+'</div></div>' +
+      (c.reg > c.pay ? '<span class="save">You save '+money(c.reg - c.pay)+'</span>' : '') + '</div>';
     var brk = c.off ? '<div class="brk"><div><span>'+(c.reg > c.full ? 'After the usual discount' : 'Price')+'</span><b>'+money(c.full)+'</b></div><div><span>1+1 free</span><b>−'+money(c.off)+'</b></div></div>' : '';
-    if (!n) sum = '';
     if (phase === "over") return hd + slots + sum + brk + '<button class="co" disabled>The 1+1 has ended</button>';
-    return hd + slots + sum + brk + '<button class="co" data-co'+(n ? '' : ' disabled')+'>'+(n ? 'Check out' : 'Pick any two')+'</button>' +
-      (n ? '<p class="after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' : '') +
+    return hd + slots + sum + brk + '<button class="co" data-co>Check out</button>' +
+      '<p class="after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
       '<p class="rule">Picking more? We pair them from the priciest down. In every pair, the cheaper one is free.</p>';
   }
+  function barHtml(c){
+    var th = c.items.slice(0, 4).map(function(p){ return '<img src="'+p.img+'" alt=""'+(c.free[p.id] ? ' class="fr"' : '')+'>'; }).join("");
+    var tip = c.items.length % 2 ? 'Add one more, it\'s free' : (c.reg > c.pay ? 'You save ' + money(c.reg - c.pay) : '');
+    return '<div class="th">'+th+'</div><div class="tx"><small>You pay</small><b>'+money(c.pay)+'</b>'+(tip ? '<i>'+tip+'</i>' : '')+'</div><button class="co" data-co>Check out</button>';
+  }
+
+  /* the bar shows once the cart's own button is out of sight: on phones only after scrolling past it,
+     on laptops also when the screen is too short to show it */
+  function updBar(){
+    var bar = $("bar"), btn = $("station").querySelector(".co"), show = false;
+    if (cart.length && phase !== "over" && btn){
+      var r = btn.getBoundingClientRect();
+      show = r.bottom < 64 || (!phone() && r.top > innerHeight - 8);
+    }
+    bar.classList.toggle("on", show); bar.setAttribute("aria-hidden", show ? "false" : "true");
+    [].forEach.call(bar.querySelectorAll("button"), function(b){ b.tabIndex = show ? 0 : -1; });
+  }
+  var barQ = false;
+  window.addEventListener("scroll", function(){ if (!barQ){ barQ = true; requestAnimationFrame(function(){ barQ = false; updBar(); }); } }, { passive: true });
+  window.addEventListener("resize", updBar);
 
   /* FLIP: remember where every card was, render, then move each card from there */
   var lastFree = {};
+  function inView(el){ var r = el.getBoundingClientRect(); return r.bottom > 56 && r.top < innerHeight; }
   function render(addedId){
     G = G || window.gsap || null;
     var c = calc(cart);
@@ -457,6 +443,7 @@ footer a{color:var(--mute)}
     var before = {};
     [].forEach.call(document.querySelectorAll("[data-sc]"), function(el){ before[el.getAttribute("data-sc")] = el.getBoundingClientRect(); });
     $("station").innerHTML = stationHtml(c);
+    $("bar").innerHTML = cart.length ? barHtml(c) : "";
     var pv = c.pairs[view];
     P.forEach(function(p){
       var el = $("c-"+p.id), inC = cart.indexOf(p.id) >= 0, f = !!c.free[p.id];
@@ -465,104 +452,119 @@ footer a{color:var(--mute)}
       el.querySelector(".add").textContent = inC ? "Remove" : "Add";
       el.classList.toggle("can", !inC && !!pv && !pv[1] && p.price <= pv[0].price);
     });
-    var both = BEST.every(function(id){ return cart.indexOf(id) >= 0; });
-    $("best-btn").textContent = both ? "✓ This pair is in" : "Put this pair in"; $("best-btn").classList.toggle("on", both);
-    if (G && !reduce){
+    if (G && !reduce && inView($("station"))){
       [].forEach.call(document.querySelectorAll("[data-sc]"), function(el){
         var id = el.getAttribute("data-sc"), to = el.getBoundingClientRect(), from = before[id];
         if (!from && id === addedId){ var im = $("c-"+id).querySelector(".im").getBoundingClientRect(); if (im.bottom > 0 && im.top < innerHeight) from = im; }
         if (from && to.width){
           G.fromTo(el, { x: from.left - to.left, y: from.top - to.top, scaleX: from.width / to.width, scaleY: from.height / to.height, transformOrigin: "0 0" },
             { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: before[id] ? .55 : .65, ease: "power3.inOut", clearProps: "transform" });
-        } else if (id === addedId){ G.fromTo(el, { scale: .6, opacity: 0 }, { scale: 1, opacity: 1, duration: .4, ease: "back.out(1.8)" }); }
+        } else if (id === addedId){ G.fromTo(el, { scale: .6, opacity: 0 }, { scale: 1, opacity: 1, duration: .4, ease: "back.out(1.8)", clearProps: "transform,opacity" }); }
         var st = el.querySelector(".stamp");
         if (st && !lastFree[id]) G.fromTo(st, { scale: 2.2, rotation: -30, opacity: 0 }, { scale: 1, rotation: -12, opacity: 1, duration: .18, ease: "power4.in", delay: .55, clearProps: "transform,opacity" });
       });
-      var big = $("big"); if (addedId && big) G.fromTo(big, { scale: 1.08 }, { scale: 1, duration: .4, ease: "power2.out", delay: .5 });
+      var big = $("big"); if (addedId && big) G.fromTo(big, { scale: 1.08 }, { scale: 1, duration: .4, ease: "power2.out", delay: .5, clearProps: "transform" });
+    } else if (G && !reduce && addedId && $("bar").classList.contains("on")){
+      G.fromTo("#bar", { y: -6 }, { y: 0, duration: .35, ease: "back.out(2)", clearProps: "y" });
     }
     lastFree = c.free;
     try { localStorage.setItem("bf11_cart", JSON.stringify(cart)); } catch(e){}
+    updBar();
   }
 
+  /* ---------- details panel, and the "free one first?" question ---------- */
   function infoHtml(p){
     var inC = cart.indexOf(p.id) >= 0, pg = PAGE[p.id], g = GROUPS.filter(function(x){ return x.id === p.g; })[0];
     return '<button class="ix" data-iclose aria-label="Close">×</button><div class="i-im"><img src="'+p.img+'" alt=""></div><div class="i-bd">' +
-      '<div class="i-tags"><span class="i-g">'+esc(g.name)+'</span>'+(p.cc ? CC : '')+'</div><h3>'+esc(p.name)+'</h3><p class="i-l">'+esc(p.line)+'</p>' +
-      '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
+      '<div class="i-tags"><span class="i-g">'+esc(g.name)+'</span>'+(p.cc ? CC : '')+'</div><h3>'+esc(p.name)+'</h3><p class="i-l">'+esc(p.head)+' '+esc(p.line)+'</p>' +
+      '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") !== 0; }).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
+      (GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") === 0; }).map(function(x){ return '<p class="i-after"><b style="color:var(--txt)">Not included:</b>'+esc(x.slice(13))+'.</p>'; }).join("") +
       '<p class="i-after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
-      '<div class="i-ft"><div class="pr">'+(p.was ? '<s>'+money(p.was)+'</s>' : '')+'<b>'+money(p.price)+'</b></div><button class="pill" data-pa="'+p.id+'">'+(inC ? 'Remove from cart' : 'Add to cart')+'</button></div>' +
+      '<div class="i-ft">'+priceHtml(p)+(phase === "over" ? '' : '<button class="pill" data-pa="'+p.id+'">'+(inC ? 'Remove from cart' : 'Add to cart')+'</button>')+'</div>' +
       (pg ? '<a class="i-pg" href="'+pg[0]+'"'+(pg[2] ? ' target="_blank" rel="noopener"' : '')+' data-more="'+p.id+'">'+esc(pg[1])+(pg[2] ? ' ↗' : ' →')+'</a>'+(pg[2] ? '<p class="i-note">Opens in a new tab. Come back here for the 1+1 price.</p>' : '') : '') + '</div>';
   }
+  function askHtml(){
+    var c = calc(cart), last = c.pairs[c.pairs.length - 1][0];
+    return '<button class="ix" data-iclose aria-label="Close">×</button><div class="i-bd" style="padding-top:26px">' +
+      '<h3>Pick your free one first?</h3><p class="i-l">'+(cart.length === 1 ? 'You have one item in your cart.' : last.name + ' has no free partner yet.')+' Add one more and the cheaper one is free: anything up to '+money(last.price)+'.</p>' +
+      '<div class="q-act"><button class="pill" data-pickfree>Pick my free one</button><button class="pill gh" data-coanyway>Check out anyway</button></div></div>';
+  }
   var infoFrom = null;
-  function openInfo(id){ infoFrom = document.activeElement; $("info").innerHTML = infoHtml(byId[id]); $("info").classList.add("on"); $("info").removeAttribute("hidden"); $("iveil").classList.add("on"); lockScroll(true); var x = $("info").querySelector(".ix"); if (x) x.focus(); track("bf11_info", { item: id }); }
-  function closeInfo(){ if (!$("info").classList.contains("on")) return; $("info").classList.remove("on"); $("iveil").classList.remove("on"); lockScroll($("station").classList.contains("open")); setTimeout(function(){ if (!$("info").classList.contains("on")) $("info").setAttribute("hidden", ""); }, 300); if (infoFrom && infoFrom.focus) infoFrom.focus(); infoFrom = null; }
+  function openPanel(html, label){ infoFrom = document.activeElement; var el = $("info"); el.innerHTML = html; el.setAttribute("aria-label", label); el.removeAttribute("hidden"); el.scrollTop = 0; requestAnimationFrame(function(){ el.classList.add("on"); }); $("iveil").classList.add("on"); lockScroll(true); var x = el.querySelector(".ix"); if (x) x.focus({ preventScroll: true }); }
+  function openInfo(id){ openPanel(infoHtml(byId[id]), "Details: " + byId[id].name); track("bf11_info", { item: id }); }
+  function closeInfo(back){ if (!$("info").classList.contains("on")) return; $("info").classList.remove("on"); $("iveil").classList.remove("on"); lockScroll(false); setTimeout(function(){ if (!$("info").classList.contains("on")) $("info").setAttribute("hidden", ""); }, 300); if (back !== false && infoFrom && infoFrom.focus) infoFrom.focus({ preventScroll: true }); infoFrom = null; }
   function lockScroll(on){ document.documentElement.style.overflow = on ? "hidden" : ""; }
+
+  /* ---------- cart actions ---------- */
   /* what became free with this change, named as on the cards */
   function freeNews(before, c){ var f = c.items.filter(function(p){ return c.free[p.id] && !before.free[p.id]; }); return f.length ? f.map(function(p){ return p.name; }).join(" and ") + (f.length > 1 ? " are" : " is") + " free." : ""; }
   function add(id){
-    if (cart.indexOf(id) >= 0 || busy) return;
+    if (cart.indexOf(id) >= 0 || busy || phase === "over") return;
     var b4 = calc(cart); cart.push(id); render(id); track("bf11_add", { item: id, n: cart.length });
-    var c = calc(cart), self = c.free[id], fn = freeNews({ free: Object.assign({}, b4.free, self ? { [id]: 1 } : {}) }, c);
+    var c = calc(cart), self = c.free[id], bf = {}; for (var k in b4.free) bf[k] = 1; if (self) bf[id] = 1;
+    var fn = freeNews({ free: bf }, c);
     note(byId[id].name + " added." + (self ? " It's free." : "") + (fn ? " " + fn : !self && cart.length % 2 ? " Add one more, the cheaper one is free." : ""));
   }
   function remove(id){ if (busy) return; var i = cart.indexOf(id); if (i >= 0){ cart.splice(i,1); render(); track("bf11_remove", { item: id }); note(byId[id].name + " removed."); } }
-  function note(t){ $("sr").textContent = t; if (docked() && !$("station").classList.contains("open")) toast(t); }
-  function openSt(on){ $("station").classList.toggle("open", on); $("veil").classList.toggle("on", on); lockScroll(on); if (on) $("station").focus({ preventScroll: true }); }
+  /* a short note: read out to screen readers, and shown when the cart itself is out of sight */
+  function note(t){ $("sr").textContent = t; if (!inView($("station"))) toast(t); }
+  function toStation(){ $("station").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("station").focus({ preventScroll: true }); }
 
   document.addEventListener("click", function(e){
     var t = e.target;
+    if (t.closest("[data-tostore]")){ e.preventDefault(); $("store").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); return; }
     if (t.closest("a")){ var mo = t.closest("[data-more]"); if (mo) track("bf11_details", { item: mo.getAttribute("data-more") }); return; }
     var inf = t.closest("[data-info]"); if (inf){ openInfo(inf.getAttribute("data-info")); return; }
     if (t.closest("[data-iclose]") || t.closest("#iveil")){ closeInfo(); return; }
     var pa = t.closest("[data-pa]"); if (pa){ var pid = pa.getAttribute("data-pa"); if (cart.indexOf(pid) >= 0) remove(pid); else add(pid); closeInfo(); return; }
-    var bu = t.closest("[data-bundle]"); if (bu){ var nw = bu.getAttribute("data-bundle").split(",").filter(function(id){ return cart.indexOf(id) < 0; });
-      if (!nw.length || busy) return; var b4 = calc(cart); nw.forEach(function(id){ cart.push(id); }); render(nw[nw.length-1]); track("bf11_best_add"); note("Donna + Wonka in." + (freeNews(b4, calc(cart)) ? " " + freeNews(b4, calc(cart)) : "")); return; }
+    if (t.closest("[data-pickfree]")){ closeInfo(false); track("bf11_pickfree"); $("store").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); return; }
+    if (t.closest("[data-coanyway]")){ closeInfo(false); checkout(true); return; }
+    if (t.closest("[data-getboth]")){ if (busy || phase === "over") return; TOP.forEach(function(id){ if (cart.indexOf(id) < 0) cart.push(id); }); render(); track("bf11_getboth"); checkout(true); return; }
     var rm = t.closest("[data-rm]"); if (rm){ remove(rm.getAttribute("data-rm")); $("station").focus({ preventScroll: true }); return; }
     if (t.closest("[data-clear]")){ if (busy) return; cart = []; render(); note("Cart cleared."); $("station").focus({ preventScroll: true }); return; }
     var vw = t.closest("[data-view]"); if (vw){ view = +vw.getAttribute("data-view"); render(); var vb = $("station").querySelector('[data-view="'+view+'"]'); if (vb) vb.focus(); return; }
-    var co = t.closest("[data-co]"); if (co){ if (cart.length && !co.disabled) checkout(co); return; }
-    if (t.closest("#veil") || t.closest(".st-close")){ openSt(false); return; }
-    if (docked() && t.closest("#station") && !$("station").classList.contains("open")){ openSt(true); return; }
+    var co = t.closest("[data-co]"); if (co){ if (cart.length && !co.disabled) checkout(false); return; }
+    if (t.closest("#bar")){ toStation(); return; }
+    /* a card tap toggles; a second tap within 400ms (a double click) is ignored */
     var cd = t.closest("[data-t]"); if (cd){ var id = cd.getAttribute("data-t"), now = e.timeStamp; if (lastTap[id] && now - lastTap[id] < 400) return; lastTap[id] = now; if (cart.indexOf(id) >= 0) remove(id); else add(id); }
   });
   document.addEventListener("keydown", function(e){
-    if (e.key === "Escape"){ if ($("info").classList.contains("on")) closeInfo(); else openSt(false); return; }
-    if ((e.key === "Enter" || e.key === " ") && e.target === $("station") && docked() && !$("station").classList.contains("open")){ e.preventDefault(); openSt(true); return; }
+    if (e.key === "Escape"){ closeInfo(); return; }
     if (e.key === "Tab" && $("info").classList.contains("on")){ var fs = $("info").querySelectorAll("button,a[href]"), a = fs[0], z = fs[fs.length-1]; if (e.shiftKey && document.activeElement === a){ e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z){ e.preventDefault(); a.focus(); } }
   });
 
-  /* Check out: the server (bf11-checkout) prices the cart from its own list and opens one Stripe
-     Checkout for all of it. The page sends ids only. */
+  /* ---------- check out: the server (bf11-checkout) prices the cart from its own list and opens one
+     Stripe Checkout for all of it. The page sends ids only. ---------- */
   var CO_URL = "https://faqjilunlzljbgrnpcgi.supabase.co/functions/v1/bf11-checkout";
-  function checkout(btn){
-    if (busy || phase === "over") return;
+  function checkout(sure){
+    if (busy || phase === "over" || !cart.length) return;
+    if (!sure && cart.length % 2){ openPanel(askHtml(), "Pick your free one first?"); track("bf11_ask_free"); return; }
     busy = true;
     track("bf11_checkout", { n: cart.length });
-    document.querySelectorAll("[data-co]").forEach(function(b){ b.disabled = true; b.textContent = "Opening checkout..."; });
+    document.querySelectorAll("[data-co],[data-getboth]").forEach(function(b){ b.disabled = true; b.textContent = "Opening checkout..."; });
     function restore(msg){ busy = false; render(); toast(msg || "Checkout did not open. Try again."); }
     fetch(CO_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) })
       .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
       .then(function(x){ if (x.ok && x.d && x.d.url){ location.href = x.d.url; return; } restore(x.d && x.d.message); })
       .catch(function(){ restore(); });
   }
-  /* Back from Stripe: the browser restores the page as it was left, button frozen on "Opening checkout..." */
   function loadSaved(){ var s = []; try { s = JSON.parse(localStorage.getItem("bf11_cart") || "[]"); } catch(e){} return Array.isArray(s) ? s.filter(function(id, i){ return typeof id === "string" && byId[id] && s.indexOf(id) === i; }) : []; }
+  /* back from Stripe or from the thanks page: the saved cart is the truth (the thanks page empties it) */
   window.addEventListener("pageshow", function(e){ if (e.persisted){ busy = false; cart = loadSaved(); render(); } });
   /* the same store open in another tab: keep both carts the same */
   window.addEventListener("storage", function(e){ if (e.key === "bf11_cart" && !busy){ cart = loadSaved(); render(); } });
 
   function init(){
-    G = window.gsap || null;
     tick(); setInterval(tick, 1000);
     build();
+    /* ?pick= and ?add= join the saved cart (a second link does not wipe the first), then leave the URL */
     var q = new URLSearchParams(location.search), incoming = [];
     ["pick","add"].forEach(function(k){ (q.get(k) || "").split(",").forEach(function(id){ id = id.trim(); if (byId[id] && incoming.indexOf(id) < 0) incoming.push(id); }); });
     loadSaved().concat(incoming).forEach(function(id){ if (cart.indexOf(id) < 0) cart.push(id); });
     ready = true;
     render();
-    var news = incoming.filter(function(id){ return cart.indexOf(id) >= 0; });
     if (q.has("canceled")) toast("Checkout canceled. Your cart is still here.");
-    else if (news.length) toast(news.map(function(id){ return byId[id].name; }).join(" + ") + (news.length > 1 ? " are" : " is") + " in your cart.");
+    else if (incoming.length) toast(incoming.map(function(id){ return byId[id].name; }).join(" + ") + (incoming.length > 1 ? " are" : " is") + " in your cart.");
     /* keep utm and the rest for analytics, drop only the cart params */
     if (q.has("pick") || q.has("add") || q.has("canceled")){ ["pick","add","canceled"].forEach(function(k){ q.delete(k); }); var qs = q.toString(); try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch(e){} }
   }
