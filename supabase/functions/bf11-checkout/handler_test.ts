@@ -1,4 +1,4 @@
-import { CATALOG, DONNA_ADDON_PRODUCT, DONNA_SOLO_PRODUCT, handle, OFFER_END, priceCart, sessionParams, type Deps } from "./handler.ts";
+import { BF_END, CATALOG, handle, OFFER_END, priceCart, sessionParams, type Deps } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 
 const NOW = Date.UTC(2026, 10, 26, 15, 0, 0);
@@ -28,14 +28,16 @@ Deno.test("ties keep the page order: build, images, video", () => {
   assert(c.pay === 600000, `pay ${c.pay}`);
 });
 
-Deno.test("Donna rides on the Wonka cross-sell product only when Wonka is in the cart", () => {
-  assert(priceCart(["donna", "wonka"]).lines.find((l) => l.id === "donna")!.product === DONNA_ADDON_PRODUCT, "with wonka");
-  assert(priceCart(["donna", "vault"]).lines.find((l) => l.id === "donna")!.product === DONNA_SOLO_PRODUCT, "without wonka");
-  assert(CATALOG.find((p) => p.id === "donna")!.product === DONNA_SOLO_PRODUCT, "catalog not mutated");
+Deno.test("every line is a Black Friday product of its own, ten different ones", () => {
+  const ids = new Set(CATALOG.map((p) => p.product));
+  assert(ids.size === 10, `${ids.size} products`);
+  for (const old of ["prod_UdyoNBZgnpQwan", "prod_UxhPy8Tfpeiwv6", "prod_UxhJATVn8CEfCT", "prod_VdK0WmRf7Cgnvy", "prod_VdK0ykqQR23ctI", "prod_UrMUodTe2zrXPy"]) {
+    assert(!ids.has(old), `still uses ${old}`);
+  }
 });
 
 Deno.test("bad carts are refused", () => {
-  for (const bad of [[], ["donna", "donna"], ["nope"], "donna", null, [1], [...CATALOG.map((p) => p.id), "gift"]]) {
+  for (const bad of [[], ["donna", "donna"], ["nope"], "donna", null, [1], [...CATALOG.map((p) => p.id), "gift"], ["constructor"], ["__proto__"], ["toString", "donna"]]) {
     let threw = false;
     try { priceCart(bad); } catch { threw = true; }
     assert(threw, `accepted ${JSON.stringify(bad)}`);
@@ -99,4 +101,13 @@ Deno.test("prices match black-friday/index.html", async () => {
     assert(CATALOG[i].id === id, `order: ${i} is ${id} on the page, ${CATALOG[i].id} here`);
     assert(CATALOG[i].price === cents, `${id}: page ${cents}, server ${CATALOG[i].price}`);
   });
+});
+
+Deno.test("the note on the Stripe page names the phase and reads right for any free item", () => {
+  const c = priceCart(["vault", "wonka"]);
+  const bf = sessionParams(c, BF_END - 3600e3).get("custom_text[submit][message]");
+  const cm = sessionParams(c, BF_END + 3600e3).get("custom_text[submit][message]");
+  assert(bf === "Black Friday 1+1. Free in this order: Wonka Bootcamp.", String(bf));
+  assert(cm === "Cyber Monday 1+1. Free in this order: Wonka Bootcamp.", String(cm));
+  assert(sessionParams(priceCart(["donna"]), BF_END).get("custom_text[submit][message]") === null, "no free item, no note");
 });

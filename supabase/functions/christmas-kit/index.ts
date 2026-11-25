@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { handle, SKILL_PRODUCT, type Manifest, type Order } from "./handler.ts";
+import { BF_SKILL_PRODUCT, handle, SKILL_PRODUCT, type Manifest, type Order } from "./handler.ts";
 
 const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const sbUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -22,7 +22,7 @@ Deno.serve((req) =>
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`stripe session ${res.status}`);
       const s = await res.json();
-      const skill = (s?.line_items?.data || []).some((it: any) => it?.price?.product === SKILL_PRODUCT);
+      const skill = (s?.line_items?.data || []).some((it: any) => it?.price?.product === SKILL_PRODUCT || it?.price?.product === BF_SKILL_PRODUCT);
       const charge = s?.payment_intent?.latest_charge;
       return {
         paid: s?.payment_status === "paid",

@@ -1,4 +1,4 @@
-import { addBusinessHours, build, classify, handle, ilDay, readCards, readSent, sentPatch, sha256hex, KIT_OPEN_AT, LAUNCH, SKILL_PRODUCT, VIDEO_PRODUCT, type Deps } from "./handler.ts";
+import { addBusinessHours, BF_VIDEO_PRODUCT, build, classify, handle, ilDay, readCards, readSent, sentPatch, sha256hex, KIT_OPEN_AT, LAUNCH, SKILL_PRODUCT, VIDEO_PRODUCT, type Deps } from "./handler.ts";
 function assert(c: unknown, m: string) { if (!c) throw new Error(m); }
 const U = (y: number, mo: number, d: number, h = 0, mi = 0) => Date.UTC(y, mo - 1, d, h, mi) / 1000;
 
@@ -231,7 +231,7 @@ Deno.test("a Black Friday 1+1 cart: only its film's share counts, open carts are
     metadata: { project: "bf11", items: "wonka,xmas", free: "xmas", courses: "wonka" },
     line_items: { data: [
       { quantity: 1, amount_total: 49700, price: { product: "prod_Vgptu7pxmb7d1I" } },
-      { quantity: 1, amount_total: o.filmCents ?? 0, price: { product: VIDEO_PRODUCT } },
+      { quantity: 1, amount_total: o.filmCents ?? 0, price: { product: BF_VIDEO_PRODUCT } },
     ] },
   });
   const free = classify(cart(), {})!;

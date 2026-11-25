@@ -13,6 +13,8 @@
 // we put it in the buyer's mail; it is long and unguessable, and it only opens that order.
 
 export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
+// The film as sold in the Black Friday 1+1 store (bf11-checkout, 25.11.2026). Jay sends those buyers the film card by hand.
+export const BF_VIDEO_PRODUCT = "prod_Vh04NOe5P8I3nA";
 
 // Free bonus film (Jay's launch plan, revised 19.11.2026): every customer who PAYS for at
 // least one film between launch and Monday 23 November 11:59 PM Pacific time gets exactly ONE

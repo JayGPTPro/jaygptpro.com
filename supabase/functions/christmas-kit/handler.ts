@@ -9,6 +9,8 @@
 // refunded. The files sit in a PRIVATE Storage bucket; every answer hands out signed links that expire.
 
 export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";
+// The Skill as sold in the Black Friday 1+1 store (bf11-checkout, 25.11.2026). Jay sends those buyers the kit link by hand.
+export const BF_SKILL_PRODUCT = "prod_Vh03wdWXfty9yJ";
 export const SIGN_SECONDS = 6 * 3600;
 
 export type Order = { paid: boolean; skill: boolean; refunded: boolean; email: string; name: string; vault?: boolean };

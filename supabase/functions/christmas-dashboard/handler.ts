@@ -17,6 +17,9 @@ export const KEY_SHA256 = "1533231fe52dcb9896517c53044c04a7c4f7598ce4b577dcaa878
 
 export const VIDEO_PRODUCT = "prod_VdK0ykqQR23ctI";
 export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";
+// The same two as sold in the Black Friday 1+1 store (bf11-checkout, 25.11.2026).
+export const BF_VIDEO_PRODUCT = "prod_Vh04NOe5P8I3nA";
+export const BF_SKILL_PRODUCT = "prod_Vh03wdWXfty9yJ";
 export const PROJECT = "christmas_video";
 export const BF_PROJECT = "bf11"; // the Black Friday 1+1 store, one checkout for a whole cart
 export const VAULT_COUPON = "VAULT_FIRST_FILM";
@@ -145,8 +148,8 @@ export function classify(s: Any, promos: Record<string, Promo>): Order | null {
   for (const it of (s?.line_items?.data || [])) {
     const p = idOf(it?.price?.product), q = Number(it?.quantity ?? 1), amt = Number(it?.amount_total ?? 0);
     all += amt;
-    if (p === VIDEO_PRODUCT) { films += q; ours += amt; }
-    if (p === SKILL_PRODUCT) { skills += q; ours += amt; }
+    if (p === VIDEO_PRODUCT || p === BF_VIDEO_PRODUCT) { films += q; ours += amt; }
+    if (p === SKILL_PRODUCT || p === BF_SKILL_PRODUCT) { skills += q; ours += amt; }
   }
   if (s?.metadata?.project !== PROJECT && !films && !skills) return null;
   if (!films && !skills) return null; // a Christmas session we cannot read the items of

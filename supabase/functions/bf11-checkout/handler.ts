@@ -9,22 +9,26 @@
 //
 // Delivery: Jay delivers every Black Friday product by hand (25.11.2026). stripe-webhook reads the session
 // metadata this writes (project=bf11, items, free, courses), grants nothing, and mails Jay the order with his
-// to-dos and the buyer a confirmation (an email from Jay within 24 hours). The Skill and the film still ride
-// on their own products, so the kit page and the film card Jay sends open for this order's session id.
+// to-dos and the buyer a confirmation (an email from Jay within 24 hours). christmas-kit and christmas-films
+// know the Skill and film products below, so the kit page and the film card Jay sends open for this order.
 
 export const BF_PROJECT = "bf11";
 // The offer runs as Black Friday, then as Cyber Monday, until Tue 1.12.2026 00:00 New York (EST, UTC-5).
 export const OFFER_END = Date.UTC(2026, 11, 1, 5, 0, 0);
+// Black Friday until Sat 28.11.2026 00:00 New York, Cyber Monday after that (same as BF_END on the page).
+export const BF_END = Date.UTC(2026, 10, 28, 5, 0, 0);
+export const offerName = (now: number) => (now < BF_END ? "Black Friday" : "Cyber Monday");
 export const SITE = "https://jaygptpro.com";
 
-export const DONNA_SOLO_PRODUCT = "prod_UdyoNBZgnpQwan";   // Claude Code Challenge: Your First AI Hire (evergreen)
-export const DONNA_ADDON_PRODUCT = "prod_UxhPy8Tfpeiwv6";  // Donna Challenge. Full Access, the Wonka cross-sell
 // Wonka has a product of its own here: the Golden Ticket product carries a Stripe cross-sell that offers
 // Donna for $250, also to a buyer who already has Donna in the cart. The webhook grants Wonka from the metadata.
 export const WONKA_PRODUCT = "prod_Vgptu7pxmb7d1I";        // Black Friday 1+1: Wonka Bootcamp
-export const SKILL_PRODUCT = "prod_VdK0WmRf7Cgnvy";        // Christmas Film Skill + Training
-export const FILM_PRODUCT = "prod_VdK0ykqQR23ctI";         // Christmas Film: The Perfect Gift
-export const CALL_PRODUCT = "prod_UrMUodTe2zrXPy";         // 1-on-1 Strategy Call with Jay
+// Every line is a Black Friday product of its own, named as in the store (Jay, 25.11), so the Stripe page
+// shows the names the buyer picked. christmas-kit and christmas-films accept the Skill and film ones too.
+export const DONNA_PRODUCT = "prod_Vh03HpndYBJra0";        // Black Friday 1+1: Donna Challenge
+export const SKILL_PRODUCT = "prod_Vh03wdWXfty9yJ";        // Black Friday 1+1: The Perfect Gift Skill
+export const FILM_PRODUCT = "prod_Vh04NOe5P8I3nA";         // Black Friday 1+1: Christmas film for your product
+export const CALL_PRODUCT = "prod_Vh039BacShbrOl";         // Black Friday 1+1: 1:1 AI call
 
 export type Item = { id: string; name: string; price: number; ord: number; product: string };
 
@@ -32,7 +36,7 @@ export type Item = { id: string; name: string; price: number; ord: number; produ
 // handler_test.ts reads that page and fails when the two drift apart.
 export const CATALOG: Item[] = [
   { id: "gift",   name: "The Perfect Gift Skill",           price: 19900,  ord: 0, product: SKILL_PRODUCT },
-  { id: "donna",  name: "Donna Challenge",                  price: 29700,  ord: 1, product: DONNA_SOLO_PRODUCT },
+  { id: "donna",  name: "Donna Challenge",                  price: 29700,  ord: 1, product: DONNA_PRODUCT },
   { id: "wonka",  name: "Wonka Bootcamp",                   price: 49700,  ord: 2, product: WONKA_PRODUCT },
   { id: "vault",  name: "The AI Vault, 1 year",             price: 100000, ord: 3, product: "prod_Vgpcvepgv2F85M" },
   { id: "call",   name: "1:1 AI call",                      price: 40000,  ord: 4, product: CALL_PRODUCT },
@@ -42,7 +46,8 @@ export const CATALOG: Item[] = [
   { id: "images", name: "Product image system",             price: 300000, ord: 8, product: "prod_VgpcewV9zkiUyz" },
   { id: "video",  name: "Product video & ads system",       price: 300000, ord: 9, product: "prod_VgpcH455WsSht8" },
 ];
-const BY_ID: Record<string, Item> = Object.fromEntries(CATALOG.map((p) => [p.id, p]));
+// No prototype: "constructor" or "__proto__" must read as unknown, not as a product.
+const BY_ID: Record<string, Item> = Object.assign(Object.create(null), Object.fromEntries(CATALOG.map((p) => [p.id, p])));
 
 export type Line = Item & { free: boolean };
 export type Cart = { lines: Line[]; pay: number; full: number };
@@ -61,8 +66,6 @@ export function priceCart(ids: unknown): Cart {
   const lines: Line[] = items.map((p, i) => ({ ...p, free: i % 2 === 1 }));
   const full = lines.reduce((t, l) => t + l.price, 0);
   const pay = lines.reduce((t, l) => t + (l.free ? 0 : l.price), 0);
-  // With Wonka in the cart Donna is the Wonka cross-sell, which is how the webhook grants both.
-  if (seen.has("wonka")) for (const l of lines) if (l.id === "donna") l.product = DONNA_ADDON_PRODUCT;
   return { lines, pay, full };
 }
 
@@ -90,7 +93,7 @@ export function sessionParams(cart: Cart, now: number): URLSearchParams {
   }
   const freeNames = cart.lines.filter((l) => l.free).map((l) => l.name);
   if (freeNames.length) {
-    f.set("custom_text[submit][message]", `Black Friday 1+1: ${freeNames.join(", ")} ${freeNames.length > 1 ? "are" : "is"} free.`);
+    f.set("custom_text[submit][message]", `${offerName(now)} 1+1. Free in this order: ${freeNames.join(", ")}.`);
   }
   f.set("customer_creation", "always");
   f.set("success_url", `${SITE}/black-friday/thanks/?s={CHECKOUT_SESSION_ID}&items=${ids}`);
@@ -119,7 +122,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   let cart: Cart;
   try { cart = priceCart(body?.items); } catch (e) { return json({ error: "bad", message: String((e as Error).message) }, 400); }
   // After the cart check, so the deploy workflow's empty probe still gets 400 once the offer is over.
-  if (deps.now() >= OFFER_END) return json({ error: "ended", message: "The Black Friday 1+1 has ended." }, 410);
+  if (deps.now() >= OFFER_END) return json({ error: "ended", message: "The 1+1 offer has ended." }, 410);
   const s = await deps.createSession(sessionParams(cart, deps.now()));
   return json({ url: s.url, pay: cart.pay, items: cart.lines.map((l) => ({ id: l.id, price: l.price, free: l.free })) });
 }

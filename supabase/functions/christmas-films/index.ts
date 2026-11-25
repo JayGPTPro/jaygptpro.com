@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { handle, makeAskLimiter, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, SKILL_PRICE_BF, type Order } from "./handler.ts";
+import { BF_VIDEO_PRODUCT, handle, makeAskLimiter, VIDEO_PRODUCT, VAULT_COUPON, BONUS_START, BONUS_END, SKILL_PRICE_BF, type Order } from "./handler.ts";
 
 const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const resendKey = Deno.env.get("RESEND_API_KEY") || "";
@@ -54,7 +54,7 @@ Deno.serve((req) =>
       const s = await res.json();
       let qty = 0;
       for (const it of (s?.line_items?.data || [])) {
-        if (it?.price?.product === VIDEO_PRODUCT) qty += Number(it?.quantity ?? 1);
+        if (it?.price?.product === VIDEO_PRODUCT || it?.price?.product === BF_VIDEO_PRODUCT) qty += Number(it?.quantity ?? 1);
       }
       return {
         paid: s?.payment_status === "paid",
