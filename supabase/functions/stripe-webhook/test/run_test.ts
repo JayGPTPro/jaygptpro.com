@@ -921,12 +921,20 @@ check('http 200', res.status === 200, `got ${res.status}`);
 check('no allowed_emails row (not dropped into a Donna cohort)', !DB.allowed_emails.some(r => r.email === 'bf2@buyer.com'), JSON.stringify(DB.allowed_emails));
 check('no Calendly, the Vault to-do for Jay', !JSON.stringify(sendState.mails).includes('calendly') && JSON.stringify(toJay()).includes('add a year'), JSON.stringify(sendState.mails).slice(0, 400));
 
-console.log('\nBF3. Skill + film + Wonka: the Christmas route does not take it, and Jay gets the kit and film links to send');
+console.log('\nBF3. Skill + film + Wonka: the Christmas route does not take it; the buyer gets the kit link right away, Jay the film link');
 reset();
 sendState.stripeLineItems = ['prod_VdK0WmRf7Cgnvy', 'prod_VdK0ykqQR23ctI', 'prod_UxhJATVn8CEfCT'];
 res = await post(bf('bf3@buyer.com', 'wonka,gift,xmas', 'gift', 59600, 'wonka'));
 check('no Christmas mails, no access', !JSON.stringify(sendState.mails).includes('New Christmas order') && !DB.allowed_emails.length, JSON.stringify(sendState.mails.map((m: any) => m.subject)));
-check('kit and film links in Jay mail only', JSON.stringify(toJay()).includes('christmas-video/kit/?s=cs_bf_1') && JSON.stringify(toJay()).includes('thanks/?p=video&amp;s=cs_bf_1') && !JSON.stringify(toBuyer('bf3@buyer.com')).includes('christmas-video'), JSON.stringify(sendState.mails).slice(0, 400));
+check('buyer: the kit link now, the 24-hour line for the rest, no film link', JSON.stringify(toBuyer('bf3@buyer.com')).includes('christmas-video/kit/?s=cs_bf_1') && JSON.stringify(toBuyer('bf3@buyer.com')).includes('for the rest') && !JSON.stringify(toBuyer('bf3@buyer.com')).includes('p=video'), JSON.stringify(toBuyer('bf3@buyer.com')).slice(0, 500));
+check('Jay: the film link to send, and nothing to send for the kit', JSON.stringify(toJay()).includes('thanks/?p=video&amp;s=cs_bf_1') && JSON.stringify(toJay()).includes('Nothing to send: the kit opened'), JSON.stringify(toJay()).slice(0, 500));
+
+console.log('\nBF3b. The Skill alone: the kit link, no 24-hour promise');
+reset();
+res = await post(bf('bf3b@buyer.com', 'gift', '', 19900, 'none'));
+check('http 200', res.status === 200, `got ${res.status}`);
+check('buyer: kit link, no 24 hours', JSON.stringify(toBuyer('bf3b@buyer.com')).includes('christmas-video/kit/?s=cs_bf_1') && !JSON.stringify(toBuyer('bf3b@buyer.com')).includes('24 hours'), JSON.stringify(toBuyer('bf3b@buyer.com')).slice(0, 500));
+check('Jay: told it was delivered automatically', JSON.stringify(toJay()).includes('delivered automatically'), JSON.stringify(toJay()).slice(0, 300));
 
 console.log('\nBF4. Stripe replays the event after Jay was mailed: still no access, ever');
 reset();
@@ -965,6 +973,12 @@ reset();
 res = await post(bf('bf8@buyer.com', 'vault,call', 'call', 100000, 'none'));
 check('http 200', res.status === 200, `got ${res.status}`);
 check('order mail + a note to Jay', toJay().length === 2 && JSON.stringify(toJay()[1]).includes('did not get their Black Friday confirmation'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
+
+console.log('\nBF8b. The buyer mail fails on an order with the Skill: Jay gets the kit link to send');
+reset();
+(sendState as any).mailFailTo = 'bf8b@buyer.com';
+res = await post(bf('bf8b@buyer.com', 'gift', '', 19900, 'none'));
+check('Jay is handed the kit link', JSON.stringify(toJay()).includes('send it to them') && JSON.stringify(toJay()).includes('christmas-video/kit/?s=cs_bf_1'), JSON.stringify(toJay()).slice(0, 600));
 
 console.log('\nBF9. Jay mail fails: the buyer is not mailed on that try');
 reset();

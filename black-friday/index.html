@@ -295,7 +295,7 @@ footer a{color:var(--mute)}
   ];
   /* What you get, shown in the details panel. */
   var GET = {
-    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film, plus a 30-second cut for Sponsored Brands ads", "The training series that walks you through it", "In the 1+1, your access comes by email from Jay within 24 hours", "Not included: video generation and a paid Claude plan. You pay those tools directly"],
+    gift:   ["The Claude Code skill that puts your product into The Perfect Gift film, plus a 30-second cut for Sponsored Brands ads", "The training series that walks you through it", "Your kit opens right after you pay, on the thanks page and in your confirmation email", "Not included: video generation and a paid Claude plan. You pay those tools directly"],
     donna:  ["A 5-day challenge: you build Donna in Claude Code Desktop", "Email, calendar, tasks, routines and business memory", "Made for people who are not technical"],
     wonka:  ["A 10-day bootcamp: you build Wonka, your AI creative director", "Main image, secondary images and A+ for your Amazon listings", "The skills, the workflows and the training"],
     vault:  ["The monthly AI episodes and the full library", "The Vault community and the mastermind groups", "A private 1:1 strategy call with Jay every quarter", "Already a member? The year is added when your current period ends, and your monthly plan stops"],
@@ -407,8 +407,14 @@ footer a{color:var(--mute)}
     var brk = c.off ? '<div class="brk"><div><span>'+(c.reg > c.full ? 'After the usual discount' : 'Price')+'</span><b>'+money(c.full)+'</b></div><div><span>1+1 free</span><b>−'+money(c.off)+'</b></div></div>' : '';
     if (phase === "over") return hd + slots + sum + brk + '<button class="co" disabled>The 1+1 has ended</button>';
     return hd + slots + sum + brk + '<button class="co" data-co>Check out</button>' +
-      '<p class="after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
+      '<p class="after">'+afterLine()+'</p>' +
       '<p class="rule">Picking more? We pair them from the priciest down. In every pair, the cheaper one is free.</p>';
+  }
+  function afterLine(){
+    var g = cart.indexOf("gift") >= 0, rest = cart.length - (g ? 1 : 0);
+    return !g ? 'After you pay, you get an email from Jay within 24 hours with the next steps.' :
+      !rest ? 'The Perfect Gift Skill opens right after you pay.' :
+      'The Perfect Gift Skill opens right after you pay. For the rest, you get an email from Jay within 24 hours with the next steps.';
   }
   function barHtml(c){
     var th = c.items.slice(0, 4).map(function(p){ return '<img src="'+p.img+'" alt=""'+(c.free[p.id] ? ' class="fr"' : '')+'>'; }).join("");
@@ -479,7 +485,7 @@ footer a{color:var(--mute)}
       '<div class="i-tags"><span class="i-g">'+esc(g.name)+'</span>'+(p.cc ? CC : '')+'</div><h3>'+esc(p.name)+'</h3><p class="i-l">'+esc(p.head)+' '+esc(p.line)+'</p>' +
       '<p class="i-h">What you get</p><ul>'+(GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") !== 0; }).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join("")+'</ul>' +
       (GET[p.id]||[]).filter(function(x){ return x.indexOf("Not included") === 0; }).map(function(x){ return '<p class="i-after"><b style="color:var(--txt)">Not included:</b>'+esc(x.slice(13))+'.</p>'; }).join("") +
-      '<p class="i-after">After you pay, you get an email from Jay within 24 hours with the next steps.</p>' +
+      '<p class="i-after">'+(p.id === "gift" ? 'It opens right after you pay. No waiting.' : 'After you pay, you get an email from Jay within 24 hours with the next steps.')+'</p>' +
       '<div class="i-ft">'+priceHtml(p)+(phase === "over" ? '' : '<button class="pill" data-pa="'+p.id+'">'+(inC ? 'Remove from cart' : 'Add to cart')+'</button>')+'</div>' +
       (pg ? '<a class="i-pg" href="'+pg[0]+'"'+(pg[2] ? ' target="_blank" rel="noopener"' : '')+' data-more="'+p.id+'">'+esc(pg[1])+(pg[2] ? ' ↗' : ' →')+'</a>'+(pg[2] ? '<p class="i-note">Opens in a new tab. Come back here for the 1+1 price.</p>' : '') : '') + '</div>';
   }

@@ -231,7 +231,10 @@ const DONNA_ADDON_TOTALS_USD = new Set([94700, 74700, 94900, 74900, 324900]);
 // cart and stamps the session and its PaymentIntent with project=bf11, items (priciest
 // first), free and courses. Jay delivers every Black Friday product by hand (25.11.2026:
 // he enrols each buyer himself, no Calendly, everyone hears from him within 24 hours).
-// So a bf11 payment grants nothing here: it sends Jay one order mail with what to do for
+// The one exception is The Perfect Gift Skill (Jay, 25.11.2026: it goes out to everyone right
+// away): the buyer's confirmation carries the kit link, which christmas-kit opens for any paid,
+// unrefunded session holding the Skill, paid or free. The thanks page shows the same link.
+// Otherwise a bf11 payment grants nothing here: it sends Jay one order mail with what to do for
 // each item, then the buyer one confirmation. It must also never reach the course flow
 // below, where an unknown product falls through to a Donna cohort.
 const BF_PROJECT = 'bf11';
@@ -251,12 +254,14 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
   const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
   const pi = session?.payment_intent || '';
   const label = (id: string) => `${BF_NAMES[id] || id}${freeIds.includes(id) ? ' (FREE, 1+1)' : ''}`;
+  const kitUrl = `https://jaygptpro.com/christmas-video/kit/?s=${sid}`;
+  const hasGift = items.includes('gift'), rest = items.filter(id => id !== 'gift');
   // What is Jay's to do for each item. The kit page and the film card already work with this
   // order's session id, so the links are ready to paste into his mail to the buyer.
   const forJay: Record<string, string> = {
     donna: 'Enrol them in the Donna Challenge.',
     wonka: 'Enrol them in the Wonka Bootcamp.',
-    gift: `Send them their kit link: https://jaygptpro.com/christmas-video/kit/?s=${sid}`,
+    gift: `Nothing to send: the kit opened for them right away (thanks page and their confirmation). Their link: ${kitUrl}`,
     xmas: `Send them the film card to fill in: https://jaygptpro.com/christmas-video/thanks/?p=video&s=${sid}`,
     call: 'Email them to set up the call.',
     calls4: 'Email them to set up the 4 calls.',
@@ -281,24 +286,29 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
     ['Paid', `${amount} USD`],
     ['Buyer', `${name} <${email}>`],
     ...items.map(id => [label(id), forJay[id] || 'Contact the buyer.'] as [string, string]),
-    ['Promised to the buyer', 'An email from you with the next steps within 24 hours.'],
+    ['Promised to the buyer', hasGift
+      ? (rest.length ? 'The Skill opened right away. For the rest, an email from you with the next steps within 24 hours.' : 'The Skill opened right away. Nothing else to send.')
+      : 'An email from you with the next steps within 24 hours.'],
     ['Stripe', pi ? `https://dashboard.stripe.com/payments/${pi}` : String(session?.id || '')],
   ];
   const table = (r: [string, string][]) => `<table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + r.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('') + `</table>`;
   const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount} USD)`;
-  if (!(await send(CHRISTMAS_NOTIFY_TO, subject, `<h2>New Black Friday 1+1 order: reply within 24 hours</h2>${table(rows)}`, email))) return false;
+  const h2 = rest.length ? 'New Black Friday 1+1 order: reply within 24 hours' : 'New Black Friday 1+1 order: the Skill was delivered automatically';
+  if (!(await send(CHRISTMAS_NOTIFY_TO, subject, `<h2>${h2}</h2>${table(rows)}`, email))) return false;
   if (!email) return true;
   const lis = items.map(id => `<li>${esc(label(id))}</li>`).join('');
   const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
     + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
     + `<p>Thank you for your Black Friday order:</p><ul style="padding-left:20px">${lis}</ul>`
-    + `<p>Within 24 hours you'll get an email from me with the next steps for each one.</p>`
+    + (hasGift ? `<p><b>The Perfect Gift Skill is ready now.</b> <a href="${kitUrl}" style="color:#222">Open your kit</a>. The page has the download and the first steps.</p>` : '')
+    + (rest.length ? `<p>Within 24 hours you'll get an email from me with the next steps for ${hasGift ? 'the rest' : 'each one'}.</p>` : '')
     + `<p>Any question, just reply to this email.</p><p>Jay</p></div>`;
   if (!(await send(email, 'Your Black Friday order', buyerHtml, CHRISTMAS_NOTIFY_TO))) {
     // Jay has the order, so no retry (it would mail him twice). He writes to the buyer anyway.
     await send(CHRISTMAS_NOTIFY_TO, `The buyer did not get their Black Friday confirmation (${email})`,
-      `<p>The order confirmation did not go out to ${esc(email)}. Your mail with the next steps covers it.</p>`, email);
+      `<p>The order confirmation did not go out to ${esc(email)}. Your mail with the next steps covers it.</p>`
+      + (hasGift ? `<p>It had their Skill kit link, so send it to them: ${esc(kitUrl)}</p>` : ''), email);
   }
   return true;
 }

@@ -26,6 +26,9 @@ li{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:
 .free{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--ink);background:var(--lime);border-radius:6px;padding:2px 7px}
 .foot{margin-top:36px;color:var(--mute);font-size:15px}
 .foot a{color:var(--txt)}
+.kit{display:inline-flex;align-items:center;margin-top:12px;height:44px;padding:0 18px;border-radius:999px;background:var(--lime);color:var(--ink);font-weight:800;font-size:15px;text-decoration:none}
+.now{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--lime);border:1px solid var(--lime);border-radius:6px;padding:1px 6px}
+.sub2{margin-top:6px;color:var(--mute);font-size:14.5px}
 </style>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-M4RK6H5NMH"></script>
@@ -35,7 +38,7 @@ li{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:
 <div class="wrap">
   <a class="brand" href="/">Jay GPT Pro <span>· 1+1</span></a>
   <h1>You're in. <em>Thank you.</em></h1>
-  <p class="lead">Your payment went through. Within 24 hours you'll get an email from Jay with the next steps for each item below.</p>
+  <p class="lead" id="lead">Your payment went through. Within 24 hours you'll get an email from Jay with the next steps for each item below.</p>
   <ul id="list"></ul>
   <p class="foot">A confirmation is on its way to your inbox. Any question, write to <a href="mailto:info@jaygptpro.com">info@jaygptpro.com</a>.</p>
   <p class="foot"><a href="/black-friday/">Back to the store</a></p>
@@ -61,8 +64,17 @@ li{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:
     list.innerHTML = '<li><div class="name">Your order details are in your inbox.</div></li>';
     return;
   }
+  // The Perfect Gift Skill opens right away: the kit page takes this order's session id (christmas-kit
+  // checks that it is paid and holds the Skill). Everything else comes by email from Jay.
+  var sid = q.get("s") || "", kit = ids.indexOf("gift") >= 0 && /^cs_(live|test)_[A-Za-z0-9]{20,200}$/.test(sid);
+  var rest = ids.filter(function (id) { return id !== "gift"; }).length;
+  if (kit) document.getElementById("lead").textContent = rest
+    ? "Your payment went through. Your Perfect Gift Skill is ready now. For the rest, within 24 hours you'll get an email from Jay with the next steps."
+    : "Your payment went through. Your Perfect Gift Skill is ready now.";
   list.innerHTML = ids.map(function (id, i) {
-    return '<li><div class="name">' + NAMES[id] + (i % 2 ? ' <span class="free">FREE 1+1</span>' : '') + '</div></li>';
+    var gift = id === "gift" && kit;
+    return '<li><div class="name">' + NAMES[id] + (i % 2 ? ' <span class="free">FREE 1+1</span>' : '') + (gift ? ' <span class="now">READY NOW</span>' : '') + '</div>' +
+      (gift ? '<p class="sub2">The download and the first steps are on your kit page. The link is also in your confirmation email.</p><a class="kit" href="/christmas-video/kit/?s=' + encodeURIComponent(sid) + '">Open my kit</a>' : '') + '</li>';
   }).join("");
 })();
 </script>
