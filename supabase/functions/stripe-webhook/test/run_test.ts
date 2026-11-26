@@ -1038,5 +1038,15 @@ reset();
 res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_month2', amount: 10000, currency: 'usd', receipt_email: 'yair@buyer.com', metadata: {} } } });
 check('no access row, no welcome, no mail', !DB.allowed_emails.length && sendState.calls.length === 0 && sendState.mails.length === 0, JSON.stringify([DB.allowed_emails, sendState.mails]));
 
+console.log('\nBF14. Paid in shekels: the mails show the dollar amount, never shekels called USD');
+reset();
+{
+  const s: any = plan('ils@buyer.com');
+  s.data.object.currency = 'ils'; s.data.object.amount_total = 34510;
+  s.data.object.currency_conversion = { amount_total: 10000, source_currency: 'usd', fx_rate: '3.451' };
+  res = await post(s);
+}
+check('Jay and buyer see 100.00 USD, nowhere 345.10', JSON.stringify(sendState.mails).includes('100.00 USD') && !JSON.stringify(sendState.mails).includes('345.10'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
+
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

@@ -249,6 +249,16 @@ const BF_NAMES: Record<string, string> = {
 // carries the plan lines for both mails.
 type BfExtra = { tag: string; jay: [string, string][]; buyer: string };
 
+// What the order cost, in US dollars. A buyer in Israel can pay in shekels (Adaptive Pricing):
+// then the session's currency is ILS, amount_total is shekels, and currency_conversion holds
+// the dollar total. Never print shekels with "USD" after them.
+function bfMoney(so: any): string {
+  const conv = so?.currency_conversion;
+  const cur = String(so?.currency || 'usd').toLowerCase();
+  if (conv && String(conv.source_currency || '').toLowerCase() === 'usd') return `${(Number(conv.amount_total || 0) / 100).toFixed(2)} USD`;
+  return `${(Number(so?.amount_total || 0) / 100).toFixed(2)} ${cur.toUpperCase()}`;
+}
+
 async function notifyBfOrder(session: any, items: string[], freeIds: string[], extra?: BfExtra): Promise<boolean> {
   const key = Deno.env.get('RESEND_API_KEY') || '';
   if (!key) { console.error('bf11 order: RESEND_API_KEY is not set, cannot notify.'); return false; }
@@ -256,7 +266,7 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[], e
   const sid = encodeURIComponent(String(session?.id || ''));
   const email = session?.customer_email || session?.customer_details?.email || '';
   const name = session?.customer_details?.name || '';
-  const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
+  const amount = bfMoney(session);
   const pi = session?.payment_intent || '';
   const label = (id: string) => `${BF_NAMES[id] || id}${freeIds.includes(id) ? ' (FREE, 1+1)' : ''}`;
   const kitUrl = `https://jaygptpro.com/christmas-video/kit/?s=${sid}`;
@@ -288,7 +298,7 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[], e
   // Jay's mail first. If it fails the caller answers 500 and Stripe retries, and the buyer has
   // not been mailed yet, so the retry does not send the buyer a second copy.
   const rows: [string, string][] = [
-    ['Paid', `${amount} USD`],
+    ['Paid', `${amount}`],
     ...(extra?.jay || []),
     ['Buyer', `${name} <${email}>`],
     ...items.map(id => [label(id), forJay[id] || 'Contact the buyer.'] as [string, string]),
@@ -299,7 +309,7 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[], e
   ];
   const table = (r: [string, string][]) => `<table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + r.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('') + `</table>`;
-  const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount} USD${extra?.tag || ''})`;
+  const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount}${extra?.tag || ''})`;
   const h2 = rest.length ? 'New Black Friday 1+1 order: reply within 24 hours' : 'New Black Friday 1+1 order: the Skill was delivered automatically';
   if (!(await send(CHRISTMAS_NOTIFY_TO, subject, `<h2>${h2}</h2>${table(rows)}`, email))) return false;
   if (!email) return true;
@@ -1043,12 +1053,12 @@ Deno.serve(async (req: Request) => {
           const so = event.data.object;
           const subId = String(typeof so.subscription === 'string' ? so.subscription : so.subscription?.id || '');
           const end = await endBfPlanAfter(subId, payments);
-          const each = (Number(so.amount_total || 0) / 100).toFixed(2);
+          const each = bfMoney(so);
           extra = {
             tag: `, payment 1 of ${payments}`,
-            jay: [['Payment plan', `${payments} monthly payments of ${each} USD. ${end.note}`],
+            jay: [['Payment plan', `${payments} monthly payments of ${each}. ${end.note}`],
                   ['Subscription', subId ? `https://dashboard.stripe.com/subscriptions/${subId}` : 'none on the session']],
-            buyer: `This was payment 1 of ${payments}. The other ${payments - 1} are charged once a month, ${each} USD each, and stop by themselves after the last one.`,
+            buyer: `This was payment 1 of ${payments}. The other ${payments - 1} are charged once a month, ${each} each, and stop by themselves after the last one.`,
           };
         }
         if (!(await notifyBfOrder(event.data.object, items, free, extra))) return new Response(JSON.stringify({ error: 'bf11 order mail failed' }), { status: 500 });
