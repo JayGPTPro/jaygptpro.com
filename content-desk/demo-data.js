@@ -35,6 +35,7 @@
       { email: "owner@example.com", name: "Jay (demo)", role: "owner", color: "#dc4a38", active: true },
       { email: "writer@example.com", name: "Writer (demo)", role: "writer", color: "#2f68d8", active: true },
       { email: "ideas@example.com", name: "Ideas (demo)", role: "writer", color: "#0c8f6f", active: true },
+      { email: "chandler@agent.jaygptpro.com", name: "Chandler", role: "writer", color: "#7a4bd1", active: true },
     ],
     settings: [
       { key: "signature", value: { text: sig } },
@@ -51,6 +52,8 @@
       { id: "i2", title: "Demo: a two-minute listing check", category: "tip", stage: "idea", status: "waiting", idea: "A check any seller can run on their own listing in two minutes.", author: "writer@example.com", score: 6, covered_before: "A similar post went out in March.", created_at: iso(-0.5), updated_at: iso(-0.5), queue_pos: 2 },
       { id: "i3", title: "Demo: a Skill that writes A+ modules", category: "skill", stage: "idea", status: "approved", idea: "A Skill that drafts A+ content from the listing and the reviews.", author: "writer@example.com", created_at: iso(-2), updated_at: iso(-1), queue_pos: 3 },
       { id: "i4", title: "Demo: a poll for the group", category: "other", stage: "idea", status: "rejected", skip_reason: "Not now, maybe after the next launch.", idea: "Ask the group what they want next.", author: "writer@example.com", created_at: iso(-7), updated_at: iso(-6), queue_pos: 4 },
+      { id: "i5", title: "Demo: a question from the group, answered", category: "tip", stage: "idea", status: "waiting", idea: "Three members asked the same thing this week. One post answers it with the steps.", author: "chandler@agent.jaygptpro.com", score: 7, created_at: iso(-0.2), updated_at: iso(-0.2), queue_pos: 4.5 },
+      { id: "i6", title: "Demo: an old idea nobody picked up", category: "news", stage: "idea", status: "rejected", skip_reason: "expired", idea: "News from two weeks ago.", author: "chandler@agent.jaygptpro.com", score: 5, created_at: iso(-12), updated_at: iso(-1), updated_by: "", queue_pos: 4.6 },
       // first drafts
       { id: "d1", title: "Demo: ask your reviews first", category: "tip", stage: "draft", status: "waiting", idea: "A prompt that finds what buyers complain about.", author: "writer@example.com", created_at: iso(-4), updated_at: iso(-0.2), queue_pos: 5 },
       { id: "d2", title: "Demo: turn reviews into bullets", category: "skill", stage: "draft", status: "changes", idea: "A Skill that turns reviews into bullets.", author: "writer@example.com", created_at: iso(-5), updated_at: iso(-1), queue_pos: 6 },
@@ -91,6 +94,15 @@
         headlines: [{ en: "Your buyers already wrote your bullets" }, { en: "One prompt, five bullets" }, { en: "Steal this from your reviews" },
           { en: "Paste your reviews, get five bullets in their words.", kind: "preview" }, { en: "The prompt takes two minutes.", kind: "preview" }], chosen: null,
         body: '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1c2430"><h1 style="font-size:22px">Your buyers already wrote your bullets</h1><p style="line-height:1.6">This is the email version of the demo post. Paste your reviews into Claude and ask for five bullets in the buyers\' own words.</p><p><a href="https://example.com" style="background:#0c8f6f;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Read the full post</a></p><p style="color:#8b94a3;font-size:13px">Jay</p></div>', sources: [] },
+      // channel versions Chandler adapted from the approved WhatsApp text
+      { id: "vr1l", post_id: "r1p", channel: "linkedin", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-1),
+        headlines: [], body: "Your buyers already wrote your best bullets.\n\nPaste your last 50 reviews into Claude and ask for five bullets in the buyers' own words. The words your buyers use are the words the next buyer searches for.\n\nTried it on a demo listing: two of five bullets were worries the old listing never answered.", sources: [], writer_note: "Adapted from the WhatsApp text: no emoji, a short first line for the LinkedIn preview." },
+      { id: "vr1x", post_id: "r1p", channel: "x", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-1),
+        headlines: [], body: "Your buyers already wrote your bullets.\n\nPaste your last 50 reviews into Claude and ask for five bullets in their own words. The words buyers use are the words the next buyer searches for. Two of five came back as worries the old listing never answered.", sources: [] },
+      { id: "vr1t", post_id: "r1p", channel: "threads", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-1),
+        headlines: [], body: "Stop guessing your bullets. Your reviews already say what buyers care about: paste 50 of them into Claude and ask for five bullets in their words.", sources: [] },
+      { id: "vr1h", post_id: "r1p", channel: "whatsapp_he", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-0.9),
+        headlines: [], body: "*הקונים שלכם כבר כתבו לכם את הבולטים* ✍️\n\nמדביקים 50 ביקורות אחרונות ב-Claude ומבקשים חמישה בולטים במילים של הקונים.\n\nמנדי & ג׳יי", sources: [] },
       { id: "vr2", post_id: "r2p", channel: "whatsapp", n: 1, author: "writer@example.com", created_at: iso(-2),
         headlines: [{ en: "Demo: AI Deals for the Weekend." }, { en: "Demo: Five Tools on Sale." }, { en: "Demo: Save on AI This Weekend." }], chosen: 1,
         body: body("Five AI tools are on sale this weekend. Here is which one is worth it for sellers."), sources: [] },

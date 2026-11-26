@@ -239,7 +239,7 @@ export const HE = {
   "Edit the text": "עריכת הטקסט", "fixed": "תוקן", "Make it a house rule": "להפוך לכלל בית", "1 open": "אחת פתוחה", "{n} open": "{n} פתוחות",
   "A note for the writer…": "הערה לכותבת…", "A note or a question for Jay…": "הערה או שאלה לג'יי…",
   "More: other channels, sources, rule checks, details": "עוד: ערוצים נוספים, מקורות, בדיקת כללים, פרטים",
-  "Channels": "ערוצים", "Email and LinkedIn versions live here. The text above shows the channel you pick.": "כאן נמצאות גרסאות המייל והלינקדאין. הטקסט למעלה מציג את הערוץ שבחרת.",
+  "Channels": "ערוצים",
   "Details": "פרטים", "Planned date": "תאריך מתוכנן", "Mark hot": "לסמן כחם", "Jay only": "רק לג'יי", "Move to": "להעביר אל", "Delete the post": "מחיקת הפוסט",
   "Bring it back": "להחזיר ללוח", "Pick a date above.": "בוחרים תאריך למעלה.", "Copy the text": "העתקת הטקסט",
   "Approve the idea": "לאשר את הרעיון", "Approve the draft": "לאשר את הטיוטה", "Approve · to Ready": "לאשר · למוכנים",
@@ -318,4 +318,11 @@ export const HE = {
   "Copy for WhatsApp": "העתקה לוואטסאפ", "Copy to consult Claude": "העתקה להתייעצות עם Claude", "Copied. Paste it into Claude.": "הועתק. אפשר להדביק ב-Claude.",
   "A note on {name}": "הערה על {name}", "It shows next to the picture and in the notes.": "ההערה תופיע ליד התמונה וגם ברשימת ההערות.",
   "Note": "הערה", "Use this one": "לבחור בזו", "Chosen. The others are hidden.": "נבחרה. השאר הוסתרו.",
+  // ---- 26.11: Chandler, more channels, the open-ideas cap
+  "X": "X", "Facebook": "פייסבוק", "Threads": "Threads", "WhatsApp (Hebrew)": "וואטסאפ בעברית",
+  "Versions for the other channels live here. The text above shows the channel you pick.": "כאן נמצאות הגרסאות לשאר הערוצים. הטקסט למעלה מציג את הערוץ שבחרת.",
+  "{n} of {max} characters": "{n} מתוך {max} תווים", "too long for {ch}": "ארוך מדי ל{ch}",
+  "Written by {name}, the AI writer": "נכתב על ידי {name}, הכותב ה-AI",
+  "Open ideas: {n} / {cap}": "רעיונות פתוחים: {n} / {cap}",
+  "At most {cap} open ideas. An idea nobody touches for 7 days moves to Rejected.": "לכל היותר {cap} רעיונות פתוחים. רעיון שאף אחד לא נגע בו 7 ימים עובר לנדחו.",
 };

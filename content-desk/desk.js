@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=10";
-import { HE } from "./i18n.js?v=10";
+import { createStore } from "./store.js?v=11";
+import { HE } from "./i18n.js?v=11";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -16,7 +16,12 @@ const COL_KEYS = { idea: "Ideas", draft: "First draft", final: "Final version", 
 const COL_ONE = { idea: "Idea", draft: "First draft", final: "Final version", ready: "Ready", published: "Published" };
 const STATUS_KEYS = { waiting: "Waiting for Jay", approved: "Approved", changes: "Needs changes", rejected: "Rejected" };
 const STATUS_ORDER = { waiting: 0, changes: 1, approved: 2, rejected: 3 };
-const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"]];
+const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"], ["x", "X"], ["facebook", "Facebook"], ["threads", "Threads"], ["whatsapp_he", "WhatsApp (Hebrew)"]];
+const chLabel = (ch) => t((CHANNELS.find((c) => c[0] === ch) || [ch, ch])[1]);
+// Where a channel cuts or hides a longer text. WhatsApp only when the post has a picture or video.
+const CH_LIMITS = { x: 280, threads: 500, linkedin: 3000 };
+const IDEA_CAP = 7; // open ideas; desk-agent refuses Chandler's next idea at this number
+const isAgent = (email) => /@agent\.jaygptpro\.com$/i.test(email || "");
 const DAY = 86400000;
 const CAPTION_LIMIT = 1024;
 const MAX_UPLOAD = 50 * 1024 * 1024; // Supabase global limit while the spend cap is on
@@ -111,6 +116,8 @@ function avatar(email, size = "") {
   return `<span class="av ${size}" style="background:${color}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
+// Cards an AI writer (Chandler) wrote carry his name, so the team sees who wrote what.
+const agentBadge = (email) => (isAgent(email) ? `<span class="pill agent" title="${T("Written by {name}, the AI writer", { name: nameOf(email) })}">${esc(nameOf(email))}</span>` : "");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
 function waHtml(text) {
   return esc(text).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_(?=\s|$)/g, "$1<i>$2</i>");
@@ -320,14 +327,21 @@ function composeWhatsApp(p, v = latest(p.id, "whatsapp")) {
   if (sig && !/chat\.whatsapp\.com/.test(body)) out += `\n\n${sig}`;
   return out;
 }
-function composeChannel(p, ch) {
-  if (ch === "whatsapp") return composeWhatsApp(p);
-  const v = latest(p.id, ch);
+function composeChannel(p, ch, v = latest(p.id, ch)) {
+  if (ch === "whatsapp") return composeWhatsApp(p, v);
   if (!v) return "";
   const h = headlineOf(p, v).en;
   // an HTML email has its own copy buttons; here only the subject line makes sense
   if (ch === "email") return looksHtml(v.body) ? h : `${h ? `Subject: ${h}\n\n` : ""}${v.body || ""}`.trim();
-  return [h, v.body].filter(Boolean).join("\n\n").trim();
+  // the other channels are plain text: a headline only if the version has one, never the working title
+  return [subjectsOf(v).length ? h : "", v.body].filter(Boolean).join("\n\n").trim();
+}
+// Characters as the text will be pasted, and the channel's limit when it has one.
+function charCount(p, ch, v) {
+  const n = [...composeChannel(p, ch, v)].length;
+  const media = assetsOf(p.id).some((a) => isMedia(a) && a.status !== "replaced");
+  const max = CH_LIMITS[ch] || (ch.startsWith("whatsapp") && media ? CAPTION_LIMIT : 0);
+  return { n, max, over: !!max && n > max };
 }
 
 // Warnings for the writer, never blockers.
@@ -444,6 +458,7 @@ async function translateMissing() {
         if (p.idea && !p.idea_he) add("posts", p.id, "idea_he", p.idea, p.author);
       }
       for (const v of S.d.versions) {
+        if (v.channel === "whatsapp_he") continue; // written in Hebrew for the Hebrew group
         if (v.body && !v.body_he && v.channel !== "email") add("versions", v.id, "body_he", v.body, v.author);
         if (v.writer_note && !v.writer_note_he) add("versions", v.id, "writer_note_he", v.writer_note, v.author);
         (v.headlines || []).forEach((h, i) => {
@@ -1559,7 +1574,7 @@ function card(p, opts = {}) {
   return `<div class="card st-${esc(p.status)} ${p.stage === "ready" && !p.pinned_date ? "needs-date" : ""} ${opts.big ? "big" : ""}" data-act="open" data-a="${p.id}" tabindex="0">
     ${coverHtml}
     <div class="c-body">
-      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
+      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${agentBadge(p.author)}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${isNew(p) ? `<div class="c-new">${esc(newLine(p))} · ${esc(ago(lastTouch(p).at))}</div>` : ""}
@@ -1603,6 +1618,9 @@ function viewBoard() {
   };
   const cols = COLS.map((c) => ({ c, ...colOf(c) }));
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
+  // the whole column, whatever the filters: the same count desk-agent holds Chandler to
+  const nIdeas = S.d.posts.filter((p) => p.stage === "idea" && p.status !== "rejected").length;
+  const capLine = `<div class="capline ${nIdeas >= IDEA_CAP ? "full" : ""}" title="${T("At most {cap} open ideas. An idea nobody touches for 7 days moves to Rejected.", { cap: IDEA_CAP })}">${T("Open ideas: {n} / {cap}", { n: nIdeas, cap: IDEA_CAP })}</div>`;
   const chip = (key, n, one, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(n === 1 ? one : label)}</button>`;
   return `<div class="boardbar">
       <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit|one", "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waits for Jay", "waiting for Jay", "c-wait")}${chip("changes", nChg, "needs changes", "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date|one", "ready without a date", "c-date")}</div>
@@ -1613,6 +1631,7 @@ function viewBoard() {
     <div class="board" style="grid-template-columns:${cols.map((x) => (x.live.length + x.gone.length ? "minmax(250px,1fr)" : "minmax(170px,.5fr)")).join(" ")}">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
       <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
       <div class="col-body">
+        ${x.c === "idea" ? capLine : ""}
         ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
         ${x.gone.length ? `<div class="rej-head">${T("Rejected|col")} <span class="count">${x.gone.length}</span></div>${x.gone.map((p) => card(p)).join("")}` : ""}
         ${x.c === "published" ? `<a class="linkbtn" href="#/published">${T("All published →")}</a>` : ""}
@@ -1824,7 +1843,7 @@ function drawerPost(p) {
     const seed = editing.seed || {};
     const base = latest(p.id, ch) || {};
     const open = openNotes(p.id);
-    const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) });
+    const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: chLabel(ch) });
     textSec = `<form data-form="saveEdit" class="sec editbox"><h3>${title} <span class="muted">· v${(vs.length ? vs[vs.length - 1].n : 0) + 1}</span></h3>
       <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? subjectsOf(base).map((h) => h.en).join("\n"))}</textarea></div>
       ${ch === "email" ? `<div class="field"><label>${T("Preview text options, one per line")}</label><textarea name="previews" dir="auto" style="min-height:80px">${esc(previewsOf(base).map((h) => h.en).join("\n"))}</textarea><span class="hint">${T("The grey line an inbox shows after the subject.")}</span></div>` : ""}
@@ -1836,13 +1855,15 @@ function drawerPost(p) {
   } else if (v) {
     const ci = chosenIndex(v);
     const nH = (v.headlines || []).length;
+    const plain = ch !== "whatsapp"; // email has its own view below
     const canPick = isLatest && (owner || canWrite);
     const hl = (v.headlines || []).map((h, i) => {
       const hb = biText(h.en, h.he);
       return `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${canPick ? "" : "disabled"}>
         <span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span>${h.pick ? `<span class="wp">${T("writer’s pick")}</span>` : ""}</button>`;
     }).join("");
-    const mode = S.view[p.id] || (S.lang === "he" ? "he" : "en");
+    // the Hebrew group's text is already Hebrew: it shows as written, without a translation tab
+    const mode = ch === "whatsapp_he" ? "en" : S.view[p.id] || (S.lang === "he" ? "he" : "en");
     const prev = vs.find((x) => x.n === v.n - 1);
     let body;
     if (mode === "wa" && ch === "whatsapp") {
@@ -1855,19 +1876,30 @@ function drawerPost(p) {
       body = S.diff[p.id] && prev ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`;
     }
     const seg = (k, label) => `<button class="${mode === k ? "on" : ""}" data-act="view" data-a="${p.id}" data-b="${k}">${label}</button>`;
-    textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
+    // characters as it will be pasted; the plain-text channels get a copy button here until
+    // Ready, where the bar at the bottom already has one for the open channel
+    const cc = charCount(p, ch, v);
+    const copyHere = plain && isLatest && p.stage !== "ready" && p.stage !== "published";
+    const countLine = cc.over && ch.startsWith("whatsapp")
+      ? T("{n} characters with an image. Desktop WhatsApp can cut a caption after {max}.", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() })
+      : `${cc.max ? T("{n} of {max} characters", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() }) : T("{n} characters", { n: cc.n.toLocaleString() })}${cc.over ? ` · ${T("too long for {ch}", { ch: chLabel(ch) })}` : ""}`;
+    const countRow = `<div class="chcount ${cc.over ? "bad" : ""}"><span>${countLine}</span>${copyHere ? `<span class="sp"></span><button class="btn sm go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">⧉ ${T("Copy for {ch}", { ch: chLabel(ch) })}</button>` : ""}</div>`;
+    // X or Threads text often has no headline: then the section is left out instead of asking for three
+    const hlSec = plain && !nH ? "" : `<section class="sec"><h3>${T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
       ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
-      ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
-      <section class="sec"><h3><span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span><span class="sp"></span>
+      ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>`;
+    textSec = `${hlSec}
+      <section class="sec"><h3>${ch === "whatsapp_he" ? `<span>${esc(chLabel(ch))}</span>` : `<span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span>`}<span class="sp"></span>
         <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("What changed")}</button>` : ""}</span></h3>
         ${mode === "he" ? `<p class="hint">${T("A literal translation for reading. What goes out is the English.")}</p>` : ""}
         ${body}
         ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> <span dir="auto">${esc(biText(v.writer_note, v.writer_note_he).main)}</span></div>` : ""}
+        ${countRow}
         <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · <b>${T("an older version")}</b>` : ""}
           ${canText && isLatest ? `<span class="sp"></span><button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="${ch}" data-c="${!owner && p.status === "changes" ? "fix" : "edit"}">✎ ${T("Edit the text")}</button>` : ""}</div>
       </section>`;
   } else if (p.stage !== "idea") {
-    textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(t(CHANNELS.find((c) => c[0] === ch)[1]))}</h3>
+    textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(chLabel(ch))}</h3>
       <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
       ${canText ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
   }
@@ -1897,9 +1929,12 @@ function drawerPost(p) {
           ${canText && isLatest ? `<button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="email">✎ ${html ? T("Edit") : T("Add the HTML")}</button>` : ""}</div>
       </section>`;
   }
-  if (p.stage !== "idea" || latest(p.id, "email")) {
+  // a tab for WhatsApp and Email, and one for every other channel that has a version (or is open now)
+  if (p.stage !== "idea" || CHANNELS.some(([k]) => k !== "whatsapp" && latest(p.id, k))) {
     const nE = versionsOf(p.id, "email").length;
-    textSec = `<div class="chanbar"><span class="seg"><button class="${ch === "whatsapp" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="whatsapp">${T("WhatsApp")}</button><button class="${ch === "email" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="email">✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}</button></span></div>${textSec}`;
+    const more = CHANNELS.filter(([k]) => k !== "whatsapp" && k !== "email" && (ch === k || latest(p.id, k)));
+    const tab = (k, label) => `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${label}</button>`;
+    textSec = `<div class="chanbar"><span class="seg">${tab("whatsapp", T("WhatsApp"))}${tab("email", `✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}`)}${more.map(([k]) => tab(k, esc(chLabel(k)))).join("")}</span></div>${textSec}`;
   }
 
   // ---- notes ----
@@ -1927,13 +1962,12 @@ function drawerPost(p) {
     <div class="mention-row"><span class="muted small">${T("Tag:")}</span>${S.d.team_members.filter((m) => m.active && m.email !== S.me).map((m) => `<button class="chip sm" data-act="mention" data-a="${esc(firstName(m))}" data-b="${p.id}">@${esc(firstName(m))}</button>`).join("")}</div></section>`;
 
   // ---- more details ----
-  const otherCh = CHANNELS.filter(([k]) => k !== "whatsapp");
   const checks = latest(p.id) ? checksFor(p, latest(p.id)) : [];
   const srcs = (latest(p.id) || {}).sources || [];
   const moreSec = `<section class="sec more"><button class="linkbtn morebtn" data-act="more" data-a="${p.id}">${S.more[p.id] ? "▾" : "▸"} ${T("More: other channels, sources, rule checks, details")}</button>
     ${S.more[p.id] ? `
       <h3>${T("Channels")}</h3><div class="chips">${CHANNELS.map(([k, label]) => `<button class="chip ${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${versionsOf(p.id, k).length ? ` · v${versionsOf(p.id, k).length}` : ""}</button>`).join("")}</div>
-      <p class="hint">${T("Email and LinkedIn versions live here. The text above shows the channel you pick.")}${otherCh.some(([k]) => latest(p.id, k)) ? "" : ""}</p>
+      <p class="hint">${T("Versions for the other channels live here. The text above shows the channel you pick.")}</p>
       ${srcs.length ? `<h3>${T("Sources")}</h3>${srcs.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}` : ""}
       ${checks.length ? `<h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}` : ""}
       <h3>${T("Details")}</h3>
@@ -1958,7 +1992,7 @@ function drawerPost(p) {
     if (owner) acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Bring it back")}</button>`);
   } else if (p.stage === "ready") {
     say = p.pinned_date ? T("Goes out {d}", { d: fmtDay(p.pinned_date) }) : T("Pick a date above.");
-    if (!(ch === "email" && looksHtml((latest(p.id, "email") || {}).body))) acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) })}</button>`);
+    if (!(ch === "email" && looksHtml((latest(p.id, "email") || {}).body))) acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: chLabel(ch) })}</button>`);
     if (coverOf(p.id)) acts.push(`<button class="btn" data-act="downloadCover" data-a="${p.id}">↓ ${T("Banner")}</button>`);
     if (owner) acts.push(`<button class="btn" data-act="publish" data-a="${p.id}">✓ ${T("Mark published")}</button>`);
   } else if (p.stage === "published") {
@@ -2001,7 +2035,7 @@ function drawerPost(p) {
   <aside class="drawer" role="dialog" aria-modal="true">
     <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button>${steps(p)}${nav}</header>
     <div class="d-body">
-      <div class="d-meta">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
+      <div class="d-meta">${statusPill(p)}${agentBadge(p.author)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
       <h1 class="d-title" dir="auto">${esc(tt.main)}</h1>${tt.sub ? `<div class="d-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${next ? `<div class="nextbox">${esc(next)}</div>` : ""}
       <div class="btns d-copy">${latest(p.id) ? `<button class="btn sm" data-act="copyPost" data-a="${p.id}">⧉ ${T("Copy for WhatsApp")}</button>` : ""}<button class="btn sm" data-act="copyConsult" data-a="${p.id}">💬 ${T("Copy to consult Claude")}</button></div>

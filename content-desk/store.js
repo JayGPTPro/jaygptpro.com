@@ -104,7 +104,7 @@ function realStore() {
 
 // ---------------- demo mode ----------------
 function demoStore() {
-  const LS = "content-desk-demo-v2";
+  const LS = "content-desk-demo-v3";
   const params = new URLSearchParams(location.search);
   let db;
   try {
