@@ -3,18 +3,20 @@
 #   content-desk/tests/run.sh
 # Needs postgres 16 (brew install postgresql@16) and deno.
 #
-# 1. The live path: schema.sql as it was before migration 5, then migrate-5 twice.
+# 1. The live path: schema.sql as it was before migration 5, then migrate-5 twice and
+#    migrate-6 twice.
 # 2. The rebuild path: schema.sql alone (it carries every migration).
 # On both, guards_test.sql checks the writer rules. Then the Deno tests run the real
 # desk-agent and go-clicks handlers against the first database.
 #
 # DESK_MIGRATION=/path/to/changed.sql runs the live path with another migration file,
-# to watch a test fail when its rule is taken out.
+# to watch a test fail when its rule is taken out (DESK_MIGRATION_6 the same for migration 6).
 # DESK_CLIENT=/path/to/desk.py also runs Chandler's client against the real handler over HTTP.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DESK="$(dirname "$HERE")"
 MIG="${DESK_MIGRATION:-$DESK/supabase/migrate-5-agent.sql}"
+MIG6="${DESK_MIGRATION_6:-$DESK/supabase/migrate-6-reels.sql}"
 TMP="$(mktemp -d)"
 free_port() { python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])'; }
 PORT="$(free_port)"
@@ -35,11 +37,13 @@ run_checks() { psql -X -q -v ON_ERROR_STOP=1 -h 127.0.0.1 -p "$PORT" -U postgres
 
 psql_quiet -d postgres -c "create database desk_live" -c "create database desk_fresh"
 
-echo "== live path: schema before migration 5, then $(basename "$MIG") twice"
+echo "== live path: schema before migration 5, then $(basename "$MIG") and $(basename "$MIG6") twice"
 sed '/===== migration 5/,$d' "$DESK/supabase/schema.sql" > "$TMP/schema-before-5.sql"
 psql_quiet -d desk_live -f "$HERE/supabase-stubs.sql" -f "$TMP/schema-before-5.sql"
 psql_quiet -d desk_live -f "$MIG"
 psql_quiet -d desk_live -f "$MIG"
+psql_quiet -d desk_live -f "$MIG6"
+psql_quiet -d desk_live -f "$MIG6"
 run_checks desk_live
 
 echo "== rebuild path: schema.sql alone"

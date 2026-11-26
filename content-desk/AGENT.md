@@ -28,11 +28,43 @@ From Chandler's folder the client does this for you: `python3 scripts/desk.py li
 | `queue` | What waits on Jay: ideas, drafts and finals waiting for his answer (oldest first), and Ready posts without a date. `waiting_days` counts from the post's last change. | |
 | `show` | One post with every version of every channel and its open notes. | `post_id` |
 | `cap` | Open ideas against the cap of 7, and how many more fit. | |
-| `add_idea` | A new card in the ideas column, waiting for Jay. | `title` (required), `idea`, `category` (news, tip, skill, deals, other; default tip), `score` (1 to 10), `covered_before`, `news_date` (2026-11-26), `dry_run` |
-| `add_version` | The next version of one channel on a post. | `post_id`, `channel`, `body` (required), `headlines`, `previews` (email only), `sources` (links), `writer_note`, `dry_run` |
+| `add_idea` | A new card in the ideas column, waiting for Jay. | `title` (required), `idea`, `category` (news, tip, skill, deals, other; default tip), `score` (1 to 10), `covered_before`, `news_date` (2026-11-26), `kind` (`text` or `reel`), `reel` (the reel fields below; makes it a reel), `dry_run` |
+| `add_version` | The next version of one channel on a post. | `post_id`, `channel`, `body` (required), `headlines`, `previews` (email only), `extra` (see below), `sources` (links), `writer_note`, `dry_run` |
+| `set_reel` | Makes a post a reel and sets its fields. Only the fields you send change; a field sent as `null` or `""` is cleared. | `post_id`, `reel` (required), `dry_run` |
 
-Channels for `add_version`: `linkedin`, `x`, `facebook`, `threads`, `email`, and `whatsapp_he` for
-the Hebrew group (an adaptation for that group, not a translation).
+Channels for `add_version`: `linkedin`, `x`, `facebook`, `threads`, `email`, `instagram`, `tiktok`,
+`youtube` (Shorts), and `whatsapp_he` for the Hebrew group (an adaptation for that group, not a translation).
+
+## Reels
+
+A reel is a card like any post (same columns, same rules) with `kind: "reel"` and its own fields in
+`reel`, the names reel-ideas and reel-texts use:
+
+| field | what |
+|---|---|
+| `hook_a`, `hook_b` | the two hooks. B goes up 3 to 7 days after A (plan V1). |
+| `cta` | `code_word`, `follow`, `whatsapp` or `none`. `code_word` needs `code_word`. |
+| `code_word` | one word, as said in the reel (INTERVIEW). |
+| `video_url`, `video_b_url`, `cover_url` | links to the main MP4, the hook B file and the cover. A link that ends in `.mp4`, `.mov`, `.webm` (or `.jpg`, `.png`, `.webp` for the cover) plays on the card; any other link (a Drive page) opens in a tab. A video uploaded to the card on the board also plays (up to 50 MB: the phone copy fits, a full master may not). |
+
+The captions from `post-texts.md` go in as one version per channel. `body` is the caption (the
+YouTube description, the LinkedIn post), and `extra` carries the rest:
+
+| channel | `extra` fields |
+|---|---|
+| `instagram` | `comment` (pinned), `alt_text`, `dm_1` (with the button), `dm_2` (the asset), `switches` |
+| `tiktok` | `comment` (pinned), `switches` |
+| `youtube` | `title` (at most 100 characters), `comment` (pinned), `switches` |
+| `linkedin` | `comment` (the first comment) |
+| `threads` | `comment` (the reply with the asset), `switches` |
+| `facebook` | `switches` |
+
+`switches` is plain text: what to turn on (AI info, content disclosure, altered content). A field
+another channel takes is refused, and so is any `extra` on `x`, `email` or `whatsapp_he`. The board
+shows each field under the caption with its own copy button.
+
+Captions go on after the first draft, like every channel version, so a reel still in the ideas
+column takes `set_reel` but not `add_version`.
 
 `dry_run: true` runs the whole write with every rule and rolls it back. The client does this by
 default and writes only with `--apply`. `dry_run` must be a real `true` or `false`, and a field the
@@ -48,8 +80,8 @@ action does not take is refused, so a typo such as `"dryrun"` or `"dry_run": "tr
   This runs on every `list`, `queue`, `cap` and `add_idea` (so those calls can write), and the
   answer lists the expired ideas in `expired` (id and title) so Chandler can tell Jay. Jay brings
   one back with "Bring it back". If nothing calls the endpoint, nothing expires.
-- Safe to retry: an open idea with the same title is refused, and so is a version whose text is
-  exactly the channel's latest one.
+- Safe to retry: an open idea with the same title is refused, and so is a version whose text and
+  `extra` are exactly the channel's latest ones.
 - No `whatsapp` channel. The WhatsApp text is the post itself: its first draft and final move the
   card and go to Jay, so they are written on the board.
 - Channel versions go on a post after its first draft, never on a bare idea or a rejected post.
@@ -66,6 +98,7 @@ action does not take is refused, so a typo such as `"dryrun"` or `"dry_run": "tr
 1. Run `supabase/migrate-5-agent.sql` in the SQL editor of "jaygptpro-team". It adds Chandler's row,
    and its last result lists the ideas that Chandler's first call will move to Rejected as expired.
    His address counts only inside this endpoint: a browser sign-up with it gets no rights.
+   Then run `supabase/migrate-6-reels.sql` (reels). Both are safe to run twice.
 2. Deploy from this folder: `supabase functions deploy desk-agent --project-ref sjdcvjunibwxkwqzjitw --no-verify-jwt`
    (and `go-clicks` the same way, for the /go/ links).
    `--no-verify-jwt` is needed on every deploy: desk-agent checks its own secret instead of a
@@ -79,5 +112,5 @@ or change the secret.
 
 ## Tests
 
-`content-desk/tests/run.sh` builds a throwaway local Postgres with the Desk schema and migration 5
+`content-desk/tests/run.sh` builds a throwaway local Postgres with the Desk schema and migrations 5 and 6
 and runs the real handler against it. Nothing touches Supabase.

@@ -13,9 +13,12 @@
 //   { "action": "show",  "post_id": "<uuid>" }
 //   { "action": "cap" }
 //   { "action": "add_idea", "title": "...", "idea"?: "...", "category"?: "tip", "score"?: 7,
-//     "covered_before"?: "...", "news_date"?: "2026-11-26", "dry_run"?: true }
+//     "covered_before"?: "...", "news_date"?: "2026-11-26", "kind"?: "reel", "reel"?: {...}, "dry_run"?: true }
+//   { "action": "set_reel", "post_id": "<uuid>", "reel": { "hook_a"?, "hook_b"?, "cta"?, "code_word"?,
+//     "video_url"?, "video_b_url"?, "cover_url"? }, "dry_run"?: true }   (a field set to null or "" is cleared)
 //   { "action": "add_version", "post_id": "<uuid>", "channel": "linkedin", "body": "...",
 //     "headlines"?: ["..."], "previews"?: ["..."] (email only), "sources"?: ["https://..."],
+//     "extra"?: { "title"?, "comment"?, "alt_text"?, "dm_1"?, "dm_2"?, "switches"? } (per channel, see EXTRA_KEYS),
 //     "writer_note"?: "...", "dry_run"?: true }
 // dry_run runs the whole write, rules included, and rolls it back.
 import type { Sql, TransactionSql } from "npm:postgres@3.4.4";
@@ -26,7 +29,22 @@ export const STAGES = ["idea", "draft", "final", "ready", "published"];
 export const CATEGORIES = ["news", "tip", "skill", "deals", "other"];
 // "whatsapp" is the post itself: its first draft and final move the card and go to Jay, which
 // the agent never does. Every other channel is an adaptation he may add.
-export const AGENT_CHANNELS = ["whatsapp_he", "email", "linkedin", "x", "facebook", "threads"];
+export const AGENT_CHANNELS = ["whatsapp_he", "email", "linkedin", "x", "facebook", "threads", "instagram", "tiktok", "youtube"];
+// What a caption carries beside its text, per channel, as reel-texts writes it in post-texts.md:
+// the YouTube title, the pinned (or LinkedIn first) comment, the Instagram alt text, the two DM
+// messages for the code word, and the switches to turn on (AI label, content disclosure).
+export const EXTRA_KEYS: Record<string, string[]> = {
+  instagram: ["comment", "alt_text", "dm_1", "dm_2", "switches"],
+  tiktok: ["comment", "switches"],
+  youtube: ["title", "comment", "switches"],
+  linkedin: ["comment"],
+  facebook: ["switches"],
+  threads: ["comment", "switches"],
+};
+const EXTRA_MAX: Record<string, number> = { title: 100, alt_text: 1000, switches: 500 };
+// A reel's own fields on its card (posts.reel), and the CTA kinds that rotate (Jay, 27.11).
+export const REEL_KEYS = ["hook_a", "hook_b", "cta", "code_word", "video_url", "video_b_url", "cover_url"];
+export const CTA_KINDS = ["code_word", "follow", "whatsapp", "none"];
 const MAX_BODY_BYTES = 200_000;
 
 export type Deps = { token: string; sql: Sql; email?: string };
@@ -142,6 +160,73 @@ function sources(v: unknown): Source[] {
   });
 }
 
+function link(v: unknown, name: string): string {
+  const url = typeof v === "string" ? v.trim() : "";
+  let host = "";
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    host = "";
+  }
+  if (!host || !/^https?:\/\/[^\s"'<>]+$/i.test(url) || url.length > 2000) throw bad(`${name} must be a link (https://...)`);
+  return url;
+}
+function obj(v: unknown, name: string): Record<string, unknown> {
+  if (v == null) return {};
+  if (typeof v !== "object" || Array.isArray(v)) throw bad(`${name} must be an object`);
+  return v as Record<string, unknown>;
+}
+// The reel fields given in a call. A field set to null or "" means "clear it" (value null).
+type ReelPatch = Record<string, string | null>;
+function reelInput(v: unknown): ReelPatch {
+  const o = obj(v, "reel");
+  const unknown = Object.keys(o).filter((k) => !REEL_KEYS.includes(k));
+  if (unknown.length) throw bad(`Unknown reel field: ${unknown.join(", ")}. Use ${REEL_KEYS.join(", ")}`);
+  const out: ReelPatch = {};
+  for (const k of Object.keys(o)) {
+    const x = o[k];
+    if (x == null || (typeof x === "string" && !x.trim())) {
+      out[k] = null;
+      continue;
+    }
+    if (k === "cta") out[k] = oneOf(x, CTA_KINDS, "reel.cta");
+    else if (k === "code_word") {
+      const w = text(x, "reel.code_word", 40).trim();
+      if (/\s/.test(w)) throw bad("reel.code_word is one word, as said in the reel");
+      out[k] = w;
+    } else if (k.endsWith("_url")) out[k] = link(x, `reel.${k}`);
+    else out[k] = text(x, `reel.${k}`, 300).trim();
+  }
+  return out;
+}
+// The reel after the patch: cleared fields go, a code word CTA needs its code word.
+function mergeReel(cur: Record<string, unknown>, patch: ReelPatch): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, x] of Object.entries({ ...(cur ?? {}), ...patch })) if (typeof x === "string" && x) out[k] = x;
+  if (out.cta === "code_word" && !out.code_word) throw bad("A code word CTA needs reel.code_word");
+  return out;
+}
+function extraInput(v: unknown, channel: string): Record<string, string> {
+  const o = obj(v, "extra");
+  const allowed = EXTRA_KEYS[channel] ?? [];
+  const unknown = Object.keys(o).filter((k) => !allowed.includes(k));
+  if (unknown.length) {
+    throw bad(`extra for ${channel} takes ${allowed.length ? allowed.join(", ") : "nothing"}, not ${unknown.join(", ")}`);
+  }
+  const out: Record<string, string> = {};
+  for (const k of allowed) {
+    const x = optText(o[k], `extra.${k}`, EXTRA_MAX[k] ?? 5000);
+    if (x) out[k] = x;
+  }
+  return out;
+}
+// Same keys and values, in any order.
+function sameExtra(a: unknown, b: Record<string, string>): boolean {
+  const x = (a ?? {}) as Record<string, unknown>;
+  const ka = Object.keys(x).filter((k) => x[k] != null && x[k] !== "");
+  return ka.length === Object.keys(b).length && ka.every((k) => x[k] === b[k]);
+}
+
 // ---------- reads ----------
 // Ideas that waited 7 days untouched move to Rejected ("expired"); returns which ones.
 async function expire(tx: Tx): Promise<Array<{ id: string; title: string }>> {
@@ -156,7 +241,7 @@ async function openIdeas(tx: Tx): Promise<number> {
 // One line per post, as the board shows it.
 function card(r: Record<string, unknown>) {
   return {
-    id: r.id, title: r.title, stage: r.stage, status: r.status, category: r.category,
+    id: r.id, title: r.title, kind: r.kind, stage: r.stage, status: r.status, category: r.category,
     score: r.score, hot: r.hot, pinned_date: r.pinned_date, skip_reason: r.skip_reason ?? undefined,
     author: r.author_name ?? r.author, mine: r.author === AGENT_EMAIL,
     channels: r.channels ?? undefined, age_days: r.age_days, waiting_days: r.waiting_days ?? undefined,
@@ -169,7 +254,7 @@ async function list(tx: Tx, b: Body) {
   const limit = optInt(b.limit, 1, 500, "limit") ?? 100;
   const expired = await expire(tx);
   const rows = await tx`
-    select p.id, p.title, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
+    select p.id, p.title, p.kind, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
            p.skip_reason, p.author, m.name as author_name,
            floor(extract(epoch from now() - p.created_at) / 86400)::int as age_days,
            coalesce((select array_agg(distinct v.channel order by v.channel) from public.versions v where v.post_id = p.id), '{}') as channels
@@ -185,7 +270,7 @@ async function list(tx: Tx, b: Body) {
 // What waits on Jay: his answer on an idea, draft or final, and a date for a Ready post.
 async function queue(tx: Tx) {
   const expired = await expire(tx);
-  const cols = tx`p.id, p.title, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
+  const cols = tx`p.id, p.title, p.kind, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
     p.author, m.name as author_name, floor(extract(epoch from now() - p.created_at) / 86400)::int as age_days,
     floor(extract(epoch from now() - p.updated_at) / 86400)::int as waiting_days`;
   const waiting = await tx`select ${cols} from public.posts p left join public.team_members m on m.email = p.author
@@ -203,13 +288,13 @@ async function queue(tx: Tx) {
 async function show(tx: Tx, b: Body) {
   const id = uuid(b.post_id ?? b.id, "post_id");
   const [p] = await tx`
-    select p.id, p.title, p.category, p.stage, p.status, p.idea, p.author, m.name as author_name, p.score,
+    select p.id, p.title, p.kind, p.reel, p.category, p.stage, p.status, p.idea, p.author, m.name as author_name, p.score,
            p.covered_before, p.news_date::text as news_date, p.tried_myself, p.hot, p.pinned_date::text as pinned_date,
            p.email_too, p.skip_reason, p.published_at, p.published_text, p.reactions, p.created_at, p.updated_at
     from public.posts p left join public.team_members m on m.email = p.author where p.id = ${id}`;
   if (!p) throw new AgentError(404, "No post with this id");
   const versions = await tx`
-    select v.id, v.channel, v.n, v.headlines, v.chosen, v.body, v.sources, v.writer_note, v.author,
+    select v.id, v.channel, v.n, v.headlines, v.chosen, v.body, v.extra, v.sources, v.writer_note, v.author,
            m.name as author_name, v.created_at
     from public.versions v left join public.team_members m on m.email = v.author
     where v.post_id = ${id} order by v.channel, v.n`;
@@ -228,7 +313,11 @@ async function cap(tx: Tx) {
 
 // ---------- writes ----------
 function ideaInput(b: Body) {
+  const reel = b.reel == null ? null : mergeReel({}, reelInput(b.reel));
+  const kind = b.kind == null ? (reel ? "reel" : "text") : oneOf(b.kind, ["text", "reel"], "kind");
+  if (reel && kind !== "reel") throw bad("reel fields go on a reel (kind: reel)");
   return {
+    kind, reel: reel ?? {},
     title: text(b.title, "title", 200).trim(),
     idea: optText(b.idea, "idea", 4000),
     category: b.category == null ? "tip" : oneOf(b.category, CATEGORIES, "category"),
@@ -251,9 +340,9 @@ async function addIdea(tx: Tx, i: ReturnType<typeof ideaInput>) {
     throw new AgentError(409, `The ideas column is full: ${open} open ideas, the cap is ${IDEA_CAP}. Wait until Jay answers some or old ones expire.`);
   }
   const [post] = await tx`
-    insert into public.posts (title, idea, category, score, covered_before, news_date, stage)
-    values (${i.title}, ${i.idea}, ${i.category}, ${i.score}, ${i.covered_before}, ${i.news_date}::date, 'idea')
-    returning id, title, stage, status, category, score, author, created_at`;
+    insert into public.posts (title, idea, category, score, covered_before, news_date, stage, kind, reel)
+    values (${i.title}, ${i.idea}, ${i.category}, ${i.score}, ${i.covered_before}, ${i.news_date}::date, 'idea', ${i.kind}, ${tx.json(i.reel)})
+    returning id, title, kind, reel, stage, status, category, score, author, created_at`;
   return { expired, open_ideas: open + 1, cap: IDEA_CAP, post };
 }
 
@@ -269,6 +358,7 @@ function versionInput(b: Body) {
     postId, channel, previews,
     body: text(b.body, "body", 60000),
     headlines: strList(b.headlines, "headlines", 10, 300),
+    extra: extraInput(b.extra, channel),
     sources: sources(b.sources),
     writer_note: optText(b.writer_note, "writer_note", 2000),
   };
@@ -280,23 +370,35 @@ async function addVersion(tx: Tx, i: ReturnType<typeof versionInput>) {
   if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Channel versions go on live posts only.");
   // like the board: other channels come after the first draft, never on a bare idea
   if (p.stage === "idea") throw new AgentError(409, "This post is still an idea. Channel versions come after the first draft.");
-  const [top] = await tx`select n, body from public.versions
+  const [top] = await tx`select n, body, extra from public.versions
     where post_id = ${i.postId} and channel = ${i.channel} order by n desc limit 1`;
   // a retry after a lost answer must not add the same text again as the next version
-  if (top && top.body === i.body) {
+  if (top && top.body === i.body && sameExtra(top.extra, i.extra)) {
     throw new AgentError(409, `The latest ${i.channel} version (v${top.n}) already has exactly this text.`);
   }
   const n = (top?.n ?? 0) + 1;
   const headlines = [...i.headlines.map((en) => ({ en })), ...i.previews.map((en) => ({ en, kind: "preview" }))];
   const [v] = await tx`
-    insert into public.versions (post_id, channel, n, body, headlines, sources, writer_note)
-    values (${i.postId}, ${i.channel}, ${n}, ${i.body}, ${tx.json(headlines)}, ${tx.json(i.sources)}, ${i.writer_note})
+    insert into public.versions (post_id, channel, n, body, headlines, extra, sources, writer_note)
+    values (${i.postId}, ${i.channel}, ${n}, ${i.body}, ${tx.json(headlines)}, ${tx.json(i.extra)}, ${tx.json(i.sources)}, ${i.writer_note})
     returning id, post_id, channel, n, author, created_at`;
   // like the board: an email version marks the post "also an email" (not once it is published)
   if (i.channel === "email" && p.stage !== "published") {
     await tx`update public.posts set email_too = true where id = ${i.postId} and not email_too`;
   }
   return { post: { id: p.id, title: p.title, stage: p.stage, status: p.status }, version: v };
+}
+
+// The reel's fields on its card: hooks, CTA, code word and the links to its files. Makes the post a reel.
+async function setReel(tx: Tx, postId: string, patch: ReelPatch) {
+  const [p] = await tx`select id, title, kind, reel, stage, status from public.posts where id = ${postId}`;
+  if (!p) throw new AgentError(404, "No post with this id");
+  if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Reel fields go on live posts only.");
+  // a published post is Jay's: the Desk's own guard refuses the update (409)
+  const reel = mergeReel(p.reel, patch);
+  const [out] = await tx`update public.posts set kind = 'reel', reel = ${tx.json(reel)} where id = ${postId}
+    returning id, title, kind, reel, stage, status`;
+  return { post: out };
 }
 
 // ---------- the endpoint ----------
@@ -306,8 +408,9 @@ const FIELDS: Record<string, string[]> = {
   queue: [],
   show: ["post_id", "id"],
   cap: [],
-  add_idea: ["title", "idea", "category", "score", "covered_before", "news_date", "dry_run"],
-  add_version: ["post_id", "channel", "body", "headlines", "previews", "sources", "writer_note", "dry_run"],
+  add_idea: ["title", "idea", "category", "score", "covered_before", "news_date", "kind", "reel", "dry_run"],
+  add_version: ["post_id", "channel", "body", "headlines", "previews", "extra", "sources", "writer_note", "dry_run"],
+  set_reel: ["post_id", "reel", "dry_run"],
 };
 
 function fromError(e: unknown): Response {
@@ -341,7 +444,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   const email = deps.email ?? AGENT_EMAIL;
   const action = String(b.action ?? "");
   const allowed = FIELDS[action];
-  if (!allowed) return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea or add_version." });
+  if (!allowed) return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea, add_version or set_reel." });
   // a typo such as "dryrun" or "dry_run": "true" must never turn a test into a real write
   const unknown = Object.keys(b).filter((k) => k !== "action" && !allowed.includes(k));
   if (unknown.length) return json(400, { ok: false, error: `Unknown field for ${action}: ${unknown.join(", ")}` });
@@ -363,10 +466,16 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
       // the next number per post and channel, one writer at a time
       const lock = `desk-agent:v:${input.postId}:${input.channel}`;
       out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addVersion(tx, input), dryRun, [lock])) };
+    } else if (action === "set_reel") {
+      const postId = uuid(b.post_id, "post_id");
+      if (b.reel == null) throw bad("reel is required: the fields to set, e.g. { \"hook_b\": \"...\" }");
+      const patch = reelInput(b.reel);
+      if (!Object.keys(patch).length) throw bad("reel has no fields to set");
+      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => setReel(tx, postId, patch), dryRun, [`desk-agent:reel:${postId}`])) };
     } else {
-      return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea or add_version." });
+      return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea, add_version or set_reel." });
     }
-    if (action.startsWith("add_")) console.log("desk-agent", action, dryRun ? "dry run" : "written", email);
+    if (action.startsWith("add_") || action === "set_reel") console.log("desk-agent", action, dryRun ? "dry run" : "written", email);
     return json(200, { ok: true, action, ...(out as object) });
   } catch (e) {
     return fromError(e);

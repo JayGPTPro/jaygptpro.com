@@ -1,4 +1,4 @@
-// Runs the REAL handler against a real Postgres that has the Desk schema and migration 5
+// Runs the REAL handler against a real Postgres that has the Desk schema and migrations 5 and 6
 // (content-desk/tests/run.sh builds one and sets DESK_TEST_DB_URL). No database mock: the
 // writer rules under test are the triggers and policies themselves.
 import { assert, assertEquals, assertMatch } from "jsr:@std/assert@1";
@@ -284,7 +284,7 @@ test("add_version refuses the WhatsApp post itself, unknown channels, ideas, rej
   await post("02", "idea", "approved");
   await post("03", "draft", "rejected");
   await refused({ action: "add_version", post_id: POST + "01", channel: "whatsapp", body: "b" }, 400, /written on the board/);
-  await refused({ action: "add_version", post_id: POST + "01", channel: "tiktok", body: "b" }, 400, /channel must be one of/);
+  await refused({ action: "add_version", post_id: POST + "01", channel: "snapchat", body: "b" }, 400, /channel must be one of/);
   await refused({ action: "add_version", post_id: POST + "02", channel: "x", body: "b" }, 409, /still an idea/);
   await refused({ action: "add_version", post_id: POST + "03", channel: "x", body: "b" }, 409, /rejected/);
   await refused({ action: "add_version", post_id: POST + "99", channel: "x", body: "b" }, 404, /No post/);
@@ -316,6 +316,94 @@ test("add_version dry run writes nothing", async () => {
   const j = await ok({ action: "add_version", post_id: POST + "01", channel: "facebook", body: "fb", dry_run: true });
   assert(j.dry_run && j.version.n === 1);
   assertEquals(await count(`select count(*) as n from public.versions`), 0);
+});
+
+// ---------- reels (migration 6) ----------
+const REEL = { hook_a: "Stop asking AI for answers", hook_b: "Your ChatGPT is guessing", cta: "code_word", code_word: "INTERVIEW" };
+
+test("add_idea with reel fields makes a reel card in the ideas column", async () => {
+  await reset();
+  const j = await ok({ action: "add_idea", title: "Ask me questions", reel: REEL });
+  assertEquals(j.post.kind, "reel");
+  assertEquals(j.post.reel, REEL);
+  const t = await ok({ action: "add_idea", title: "Plain post" });
+  assertEquals(t.post.kind, "text");
+  assertEquals((await ok({ action: "list" })).posts.find((p: { title: string }) => p.title === "Ask me questions").kind, "reel");
+  await refused({ action: "add_idea", title: "x", kind: "text", reel: REEL }, 400, /kind: reel/);
+  await refused({ action: "add_idea", title: "x", kind: "carousel" }, 400, /kind must be one of/);
+});
+
+test("set_reel fills the fields, keeps the rest, clears a field set to empty, and signs the change", async () => {
+  await reset();
+  await post("e1", "final", "waiting");
+  await ok({ action: "set_reel", post_id: POST + "e1", reel: { hook_a: "A", cta: "follow" } });
+  const j = await ok({ action: "set_reel", post_id: POST + "e1", reel: { hook_b: "B", video_url: "https://drive.google.com/file/d/abc/view", cta: "" } });
+  assertEquals(j.post.kind, "reel");
+  assertEquals(j.post.reel, { hook_a: "A", hook_b: "B", video_url: "https://drive.google.com/file/d/abc/view" });
+  const [row] = await sql`select updated_by from public.posts where id = ${POST + "e1"}`;
+  assertEquals(row.updated_by, AGENT_EMAIL);
+  const shown = await ok({ action: "show", post_id: POST + "e1" });
+  assertEquals(shown.post.reel.hook_b, "B");
+});
+
+test("set_reel refuses bad fields, a code word CTA without the word, published, rejected and missing posts", async () => {
+  await reset();
+  await post("e1", "draft", "waiting");
+  await post("e2", "published", "approved");
+  await post("e3", "draft", "rejected");
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: { cta: "link_in_bio" } }, 400, /cta must be one of/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: { cta: "code_word" } }, 400, /needs reel.code_word/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: { code_word: "TWO WORDS" } }, 400, /one word/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: { video_url: "javascript:alert(1)" } }, 400, /must be a link/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: { hook_c: "x" } }, 400, /Unknown reel field/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: {} }, 400, /no fields/);
+  await refused({ action: "set_reel", post_id: POST + "e1" }, 400, /reel is required/);
+  await refused({ action: "set_reel", post_id: POST + "e1", reel: ["hook"] }, 400, /must be an object/);
+  await refused({ action: "set_reel", post_id: POST + "e2", reel: { hook_b: "x" } }, 409, /published post/);
+  await refused({ action: "set_reel", post_id: POST + "e3", reel: { hook_b: "x" } }, 409, /rejected/);
+  await refused({ action: "set_reel", post_id: POST + "99", reel: { hook_b: "x" } }, 404, /No post/);
+  assertEquals(await count(`select count(*) as n from public.posts where kind = 'reel'`), 0);
+});
+
+test("set_reel dry run writes nothing", async () => {
+  await reset();
+  await post("e1", "draft", "waiting");
+  const j = await ok({ action: "set_reel", post_id: POST + "e1", reel: REEL, dry_run: true });
+  assertEquals(j.dry_run, true);
+  assertEquals(await count(`select count(*) as n from public.posts where kind = 'reel'`), 0);
+});
+
+test("reel captions: Instagram, TikTok and YouTube versions carry their extra fields", async () => {
+  await reset();
+  await post("e1", "final", "approved");
+  const extra = { comment: "That's my AI twin talking.", alt_text: "Jay's avatar explains a prompt", dm_1: "Want it?", dm_2: "Here you go" };
+  await ok({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra });
+  await ok({ action: "add_version", post_id: POST + "e1", channel: "youtube", body: "Description", extra: { title: "Better ChatGPT answers", comment: "The prompt" } });
+  await ok({ action: "add_version", post_id: POST + "e1", channel: "tiktok", body: "Short caption", extra: { comment: "", switches: "AI-generated content: on" } });
+  const shown = await ok({ action: "show", post_id: POST + "e1" });
+  const by = (ch: string) => shown.versions.find((v: { channel: string }) => v.channel === ch);
+  assertEquals(by("instagram").extra, extra);
+  assertEquals(by("youtube").extra.title, "Better ChatGPT answers");
+  assertEquals(by("tiktok").extra, { switches: "AI-generated content: on" }); // an empty field is not kept
+});
+
+test("extra: only the fields of that channel, a YouTube title within 100 characters, not on X", async () => {
+  await reset();
+  await post("e1", "final", "approved");
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "tiktok", body: "b", extra: { dm_1: "x" } }, 400, /extra for tiktok takes comment, switches, not dm_1/);
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "x", body: "b", extra: { comment: "x" } }, 400, /extra for x takes nothing/);
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "youtube", body: "b", extra: { title: "t".repeat(101) } }, 400, /too long/);
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "b", extra: "comment" }, 400, /must be an object/);
+  assertEquals(await count(`select count(*) as n from public.versions`), 0);
+});
+
+test("the same caption with a new pinned comment is a new version; the same caption and comment is a twin", async () => {
+  await reset();
+  await post("e1", "final", "approved");
+  await ok({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra: { comment: "one" } });
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra: { comment: "one" } }, 409, /already has exactly this text/);
+  const j = await ok({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra: { comment: "two" } });
+  assertEquals(j.version.n, 2);
 });
 
 test("close the test connection", async () => {

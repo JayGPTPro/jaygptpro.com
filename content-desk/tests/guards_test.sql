@@ -1,4 +1,4 @@
--- Content Desk guard tests for migration 5, on a throwaway local database (tests/run.sh).
+-- Content Desk guard tests for migrations 5 and 6, on a throwaway local database (tests/run.sh).
 -- Every check raises "FAIL: ..." when the rule does not hold, so the first broken rule stops the run.
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -63,7 +63,7 @@ insert into public.versions (post_id, channel, n, body) values
 select pg_temp.check('a writer saves facebook, threads, whatsapp_he, x, linkedin, whatsapp and email versions',
   (select count(*) = 7 from public.versions where post_id = '00000000-0000-0000-0000-0000000000d1'));
 select pg_temp.blocked('an unknown channel is refused',
-  $$insert into public.versions (post_id, channel, n, body) values ('00000000-0000-0000-0000-0000000000d1', 'tiktok', 1, 'x')$$,
+  $$insert into public.versions (post_id, channel, n, body) values ('00000000-0000-0000-0000-0000000000d1', 'snapchat', 1, 'x')$$,
   '%versions_channel_check%');
 select pg_temp.blocked('a writer cannot add WhatsApp text to an approved post',
   $$insert into public.versions (post_id, channel, n, body) values ('00000000-0000-0000-0000-0000000000a1', 'whatsapp', 1, 'x')$$,
@@ -210,6 +210,39 @@ select pg_temp.check('the team reads the clicks', (select count(*) = 2 from publ
 select pg_temp.blocked('a team member cannot add or change clicks',
   $$insert into public.go_clicks (src) values ('ig')$$, '%permission denied%');
 
+reset role;
+select set_config('request.jwt.claims', '', false);
+-- ---------- 5. reels (migration 6) ----------
+select pg_temp.check('every post is a text post until someone says reel',
+  (select bool_and(kind = 'text' and reel = '{}'::jsonb) from public.posts));
+set role authenticated;
+select pg_temp.claims('denisa@example.com');
+update public.posts set kind = 'reel',
+  reel = '{"hook_a": "Stop asking AI for answers", "hook_b": "Your ChatGPT is guessing", "cta": "code_word", "code_word": "INTERVIEW", "video_url": "https://example.com/r.mp4"}'
+  where id = '00000000-0000-0000-0000-0000000000d1';
+select pg_temp.check('a writer turns a draft into a reel with its hooks and CTA',
+  (select kind = 'reel' and reel ->> 'code_word' = 'INTERVIEW' from public.posts where id = '00000000-0000-0000-0000-0000000000d1'));
+select pg_temp.blocked('a CTA outside the four kinds is refused',
+  $$update public.posts set reel = '{"cta": "link_in_bio"}' where id = '00000000-0000-0000-0000-0000000000d1'$$, '%posts_reel_check%');
+select pg_temp.blocked('the reel fields are an object, never a list',
+  $$update public.posts set reel = '["hook"]' where id = '00000000-0000-0000-0000-0000000000d1'$$, '%posts_reel_check%');
+select pg_temp.blocked('a kind outside text and reel is refused',
+  $$update public.posts set kind = 'carousel' where id = '00000000-0000-0000-0000-0000000000d1'$$, '%posts_kind_check%');
+select pg_temp.blocked('a writer cannot change the reel of a published post',
+  $$update public.posts set reel = '{"hook_b": "x"}' where id = '00000000-0000-0000-0000-0000000000b1'$$, '%published post%');
+insert into public.versions (post_id, channel, n, body, extra) values
+  ('00000000-0000-0000-0000-0000000000d1', 'instagram', 1, 'ig caption', '{"comment": "pinned", "alt_text": "alt", "dm_1": "Want it?", "dm_2": "Here"}'),
+  ('00000000-0000-0000-0000-0000000000d1', 'tiktok', 1, 'tt caption', '{"comment": "pinned"}'),
+  ('00000000-0000-0000-0000-0000000000d1', 'youtube', 1, 'yt description', '{"title": "A title", "comment": "the prompt"}');
+select pg_temp.check('a writer saves Instagram, TikTok and YouTube captions with their extra fields',
+  (select count(*) = 3 from public.versions where channel in ('instagram', 'tiktok', 'youtube') and extra <> '{}'::jsonb));
+select pg_temp.blocked('extra is an object',
+  $$insert into public.versions (post_id, channel, n, body, extra) values ('00000000-0000-0000-0000-0000000000d1', 'linkedin', 2, 'x', '"comment"')$$,
+  '%versions_extra_check%');
+insert into public.versions (post_id, channel, n, body, extra) values
+  ('00000000-0000-0000-0000-0000000000a1', 'instagram', 1, 'after approval', '{"comment": "c"}');
+select pg_temp.check('reel captions stay open after Jay approved, like every channel but WhatsApp',
+  (select count(*) = 1 from public.versions where post_id = '00000000-0000-0000-0000-0000000000a1' and channel = 'instagram'));
 reset role;
 select set_config('request.jwt.claims', '', false);
 \echo guards_test.sql: all checks passed
