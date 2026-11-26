@@ -159,7 +159,14 @@ select pg_temp.check('an idea Jay already rejected keeps his reason',
   (select skip_reason = 'Not now' from public.posts where id = '00000000-0000-0000-0000-00000000e007'));
 select pg_temp.check('the expiry is nobody''s edit: no name in updated_by, updated_at is now',
   (select bool_and(updated_by = '' and updated_at > now() - interval '1 minute') from public.posts where skip_reason = 'expired'));
-select pg_temp.check('after the expiry the session is still Chandler', public.desk_email() = 'chandler@agent.jaygptpro.com');
+-- in one transaction, like desk-agent: the cleared claims must come back before the next statement
+do $$ begin
+  perform public.desk_expire_ideas();
+  if public.desk_email() <> 'chandler@agent.jaygptpro.com' then
+    raise exception 'FAIL: after the expiry, the same transaction is no longer Chandler but "%"', public.desk_email();
+  end if;
+end $$;
+select pg_temp.check('after the expiry the same transaction is still Chandler', true);
 select pg_temp.check('a second run expires nothing', public.desk_expire_ideas() = 0);
 
 reset role;
