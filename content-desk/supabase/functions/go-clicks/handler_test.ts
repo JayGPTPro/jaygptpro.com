@@ -56,6 +56,21 @@ Deno.test("go-clicks: the visitor hash changes with the day and never holds the 
   assert(!JSON.stringify(rows).includes("203.0.113.7"));
 });
 
+Deno.test("go-clicks: a tap inside the LinkedIn, X or Instagram app is a person; preview fetchers are bots", async () => {
+  const seen: Array<{ is_bot: boolean }> = [];
+  const deps = { salt: "s", insert: async (r: { is_bot: boolean }) => void seen.push(r) };
+  const people = [
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [LinkedInApp]/9.30.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Twitter for iPhone/10.70",
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36 Instagram 350.0.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/480.0]",
+  ];
+  const bots = ["LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)", "Twitterbot/1.0",
+    "WhatsApp/2.24.21.80 A", "TelegramBot (like TwitterBot)", "facebookexternalhit/1.1", "Slackbot-LinkExpanding 1.0", "curl/8.4.0"];
+  for (const ua of [...people, ...bots]) await handle(beacon({ s: "li" }, ua), deps);
+  assertEquals(seen.map((r) => r.is_bot), [...people.map(() => false), ...bots.map(() => true)]);
+});
+
 Deno.test("go-clicks: bad bodies, other methods, and a failed write", async () => {
   const deps = { salt: "s", insert: async () => {} };
   assertEquals((await handle(beacon("not json"), deps)).status, 400);

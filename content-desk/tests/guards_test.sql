@@ -110,6 +110,17 @@ select pg_temp.check('a version Chandler saves is signed with his name',
   (select author = 'chandler@agent.jaygptpro.com' from public.versions
    where post_id = '00000000-0000-0000-0000-0000000000d1' and channel = 'x' and n = 2));
 
+-- a browser sign-in always carries an issuer; desk-agent's own claims do not
+select set_config('request.jwt.claims', '{"email":"chandler@agent.jaygptpro.com","role":"authenticated","iss":"https://sjdcvjunibwxkwqzjitw.supabase.co/auth/v1"}', false);
+select pg_temp.check('someone who signs up in a browser with Chandler''s address gets no rights',
+  not public.is_team() and (select count(*) = 0 from public.posts));
+select pg_temp.blocked('nor can they write as him',
+  $$insert into public.posts (title, stage) values ('pretending', 'idea')$$, '%row-level security%');
+select set_config('request.jwt.claims', '{"email":"denisa@example.com","role":"authenticated","iss":"https://sjdcvjunibwxkwqzjitw.supabase.co/auth/v1"}', false);
+select pg_temp.check('a person''s real sign-in still works as before', public.is_team() and not public.is_owner());
+select set_config('request.jwt.claims', '{"email":"jay@example.com","role":"authenticated","iss":"https://sjdcvjunibwxkwqzjitw.supabase.co/auth/v1"}', false);
+select pg_temp.check('and Jay is still the owner', public.is_owner());
+
 -- ---------- 3. ideas expire after 7 untouched days ----------
 reset role;
 select set_config('request.jwt.claims', '', false);
@@ -135,6 +146,10 @@ insert into public.versions (post_id, channel, n, body, author, created_at) valu
 insert into public.assets (post_id, path, filename, author, created_at) values
   ('00000000-0000-0000-0000-00000000e010', 'x/e010.png', 'e010.png', 'denisa@example.com', now() - interval '1 day');
 
+select pg_temp.check('the preview at the end of the migration lists exactly the ideas the expiry will take',
+  (select array_agg(p.title order by p.title) = array['stale idea sent back', 'stale idea, date passed', 'stale idea, old note', 'stale waiting idea']
+   from public.posts p where p.id in (select public.desk_stale_ideas())));
+
 set role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', false);
 select pg_temp.blocked('a visitor who is not signed in cannot run the expiry',
@@ -143,6 +158,9 @@ set role authenticated;
 select pg_temp.claims('stranger@gmail.com');
 select pg_temp.blocked('a Google account outside the team cannot run the expiry',
   $$select public.desk_expire_ideas()$$, '%Not a team member%');
+select pg_temp.claims('denisa@example.com');
+select pg_temp.blocked('the list of stale ideas is for the database owner only',
+  $$select public.desk_stale_ideas()$$, '%permission denied%');
 
 select pg_temp.claims('chandler@agent.jaygptpro.com');
 create temp table expired as select * from public.desk_expire_ideas();

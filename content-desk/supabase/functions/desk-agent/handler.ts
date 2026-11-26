@@ -129,9 +129,15 @@ function sources(v: unknown): Source[] {
   return v.map((s) => {
     const o = typeof s === "string" ? { url: s } : (s ?? {}) as Record<string, unknown>;
     const url = String(o.url ?? "").trim();
-    if (!/^https?:\/\/[^\s"'<>]+$/i.test(url) || url.length > 2000) throw bad(`not a link: ${url.slice(0, 80)}`);
+    let host = "";
+    try {
+      host = new URL(url).hostname;
+    } catch {
+      host = "";
+    }
+    if (!host || !/^https?:\/\/[^\s"'<>]+$/i.test(url) || url.length > 2000) throw bad(`not a link: ${url.slice(0, 80)}`);
     // like the board: a link without a label is shown by its site name
-    const label = String(o.label ?? "").trim().slice(0, 200) || new URL(url).hostname.replace(/^www\./, "");
+    const label = String(o.label ?? "").trim().slice(0, 200) || host.replace(/^www\./, "");
     return { url, label, official: o.official === true };
   });
 }
@@ -294,6 +300,16 @@ async function addVersion(tx: Tx, i: ReturnType<typeof versionInput>) {
 }
 
 // ---------- the endpoint ----------
+// The fields each action takes. Anything else is refused, so a misspelled field cannot be ignored.
+const FIELDS: Record<string, string[]> = {
+  list: ["stage", "all", "limit"],
+  queue: [],
+  show: ["post_id", "id"],
+  cap: [],
+  add_idea: ["title", "idea", "category", "score", "covered_before", "news_date", "dry_run"],
+  add_version: ["post_id", "channel", "body", "headlines", "previews", "sources", "writer_note", "dry_run"],
+};
+
 function fromError(e: unknown): Response {
   if (e instanceof AgentError) return json(e.status, { ok: false, error: e.message });
   const code = (e as { code?: string })?.code ?? "";
@@ -324,6 +340,14 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   }
   const email = deps.email ?? AGENT_EMAIL;
   const action = String(b.action ?? "");
+  const allowed = FIELDS[action];
+  if (!allowed) return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea or add_version." });
+  // a typo such as "dryrun" or "dry_run": "true" must never turn a test into a real write
+  const unknown = Object.keys(b).filter((k) => k !== "action" && !allowed.includes(k));
+  if (unknown.length) return json(400, { ok: false, error: `Unknown field for ${action}: ${unknown.join(", ")}` });
+  if (b.dry_run !== undefined && typeof b.dry_run !== "boolean") {
+    return json(400, { ok: false, error: "dry_run must be true or false (not text)" });
+  }
   const dryRun = b.dry_run === true;
   try {
     let out: unknown;

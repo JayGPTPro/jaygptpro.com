@@ -27,20 +27,50 @@ insert into public.team_members (email, name, role, color)
 values ('chandler@agent.jaygptpro.com', 'Chandler', 'writer', '#7a4bd1')
 on conflict (email) do nothing;
 
+--    An @agent.jaygptpro.com address counts as a team member only inside a desk-agent call, which
+--    sets its own claims without an issuer. Every sign-in token from Supabase Auth has one ("iss"),
+--    so signing up with Chandler's address in a browser gives no rights on the Desk.
+create or replace function public.is_team() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.desk_email() <> ''
+    and (public.desk_email() not like '%@agent.jaygptpro.com' or (auth.jwt() ->> 'iss') is null)
+    and exists (select 1 from public.team_members where email = public.desk_email() and active)
+$$;
+create or replace function public.is_owner() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.desk_email() <> ''
+    and (public.desk_email() not like '%@agent.jaygptpro.com' or (auth.jwt() ->> 'iss') is null)
+    and exists (select 1 from public.team_members where email = public.desk_email() and active and role = 'owner')
+$$;
+
 -- 3. An idea nobody touched for 7 days goes to Rejected with the reason "expired", so the
 --    ideas column (at most 7 open ideas) never fills up with old news.
 --    Only ideas that wait (for Jay's answer, or for a fix after his notes) expire: an idea Jay
 --    approved stays until someone writes it or Jay decides otherwise.
 --    Touched: the post itself changed (a translation does not count), or someone added a note,
 --    a version or a file. An idea with a planned date that is still ahead stays.
---    Runs for any team member and returns the ideas it expired; desk-agent calls it before it
---    lists or adds ideas, so Chandler can tell Jay which ones went.
+--    desk_stale_ideas() says which ideas that is (the SQL editor can call it to see them first);
+--    desk_expire_ideas() moves them, for any team member, and returns them. desk-agent calls it
+--    before it lists or adds ideas, so Chandler can tell Jay which ones went.
+create or replace function public.desk_stale_ideas() returns setof uuid
+language sql stable set search_path = public as $$
+  select p.id from public.posts p
+  where p.stage = 'idea' and p.status in ('waiting', 'changes')
+    and (p.pinned_date is null or p.pinned_date < (now() at time zone 'Asia/Jerusalem')::date)
+    and greatest(
+          p.updated_at,
+          (select max(greatest(n.created_at, n.updated_at)) from public.notes n where n.post_id = p.id),
+          (select max(v.created_at) from public.versions v where v.post_id = p.id),
+          (select max(a.created_at) from public.assets a where a.post_id = p.id)
+        ) < now() - interval '7 days'
+$$;
+revoke all on function public.desk_stale_ideas() from public, anon, authenticated;
+
 drop function if exists public.desk_expire_ideas();
 create function public.desk_expire_ideas() returns table (post_id uuid, post_title text)
 language plpgsql security definer set search_path = public as $$
 declare
   claims text := current_setting('request.jwt.claims', true);
-  today date := (now() at time zone 'Asia/Jerusalem')::date;
 begin
   if not public.is_team() then raise exception 'Not a team member'; end if;
   -- the expiry is nobody's edit: no "updated by" on the card and no "new" mark for the team
@@ -48,14 +78,7 @@ begin
   return query
     with gone as (
       update public.posts p set status = 'rejected', skip_reason = 'expired'
-      where p.stage = 'idea' and p.status in ('waiting', 'changes')
-        and (p.pinned_date is null or p.pinned_date < today)
-        and greatest(
-              p.updated_at,
-              (select max(greatest(n.created_at, n.updated_at)) from public.notes n where n.post_id = p.id),
-              (select max(v.created_at) from public.versions v where v.post_id = p.id),
-              (select max(a.created_at) from public.assets a where a.post_id = p.id)
-            ) < now() - interval '7 days'
+      where p.id in (select public.desk_stale_ideas()) and p.status in ('waiting', 'changes')
       returning p.id, p.title
     )
     select gone.id, gone.title from gone order by gone.title;
@@ -86,6 +109,7 @@ create policy team_read on public.go_clicks for select to authenticated using (p
 
 commit;
 
--- check: Chandler's row, and how many ideas are open
-select email, name, role, active from public.team_members where email = 'chandler@agent.jaygptpro.com';
-select count(*) as open_ideas from public.posts where stage = 'idea' and status <> 'rejected';
+-- check: the ideas that Chandler's first call will move to Rejected as "expired" (Jay can bring
+-- any of them back). Nothing here changes them; an empty list means nothing goes.
+select p.title, p.status, p.author, p.updated_at::date as last_change
+from public.posts p where p.id in (select public.desk_stale_ideas()) order by p.updated_at;

@@ -293,6 +293,23 @@ test("add_version refuses the WhatsApp post itself, unknown channels, ideas, rej
   assertEquals(await count(`select count(*) as n from public.versions`), 0);
 });
 
+test("a dry run sent as text, a misspelled field or a field of another action is refused, never written", async () => {
+  await reset();
+  await post("01", "final", "waiting");
+  await refused({ action: "add_idea", title: "I meant a dry run", dry_run: "true" }, 400, /dry_run must be true or false/);
+  await refused({ action: "add_idea", title: "I meant a dry run", dryrun: true }, 400, /Unknown field for add_idea: dryrun/);
+  await refused({ action: "add_version", post_id: POST + "01", channel: "x", body: "b", dry_run: 1 }, 400, /dry_run/);
+  await refused({ action: "list", status: "waiting" }, 400, /Unknown field for list: status/);
+  assertEquals(await count(`select count(*) as n from public.posts where title = 'I meant a dry run'`), 0);
+  assertEquals(await count(`select count(*) as n from public.versions`), 0);
+});
+
+test("a link that only looks like one is a 400, not a database error", async () => {
+  await reset();
+  await post("01", "final", "waiting");
+  await refused({ action: "add_version", post_id: POST + "01", channel: "x", body: "b", sources: ["https://example.com:abc/"] }, 400, /not a link/);
+});
+
 test("add_version dry run writes nothing", async () => {
   await reset();
   await post("01", "final", "waiting");

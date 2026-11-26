@@ -14,8 +14,13 @@ import type { Sql } from "npm:postgres@3.4.4";
 
 export const SOURCES = new Set(["ig", "tt", "yt", "li", "fb", "x", "th", "email"]);
 
+// Link-preview fetchers and scripts. Not the apps' own browsers: a tap inside LinkedIn, X or
+// Instagram opens a browser whose agent names the app ("[LinkedInApp]"), and that is a real person.
+// Their preview fetchers are LinkedInBot, Twitterbot, Slackbot..., caught by "bot".
 const BOT_RE =
-  /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|discord|slack|twitter|linkedin|skype|embedly|quora|pinterest|vkshare|headless|lighthouse|curl|wget|python|go-http|java\/|okhttp|axios|node-fetch/i;
+  /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|quora link|pinterest\/|vkshare|headless|lighthouse|curl|wget|python|go-http|java\/|okhttp|axios|node-fetch/i;
+// WhatsApp and Telegram fetch previews with an agent that starts with the app name, not "Mozilla".
+const FETCHER_RE = /^(whatsapp|telegram)/i;
 
 export type GoClick = {
   src: string;
@@ -84,7 +89,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   const row: GoClick = {
     src,
     ref_domain: refDomain(body.r),
-    is_bot: !ua || BOT_RE.test(ua),
+    is_bot: !ua || BOT_RE.test(ua) || FETCHER_RE.test(ua),
     is_repeat: body.p === 1 || body.p === "1",
     visitor_hash: ip || ua ? await sha16(`${deps.salt}|${day}|${ip}|${ua}`) : null,
   };

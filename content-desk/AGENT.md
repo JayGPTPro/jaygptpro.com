@@ -35,7 +35,8 @@ Channels for `add_version`: `linkedin`, `x`, `facebook`, `threads`, `email`, and
 the Hebrew group (an adaptation for that group, not a translation).
 
 `dry_run: true` runs the whole write with every rule and rolls it back. The client does this by
-default and writes only with `--apply`.
+default and writes only with `--apply`. `dry_run` must be a real `true` or `false`, and a field the
+action does not take is refused, so a typo such as `"dryrun"` or `"dry_run": "true"` never writes.
 
 ## Rules the endpoint adds on top of the database
 
@@ -62,9 +63,14 @@ default and writes only with `--apply`.
 
 ## Setup and switching it off
 
-1. Run `supabase/migrate-5-agent.sql` in the SQL editor of "jaygptpro-team". It adds Chandler's row.
-2. Deploy from this folder: `supabase functions deploy desk-agent --project-ref sjdcvjunibwxkwqzjitw --no-verify-jwt`.
-   (`--no-verify-jwt` because the function checks its own secret instead of a Google sign-in.)
+1. Run `supabase/migrate-5-agent.sql` in the SQL editor of "jaygptpro-team". It adds Chandler's row,
+   and its last result lists the ideas that Chandler's first call will move to Rejected as expired.
+   His address counts only inside this endpoint: a browser sign-up with it gets no rights.
+2. Deploy from this folder: `supabase functions deploy desk-agent --project-ref sjdcvjunibwxkwqzjitw --no-verify-jwt`
+   (and `go-clicks` the same way, for the /go/ links).
+   `--no-verify-jwt` is needed on every deploy: desk-agent checks its own secret instead of a
+   Google sign-in, and the /go/ pages send no sign-in at all. Without it every call gets a 401
+   (for go-clicks silently: the clicks just stop being counted).
 3. Set the secret `DESK_AGENT_TOKEN` (at least 32 characters) on the function, and put the same value
    with `DESK_AGENT_URL` in Chandler's `.env`. Never in this repo: it is public.
 
