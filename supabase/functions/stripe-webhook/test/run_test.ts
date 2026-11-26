@@ -34,6 +34,21 @@ globalThis.fetch = (async (input: any, init?: any) => {
     const failThis = !!(sendState as any).mailFailTo && String(m.to).includes((sendState as any).mailFailTo);
     return new Response(JSON.stringify({ id: 'mail_stub' }), { status: sendState.mailOk && !failThis ? 200 : 500 });
   }
+  if (url.includes('api.stripe.com/v1/subscription')) {   // the payment plan's end (bf11 payments=N)
+    const st = (sendState as any).plan || ((sendState as any).plan = { calls: [] as any[], schedule: null as any, fail: false });
+    const body = init?.body ? Object.fromEntries(new URLSearchParams(String(init.body))) : null;
+    st.calls.push({ url, method: init?.method || 'GET', body });
+    if (st.fail) return new Response(JSON.stringify({ error: { message: 'stub refused' } }), { status: 400 });
+    if (/\/v1\/subscriptions\//.test(url)) return new Response(JSON.stringify({ id: 'sub_plan', schedule: st.schedule ? st.schedule.id : null }), { status: 200 });
+    if (/\/v1\/subscription_schedules$/.test(url)) {
+      st.schedule = { id: 'sub_sched_plan', end_behavior: 'release', phases: [{ start_date: 1795651200, end_date: 1798243200, items: [{ price: 'price_5x100' }] }] };
+      return new Response(JSON.stringify(st.schedule), { status: 200 });
+    }
+    if (/\/v1\/subscription_schedules\//.test(url)) {
+      if (body) { st.schedule.end_behavior = body.end_behavior; st.schedule.phases[0].end_date = Number(body['phases[0][end_date]']); }
+      return new Response(JSON.stringify(st.schedule), { status: 200 });
+    }
+  }
   if (url.includes('api.stripe.com')) {
     return new Response(JSON.stringify({ data: sendState.stripeLineItems.map(p => ({ price: { product: p } })) }), { status: 200 });
   }
@@ -78,7 +93,7 @@ function reset() {
     { id: 'wonka_r2', welcome_email_fn_slug: 'send-welcome-wonka', stripe_plink_full_price: PLINK_R2, stripe_plink_discounted: PLINK_R2_FLAT, stripe_product_id: GOLDEN_R2, start_date: '2026-09-22' },
     { id: 'round1', welcome_email_fn_slug: null, start_date: '2026-04-01' },
   ];
-  LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true; sendState.mails = []; sendState.mailOk = true; (sendState as any).mailFailTo = '';
+  LOG.length = 0; sendState.calls = []; sendState.ok = true; sendState.addonOk = true; sendState.mails = []; sendState.mailOk = true; (sendState as any).mailFailTo = ''; (sendState as any).plan = null;
   sendState.stripeLineItems = ['prod_UxhJATVn8CEfCT'];
 }
 
@@ -986,6 +1001,52 @@ reset();
 res = await post(bf('bf9@buyer.com', 'vault,call', 'call', 100000, 'none'));
 check('http 500', res.status === 500, `got ${res.status}`);
 check('no buyer mail yet', toBuyer('bf9@buyer.com').length === 0, JSON.stringify(sendState.mails.map((m: any) => m.to)));
+
+console.log('\nBF10. Five payments of $100 (a Payment Link): the plan ends itself after 5, mails say so, nothing granted');
+const plan = (email: string) => {
+  const s: any = bf(email, 'wonka,donna', 'donna', 10000, 'donna,wonka');
+  s.data.object.mode = 'subscription'; s.data.object.payment_intent = null; s.data.object.subscription = 'sub_plan';
+  s.data.object.payment_link = 'plink_yair'; s.data.object.metadata.payments = '5';
+  return s;
+};
+reset();
+res = await post(plan('yair@buyer.com'));
+const P = (sendState as any).plan;
+check('http 200', res.status === 200, `got ${res.status}`);
+check('no access, no welcome', !DB.allowed_emails.length && sendState.calls.length === 0, JSON.stringify(DB.allowed_emails));
+check('schedule made from the subscription', P?.calls.some((c: any) => c.url.endsWith('/v1/subscription_schedules') && c.body?.from_subscription === 'sub_plan'), JSON.stringify(P?.calls));
+const upd = P?.calls.find((c: any) => /subscription_schedules\/sub_sched_plan$/.test(c.url) && c.body);
+// 1795651200 = 2026-11-26 00:00 UTC; five months on is 2027-04-26 00:00 UTC.
+check('ends 5 months after it started, cancels, no proration', upd?.body?.end_behavior === 'cancel' && upd?.body?.['phases[0][end_date]'] === String(Date.UTC(2027, 3, 26) / 1000) && upd?.body?.['phases[0][proration_behavior]'] === 'none' && upd?.body?.['phases[0][items][0][price]'] === 'price_5x100', JSON.stringify(upd));
+check('Jay: payment 1 of 5 and the end date', JSON.stringify(toJay()[0]).includes('payment 1 of 5') && JSON.stringify(toJay()[0]).includes('cancels on 2027-04-26'), JSON.stringify(toJay()[0]).slice(0, 500));
+check('buyer: told the other 4 stop by themselves', JSON.stringify(toBuyer('yair@buyer.com')).includes('payment 1 of 5') && JSON.stringify(toBuyer('yair@buyer.com')).includes('stop by themselves'), JSON.stringify(toBuyer('yair@buyer.com')).slice(0, 400));
+
+console.log('\nBF11. Stripe retries the plan event: the schedule is not touched twice');
+const callsBefore = P.calls.filter((c: any) => c.body).length;
+await post(plan('yair@buyer.com'));
+check('no second create or update', P.calls.filter((c: any) => c.body).length === callsBefore, JSON.stringify(P.calls.slice(-3)));
+
+console.log('\nBF12. Stripe refuses the schedule: still 200, and Jay is told to end it by hand');
+reset();
+(sendState as any).plan = { calls: [], schedule: null, fail: true };
+res = await post(plan('yair2@buyer.com'));
+check('http 200 (the order is known, no retry loop)', res.status === 200, `got ${res.status}`);
+check('Jay mail says NOT SET', JSON.stringify(toJay()[0]).includes('NOT SET'), JSON.stringify(toJay()[0]).slice(0, 400));
+
+console.log('\nBF13. The monthly invoices (payment_intent.succeeded, no metadata) grant nothing and mail nobody');
+reset();
+res = await post({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_month2', amount: 10000, currency: 'usd', receipt_email: 'yair@buyer.com', metadata: {} } } });
+check('no access row, no welcome, no mail', !DB.allowed_emails.length && sendState.calls.length === 0 && sendState.mails.length === 0, JSON.stringify([DB.allowed_emails, sendState.mails]));
+
+console.log('\nBF14. Paid in shekels: the mails show the dollar amount, never shekels called USD');
+reset();
+{
+  const s: any = plan('ils@buyer.com');
+  s.data.object.currency = 'ils'; s.data.object.amount_total = 34510;
+  s.data.object.currency_conversion = { amount_total: 10000, source_currency: 'usd', fx_rate: '3.451' };
+  res = await post(s);
+}
+check('Jay and buyer see 100.00 USD, nowhere 345.10', JSON.stringify(sendState.mails).includes('100.00 USD') && !JSON.stringify(sendState.mails).includes('345.10'), JSON.stringify(sendState.mails.map((m: any) => m.subject)));
 
 console.log(`\n${fail === 0 ? 'ALL GREEN' : 'FAILURES'}: ${pass} passed, ${fail} failed\n`);
 if (fail) Deno.exit(1);

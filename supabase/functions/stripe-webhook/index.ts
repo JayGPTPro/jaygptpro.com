@@ -244,14 +244,29 @@ const BF_NAMES: Record<string, string> = {
   images: 'Product image system', video: 'Product video & ads system',
 };
 
-async function notifyBfOrder(session: any, items: string[], freeIds: string[]): Promise<boolean> {
+// A payment plan sold through a Payment Link (metadata project=bf11, payments=N): the first
+// payment is the order; the rest are monthly invoices that must stop by themselves. `extra`
+// carries the plan lines for both mails.
+type BfExtra = { tag: string; jay: [string, string][]; buyer: string };
+
+// What the order cost, in US dollars. A buyer in Israel can pay in shekels (Adaptive Pricing):
+// then the session's currency is ILS, amount_total is shekels, and currency_conversion holds
+// the dollar total. Never print shekels with "USD" after them.
+function bfMoney(so: any): string {
+  const conv = so?.currency_conversion;
+  const cur = String(so?.currency || 'usd').toLowerCase();
+  if (conv && String(conv.source_currency || '').toLowerCase() === 'usd') return `${(Number(conv.amount_total || 0) / 100).toFixed(2)} USD`;
+  return `${(Number(so?.amount_total || 0) / 100).toFixed(2)} ${cur.toUpperCase()}`;
+}
+
+async function notifyBfOrder(session: any, items: string[], freeIds: string[], extra?: BfExtra): Promise<boolean> {
   const key = Deno.env.get('RESEND_API_KEY') || '';
   if (!key) { console.error('bf11 order: RESEND_API_KEY is not set, cannot notify.'); return false; }
   const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[c]);
   const sid = encodeURIComponent(String(session?.id || ''));
   const email = session?.customer_email || session?.customer_details?.email || '';
   const name = session?.customer_details?.name || '';
-  const amount = (Number(session?.amount_total || 0) / 100).toFixed(2);
+  const amount = bfMoney(session);
   const pi = session?.payment_intent || '';
   const label = (id: string) => `${BF_NAMES[id] || id}${freeIds.includes(id) ? ' (FREE, 1+1)' : ''}`;
   const kitUrl = `https://jaygptpro.com/christmas-video/kit/?s=${sid}`;
@@ -283,7 +298,8 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
   // Jay's mail first. If it fails the caller answers 500 and Stripe retries, and the buyer has
   // not been mailed yet, so the retry does not send the buyer a second copy.
   const rows: [string, string][] = [
-    ['Paid', `${amount} USD`],
+    ['Paid', `${amount}`],
+    ...(extra?.jay || []),
     ['Buyer', `${name} <${email}>`],
     ...items.map(id => [label(id), forJay[id] || 'Contact the buyer.'] as [string, string]),
     ['Promised to the buyer', hasGift
@@ -293,7 +309,7 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
   ];
   const table = (r: [string, string][]) => `<table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:15px">`
     + r.map(([k, v]) => `<tr><td style="color:#666;vertical-align:top"><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join('') + `</table>`;
-  const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount} USD)`;
+  const subject = `New Black Friday order: ${items.map(label).join(' + ')} (${amount}${extra?.tag || ''})`;
   const h2 = rest.length ? 'New Black Friday 1+1 order: reply within 24 hours' : 'New Black Friday 1+1 order: the Skill was delivered automatically';
   if (!(await send(CHRISTMAS_NOTIFY_TO, subject, `<h2>${h2}</h2>${table(rows)}`, email))) return false;
   if (!email) return true;
@@ -301,6 +317,7 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
   const buyerHtml = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;max-width:560px">`
     + `<p>Hi${name ? ' ' + esc(String(name).split(' ')[0]) : ''},</p>`
     + `<p>Thank you for your Black Friday order:</p><ul style="padding-left:20px">${lis}</ul>`
+    + (extra?.buyer ? `<p>${esc(extra.buyer)}</p>` : '')
     + (hasGift ? `<p><b>The Perfect Gift Skill is ready now.</b> <a href="${kitUrl}" style="color:#222">Open your kit</a>. The page has the download and the first steps.</p>` : '')
     + (rest.length ? `<p>Within 24 hours you'll get an email from me with the next steps for ${hasGift ? 'the rest' : 'each one'}.</p>` : '')
     + `<p>Any question, just reply to this email.</p><p>Jay</p></div>`;
@@ -311,6 +328,56 @@ async function notifyBfOrder(session: any, items: string[], freeIds: string[]): 
       + (hasGift ? `<p>It had their Skill kit link, so send it to them: ${esc(kitUrl)}</p>` : ''), email);
   }
   return true;
+}
+
+// N monthly payments, then stop: turn the plan's subscription into a schedule whose one phase
+// ends N billing months after it started, and cancels there. That boundary is when invoice N+1
+// would be made, so no extra invoice and no proration (the same shape as the Wonka 3-payment
+// plan's schedule, which completed cleanly). Safe to run again on a Stripe retry: a schedule
+// that already ends and cancels is left alone. Never throws; the note goes into Jay's mail.
+function addMonthsUTC(unix: number, n: number): number {
+  const d = new Date(unix * 1000);
+  const y = d.getUTCFullYear(), m = d.getUTCMonth() + n;
+  const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();   // days in the target month
+  return Date.UTC(y, m, Math.min(d.getUTCDate(), dim), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()) / 1000;
+}
+async function endBfPlanAfter(subId: string, payments: number): Promise<{ ok: boolean; note: string }> {
+  const fix = 'NOT SET. In Stripe, open the subscription and make it end after ' + payments + ' payments, or it keeps charging.';
+  if (!stripeKey || !subId) return { ok: false, note: `${fix} (no subscription on the session)` };
+  const api = async (path: string, form?: Record<string, string>) => {
+    const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+      method: form ? 'POST' : 'GET',
+      headers: { 'Authorization': `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form ? new URLSearchParams(form) : undefined,
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(`${path} ${res.status}: ${JSON.stringify(j?.error?.message || j).slice(0, 200)}`);
+    return j;
+  };
+  try {
+    const sub = await api(`subscriptions/${subId}`);
+    const existing = typeof sub?.schedule === 'string' ? sub.schedule : sub?.schedule?.id;
+    let sched = existing ? await api(`subscription_schedules/${existing}`) : await api('subscription_schedules', { from_subscription: subId });
+    const ph = sched?.phases?.[0];
+    const start = Number(ph?.start_date || 0);
+    const price = ph?.items?.[0]?.price;
+    const priceId = typeof price === 'string' ? price : price?.id;
+    if (!start || !priceId) throw new Error('schedule has no phase to end');
+    const end = addMonthsUTC(start, payments);
+    const day = new Date(end * 1000).toISOString().slice(0, 10);
+    if (!(sched.end_behavior === 'cancel' && Number(ph.end_date) === end && (sched.phases || []).length === 1)) {
+      sched = await api(`subscription_schedules/${sched.id}`, {
+        end_behavior: 'cancel',
+        'phases[0][start_date]': String(start), 'phases[0][end_date]': String(end),
+        'phases[0][items][0][price]': priceId, 'phases[0][items][0][quantity]': '1',
+        'phases[0][proration_behavior]': 'none',
+      });
+    }
+    return { ok: true, note: `Ends by itself after ${payments} payments (cancels on ${day}).` };
+  } catch (e) {
+    console.error('bf11 plan end failed:', { subId, error: String(e) });
+    return { ok: false, note: `${fix} (${String(e).slice(0, 160)})` };
+  }
 }
 
 const FALLBACK_PLINK_TO_ROUND: Record<string, string> = {
@@ -979,7 +1046,22 @@ Deno.serve(async (req: Request) => {
         const items = String(bfMeta.items || '').split(',').filter(Boolean);
         const free = String(bfMeta.free || '').split(',').filter(Boolean);
         console.log('Black Friday order, delivered by hand. Mails only.', { paymentId, items });
-        if (!(await notifyBfOrder(event.data.object, items, free))) return new Response(JSON.stringify({ error: 'bf11 order mail failed' }), { status: 500 });
+        // A payment plan (a Payment Link with metadata payments=N): end it after N, then say so in the mails.
+        const payments = Math.floor(Number(bfMeta.payments || 0));
+        let extra: BfExtra | undefined;
+        if (payments > 1) {
+          const so = event.data.object;
+          const subId = String(typeof so.subscription === 'string' ? so.subscription : so.subscription?.id || '');
+          const end = await endBfPlanAfter(subId, payments);
+          const each = bfMoney(so);
+          extra = {
+            tag: `, payment 1 of ${payments}`,
+            jay: [['Payment plan', `${payments} monthly payments of ${each}. ${end.note}`],
+                  ['Subscription', subId ? `https://dashboard.stripe.com/subscriptions/${subId}` : 'none on the session']],
+            buyer: `This was payment 1 of ${payments}. The other ${payments - 1} are charged once a month, ${each} each, and stop by themselves after the last one.`,
+          };
+        }
+        if (!(await notifyBfOrder(event.data.object, items, free, extra))) return new Response(JSON.stringify({ error: 'bf11 order mail failed' }), { status: 500 });
       }
       return new Response(JSON.stringify({ received: true, skipped: `${BF_PROJECT} ${event.type}` }), { headers: { 'Content-Type': 'application/json' } });
     }
