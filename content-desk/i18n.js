@@ -323,6 +323,6 @@ export const HE = {
   "Versions for the other channels live here. The text above shows the channel you pick.": "כאן נמצאות הגרסאות לשאר הערוצים. הטקסט למעלה מציג את הערוץ שבחרת.",
   "{n} of {max} characters": "{n} מתוך {max} תווים", "too long for {ch}": "ארוך מדי ל{ch}",
   "Written by {name}, the AI writer": "נכתב על ידי {name}, הכותב ה-AI",
-  "Open ideas: {n} / {cap}": "רעיונות פתוחים: {n} / {cap}",
+  "Open ideas: {n} / {cap}": "רעיונות פתוחים: {n} / {cap}", "Expired: nobody touched it for 7 days": "פג תוקף: אף אחד לא נגע בו 7 ימים",
   "At most {cap} open ideas. An idea nobody touches for 7 days moves to Rejected.": "לכל היותר {cap} רעיונות פתוחים. רעיון שאף אחד לא נגע בו 7 ימים עובר לנדחו.",
 };

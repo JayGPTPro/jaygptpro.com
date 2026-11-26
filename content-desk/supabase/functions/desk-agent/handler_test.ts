@@ -230,7 +230,7 @@ test("add_version numbers each channel on its own and signs it as Chandler", asy
   const [row] = await sql`select body, headlines, sources from public.versions where id = ${a.version.id}`;
   assertEquals(row.body, "li one");
   assertEquals(row.headlines, [{ en: "Hook" }]);
-  assertEquals(row.sources, [{ url: "https://example.com/a", label: "", official: false }]);
+  assertEquals(row.sources, [{ url: "https://example.com/a", label: "example.com", official: false }]);
 });
 
 test("add_version on a published post adds an adaptation and leaves the post alone", async () => {

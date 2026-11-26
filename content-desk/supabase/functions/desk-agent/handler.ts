@@ -59,10 +59,13 @@ async function tokenOk(given: string, want: string): Promise<boolean> {
 
 const ROLLBACK = new Error("dry run: rolled back");
 // Runs fn in one transaction as the signed-in member `email`. dryRun rolls everything back.
-export async function asMember<T>(sql: Sql, email: string, fn: (tx: Tx) => Promise<T>, dryRun = false): Promise<T> {
+// locks: names of transaction locks to hold first (taken as the database owner, before the
+// switch, so they never depend on what the "authenticated" role may call).
+export async function asMember<T>(sql: Sql, email: string, fn: (tx: Tx) => Promise<T>, dryRun = false, locks: string[] = []): Promise<T> {
   let out: T | undefined;
   try {
     await sql.begin(async (tx) => {
+      for (const k of locks) await tx`select pg_advisory_xact_lock(hashtext(${k}))`;
       await tx`select set_config('request.jwt.claims', ${JSON.stringify({ email, role: "authenticated" })}, true)`;
       await tx`set local role authenticated`;
       const [me] = await tx`select public.is_team() as ok`;
@@ -127,7 +130,9 @@ function sources(v: unknown): Source[] {
     const o = typeof s === "string" ? { url: s } : (s ?? {}) as Record<string, unknown>;
     const url = String(o.url ?? "").trim();
     if (!/^https?:\/\/[^\s"'<>]+$/i.test(url) || url.length > 2000) throw bad(`not a link: ${url.slice(0, 80)}`);
-    return { url, label: String(o.label ?? "").trim().slice(0, 200), official: o.official === true };
+    // like the board: a link without a label is shown by its site name
+    const label = String(o.label ?? "").trim().slice(0, 200) || new URL(url).hostname.replace(/^www\./, "");
+    return { url, label, official: o.official === true };
   });
 }
 
@@ -226,9 +231,9 @@ function ideaInput(b: Body) {
   };
 }
 
+// one add_idea at a time (handle() holds this lock), so two runs cannot both take the last place
+export const IDEAS_LOCK = "desk-agent:ideas";
 async function addIdea(tx: Tx, i: ReturnType<typeof ideaInput>) {
-  // one add_idea at a time, so two runs cannot both take the last place under the cap
-  await tx`select pg_advisory_xact_lock(hashtext('desk-agent:ideas'))`;
   const expired = await expire(tx);
   const open = await openIdeas(tx);
   if (open >= IDEA_CAP) {
@@ -267,7 +272,6 @@ async function addVersion(tx: Tx, i: ReturnType<typeof versionInput>) {
   if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Channel versions go on live posts only.");
   // like the board: other channels come after the first draft, never on a bare idea
   if (p.stage === "idea") throw new AgentError(409, "This post is still an idea. Channel versions come after the first draft.");
-  await tx`select pg_advisory_xact_lock(hashtext(${`desk-agent:v:${i.postId}:${i.channel}`}))`;
   const [{ n }] = await tx`select coalesce(max(n), 0) + 1 as n from public.versions
     where post_id = ${i.postId} and channel = ${i.channel}`;
   const headlines = [...i.headlines.map((en) => ({ en })), ...i.previews.map((en) => ({ en, kind: "preview" }))];
@@ -318,10 +322,12 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     else if (action === "cap") out = await asMember(deps.sql, email, cap);
     else if (action === "add_idea") {
       const input = ideaInput(b);
-      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addIdea(tx, input), dryRun)) };
+      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addIdea(tx, input), dryRun, [IDEAS_LOCK])) };
     } else if (action === "add_version") {
       const input = versionInput(b);
-      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addVersion(tx, input), dryRun)) };
+      // the next number per post and channel, one writer at a time
+      const lock = `desk-agent:v:${input.postId}:${input.channel}`;
+      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addVersion(tx, input), dryRun, [lock])) };
     } else {
       return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea or add_version." });
     }

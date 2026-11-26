@@ -116,6 +116,8 @@ function avatar(email, size = "") {
   return `<span class="av ${size}" style="background:${color}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
+// desk_expire_ideas() rejects an idea nobody touched for 7 days with the reason "expired".
+const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired: nobody touched it for 7 days") : p.skip_reason);
 // Cards an AI writer (Chandler) wrote carry his name, so the team sees who wrote what.
 const agentBadge = (email) => (isAgent(email) ? `<span class="pill agent" title="${T("Written by {name}, the AI writer", { name: nameOf(email) })}">${esc(nameOf(email))}</span>` : "");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
@@ -458,10 +460,10 @@ async function translateMissing() {
         if (p.idea && !p.idea_he) add("posts", p.id, "idea_he", p.idea, p.author);
       }
       for (const v of S.d.versions) {
-        if (v.channel === "whatsapp_he") continue; // written in Hebrew for the Hebrew group
-        if (v.body && !v.body_he && v.channel !== "email") add("versions", v.id, "body_he", v.body, v.author);
+        const hebrew = v.channel === "whatsapp_he"; // the Hebrew group's text is written in Hebrew; its note may not be
+        if (v.body && !v.body_he && v.channel !== "email" && !hebrew) add("versions", v.id, "body_he", v.body, v.author);
         if (v.writer_note && !v.writer_note_he) add("versions", v.id, "writer_note_he", v.writer_note, v.author);
-        (v.headlines || []).forEach((h, i) => {
+        if (!hebrew) (v.headlines || []).forEach((h, i) => {
           if (h.en && !h.he) add("versions", v.id, `headline:${h.en}`, h.en, v.author);
         });
       }
@@ -1580,7 +1582,7 @@ function card(p, opts = {}) {
       ${isNew(p) ? `<div class="c-new">${esc(newLine(p))} · ${esc(ago(lastTouch(p).at))}</div>` : ""}
       ${pitch ? `<div class="c-pitch" dir="auto">${esc(pitch)}</div>` : ""}
       ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
-      ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(p.skip_reason)}</div>` : ""}
+      ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(whyRejected(p))}</div>` : ""}
       <div class="c-foot ${footQuick ? "with-q" : ""}"><span class="c-meta">${foot}</span>${footQuick}</div>
       ${quick}
     </div>
@@ -1988,7 +1990,7 @@ function drawerPost(p) {
   const acts = [];
   let say = "";
   if (!live) {
-    say = p.skip_reason ? `${T("Rejected")}: <span dir="auto">${esc(p.skip_reason)}</span>` : T("Rejected");
+    say = p.skip_reason ? `${T("Rejected")}: <span dir="auto">${esc(whyRejected(p))}</span>` : T("Rejected");
     if (owner) acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Bring it back")}</button>`);
   } else if (p.stage === "ready") {
     say = p.pinned_date ? T("Goes out {d}", { d: fmtDay(p.pinned_date) }) : T("Pick a date above.");
