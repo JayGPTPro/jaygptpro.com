@@ -105,6 +105,7 @@ function uuid(v: unknown, name: string): string {
   return v.toLowerCase();
 }
 function text(v: unknown, name: string, max: number): string {
+  if (v != null && typeof v !== "string") throw bad(`${name} must be text`);
   if (typeof v !== "string" || !v.trim()) throw bad(`${name} is required`);
   const s = v.replace(/\s+$/, "");
   if (s.length > max) throw bad(`${name} is too long (${s.length} characters, at most ${max})`);
@@ -391,7 +392,8 @@ async function addVersion(tx: Tx, i: ReturnType<typeof versionInput>) {
 
 // The reel's fields on its card: hooks, CTA, code word and the links to its files. Makes the post a reel.
 async function setReel(tx: Tx, postId: string, patch: ReelPatch) {
-  const [p] = await tx`select id, title, kind, reel, stage, status from public.posts where id = ${postId}`;
+  // for update: a board save between this read and the write below waits, so it is not overwritten
+  const [p] = await tx`select id, title, kind, reel, stage, status from public.posts where id = ${postId} for update`;
   if (!p) throw new AgentError(404, "No post with this id");
   if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Reel fields go on live posts only.");
   // a published post is Jay's: the Desk's own guard refuses the update (409)

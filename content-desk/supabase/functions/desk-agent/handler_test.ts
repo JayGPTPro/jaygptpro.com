@@ -394,6 +394,7 @@ test("extra: only the fields of that channel, a YouTube title within 100 charact
   await refused({ action: "add_version", post_id: POST + "e1", channel: "x", body: "b", extra: { comment: "x" } }, 400, /extra for x takes nothing/);
   await refused({ action: "add_version", post_id: POST + "e1", channel: "youtube", body: "b", extra: { title: "t".repeat(101) } }, 400, /too long/);
   await refused({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "b", extra: "comment" }, 400, /must be an object/);
+  await refused({ action: "add_version", post_id: POST + "e1", channel: "tiktok", body: "b", extra: { switches: ["AI info"] } }, 400, /extra.switches must be text/);
   assertEquals(await count(`select count(*) as n from public.versions`), 0);
 });
 

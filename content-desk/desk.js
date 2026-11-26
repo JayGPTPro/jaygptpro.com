@@ -23,6 +23,7 @@ const CH_LIMITS = { x: 280, threads: 500, linkedin: 3000, instagram: 2200, tikto
 // A reel (posts.kind = "reel") carries its own fields (posts.reel) and gets a caption per channel.
 // Same names as desk-agent and Chandler's reel-texts (post-texts.md).
 const REEL_CHANNELS = ["instagram", "tiktok", "youtube", "linkedin"];
+const REEL_KEYS = ["hook_a", "hook_b", "cta", "code_word", "video_url", "video_b_url", "cover_url"];
 const CTA_KEYS = { code_word: "Code word", follow: "Follow", whatsapp: "WhatsApp group", none: "No CTA" };
 // What a caption carries beside its text, per channel (versions.extra).
 const EXTRA_KEYS = {
@@ -711,9 +712,17 @@ function go(hash) {
 }
 // True while a text someone typed has not been saved.
 function isDirty() {
-  const f = app.querySelector("form[data-form=saveEdit], form[data-form=saveReel], form[data-form=createIdea], form[data-form=createDraft], form[data-form=splitDraft]");
-  if (!f) return false;
-  return [...f.querySelectorAll("textarea, input[type=text], input:not([type])")].some((el) => el.value !== el.defaultValue);
+  // every open form: the reel form and a caption can be open at the same time
+  const forms = app.querySelectorAll("form[data-form=saveEdit], form[data-form=saveReel], form[data-form=createIdea], form[data-form=createDraft], form[data-form=splitDraft]");
+  return [...forms].some((f) => [...f.querySelectorAll("textarea, input[type=text], input:not([type]), select")].some((el) =>
+    el.tagName === "SELECT" ? [...el.options].some((o) => o.selected !== o.defaultSelected) : el.value !== el.defaultValue));
+}
+// Same keys and values in any order (Postgres keeps jsonb keys in its own order).
+function sameFields(a, b) {
+  const x = a || {};
+  const y = b || {};
+  const ka = Object.keys(x).filter((k) => x[k]);
+  return ka.length === Object.keys(y).filter((k) => y[k]).length && ka.every((k) => x[k] === y[k]);
 }
 // A note or an answer that was typed and not sent.
 const halfNote = () => [...app.querySelectorAll("form[data-form=addNote] textarea, .modal textarea:not([readonly]), .modal input[name=v]")].some((el) => el.value.trim() && el.value !== el.defaultValue);
@@ -1093,6 +1102,7 @@ const A = {
   },
   editReel(id) {
     S.reelEdit = id;
+    S.reelBase = { ...reelOf(post(id)) }; // what the form opened with: only fields changed from it are saved
     render();
   },
   cancelReel() {
@@ -1104,7 +1114,7 @@ const A = {
     const p = post(form.dataset.post);
     const f = Object.fromEntries(new FormData(form));
     const reel = {};
-    for (const k of ["hook_a", "hook_b", "cta", "code_word", "video_url", "video_b_url", "cover_url"]) {
+    for (const k of REEL_KEYS) {
       const val = String(f[k] || "").trim();
       if (val) reel[k] = val;
     }
@@ -1112,9 +1122,19 @@ const A = {
       if (reel[k] && !isHttp(reel[k])) return toast("A link starts with https://", true);
     }
     if (reel.code_word && /\s/.test(reel.code_word)) return toast("The code word is one word, as said in the reel.", true);
-    if (reel.cta === "code_word" && !reel.code_word) return toast("A code word CTA needs the code word.", true);
+    const base = S.reelBase || {};
     await run(async () => {
-      await savePost(p, { kind: "reel", reel });
+      // Chandler may have set other fields while the form was open: start from the row as it is
+      // now and change only the fields edited here, as desk-agent's set_reel does
+      await freshRow("posts", p);
+      const next = { ...reelOf(p) };
+      for (const k of REEL_KEYS) {
+        if ((reel[k] || "") === (base[k] || "")) continue;
+        if (reel[k]) next[k] = reel[k];
+        else delete next[k];
+      }
+      if (next.cta === "code_word" && !next.code_word) throw new Error(t("A code word CTA needs the code word."));
+      await savePost(p, { kind: "reel", reel: next });
       S.reelEdit = null;
     }, "Saved");
   },
@@ -1258,7 +1278,7 @@ const A = {
       for (const r of live) if (!S.d.versions.some((x) => x.id === r.id)) S.d.versions.push(r);
       const top = latest(postId, channel);
       // a retry after the second step failed reuses the version that was already saved
-      const again = S.edit.saved && S.edit.saved.body === body && JSON.stringify(S.edit.saved.extra || {}) === JSON.stringify(extra) ? S.edit.saved : null;
+      const again = S.edit.saved && S.edit.saved.body === body && sameFields(S.edit.saved.extra, extra) ? S.edit.saved : null;
       const v = again || (await insertRow("versions", {
         post_id: postId, channel, n: top ? top.n + 1 : 1, body, headlines: hl, chosen, sources,
         ...(Object.keys(extra).length ? { extra } : {}),
