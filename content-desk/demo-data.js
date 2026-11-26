@@ -59,6 +59,8 @@
       { id: "d2", title: "Demo: turn reviews into bullets", category: "skill", stage: "draft", status: "changes", idea: "A Skill that turns reviews into bullets.", author: "writer@example.com", created_at: iso(-5), updated_at: iso(-1), queue_pos: 6 },
       { id: "d3", title: "Demo: the price test", category: "tip", stage: "draft", status: "approved", idea: "How to test a price without losing the Buy Box.", author: "writer@example.com", created_at: iso(-6), updated_at: iso(-0.7), queue_pos: 7 },
       // final
+      { id: "f2", title: "Demo reel: make the AI interview you", kind: "reel", category: "tip", stage: "final", status: "waiting", idea: "A reel from the post that got the most replies this week.", author: "chandler@agent.jaygptpro.com", created_at: iso(-2), updated_at: iso(-0.15), queue_pos: 7.5,
+        reel: { hook_a: "Stop asking AI for answers", hook_b: "Your ChatGPT is guessing about you", cta: "code_word", code_word: "DEMO", video_url: "https://drive.google.com/file/d/DEMO/view", video_b_url: "https://drive.google.com/file/d/DEMO-B/view" } },
       { id: "f1", title: "Demo: a new tool launched this week", category: "news", stage: "final", status: "waiting", hot: true, news_date: local(-2), tried_myself: false, idea: "A product launch from this week.", author: "writer@example.com", email_too: true, created_at: iso(-3), updated_at: iso(-0.1), queue_pos: 8 },
       // ready
       { id: "r1p", title: "Demo: reviews into bullets in one prompt", category: "tip", stage: "ready", status: "approved", pinned_date: workday(1), author: "writer@example.com", email_too: true, created_at: iso(-8), updated_at: iso(-1), queue_pos: 9 },
@@ -70,6 +72,15 @@
       { id: "p3", title: "Demo: the price test, part one", category: "news", stage: "published", status: "approved", author: "writer@example.com", published_at: iso(-9), reactions: 33, created_at: iso(-15), updated_at: iso(-9), queue_pos: 0 },
     ],
     versions: [
+      // the reel's captions, as Chandler's reel-texts writes them (made-up text)
+      { id: "vf2w", post_id: "f2", channel: "whatsapp", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-1), headlines: [], body: "The script of the demo reel goes here.", sources: [] },
+      { id: "vf2i", post_id: "f2", channel: "instagram", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-0.15), headlines: [], sources: [],
+        body: "How to get better answers from ChatGPT: make it interview you.\n\nA demo caption. You give it your goal, it asks one question at a time, then tells you what to do.\n\nComment DEMO and I'll DM you the prompt.\n\n#amazonseller #chatgpt #aiprompts",
+        extra: { comment: "That's my AI twin talking. The prompt is mine.", alt_text: "A demo avatar explains a prompt that interviews you before it answers.", dm_1: "Hey! Here's the prompt you asked for. Want it?", dm_2: "Here you go. Paste it into ChatGPT, Claude or Gemini.", switches: "AI info: on. Trial reel: no." } },
+      { id: "vf2t", post_id: "f2", channel: "tiktok", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-0.15), headlines: [], sources: [],
+        body: "ChatGPT prompt for better answers: make it interview you first. Full prompt at the link in my bio.\n#amazonseller #chatgpt", extra: { comment: "My AI twin does the talking, the prompt is mine.", switches: "AI-generated content: on. Content disclosure: on." } },
+      { id: "vf2y", post_id: "f2", channel: "youtube", n: 1, author: "chandler@agent.jaygptpro.com", created_at: iso(-0.15), headlines: [], sources: [],
+        body: "A demo description. The full prompt is pinned in the comments.\n\n#amazonseller #chatgpt", extra: { title: "Better ChatGPT Answers for Amazon Sellers: Make It Interview You", comment: "Here's the prompt. Copy it and fill in your goal.", switches: "Altered or synthetic content: Yes. Paid promotion: No." } },
       { id: "vd1a", post_id: "d1", channel: "whatsapp", n: 1, author: "writer@example.com", created_at: iso(-3),
         headlines: [{ en: "Demo: Your Reviews Already Know." }, { en: "Demo: Ask Your Reviews First." }, { en: "Demo: One Prompt Before You Rewrite." }],
         body: body("Your reviews already say what buyers worry about.\n\nPaste them into Claude and ask for the top three worries."), sources: [] },
