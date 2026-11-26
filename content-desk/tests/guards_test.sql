@@ -169,6 +169,26 @@ end $$;
 select pg_temp.check('after the expiry the same transaction is still Chandler', true);
 select pg_temp.check('a second run expires nothing', public.desk_expire_ideas() = 0);
 
+-- ---------- 4. source clicks: written by the go-clicks function only, read by the team ----------
+reset role;
+select set_config('request.jwt.claims', '', false);
+insert into public.go_clicks (src, ref_domain, visitor_hash) values ('ig', 'instagram.com', 'abcd'), ('tt', null, null);
+select pg_temp.blocked('a source code must be a short lowercase word',
+  $$insert into public.go_clicks (src) values ('Whatsapp-Group')$$, '%go_clicks_src_check%');
+
+set role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', false);
+select pg_temp.blocked('a visitor cannot read the clicks', $$select count(*) from public.go_clicks$$, '%permission denied%');
+select pg_temp.blocked('a visitor cannot write a click straight to the table',
+  $$insert into public.go_clicks (src) values ('ig')$$, '%permission denied%');
+set role authenticated;
+select pg_temp.claims('stranger@gmail.com');
+select pg_temp.check('a Google account outside the team sees no clicks', (select count(*) = 0 from public.go_clicks));
+select pg_temp.claims('denisa@example.com');
+select pg_temp.check('the team reads the clicks', (select count(*) = 2 from public.go_clicks));
+select pg_temp.blocked('a team member cannot add or change clicks',
+  $$insert into public.go_clicks (src) values ('ig')$$, '%permission denied%');
+
 reset role;
 select set_config('request.jwt.claims', '', false);
 \echo guards_test.sql: all checks passed

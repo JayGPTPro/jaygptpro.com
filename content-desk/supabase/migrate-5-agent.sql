@@ -1,5 +1,5 @@
 -- Content Desk migration 5 (26.11.2026): Chandler writes as a team member, more channels as
--- plain text, and a cap of 7 open ideas with a 7-day expiry.
+-- plain text, a cap of 7 open ideas with a 7-day expiry, and clicks on the /go/ source links.
 -- Run once in the SQL editor of "jaygptpro-team" (NOT the challenge project), BEFORE the new
 -- front end goes live. Safe to run twice.
 
@@ -57,6 +57,26 @@ begin
 end $$;
 revoke all on function public.desk_expire_ideas() from public, anon;
 grant execute on function public.desk_expire_ideas() to authenticated;
+
+-- 4. Clicks on the source links jaygptpro.com/go/<src>/ (ig, tt, yt, li, fb, x, th, email), so the
+--    weekly report can count group joins by where they came from. A table of its own, apart from
+--    the hiring links, which live in the challenge project and measure candidates.
+--    Only the go-clicks function writes here; the team can read it.
+create table if not exists public.go_clicks (
+  id           bigint generated always as identity primary key,
+  src          text not null check (src ~ '^[a-z]{1,12}$'),
+  created_at   timestamptz not null default now(),
+  ref_domain   text,                 -- the referring site's domain only, never the full address
+  is_bot       boolean not null default false,
+  is_repeat    boolean not null default false,
+  visitor_hash text                  -- tells repeat visitors apart within one day, nothing more
+);
+create index if not exists go_clicks_src_day_idx on public.go_clicks (src, created_at);
+alter table public.go_clicks enable row level security;
+revoke all on public.go_clicks from anon, authenticated;
+grant select on public.go_clicks to authenticated;
+drop policy if exists team_read on public.go_clicks;
+create policy team_read on public.go_clicks for select to authenticated using (public.is_team());
 
 commit;
 
