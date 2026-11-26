@@ -109,13 +109,14 @@ test("list: live posts newest first, rejected and old published only with all", 
   await refused({ action: "list", stage: "review" }, 400, /stage must be one of/);
 });
 
-test("list expires ideas nobody touched for 7 days, and says how many", async () => {
+test("list expires ideas nobody touched for 7 days and names them; an approved one stays", async () => {
   await reset();
-  await post("01", "idea", "waiting", { daysOld: 8 });
+  await post("01", "idea", "waiting", { daysOld: 8, title: "Old news" });
   await post("02", "idea", "waiting", { daysOld: 3 });
+  await post("03", "idea", "approved", { daysOld: 10, title: "Jay said yes" });
   const j = await ok({ action: "list" });
-  assertEquals(j.expired, 1);
-  assertEquals(j.posts.map((p: { id: string }) => p.id.slice(-2)), ["02"]);
+  assertEquals(j.expired, [{ id: POST + "01", title: "Old news" }]);
+  assertEquals(j.posts.map((p: { id: string }) => p.id.slice(-2)), ["02", "03"]);
   const [gone] = await sql`select status, skip_reason from public.posts where id = ${POST + "01"}`;
   assertEquals([gone.status, gone.skip_reason], ["rejected", "expired"]);
 });
@@ -161,7 +162,7 @@ test("add_idea dry run checks everything and writes nothing", async () => {
   await reset();
   await post("01", "idea", "waiting", { daysOld: 9 });
   const j = await ok({ action: "add_idea", title: "Try me", dry_run: true });
-  assertEquals([j.dry_run, j.post.status, j.expired], [true, "waiting", 1]);
+  assertEquals([j.dry_run, j.post.status, j.expired.length], [true, "waiting", 1]);
   assertEquals(await count(`select count(*) as n from public.posts where title = 'Try me'`), 0);
   // the expiry inside the dry run is rolled back too
   assertEquals(await count(`select count(*) as n from public.posts where status = 'rejected'`), 0);
@@ -184,7 +185,14 @@ test("a stale idea expires first and frees its place under the cap", async () =>
   await reset();
   for (let i = 1; i <= IDEA_CAP; i++) await post(`0${i}`, "idea", "waiting", { daysOld: i === 1 ? 8 : 1 });
   const j = await ok({ action: "add_idea", title: "replaces the stale one" });
-  assertEquals([j.expired, j.open_ideas], [1, IDEA_CAP]);
+  assertEquals([j.expired.length, j.open_ideas], [1, IDEA_CAP]);
+});
+
+test("a retry of an idea that took the last place says it is already there, not that the column is full", async () => {
+  await reset();
+  for (let i = 1; i < IDEA_CAP; i++) await post(`0${i}`, "idea", "waiting", { daysOld: 1 });
+  await ok({ action: "add_idea", title: "The last place" }); // its answer got lost on the way
+  await refused({ action: "add_idea", title: "The last place" }, 409, /already exists/);
 });
 
 test("two runs at once cannot both take the last place: the second waits, then sees a full column", async () => {
@@ -249,6 +257,25 @@ test("an email version keeps subject lines and preview texts apart", async () =>
   const [row] = await sql`select headlines from public.versions where id = ${j.version.id}`;
   assertEquals(row.headlines, [{ en: "Subject" }, { en: "Preview", kind: "preview" }]);
   await refused({ action: "add_version", post_id: POST + "01", channel: "x", body: "b", previews: ["p"] }, 400, /email only/);
+});
+
+test("an email version marks the post 'also an email', like the board, but never a published post", async () => {
+  await reset();
+  await post("01", "final", "waiting");
+  await post("02", "published", "approved", { daysOld: 1 });
+  await ok({ action: "add_version", post_id: POST + "01", channel: "email", body: "<p>a</p>" });
+  await ok({ action: "add_version", post_id: POST + "02", channel: "email", body: "<p>b</p>" });
+  const rows = await sql`select id, email_too from public.posts order by id`;
+  assertEquals(rows.map((r) => r.email_too), [true, false]);
+});
+
+test("the same text again is refused, so a retry never adds a twin version", async () => {
+  await reset();
+  await post("01", "ready", "approved");
+  await ok({ action: "add_version", post_id: POST + "01", channel: "x", body: "Same text" });
+  await refused({ action: "add_version", post_id: POST + "01", channel: "x", body: "Same text\n\n" }, 409, /v1\) already has exactly this text/);
+  await ok({ action: "add_version", post_id: POST + "01", channel: "threads", body: "Same text" });
+  assertEquals(await count(`select count(*) as n from public.versions`), 2);
 });
 
 test("add_version refuses the WhatsApp post itself, unknown channels, ideas, rejected and missing posts", async () => {

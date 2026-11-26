@@ -319,10 +319,10 @@ export const HE = {
   "A note on {name}": "הערה על {name}", "It shows next to the picture and in the notes.": "ההערה תופיע ליד התמונה וגם ברשימת ההערות.",
   "Note": "הערה", "Use this one": "לבחור בזו", "Chosen. The others are hidden.": "נבחרה. השאר הוסתרו.",
   // ---- 26.11: Chandler, more channels, the open-ideas cap
-  "X": "X", "Facebook": "פייסבוק", "Threads": "Threads", "WhatsApp (Hebrew)": "וואטסאפ בעברית",
+  "X": "איקס", "Facebook": "פייסבוק", "Threads": "ת׳רדס", "WhatsApp (Hebrew)": "וואטסאפ בעברית",
   "Versions for the other channels live here. The text above shows the channel you pick.": "כאן נמצאות הגרסאות לשאר הערוצים. הטקסט למעלה מציג את הערוץ שבחרת.",
   "{n} of {max} characters": "{n} מתוך {max} תווים", "too long for {ch}": "ארוך מדי ל{ch}",
   "Written by {name}, the AI writer": "נכתב על ידי {name}, הכותב ה-AI",
-  "Open ideas: {n} / {cap}": "רעיונות פתוחים: {n} / {cap}", "Expired: nobody touched it for 7 days": "פג תוקף: אף אחד לא נגע בו 7 ימים",
-  "At most {cap} open ideas. An idea nobody touches for 7 days moves to Rejected.": "לכל היותר {cap} רעיונות פתוחים. רעיון שאף אחד לא נגע בו 7 ימים עובר לנדחו.",
+  "Open ideas: {n} / {cap}": "רעיונות פתוחים: {n} מתוך {cap}", "Expired after 7 days with no activity": "פג תוקף אחרי 7 ימים בלי פעילות", "Headline": "כותרת",
+  "Chandler adds ideas only while fewer than {cap} are open. Each time he checks the board, an idea that waited 7 days with no activity moves to Rejected.": "צ׳נדלר מוסיף רעיונות רק כשפתוחים פחות מ-{cap}. בכל פעם שהוא בודק את הלוח, רעיון שחיכה 7 ימים בלי פעילות עובר לנדחו.",
 };

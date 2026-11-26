@@ -137,9 +137,10 @@ function sources(v: unknown): Source[] {
 }
 
 // ---------- reads ----------
-async function expire(tx: Tx): Promise<number> {
-  const [r] = await tx`select public.desk_expire_ideas() as n`;
-  return Number(r.n) || 0;
+// Ideas that waited 7 days untouched move to Rejected ("expired"); returns which ones.
+async function expire(tx: Tx): Promise<Array<{ id: string; title: string }>> {
+  const rows = await tx`select post_id, post_title from public.desk_expire_ideas()`;
+  return rows.map((r) => ({ id: r.post_id, title: r.post_title }));
 }
 async function openIdeas(tx: Tx): Promise<number> {
   const [r] = await tx`select count(*)::int as n from public.posts where stage = 'idea' and status <> 'rejected'`;
@@ -235,13 +236,14 @@ function ideaInput(b: Body) {
 export const IDEAS_LOCK = "desk-agent:ideas";
 async function addIdea(tx: Tx, i: ReturnType<typeof ideaInput>) {
   const expired = await expire(tx);
+  // the title first: a retry after a lost answer must say "already there", not "column full"
+  const [dup] = await tx`select id from public.posts
+    where stage = 'idea' and status <> 'rejected' and lower(title) = lower(${i.title}) limit 1`;
+  if (dup) throw new AgentError(409, `An open idea with this title already exists: ${dup.id}`);
   const open = await openIdeas(tx);
   if (open >= IDEA_CAP) {
     throw new AgentError(409, `The ideas column is full: ${open} open ideas, the cap is ${IDEA_CAP}. Wait until Jay answers some or old ones expire.`);
   }
-  const [dup] = await tx`select id from public.posts
-    where stage = 'idea' and status <> 'rejected' and lower(title) = lower(${i.title}) limit 1`;
-  if (dup) throw new AgentError(409, `An open idea with this title already exists: ${dup.id}`);
   const [post] = await tx`
     insert into public.posts (title, idea, category, score, covered_before, news_date, stage)
     values (${i.title}, ${i.idea}, ${i.category}, ${i.score}, ${i.covered_before}, ${i.news_date}::date, 'idea')
@@ -272,13 +274,22 @@ async function addVersion(tx: Tx, i: ReturnType<typeof versionInput>) {
   if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Channel versions go on live posts only.");
   // like the board: other channels come after the first draft, never on a bare idea
   if (p.stage === "idea") throw new AgentError(409, "This post is still an idea. Channel versions come after the first draft.");
-  const [{ n }] = await tx`select coalesce(max(n), 0) + 1 as n from public.versions
-    where post_id = ${i.postId} and channel = ${i.channel}`;
+  const [top] = await tx`select n, body from public.versions
+    where post_id = ${i.postId} and channel = ${i.channel} order by n desc limit 1`;
+  // a retry after a lost answer must not add the same text again as the next version
+  if (top && top.body === i.body) {
+    throw new AgentError(409, `The latest ${i.channel} version (v${top.n}) already has exactly this text.`);
+  }
+  const n = (top?.n ?? 0) + 1;
   const headlines = [...i.headlines.map((en) => ({ en })), ...i.previews.map((en) => ({ en, kind: "preview" }))];
   const [v] = await tx`
     insert into public.versions (post_id, channel, n, body, headlines, sources, writer_note)
     values (${i.postId}, ${i.channel}, ${n}, ${i.body}, ${tx.json(headlines)}, ${tx.json(i.sources)}, ${i.writer_note})
     returning id, post_id, channel, n, author, created_at`;
+  // like the board: an email version marks the post "also an email" (not once it is published)
+  if (i.channel === "email" && p.stage !== "published") {
+    await tx`update public.posts set email_too = true where id = ${i.postId} and not email_too`;
+  }
   return { post: { id: p.id, title: p.title, stage: p.stage, status: p.status }, version: v };
 }
 

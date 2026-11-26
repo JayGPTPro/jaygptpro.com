@@ -117,7 +117,7 @@ function avatar(email, size = "") {
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
 // desk_expire_ideas() rejects an idea nobody touched for 7 days with the reason "expired".
-const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired: nobody touched it for 7 days") : p.skip_reason);
+const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired after 7 days with no activity") : p.skip_reason);
 // Cards an AI writer (Chandler) wrote carry his name, so the team sees who wrote what.
 const agentBadge = (email) => (isAgent(email) ? `<span class="pill agent" title="${T("Written by {name}, the AI writer", { name: nameOf(email) })}">${esc(nameOf(email))}</span>` : "");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
@@ -318,13 +318,14 @@ function splitEmoji(h) {
   const m = String(h || "").trim().match(/^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})[️‍⃣\p{Extended_Pictographic}\p{Emoji_Modifier}]*)\s*(.*)$/u);
   return m ? [m[1], m[2]] : ["", String(h || "").trim()];
 }
-function composeWhatsApp(p, v = latest(p.id, "whatsapp")) {
+// signed: the English group's signature goes under the post (the Hebrew group signs in its own text)
+function composeWhatsApp(p, v = latest(p.id, "whatsapp"), signed = true) {
   if (!v) return "";
   const [emoji, text] = splitEmoji(headlineOf(p, v).en);
   const clean = text.replace(/^\*+|\*+$/g, "").trim();
   const head = clean ? `${emoji ? emoji + " " : ""}*${clean}*` : "";
   const body = (v.body || "").trim();
-  const sig = String((setting("signature", {}) || {}).text || "").trim();
+  const sig = signed ? String((setting("signature", {}) || {}).text || "").trim() : "";
   let out = head ? `${head}\n\n${body}` : body;
   if (sig && !/chat\.whatsapp\.com/.test(body)) out += `\n\n${sig}`;
   return out;
@@ -335,12 +336,17 @@ function composeChannel(p, ch, v = latest(p.id, ch)) {
   const h = headlineOf(p, v).en;
   // an HTML email has its own copy buttons; here only the subject line makes sense
   if (ch === "email") return looksHtml(v.body) ? h : `${h ? `Subject: ${h}\n\n` : ""}${v.body || ""}`.trim();
-  // the other channels are plain text: a headline only if the version has one, never the working title
-  return [subjectsOf(v).length ? h : "", v.body].filter(Boolean).join("\n\n").trim();
+  // the other channels: a headline only if the version has one, never the working title
+  if (!subjectsOf(v).length) return (v.body || "").trim();
+  if (ch === "whatsapp_he") return composeWhatsApp(p, v, false); // a WhatsApp post: *bold* headline, no English signature
+  return [h, v.body].filter(Boolean).join("\n\n").trim();
 }
 // Characters as the text will be pasted, and the channel's limit when it has one.
+// X counts every link as 23 characters, whatever its length.
 function charCount(p, ch, v) {
-  const n = [...composeChannel(p, ch, v)].length;
+  let text = composeChannel(p, ch, v);
+  if (ch === "x") text = text.replace(/https?:\/\/\S+/g, "x".repeat(23));
+  const n = [...text].length;
   const media = assetsOf(p.id).some((a) => isMedia(a) && a.status !== "replaced");
   const max = CH_LIMITS[ch] || (ch.startsWith("whatsapp") && media ? CAPTION_LIMIT : 0);
   return { n, max, over: !!max && n > max };
@@ -1339,7 +1345,7 @@ const A = {
     const p = post(pid);
     const v = latest(pid, ch);
     // before Ready the copy is for reading and consulting, so it takes the writer's pick or the first headline
-    if (ch === "whatsapp" && p.stage === "ready" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
+    if (ch.startsWith("whatsapp") && p.stage === "ready" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
     const text = composeChannel(p, ch);
     if (!text) return toast("Nothing to copy yet.", true);
     copyText(text, ch === "whatsapp" ? "Copied for WhatsApp" : "Copied");
@@ -1622,7 +1628,7 @@ function viewBoard() {
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
   // the whole column, whatever the filters: the same count desk-agent holds Chandler to
   const nIdeas = S.d.posts.filter((p) => p.stage === "idea" && p.status !== "rejected").length;
-  const capLine = `<div class="capline ${nIdeas >= IDEA_CAP ? "full" : ""}" title="${T("At most {cap} open ideas. An idea nobody touches for 7 days moves to Rejected.", { cap: IDEA_CAP })}">${T("Open ideas: {n} / {cap}", { n: nIdeas, cap: IDEA_CAP })}</div>`;
+  const capLine = `<div class="capline ${nIdeas >= IDEA_CAP ? "full" : ""}" title="${T("Chandler adds ideas only while fewer than {cap} are open. Each time he checks the board, an idea that waited 7 days with no activity moves to Rejected.", { cap: IDEA_CAP })}">${T("Open ideas: {n} / {cap}", { n: nIdeas, cap: IDEA_CAP })}</div>`;
   const chip = (key, n, one, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(n === 1 ? one : label)}</button>`;
   return `<div class="boardbar">
       <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit|one", "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waits for Jay", "waiting for Jay", "c-wait")}${chip("changes", nChg, "needs changes", "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date|one", "ready without a date", "c-date")}</div>
@@ -1886,8 +1892,9 @@ function drawerPost(p) {
       ? T("{n} characters with an image. Desktop WhatsApp can cut a caption after {max}.", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() })
       : `${cc.max ? T("{n} of {max} characters", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() }) : T("{n} characters", { n: cc.n.toLocaleString() })}${cc.over ? ` · ${T("too long for {ch}", { ch: chLabel(ch) })}` : ""}`;
     const countRow = `<div class="chcount ${cc.over ? "bad" : ""}"><span>${countLine}</span>${copyHere ? `<span class="sp"></span><button class="btn sm go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">⧉ ${T("Copy for {ch}", { ch: chLabel(ch) })}</button>` : ""}</div>`;
-    // X or Threads text often has no headline: then the section is left out instead of asking for three
-    const hlSec = plain && !nH ? "" : `<section class="sec"><h3>${T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
+    // X or Threads text often has no headline: then one small link instead of a section asking for three
+    const addHl = isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Headline")}</button>` : "";
+    const hlSec = plain && !nH ? (addHl ? `<div class="hl-add">${addHl}</div>` : "") : `<section class="sec"><h3>${T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
       ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
       ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>`;
     textSec = `${hlSec}

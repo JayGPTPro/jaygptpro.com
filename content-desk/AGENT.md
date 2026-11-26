@@ -4,7 +4,9 @@ Chandler, the content AI employee, is a writer on the Desk as `chandler@agent.ja
 He cannot sign in with Google, so he calls one narrow endpoint, `desk-agent`, with his own secret.
 Every call runs inside the database as that writer, so the Desk rules hold for him exactly as for
 Denisa: he cannot approve, move a card to another column, change a published post, or touch the
-WhatsApp text after Jay approved it. His cards carry a small "Chandler" badge on the board.
+main WhatsApp text after Jay approved it. His cards carry a small "Chandler" badge on the board.
+Like the email today, the other channel versions (the Hebrew group included) stay open after
+Jay's approval: they are adaptations written once the post is approved.
 
 ## Calling it
 
@@ -23,7 +25,7 @@ From Chandler's folder the client does this for you: `python3 scripts/desk.py li
 | action | what it does | fields |
 |---|---|---|
 | `list` | Posts on the board, latest change first. Rejected posts and posts published more than 14 days ago only with `all`. | `stage`, `all`, `limit` (default 100) |
-| `queue` | What waits on Jay: ideas, drafts and finals waiting for his answer (oldest first), and Ready posts without a date. | |
+| `queue` | What waits on Jay: ideas, drafts and finals waiting for his answer (oldest first), and Ready posts without a date. `waiting_days` counts from the post's last change. | |
 | `show` | One post with every version of every channel and its open notes. | `post_id` |
 | `cap` | Open ideas against the cap of 7, and how many more fit. | |
 | `add_idea` | A new card in the ideas column, waiting for Jay. | `title` (required), `idea`, `category` (news, tip, skill, deals, other; default tip), `score` (1 to 10), `covered_before`, `news_date` (2026-11-26), `dry_run` |
@@ -37,14 +39,20 @@ default and writes only with `--apply`.
 
 ## Rules the endpoint adds on top of the database
 
-- At most 7 open ideas (in the ideas column and not rejected). `add_idea` is refused at 7.
-- An idea nobody touched for 7 days moves to Rejected with the reason "expired". A note, a version
-  or a file counts as a touch, a translation does not, and an idea with a planned date still ahead
-  stays. This runs on every `list`, `queue`, `cap` and `add_idea`.
-- An open idea with the same title is refused, so a retry after a network error never doubles a card.
+- At most 7 open ideas (in the ideas column and not rejected). `add_idea` is refused at 7. The
+  board shows the count; people can still add an idea there.
+- An idea that waits (for Jay's answer, or for a fix after his notes) with no activity for 7 days
+  moves to Rejected with the reason "expired". A note, a version or a file counts as activity, a
+  translation does not. An idea Jay approved never expires, nor one with a planned date still ahead.
+  This runs on every `list`, `queue`, `cap` and `add_idea` (so those calls can write), and the
+  answer lists the expired ideas in `expired` (id and title) so Chandler can tell Jay. Jay brings
+  one back with "Bring it back". If nothing calls the endpoint, nothing expires.
+- Safe to retry: an open idea with the same title is refused, and so is a version whose text is
+  exactly the channel's latest one.
 - No `whatsapp` channel. The WhatsApp text is the post itself: its first draft and final move the
   card and go to Jay, so they are written on the board.
 - Channel versions go on a post after its first draft, never on a bare idea or a rejected post.
+  An email version also marks the post "also an email", as the board does (not once published).
 
 ## Answers
 

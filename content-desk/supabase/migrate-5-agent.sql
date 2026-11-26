@@ -29,31 +29,37 @@ on conflict (email) do nothing;
 
 -- 3. An idea nobody touched for 7 days goes to Rejected with the reason "expired", so the
 --    ideas column (at most 7 open ideas) never fills up with old news.
+--    Only ideas that wait (for Jay's answer, or for a fix after his notes) expire: an idea Jay
+--    approved stays until someone writes it or Jay decides otherwise.
 --    Touched: the post itself changed (a translation does not count), or someone added a note,
 --    a version or a file. An idea with a planned date that is still ahead stays.
---    Runs for any team member; desk-agent calls it before it lists or adds ideas.
-create or replace function public.desk_expire_ideas() returns int
+--    Runs for any team member and returns the ideas it expired; desk-agent calls it before it
+--    lists or adds ideas, so Chandler can tell Jay which ones went.
+drop function if exists public.desk_expire_ideas();
+create function public.desk_expire_ideas() returns table (post_id uuid, post_title text)
 language plpgsql security definer set search_path = public as $$
 declare
   claims text := current_setting('request.jwt.claims', true);
   today date := (now() at time zone 'Asia/Jerusalem')::date;
-  c int;
 begin
   if not public.is_team() then raise exception 'Not a team member'; end if;
   -- the expiry is nobody's edit: no "updated by" on the card and no "new" mark for the team
   perform set_config('request.jwt.claims', '', true);
-  update public.posts p set status = 'rejected', skip_reason = 'expired'
-  where p.stage = 'idea' and p.status <> 'rejected'
-    and (p.pinned_date is null or p.pinned_date < today)
-    and greatest(
-          p.updated_at,
-          (select max(greatest(n.created_at, n.updated_at)) from public.notes n where n.post_id = p.id),
-          (select max(v.created_at) from public.versions v where v.post_id = p.id),
-          (select max(a.created_at) from public.assets a where a.post_id = p.id)
-        ) < now() - interval '7 days';
-  get diagnostics c = row_count;
+  return query
+    with gone as (
+      update public.posts p set status = 'rejected', skip_reason = 'expired'
+      where p.stage = 'idea' and p.status in ('waiting', 'changes')
+        and (p.pinned_date is null or p.pinned_date < today)
+        and greatest(
+              p.updated_at,
+              (select max(greatest(n.created_at, n.updated_at)) from public.notes n where n.post_id = p.id),
+              (select max(v.created_at) from public.versions v where v.post_id = p.id),
+              (select max(a.created_at) from public.assets a where a.post_id = p.id)
+            ) < now() - interval '7 days'
+      returning p.id, p.title
+    )
+    select gone.id, gone.title from gone order by gone.title;
   perform set_config('request.jwt.claims', coalesce(claims, ''), true);
-  return c;
 end $$;
 revoke all on function public.desk_expire_ideas() from public, anon;
 grant execute on function public.desk_expire_ideas() to authenticated;

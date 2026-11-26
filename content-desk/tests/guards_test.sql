@@ -125,7 +125,8 @@ insert into public.posts (id, title, stage, status, author, created_at, updated_
   ('00000000-0000-0000-0000-00000000e008', 'stale draft',               'draft','waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
   ('00000000-0000-0000-0000-00000000e009', 'stale idea, recent version','idea', 'changes',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
   ('00000000-0000-0000-0000-00000000e010', 'stale idea, recent file',   'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e011', 'stale idea, old note',      'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null);
+  ('00000000-0000-0000-0000-00000000e011', 'stale idea, old note',      'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
+  ('00000000-0000-0000-0000-00000000e012', 'stale idea sent back',      'idea', 'changes',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null);
 insert into public.notes (post_id, body, author, created_at, updated_at) values
   ('00000000-0000-0000-0000-00000000e003', 'still on it', 'jay@example.com', now() - interval '2 days', now() - interval '2 days'),
   ('00000000-0000-0000-0000-00000000e011', 'old note', 'jay@example.com', now() - interval '8 days', now() - interval '8 days');
@@ -144,17 +145,19 @@ select pg_temp.blocked('a Google account outside the team cannot run the expiry'
   $$select public.desk_expire_ideas()$$, '%Not a team member%');
 
 select pg_temp.claims('chandler@agent.jaygptpro.com');
-create temp table expired as select public.desk_expire_ideas() as n;
-select pg_temp.check('four stale ideas expire (waiting, date passed, approved, old note)', (select n = 4 from expired));
+create temp table expired as select * from public.desk_expire_ideas();
+select pg_temp.check('four stale ideas expire (waiting, date passed, old note, sent back) and come back by title',
+  (select array_agg(post_title order by post_title) = array['stale idea sent back', 'stale idea, date passed', 'stale idea, old note', 'stale waiting idea'] from expired));
 select pg_temp.check('the expired ones are rejected with the reason "expired"',
   (select bool_and(status = 'rejected' and skip_reason = 'expired') and count(*) = 4 from public.posts
    where id in ('00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-00000000e005',
-                '00000000-0000-0000-0000-00000000e006', '00000000-0000-0000-0000-00000000e011')));
-select pg_temp.check('the rest stay as they were',
-  (select bool_and(status <> 'rejected') and count(*) = 6 from public.posts
+                '00000000-0000-0000-0000-00000000e011', '00000000-0000-0000-0000-00000000e012')));
+select pg_temp.check('the rest stay as they were, an idea Jay approved included',
+  (select bool_and(status <> 'rejected') and count(*) = 7 from public.posts
    where id in ('00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003',
-                '00000000-0000-0000-0000-00000000e004', '00000000-0000-0000-0000-00000000e008',
-                '00000000-0000-0000-0000-00000000e009', '00000000-0000-0000-0000-00000000e010')));
+                '00000000-0000-0000-0000-00000000e004', '00000000-0000-0000-0000-00000000e006',
+                '00000000-0000-0000-0000-00000000e008', '00000000-0000-0000-0000-00000000e009',
+                '00000000-0000-0000-0000-00000000e010')));
 select pg_temp.check('an idea Jay already rejected keeps his reason',
   (select skip_reason = 'Not now' from public.posts where id = '00000000-0000-0000-0000-00000000e007'));
 select pg_temp.check('the expiry is nobody''s edit: no name in updated_by, updated_at is now',
@@ -167,7 +170,7 @@ do $$ begin
   end if;
 end $$;
 select pg_temp.check('after the expiry the same transaction is still Chandler', true);
-select pg_temp.check('a second run expires nothing', public.desk_expire_ideas() = 0);
+select pg_temp.check('a second run expires nothing', (select count(*) = 0 from public.desk_expire_ideas()));
 
 -- ---------- 4. source clicks: written by the go-clicks function only, read by the team ----------
 reset role;
