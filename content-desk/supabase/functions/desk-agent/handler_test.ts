@@ -1,9 +1,9 @@
-// Runs the REAL handler against a real Postgres that has the Desk schema and migrations 5 and 6
+// Runs the REAL handler against a real Postgres that has the Desk schema and migrations 5, 6 and 7
 // (content-desk/tests/run.sh builds one and sets DESK_TEST_DB_URL). No database mock: the
 // writer rules under test are the triggers and policies themselves.
 import { assert, assertEquals, assertMatch } from "jsr:@std/assert@1";
 import postgres from "npm:postgres@3.4.4";
-import { AGENT_EMAIL, asMember, handle, IDEA_CAP } from "./handler.ts";
+import { AGENT_EMAIL, asMember, handle } from "./handler.ts";
 
 const DB = Deno.env.get("DESK_TEST_DB_URL");
 const TOKEN = "t".repeat(40);
@@ -21,10 +21,10 @@ async function reset() {
     on conflict (email) do update set active = true, role = excluded.role`;
 }
 // a post as the database owner would insert it (no trigger limits), with ages in days
-async function post(id: string, stage: string, status: string, o: { title?: string; daysOld?: number; author?: string; pinned?: string } = {}) {
+async function post(id: string, stage: string, status: string, o: { title?: string; daysOld?: number; author?: string; pinned?: string; expires?: string; kind?: string } = {}) {
   const at = new Date(Date.now() - (o.daysOld ?? 0) * 86400000);
-  await sql`insert into public.posts (id, title, stage, status, author, created_at, updated_at, pinned_date)
-    values (${POST + id}, ${o.title ?? `post ${id}`}, ${stage}, ${status}, ${o.author ?? "denisa@example.com"}, ${at}, ${at}, ${o.pinned ?? null})`;
+  await sql`insert into public.posts (id, title, stage, status, author, created_at, updated_at, pinned_date, expires_on, kind)
+    values (${POST + id}, ${o.title ?? `post ${id}`}, ${stage}, ${status}, ${o.author ?? "denisa@example.com"}, ${at}, ${at}, ${o.pinned ?? null}, ${o.expires ?? null}, ${o.kind ?? "text"})`;
 }
 function call(body: unknown, token = TOKEN, deps: { email?: string } = {}) {
   const req = new Request("http://x/", {
@@ -109,16 +109,19 @@ test("list: live posts newest first, rejected and old published only with all", 
   await refused({ action: "list", stage: "review" }, 400, /stage must be one of/);
 });
 
-test("list expires ideas nobody touched for 7 days and names them; an approved one stays", async () => {
+test("list expires only ideas whose end date passed, and names them; nothing else ever expires", async () => {
   await reset();
-  await post("01", "idea", "waiting", { daysOld: 8, title: "Old news" });
-  await post("02", "idea", "waiting", { daysOld: 3 });
-  await post("03", "idea", "approved", { daysOld: 10, title: "Jay said yes" });
+  await post("01", "idea", "waiting", { daysOld: 1, title: "Black Friday deals", expires: "2020-11-27" });
+  await post("02", "idea", "waiting", { daysOld: 300, title: "Old, no end date" });
+  await post("03", "idea", "approved", { daysOld: 1, title: "Jay said yes, date passed", expires: "2020-01-01" });
+  await post("04", "idea", "waiting", { daysOld: 1, title: "Ends in the future", expires: "2099-01-01" });
+  await post("05", "draft", "waiting", { daysOld: 1, title: "A draft, date passed", expires: "2020-01-01" });
   const j = await ok({ action: "list" });
-  assertEquals(j.expired, [{ id: POST + "01", title: "Old news" }]);
-  assertEquals(j.posts.map((p: { id: string }) => p.id.slice(-2)), ["02", "03"]);
+  assertEquals(j.expired.map((e: { title: string }) => e.title), ["Black Friday deals", "Jay said yes, date passed"]);
+  assertEquals(j.posts.map((p: { id: string }) => p.id.slice(-2)).sort(), ["02", "04", "05"]);
   const [gone] = await sql`select status, skip_reason from public.posts where id = ${POST + "01"}`;
   assertEquals([gone.status, gone.skip_reason], ["rejected", "expired"]);
+  assertEquals(j.posts.find((p: { id: string }) => p.id === POST + "04").expires_on, "2099-01-01");
 });
 
 test("queue: what waits on Jay, oldest first, and Ready posts without a date", async () => {
@@ -153,14 +156,14 @@ test("show: the post, every version and only the open notes", async () => {
 test("add_idea: Chandler's idea lands in the ideas column, waiting for Jay", async () => {
   await reset();
   const j = await ok({ action: "add_idea", title: "  A new idea  ", idea: "why", category: "news", score: 8, covered_before: "no", news_date: "2026-11-25" });
-  assertEquals([j.post.stage, j.post.status, j.post.author, j.post.title, j.open_ideas], ["idea", "waiting", AGENT_EMAIL, "A new idea", 1]);
+  assertEquals([j.post.stage, j.post.status, j.post.author, j.post.title], ["idea", "waiting", AGENT_EMAIL, "A new idea"]);
   const [row] = await sql`select category, score, covered_before, news_date::text as d from public.posts where id = ${j.post.id}`;
   assertEquals([row.category, row.score, row.covered_before, row.d], ["news", 8, "no", "2026-11-25"]);
 });
 
 test("add_idea dry run checks everything and writes nothing", async () => {
   await reset();
-  await post("01", "idea", "waiting", { daysOld: 9 });
+  await post("01", "idea", "waiting", { daysOld: 1, expires: "2020-01-01" });
   const j = await ok({ action: "add_idea", title: "Try me", dry_run: true });
   assertEquals([j.dry_run, j.post.status, j.expired.length], [true, "waiting", 1]);
   assertEquals(await count(`select count(*) as n from public.posts where title = 'Try me'`), 0);
@@ -168,52 +171,31 @@ test("add_idea dry run checks everything and writes nothing", async () => {
   assertEquals(await count(`select count(*) as n from public.posts where status = 'rejected'`), 0);
 });
 
-test(`add_idea is refused at ${IDEA_CAP} open ideas, rejected ones do not count`, async () => {
+test("no cap: add_idea works with 30 open ideas, and the cap action is gone", async () => {
   await reset();
-  for (let i = 1; i <= IDEA_CAP; i++) await post(`0${i}`, "idea", i === 1 ? "approved" : "waiting", { daysOld: 1 });
-  await post("10", "idea", "rejected", { daysOld: 1 });
-  await refused({ action: "add_idea", title: "one too many" }, 409, /full: 7 open ideas/);
-  assertEquals(await count(`select count(*) as n from public.posts where title = 'one too many'`), 0);
-  assertEquals((await ok({ action: "cap" })).room, 0);
-  await sql`update public.posts set status = 'rejected' where id = ${POST + "02"}`;
-  const c = await ok({ action: "cap" });
-  assertEquals([c.open_ideas, c.cap, c.room], [IDEA_CAP - 1, IDEA_CAP, 1]);
-  await ok({ action: "add_idea", title: "fits now" });
+  for (let i = 10; i < 40; i++) await post(`${i}`, "idea", "waiting", { daysOld: 1 });
+  const j = await ok({ action: "add_idea", title: "the 31st idea" });
+  assertEquals([j.post.stage, j.open_ideas, j.cap], ["idea", undefined, undefined]);
+  assertEquals(await count(`select count(*) as n from public.posts where stage = 'idea' and status <> 'rejected'`), 31);
+  await refused({ action: "cap" }, 400, /Unknown action/);
 });
 
-test("a stale idea expires first and frees its place under the cap", async () => {
+test("expires_on: add_idea sets it, update changes and clears it, a bad date is a 400", async () => {
   await reset();
-  for (let i = 1; i <= IDEA_CAP; i++) await post(`0${i}`, "idea", "waiting", { daysOld: i === 1 ? 8 : 1 });
-  const j = await ok({ action: "add_idea", title: "replaces the stale one" });
-  assertEquals([j.expired.length, j.open_ideas], [1, IDEA_CAP]);
+  const j = await ok({ action: "add_idea", title: "Black Friday prompt", expires_on: "2099-11-28" });
+  assertEquals(j.post.expires_on, "2099-11-28");
+  const u = await ok({ action: "update", post_id: j.post.id, expires_on: "2099-12-01" });
+  assertEquals(u.post.expires_on, "2099-12-01");
+  assertEquals((await ok({ action: "update", post_id: j.post.id, expires_on: null })).post.expires_on, null);
+  await refused({ action: "update", post_id: j.post.id, expires_on: "28.11.2099" }, 400, /date/);
+  await refused({ action: "update", post_id: j.post.id }, 400, /expires_on/);
+  await refused({ action: "update", post_id: j.post.id, title: "x" }, 400, /Unknown field/);
+  await refused({ action: "add_idea", title: "y", expires_on: "soon" }, 400, /date/);
+  // the end date passes: the next call takes it
+  await sql`update public.posts set expires_on = '2020-01-01' where id = ${j.post.id}`;
+  assertEquals((await ok({ action: "queue" })).expired.map((e: { id: string }) => e.id), [j.post.id]);
 });
 
-test("a retry of an idea that took the last place says it is already there, not that the column is full", async () => {
-  await reset();
-  for (let i = 1; i < IDEA_CAP; i++) await post(`0${i}`, "idea", "waiting", { daysOld: 1 });
-  await ok({ action: "add_idea", title: "The last place" }); // its answer got lost on the way
-  await refused({ action: "add_idea", title: "The last place" }, 409, /already exists/);
-});
-
-test("two runs at once cannot both take the last place: the second waits, then sees a full column", async () => {
-  await reset();
-  for (let i = 1; i < IDEA_CAP; i++) await post(`0${i}`, "idea", "waiting", { daysOld: 1 });
-  // another add_idea is half way: it holds the ideas lock and has written the 7th idea, not committed yet
-  const other = await sql.reserve();
-  await other`begin`;
-  await other`select pg_advisory_xact_lock(hashtext('desk-agent:ideas'))`;
-  await other`insert into public.posts (title, stage, status, author) values ('taken meanwhile', 'idea', 'waiting', 'denisa@example.com')`;
-  let settled = false;
-  const late = call({ action: "add_idea", title: "late" }).finally(() => (settled = true));
-  await new Promise((r) => setTimeout(r, 300));
-  const waited = !settled;
-  await other`commit`;
-  other.release();
-  const res = await late;
-  assert(waited, "the second add_idea should wait for the first one's lock");
-  assertEquals(res.status, 409);
-  assertEquals(await count(`select count(*) as n from public.posts where stage = 'idea' and status <> 'rejected'`), IDEA_CAP);
-});
 
 test("add_idea: same open title again is refused (safe to retry), bad input is a 400", async () => {
   await reset();
@@ -405,6 +387,33 @@ test("the same caption with a new pinned comment is a new version; the same capt
   await refused({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra: { comment: "one" } }, 409, /already has exactly this text/);
   const j = await ok({ action: "add_version", post_id: POST + "e1", channel: "instagram", body: "Caption", extra: { comment: "two" } });
   assertEquals(j.version.n, 2);
+});
+
+
+// ---------- a reel made from a post ----------
+test("make_reel: a reel card linked to the post, with its title; one per post", async () => {
+  await reset();
+  await post("01", "ready", "approved", { title: "The interview prompt" });
+  await post("02", "idea", "waiting", { title: "Already a reel", kind: "reel" });
+  const j = await ok({ action: "make_reel", post_id: POST + "01", reel: { hook_a: "Stop asking AI for answers" } });
+  assertEquals([j.post.kind, j.post.stage, j.post.status, j.post.title, j.post.source_post_id, j.post.author],
+    ["reel", "idea", "waiting", "The interview prompt", POST + "01", AGENT_EMAIL]);
+  assertEquals(j.post.reel, { hook_a: "Stop asking AI for answers" });
+  const [src] = await sql`select kind, stage from public.posts where id = ${POST + "01"}`;
+  assertEquals([src.kind, src.stage], ["text", "ready"]);
+  assertEquals((await ok({ action: "show", post_id: POST + "01" })).post.reels, [j.post.id]);
+  assertEquals((await ok({ action: "show", post_id: j.post.id })).post.source_post_id, POST + "01");
+  await refused({ action: "make_reel", post_id: POST + "01" }, 409, /already has a reel/);
+  await refused({ action: "make_reel", post_id: POST + "02" }, 409, /already a reel/);
+  await refused({ action: "make_reel", post_id: POST + "99" }, 404, /No post/);
+});
+
+test("make_reel dry run writes nothing", async () => {
+  await reset();
+  await post("01", "draft", "waiting", { title: "A post" });
+  const j = await ok({ action: "make_reel", post_id: POST + "01", dry_run: true });
+  assertEquals([j.dry_run, j.post.kind], [true, "reel"]);
+  assertEquals(await count(`select count(*) as n from public.posts where kind = 'reel'`), 0);
 });
 
 test("close the test connection", async () => {

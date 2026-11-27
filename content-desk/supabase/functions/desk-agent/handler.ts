@@ -11,9 +11,10 @@
 //   { "action": "list",  "stage"?: "idea", "all"?: false, "limit"?: 100 }
 //   { "action": "queue" }
 //   { "action": "show",  "post_id": "<uuid>" }
-//   { "action": "cap" }
 //   { "action": "add_idea", "title": "...", "idea"?: "...", "category"?: "tip", "score"?: 7,
-//     "covered_before"?: "...", "news_date"?: "2026-11-26", "kind"?: "reel", "reel"?: {...}, "dry_run"?: true }
+//     "covered_before"?: "...", "news_date"?: "2026-11-26", "expires_on"?: "2026-11-28", "kind"?: "reel", "reel"?: {...}, "dry_run"?: true }
+//   { "action": "update", "post_id": "<uuid>", "expires_on": "2026-11-28" | null, "dry_run"?: true }
+//   { "action": "make_reel", "post_id": "<uuid>", "reel"?: {...}, "dry_run"?: true }   (a reel card made from a post)
 //   { "action": "set_reel", "post_id": "<uuid>", "reel": { "hook_a"?, "hook_b"?, "cta"?, "code_word"?,
 //     "video_url"?, "video_b_url"?, "cover_url"? }, "dry_run"?: true }   (a field set to null or "" is cleared)
 //   { "action": "add_version", "post_id": "<uuid>", "channel": "linkedin", "body": "...",
@@ -24,7 +25,6 @@
 import type { Sql, TransactionSql } from "npm:postgres@3.4.4";
 
 export const AGENT_EMAIL = "chandler@agent.jaygptpro.com";
-export const IDEA_CAP = 7; // plan S6: at most 7 open ideas
 export const STAGES = ["idea", "draft", "final", "ready", "published"];
 export const CATEGORIES = ["news", "tip", "skill", "deals", "other"];
 // "whatsapp" is the post itself: its first draft and final move the card and go to Jay, which
@@ -229,21 +229,19 @@ function sameExtra(a: unknown, b: Record<string, string>): boolean {
 }
 
 // ---------- reads ----------
-// Ideas that waited 7 days untouched move to Rejected ("expired"); returns which ones.
+// Ideas whose expires_on has passed (in Israel) move to Rejected ("expired"); returns which ones.
+// No other idea ever expires, and there is no cap on open ideas (Jay, 27.11).
 async function expire(tx: Tx): Promise<Array<{ id: string; title: string }>> {
   const rows = await tx`select post_id, post_title from public.desk_expire_ideas()`;
   return rows.map((r) => ({ id: r.post_id, title: r.post_title }));
-}
-async function openIdeas(tx: Tx): Promise<number> {
-  const [r] = await tx`select count(*)::int as n from public.posts where stage = 'idea' and status <> 'rejected'`;
-  return r.n;
 }
 
 // One line per post, as the board shows it.
 function card(r: Record<string, unknown>) {
   return {
     id: r.id, title: r.title, kind: r.kind, stage: r.stage, status: r.status, category: r.category,
-    score: r.score, hot: r.hot, pinned_date: r.pinned_date, skip_reason: r.skip_reason ?? undefined,
+    score: r.score, hot: r.hot, pinned_date: r.pinned_date, expires_on: r.expires_on ?? undefined,
+    source_post_id: r.source_post_id ?? undefined, skip_reason: r.skip_reason ?? undefined,
     author: r.author_name ?? r.author, mine: r.author === AGENT_EMAIL,
     channels: r.channels ?? undefined, age_days: r.age_days, waiting_days: r.waiting_days ?? undefined,
   };
@@ -256,7 +254,7 @@ async function list(tx: Tx, b: Body) {
   const expired = await expire(tx);
   const rows = await tx`
     select p.id, p.title, p.kind, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
-           p.skip_reason, p.author, m.name as author_name,
+           p.expires_on::text as expires_on, p.source_post_id, p.skip_reason, p.author, m.name as author_name,
            floor(extract(epoch from now() - p.created_at) / 86400)::int as age_days,
            coalesce((select array_agg(distinct v.channel order by v.channel) from public.versions v where v.post_id = p.id), '{}') as channels
     from public.posts p left join public.team_members m on m.email = p.author
@@ -272,7 +270,7 @@ async function list(tx: Tx, b: Body) {
 async function queue(tx: Tx) {
   const expired = await expire(tx);
   const cols = tx`p.id, p.title, p.kind, p.stage, p.status, p.category, p.score, p.hot, p.pinned_date::text as pinned_date,
-    p.author, m.name as author_name, floor(extract(epoch from now() - p.created_at) / 86400)::int as age_days,
+    p.expires_on::text as expires_on, p.source_post_id, p.author, m.name as author_name, floor(extract(epoch from now() - p.created_at) / 86400)::int as age_days,
     floor(extract(epoch from now() - p.updated_at) / 86400)::int as waiting_days`;
   const waiting = await tx`select ${cols} from public.posts p left join public.team_members m on m.email = p.author
     where p.stage in ('idea', 'draft', 'final') and p.status = 'waiting' order by p.updated_at asc`;
@@ -290,7 +288,9 @@ async function show(tx: Tx, b: Body) {
   const id = uuid(b.post_id ?? b.id, "post_id");
   const [p] = await tx`
     select p.id, p.title, p.kind, p.reel, p.category, p.stage, p.status, p.idea, p.author, m.name as author_name, p.score,
-           p.covered_before, p.news_date::text as news_date, p.tried_myself, p.hot, p.pinned_date::text as pinned_date,
+           p.covered_before, p.news_date::text as news_date, p.expires_on::text as expires_on, p.source_post_id,
+           (select array_agg(r.id order by r.created_at) from public.posts r where r.source_post_id = p.id) as reels,
+           p.tried_myself, p.hot, p.pinned_date::text as pinned_date,
            p.email_too, p.skip_reason, p.published_at, p.published_text, p.reactions, p.created_at, p.updated_at
     from public.posts p left join public.team_members m on m.email = p.author where p.id = ${id}`;
   if (!p) throw new AgentError(404, "No post with this id");
@@ -306,12 +306,6 @@ async function show(tx: Tx, b: Body) {
   return { post: p, versions, open_notes: notes };
 }
 
-async function cap(tx: Tx) {
-  const expired = await expire(tx);
-  const n = await openIdeas(tx);
-  return { expired, open_ideas: n, cap: IDEA_CAP, room: Math.max(0, IDEA_CAP - n) };
-}
-
 // ---------- writes ----------
 function ideaInput(b: Body) {
   const reel = b.reel == null ? null : mergeReel({}, reelInput(b.reel));
@@ -325,26 +319,52 @@ function ideaInput(b: Body) {
     score: optInt(b.score, 1, 10, "score"),
     covered_before: optText(b.covered_before, "covered_before", 500),
     news_date: optDate(b.news_date, "news_date"),
+    expires_on: optDate(b.expires_on, "expires_on"),
   };
 }
 
-// one add_idea at a time (handle() holds this lock), so two runs cannot both take the last place
+// one add_idea at a time (handle() holds this lock), so two runs cannot both add the same title
 export const IDEAS_LOCK = "desk-agent:ideas";
 async function addIdea(tx: Tx, i: ReturnType<typeof ideaInput>) {
   const expired = await expire(tx);
-  // the title first: a retry after a lost answer must say "already there", not "column full"
+  // a retry after a lost answer must say "already there", not add the idea twice
   const [dup] = await tx`select id from public.posts
     where stage = 'idea' and status <> 'rejected' and lower(title) = lower(${i.title}) limit 1`;
   if (dup) throw new AgentError(409, `An open idea with this title already exists: ${dup.id}`);
-  const open = await openIdeas(tx);
-  if (open >= IDEA_CAP) {
-    throw new AgentError(409, `The ideas column is full: ${open} open ideas, the cap is ${IDEA_CAP}. Wait until Jay answers some or old ones expire.`);
-  }
   const [post] = await tx`
-    insert into public.posts (title, idea, category, score, covered_before, news_date, stage, kind, reel)
-    values (${i.title}, ${i.idea}, ${i.category}, ${i.score}, ${i.covered_before}, ${i.news_date}::date, 'idea', ${i.kind}, ${tx.json(i.reel)})
-    returning id, title, kind, reel, stage, status, category, score, author, created_at`;
-  return { expired, open_ideas: open + 1, cap: IDEA_CAP, post };
+    insert into public.posts (title, idea, category, score, covered_before, news_date, expires_on, stage, kind, reel)
+    values (${i.title}, ${i.idea}, ${i.category}, ${i.score}, ${i.covered_before}, ${i.news_date}::date, ${i.expires_on}::date, 'idea', ${i.kind}, ${tx.json(i.reel)})
+    returning id, title, kind, reel, stage, status, category, score, expires_on::text as expires_on, author, created_at`;
+  return { expired, post };
+}
+
+// The fields update may change on a post. Only the end date for now.
+async function update(tx: Tx, postId: string, b: Body) {
+  if (!("expires_on" in b)) throw bad("update needs a field to change: expires_on (a date, or null to clear it)");
+  const expiresOn = optDate(b.expires_on, "expires_on");
+  const [p] = await tx`select id, status from public.posts where id = ${postId} for update`;
+  if (!p) throw new AgentError(404, "No post with this id");
+  if (p.status === "rejected") throw new AgentError(409, "This post was rejected. Bring it back on the board first.");
+  const [out] = await tx`update public.posts set expires_on = ${expiresOn}::date where id = ${postId}
+    returning id, title, kind, stage, status, expires_on::text as expires_on`;
+  return { post: out };
+}
+
+// A reel card made from a post: a new idea with kind 'reel', the post's title and category, and a
+// link back to the post. The post stays as it is. One reel per post: a second call is refused.
+async function makeReel(tx: Tx, postId: string, patch: ReelPatch) {
+  const [src] = await tx`select id, title, kind, category, status from public.posts where id = ${postId}`;
+  if (!src) throw new AgentError(404, "No post with this id");
+  if (src.kind === "reel") throw new AgentError(409, "This post is already a reel.");
+  if (src.status === "rejected") throw new AgentError(409, "This post was rejected. Reels are made from live posts only.");
+  const [dup] = await tx`select id from public.posts where source_post_id = ${postId} limit 1`;
+  if (dup) throw new AgentError(409, `This post already has a reel: ${dup.id}`);
+  const reel = mergeReel({}, patch);
+  const [post] = await tx`
+    insert into public.posts (title, category, stage, kind, reel, source_post_id)
+    values (${src.title}, ${src.category}, 'idea', 'reel', ${tx.json(reel)}, ${postId})
+    returning id, title, kind, reel, stage, status, category, source_post_id, author, created_at`;
+  return { source: { id: src.id, title: src.title }, post };
 }
 
 function versionInput(b: Body) {
@@ -409,8 +429,9 @@ const FIELDS: Record<string, string[]> = {
   list: ["stage", "all", "limit"],
   queue: [],
   show: ["post_id", "id"],
-  cap: [],
-  add_idea: ["title", "idea", "category", "score", "covered_before", "news_date", "kind", "reel", "dry_run"],
+  add_idea: ["title", "idea", "category", "score", "covered_before", "news_date", "expires_on", "kind", "reel", "dry_run"],
+  update: ["post_id", "expires_on", "dry_run"],
+  make_reel: ["post_id", "reel", "dry_run"],
   add_version: ["post_id", "channel", "body", "headlines", "previews", "extra", "sources", "writer_note", "dry_run"],
   set_reel: ["post_id", "reel", "dry_run"],
 };
@@ -446,7 +467,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   const email = deps.email ?? AGENT_EMAIL;
   const action = String(b.action ?? "");
   const allowed = FIELDS[action];
-  if (!allowed) return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea, add_version or set_reel." });
+  if (!allowed) return json(400, { ok: false, error: "Unknown action. Use list, queue, show, add_idea, update, make_reel, add_version or set_reel." });
   // a typo such as "dryrun" or "dry_run": "true" must never turn a test into a real write
   const unknown = Object.keys(b).filter((k) => k !== "action" && !allowed.includes(k));
   if (unknown.length) return json(400, { ok: false, error: `Unknown field for ${action}: ${unknown.join(", ")}` });
@@ -459,7 +480,6 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     if (action === "list") out = await asMember(deps.sql, email, (tx) => list(tx, b));
     else if (action === "queue") out = await asMember(deps.sql, email, queue);
     else if (action === "show") out = await asMember(deps.sql, email, (tx) => show(tx, b));
-    else if (action === "cap") out = await asMember(deps.sql, email, cap);
     else if (action === "add_idea") {
       const input = ideaInput(b);
       out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addIdea(tx, input), dryRun, [IDEAS_LOCK])) };
@@ -468,6 +488,14 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
       // the next number per post and channel, one writer at a time
       const lock = `desk-agent:v:${input.postId}:${input.channel}`;
       out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => addVersion(tx, input), dryRun, [lock])) };
+    } else if (action === "update") {
+      const postId = uuid(b.post_id, "post_id");
+      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => update(tx, postId, b), dryRun, [`desk-agent:post:${postId}`])) };
+    } else if (action === "make_reel") {
+      const postId = uuid(b.post_id, "post_id");
+      const patch = b.reel == null ? {} : reelInput(b.reel);
+      // the same lock for every make_reel on this post, so two runs cannot both make its reel
+      out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => makeReel(tx, postId, patch), dryRun, [`desk-agent:make_reel:${postId}`])) };
     } else if (action === "set_reel") {
       const postId = uuid(b.post_id, "post_id");
       if (b.reel == null) throw bad("reel is required: the fields to set, e.g. { \"hook_b\": \"...\" }");
@@ -475,9 +503,9 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
       if (!Object.keys(patch).length) throw bad("reel has no fields to set");
       out = { dry_run: dryRun, ...(await asMember(deps.sql, email, (tx) => setReel(tx, postId, patch), dryRun, [`desk-agent:reel:${postId}`])) };
     } else {
-      return json(400, { ok: false, error: "Unknown action. Use list, queue, show, cap, add_idea, add_version or set_reel." });
+      return json(400, { ok: false, error: "Unknown action. Use list, queue, show, add_idea, update, make_reel, add_version or set_reel." });
     }
-    if (action.startsWith("add_") || action === "set_reel") console.log("desk-agent", action, dryRun ? "dry run" : "written", email);
+    if (action.startsWith("add_") || ["set_reel", "update", "make_reel"].includes(action)) console.log("desk-agent", action, dryRun ? "dry run" : "written", email);
     return json(200, { ok: true, action, ...(out as object) });
   } catch (e) {
     return fromError(e);

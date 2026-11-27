@@ -27,8 +27,9 @@ From Chandler's folder the client does this for you: `python3 scripts/desk.py li
 | `list` | Posts on the board, latest change first. Rejected posts and posts published more than 14 days ago only with `all`. | `stage`, `all`, `limit` (default 100) |
 | `queue` | What waits on Jay: ideas, drafts and finals waiting for his answer (oldest first), and Ready posts without a date. `waiting_days` counts from the post's last change. | |
 | `show` | One post with every version of every channel and its open notes. | `post_id` |
-| `cap` | Open ideas against the cap of 7, and how many more fit. | |
-| `add_idea` | A new card in the ideas column, waiting for Jay. | `title` (required), `idea`, `category` (news, tip, skill, deals, other; default tip), `score` (1 to 10), `covered_before`, `news_date` (2026-11-26), `kind` (`text` or `reel`), `reel` (the reel fields below; makes it a reel), `dry_run` |
+| `add_idea` | A new card in the ideas column, waiting for Jay. | `title` (required), `idea`, `category` (news, tip, skill, deals, other; default tip), `score` (1 to 10), `covered_before`, `news_date` (2026-11-26), `expires_on` (the last day the idea still makes sense, for time-sensitive ideas only), `kind` (`text` or `reel`), `reel` (the reel fields below; makes it a reel), `dry_run` |
+| `update` | Sets or clears an idea's end date. | `post_id`, `expires_on` (a date, or `null` to clear it), `dry_run` |
+| `make_reel` | A reel card made from a post: a new idea with `kind: "reel"`, the post's title and category, linked to the post (`source_post_id`). The post stays as it is. One reel per post. | `post_id`, `reel` (optional, the reel fields below), `dry_run` |
 | `add_version` | The next version of one channel on a post. | `post_id`, `channel`, `body` (required), `headlines`, `previews` (email only), `extra` (see below), `sources` (links), `writer_note`, `dry_run` |
 | `set_reel` | Makes a post a reel and sets its fields. Only the fields you send change; a field sent as `null` or `""` is cleared. | `post_id`, `reel` (required), `dry_run` |
 
@@ -72,15 +73,14 @@ action does not take is refused, so a typo such as `"dryrun"` or `"dry_run": "tr
 
 ## Rules the endpoint adds on top of the database
 
-- At most 7 open ideas (in the ideas column and not rejected). `add_idea` is refused at 7. The
-  board shows the count; people can still add an idea there.
-- An idea that waits (for Jay's answer, or for a fix after his notes) with no activity for 7 days
-  moves to Rejected with the reason "expired". A note, a version or a file counts as activity, a
-  translation does not. An idea Jay approved never expires, nor one with a planned date still ahead.
-  This runs on every `list`, `queue`, `cap` and `add_idea` (so those calls can write), and the
+- No cap on open ideas (Jay, 27.11).
+- An idea expires only when it has an end date (`expires_on`) and that date is before today in
+  Israel: a Black Friday idea after Black Friday. It moves to Rejected with the reason "expired".
+  An idea without an end date never expires, however old. Give an end date only to an idea that
+  ages badly. This runs on every `list`, `queue` and `add_idea` (so those calls can write), and the
   answer lists the expired ideas in `expired` (id and title) so Chandler can tell Jay. Jay brings
   one back with "Bring it back". If nothing calls the endpoint, nothing expires.
-- Safe to retry: an open idea with the same title is refused, and so is a version whose text and
+- Safe to retry: an open idea with the same title is refused, so is a second reel for the same post, and so is a version whose text and
   `extra` are exactly the channel's latest ones.
 - No `whatsapp` channel. The WhatsApp text is the post itself: its first draft and final move the
   card and go to Jay, so they are written on the board.
@@ -98,7 +98,8 @@ action does not take is refused, so a typo such as `"dryrun"` or `"dry_run": "tr
 1. Run `supabase/migrate-5-agent.sql` in the SQL editor of "jaygptpro-team". It adds Chandler's row,
    and its last result lists the ideas that Chandler's first call will move to Rejected as expired.
    His address counts only inside this endpoint: a browser sign-up with it gets no rights.
-   Then run `supabase/migrate-6-reels.sql` (reels). Both are safe to run twice.
+   Then run `supabase/migrate-6-reels.sql` (reels) and `supabase/migrate-7-expiry-and-reels.sql`
+   (no cap, end dates, reels made from posts). All are safe to run twice.
 2. Deploy from this folder: `supabase functions deploy desk-agent --project-ref sjdcvjunibwxkwqzjitw --no-verify-jwt`
    (and `go-clicks` the same way, for the /go/ links).
    `--no-verify-jwt` is needed on every deploy: desk-agent checks its own secret instead of a
@@ -112,5 +113,5 @@ or change the secret.
 
 ## Tests
 
-`content-desk/tests/run.sh` builds a throwaway local Postgres with the Desk schema and migrations 5 and 6
+`content-desk/tests/run.sh` builds a throwaway local Postgres with the Desk schema and migrations 5, 6 and 7
 and runs the real handler against it. Nothing touches Supabase.
