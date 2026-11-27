@@ -1,8 +1,9 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=12";
-import { HE } from "./i18n.js?v=12";
+import { createStore } from "./store.js?v=13";
+import { HE } from "./i18n.js?v=13";
+import { KINDS, REEL_CHANNELS, isReel, savedKind, kindOk as kindFits, channelFits as chFits, reelsOf as reelsIn, reelFromPost } from "./board.js?v=13";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -22,7 +23,11 @@ const chLabel = (ch) => t((CHANNELS.find((c) => c[0] === ch) || [ch, ch])[1]);
 const CH_LIMITS = { x: 280, threads: 500, linkedin: 3000, instagram: 2200, tiktok: 4000, youtube: 5000 };
 // A reel (posts.kind = "reel") carries its own fields (posts.reel) and gets a caption per channel.
 // Same names as desk-agent and Chandler's reel-texts (post-texts.md).
-const REEL_CHANNELS = ["instagram", "tiktok", "youtube", "linkedin"];
+// Posts | Reels | All on the board, remembered per viewer. The rules live in board.js.
+const channelFits = (p, k, pid) => chFits(p, k, !!(pid && latest(pid, k)));
+const KIND_KEYS = { text: "Posts", reel: "Reels", all: "All" };
+const kindOk = (p) => kindFits(S.kind, p);
+const reelsOf = (pid) => reelsIn(S.d.posts, pid);
 const REEL_KEYS = ["hook_a", "hook_b", "cta", "code_word", "video_url", "video_b_url", "cover_url"];
 const CTA_KEYS = { code_word: "Code word", follow: "Follow", whatsapp: "WhatsApp group", none: "No CTA" };
 // What a caption carries beside its text, per channel (versions.extra).
@@ -36,12 +41,10 @@ const EXTRA_KEYS = {
 };
 const EXTRA_LABELS = { title: "Title", comment: "Pinned comment", alt_text: "Alt text", dm_1: "DM 1 (with the button)", dm_2: "DM 2 (the asset)", switches: "Switches to turn on" };
 const extraLabel = (ch, k) => t(k === "comment" && ch === "linkedin" ? "First comment" : k === "comment" && ch === "threads" ? "Reply" : EXTRA_LABELS[k]);
-const isReel = (p) => p && p.kind === "reel";
 const reelOf = (p) => (p && p.reel && typeof p.reel === "object" ? p.reel : {});
 // a link that is a video or picture file plays or shows on the card; anything else opens in a tab
 const isVideoLink = (u) => isHttp(u) && /\.(mp4|mov|m4v|webm)(\?|#|$)/i.test(u);
 const isImageLink = (u) => isHttp(u) && /\.(jpe?g|png|webp|gif)(\?|#|$)/i.test(u);
-const IDEA_CAP = 7; // open ideas; desk-agent refuses Chandler's next idea at this number
 const isAgent = (email) => /@agent\.jaygptpro\.com$/i.test(email || "");
 const DAY = 86400000;
 const CAPTION_LIMIT = 1024;
@@ -54,10 +57,18 @@ const S = {
   edit: null, // { postId, channel, mode } while a text is open for editing
   reelEdit: null, // the post id while its reel fields are open for editing
   channel: {}, vsel: {}, diff: {}, view: {}, more: {},
-  cat: "all", only: "", col: "", q: "", showRejected: {},
+  cat: "all", kind: "all", only: "", col: "", q: "", showRejected: {},
   newMode: "idea", split: null, draftText: "",
   files: {}, translateError: "", lang: "en", langChosen: false, inbox: false,
 };
+
+(function initKind() {
+  try {
+    S.kind = savedKind(localStorage.getItem("desk:kind"));
+  } catch (_) {
+    /* private window: All */
+  }
+})();
 
 // ---------------- language ----------------
 // The desk's own words come in English and Hebrew. Posts stay in the language they were written in.
@@ -138,8 +149,8 @@ function avatar(email, size = "") {
   return `<span class="av ${size}" style="background:${color}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
-// desk_expire_ideas() rejects an idea nobody touched for 7 days with the reason "expired".
-const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired after 7 days with no activity") : p.skip_reason);
+// desk_expire_ideas() rejects an idea whose end date (expires_on) passed, with the reason "expired".
+const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired: its end date passed") : p.skip_reason);
 // Cards an AI writer (Chandler) wrote carry his name, so the team sees who wrote what.
 const agentBadge = (email) => (isAgent(email) ? `<span class="pill agent" title="${T("Written by {name}, the AI writer", { name: nameOf(email) })}">${esc(nameOf(email))}</span>` : "");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
@@ -323,7 +334,7 @@ function onlyOk(p) {
     (S.only === "nodate" && p.stage === "ready" && !p.pinned_date) || (S.only === "new" && isNew(p));
 }
 function siblings(p) {
-  return sortStage(p.stage, S.d.posts.filter((x) => x.id === p.id || (x.stage === p.stage && x.status !== "rejected" && (S.cat === "all" || x.category === S.cat) && onlyOk(x))));
+  return sortStage(p.stage, S.d.posts.filter((x) => x.id === p.id || (x.stage === p.stage && x.status !== "rejected" && (S.cat === "all" || x.category === S.cat) && kindOk(x) && onlyOk(x))));
 }
 // The next post in the column that still waits for Jay, after this one.
 function nextWaiting(p) {
@@ -857,6 +868,16 @@ const A = {
     S.cat = c;
     render();
   },
+  kind(k) {
+    if (!KINDS.includes(k)) return;
+    S.kind = k;
+    try {
+      localStorage.setItem("desk:kind", k);
+    } catch (_) {
+      /* remembered for this visit only */
+    }
+    render();
+  },
   only(f) {
     S.only = S.only === f ? "" : f;
     render();
@@ -1100,6 +1121,17 @@ const A = {
     const p = post(id);
     run(() => savePost(p, { kind: isReel(p) ? "text" : "reel" }), isReel(p) ? "Now a text post" : "Now a reel");
   },
+  // a new reel card from this post: same title and category, linked back to it. The post stays.
+  makeReel(id) {
+    const p = post(id);
+    const has = reelsOf(id)[0];
+    if (has) return go(`#/${baseOf()}/p/${has.id}`);
+    run(async () => {
+      const r = await insertRow("posts", reelFromPost(p));
+      translateMissing();
+      go(`#/${baseOf()}/p/${r.id}`);
+    }, "Reel card added");
+  },
   editReel(id) {
     S.reelEdit = id;
     S.reelBase = { ...reelOf(post(id)) }; // what the form opened with: only fields changed from it are saved
@@ -1152,6 +1184,7 @@ const A = {
     if (field === "category") patch.category = value;
     else if (field === "tried") patch.tried_myself = value === "" ? null : value === "yes";
     else if (field === "news_date") patch.news_date = value || null;
+    else if (field === "expires_on") patch.expires_on = value || null;
     else return;
     run(() => savePost(p, patch));
   },
@@ -1451,7 +1484,7 @@ const A = {
       const p = await insertRow("posts", {
         title: f.title.trim(), category: f.category, idea: (f.idea || "").trim() || null, stage: "idea", status: "waiting",
         hot: f.hot === "on", score: f.score ? Number(f.score) : null, news_date: f.news_date || null,
-        covered_before: (f.covered_before || "").trim() || null,
+        expires_on: f.expires_on || null, covered_before: (f.covered_before || "").trim() || null,
         ...(f.reel === "on" ? { kind: "reel" } : {}),
       });
       const sources = (f.sources || "").split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
@@ -1670,8 +1703,9 @@ function card(p, opts = {}) {
   return `<div class="card st-${esc(p.status)} ${p.stage === "ready" && !p.pinned_date ? "needs-date" : ""} ${opts.big ? "big" : ""}" data-act="open" data-a="${p.id}" tabindex="0">
     ${coverHtml}
     <div class="c-body">
-      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${agentBadge(p.author)}${isReel(p) ? `<span class="pill reel">🎬 ${T("Reel")}</span>` : ""}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
+      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${agentBadge(p.author)}${isReel(p) ? `<span class="pill reel">🎬 ${T("Reel")}</span>` : reelsOf(p.id).length ? `<span class="pill reel" title="${T("A reel was made from this post")}">🎬 ${T("has a reel")}</span>` : ""}${p.expires_on && p.stage === "idea" && p.status !== "rejected" ? `<span class="pill ${p.expires_on < todayStr() ? "st-changes" : "mute"}" title="${T("Expires after this day")}">⏳ ${esc(fmtDM(p.expires_on))}</span>` : ""}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
+      ${p.source_post_id && post(p.source_post_id) ? `<div class="c-from" dir="auto">${T("from post: {title}", { title: displayTitle(post(p.source_post_id)).main })}</div>` : ""}
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${isNew(p) ? `<div class="c-new">${esc(newLine(p))} · ${esc(ago(lastTouch(p).at))}</div>` : ""}
       ${pitch ? `<div class="c-pitch" dir="auto">${esc(pitch)}</div>` : ""}
@@ -1685,7 +1719,7 @@ function card(p, opts = {}) {
 
 function viewBoard() {
   if (S.only === "new" && !S.d.posts.some(isNew)) S.only = ""; // the last new post was just read: back to the whole board
-  const match = (p) => (S.cat === "all" || p.category === S.cat) && (
+  const match = (p) => (S.cat === "all" || p.category === S.cat) && kindOk(p) && (
     !S.only ||
     (S.only === "waiting" && p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage)) ||
     (S.only === "changes" && p.status === "changes" && ["idea", "draft", "final"].includes(p.stage)) ||
@@ -1697,7 +1731,7 @@ function viewBoard() {
     return [p.title, p.title_he, p.idea, p.idea_he, v && v.body, v && v.body_he, ...((v && v.headlines) || []).flatMap((h) => [h.en, h.he]), ...notesOf(p.id).flatMap((n) => [n.body, n.body_he])].filter(Boolean).join(" ").toLowerCase();
   };
   const ps = S.d.posts.filter((p) => match(p) && (!q || hay(p).includes(q)));
-  const all = S.d.posts.filter((p) => S.cat === "all" || p.category === S.cat);
+  const all = S.d.posts.filter((p) => (S.cat === "all" || p.category === S.cat) && kindOk(p));
   const count = (f) => all.filter(f).length;
   const nWait = count((p) => p.status === "waiting" && ["idea", "draft", "final"].includes(p.stage));
   const nChg = count((p) => p.status === "changes" && ["idea", "draft", "final"].includes(p.stage));
@@ -1714,20 +1748,18 @@ function viewBoard() {
   };
   const cols = COLS.map((c) => ({ c, ...colOf(c) }));
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
-  // the whole column, whatever the filters: the same count desk-agent holds Chandler to
-  const nIdeas = S.d.posts.filter((p) => p.stage === "idea" && p.status !== "rejected").length;
-  const capLine = `<div class="capline ${nIdeas >= IDEA_CAP ? "full" : ""}" title="${T("Chandler adds ideas only while fewer than {cap} are open. Each time he checks the board, an idea that waited 7 days with no activity moves to Rejected.", { cap: IDEA_CAP })}">${T("Open ideas: {n} / {cap}", { n: nIdeas, cap: IDEA_CAP })}</div>`;
+  const nKind = (k) => S.d.posts.filter((p) => p.status !== "rejected" && (k === "reel" ? isReel(p) : !isReel(p))).length;
+  const kindBar = `<div class="seg kindbar" role="tablist">${KINDS.map((k) => `<button class="${S.kind === k ? "on" : ""}" data-act="kind" data-a="${k}" role="tab" aria-selected="${S.kind === k}">${k === "reel" ? "🎬 " : ""}${T(KIND_KEYS[k])}${k !== "all" ? ` <span class="count">${nKind(k)}</span>` : ""}</button>`).join("")}</div>`;
   const chip = (key, n, one, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(n === 1 ? one : label)}</button>`;
-  return `<div class="boardbar">
+  return `${kindBar}<div class="boardbar">
       <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit|one", "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waits for Jay", "waiting for Jay", "c-wait")}${chip("changes", nChg, "needs changes", "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date|one", "ready without a date", "c-date")}</div>
       <form data-form="search" class="search"><input type="search" name="q" data-input="q" dir="auto" value="${esc(S.q)}" placeholder="${T("Search…")}" aria-label="${T("Search…")}"></form>
       <div class="chips cats">${["all", ...CATS].map((c) => `<button class="chip ${S.cat === c ? "on" : ""}" data-act="cat" data-a="${c}">${c === "all" ? T("All") : esc(catLabel(c))}</button>`).join("")}</div>
     </div>
     <div class="coltabs">${cols.map((x) => `<button class="${S.col === x.c ? "on" : ""}" data-act="col" data-a="${x.c}">${T(COL_KEYS[x.c])} <span>${x.live.length}</span></button>`).join("")}</div>
     <div class="board" style="grid-template-columns:${cols.map((x) => (x.live.length + x.gone.length ? "minmax(250px,1fr)" : "minmax(170px,.5fr)")).join(" ")}">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
-      <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
+      <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T(S.kind === "reel" ? "+ New reel" : "+ New idea")}">+</button>` : ""}</h3>
       <div class="col-body">
-        ${x.c === "idea" ? capLine : ""}
         ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
         ${x.gone.length ? `<div class="rej-head">${T("Rejected|col")} <span class="count">${x.gone.length}</span></div>${x.gone.map((p) => card(p)).join("")}` : ""}
         ${x.c === "published" ? `<a class="linkbtn" href="#/published">${T("All published →")}</a>` : ""}
@@ -1952,6 +1984,7 @@ function drawerPost(p) {
       const cta = r.cta ? `${T(CTA_KEYS[r.cta] || r.cta)}${r.cta === "code_word" && r.code_word ? `: <b dir="ltr">${esc(r.code_word)}</b>` : ""}` : `<span class="muted">${T("Not set")}</span>`;
       const files = fileRow("video_url", "The reel") + fileRow("video_b_url", "Hook B file") + fileRow("cover_url", "Cover");
       reelSec = `<section class="sec reel"><h3>🎬 ${T("The reel")}${canReel ? `<button class="linkbtn" data-act="editReel" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
+        ${p.source_post_id && post(p.source_post_id) ? `<div class="meta-row"><a class="linkbtn" href="#/${baseOf()}/p/${p.source_post_id}" dir="auto">${T("from post: {title}", { title: displayTitle(post(p.source_post_id)).main })}</a></div>` : ""}
         ${line("hook_a", "Hook A")}${line("hook_b", "Hook B")}
         <div class="meta-row"><span>${T("Call to action")}: ${cta}</span></div>
         ${files ? `<div class="reel-files">${files}</div>` : `<div class="muted small">${T("No link to the files yet.")}</div>`}</section>`;
@@ -2063,8 +2096,9 @@ function drawerPost(p) {
   if (p.stage !== "idea" || CHANNELS.some(([k]) => k !== "whatsapp" && latest(p.id, k))) {
     const nE = versionsOf(p.id, "email").length;
     const more = CHANNELS.filter(([k]) => k !== "whatsapp" && k !== "email" && (ch === k || latest(p.id, k) || (isReel(p) && REEL_CHANNELS.includes(k))));
+    const showEmail = channelFits(p, "email", p.id) || ch === "email";
     const tab = (k, label) => `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${label}</button>`;
-    textSec = `<div class="chanbar"><span class="seg">${tab("whatsapp", T("WhatsApp"))}${tab("email", `✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}`)}${more.map(([k]) => tab(k, esc(chLabel(k)))).join("")}</span></div>${textSec}`;
+    textSec = `<div class="chanbar"><span class="seg">${tab("whatsapp", T("WhatsApp"))}${showEmail ? tab("email", `✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}`) : ""}${more.map(([k]) => tab(k, esc(chLabel(k)))).join("")}</span></div>${textSec}`;
   }
 
   // ---- notes ----
@@ -2096,7 +2130,7 @@ function drawerPost(p) {
   const srcs = (latest(p.id) || {}).sources || [];
   const moreSec = `<section class="sec more"><button class="linkbtn morebtn" data-act="more" data-a="${p.id}">${S.more[p.id] ? "▾" : "▸"} ${T("More: other channels, sources, rule checks, details")}</button>
     ${S.more[p.id] ? `
-      <h3>${T("Channels")}</h3><div class="chips">${CHANNELS.map(([k, label]) => `<button class="chip ${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${versionsOf(p.id, k).length ? ` · v${versionsOf(p.id, k).length}` : ""}</button>`).join("")}</div>
+      <h3>${T("Channels")}</h3><div class="chips">${CHANNELS.filter(([k]) => ch === k || channelFits(p, k, p.id)).map(([k, label]) => `<button class="chip ${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${versionsOf(p.id, k).length ? ` · v${versionsOf(p.id, k).length}` : ""}</button>`).join("")}</div>
       <p class="hint">${T("Versions for the other channels live here. The text above shows the channel you pick.")}</p>
       ${srcs.length ? `<h3>${T("Sources")}</h3>${srcs.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}` : ""}
       ${checks.length ? `<h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}` : ""}
@@ -2105,10 +2139,12 @@ function drawerPost(p) {
         <label>${T("Category")} <select data-change="meta" data-a="${p.id}" data-b="category" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>${CATS.map((c) => `<option value="${c}" ${p.category === c ? "selected" : ""}>${esc(catLabel(c))}</option>`).join("")}</select></label>
         <label>${T("Jay tried it")} <select data-change="meta" data-a="${p.id}" data-b="tried" ${p.stage === "published" && !isOwner() ? "disabled" : ""}><option value="" ${p.tried_myself == null ? "selected" : ""}>${T("Not set")}</option><option value="yes" ${p.tried_myself === true ? "selected" : ""}>${T("Yes")}</option><option value="no" ${p.tried_myself === false ? "selected" : ""}>${T("Not yet")}</option></select></label>
         <label>${T("News date")} <input type="date" value="${esc(p.news_date || "")}" data-change="meta" data-a="${p.id}" data-b="news_date" ${p.stage === "published" && !isOwner() ? "disabled" : ""}></label>
+        ${p.stage === "idea" ? `<label title="${T("Only for an idea that ages badly, like a Black Friday post. After this day it moves to Rejected. Leave it empty and the idea never expires.")}">⏳ ${T("Expires after")} <input type="date" value="${esc(p.expires_on || "")}" data-change="meta" data-a="${p.id}" data-b="expires_on"></label>` : ""}
         ${p.stage !== "ready" && p.stage !== "published" ? `<label>📅 ${T("Planned date")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="date" data-a="${p.id}"></label>` : ""}
         <button class="btn sm ${p.hot ? "hot" : ""}" data-act="hot" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🔥 ${p.hot ? T("Hot") : T("Mark hot")}</button>
         <button class="btn sm ${p.email_too ? "dark" : ""}" data-act="emailToo" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>✉ ${p.email_too ? T("Also an email: yes") : T("Also an email: no")}</button>
-        <button class="btn sm ${isReel(p) ? "dark" : ""}" data-act="toggleReel" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🎬 ${isReel(p) ? T("A reel: yes") : T("A reel: no")}</button>
+        ${isReel(p) ? `<button class="btn sm dark" data-act="toggleReel" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🎬 ${T("A reel: yes")}</button>`
+          : `<button class="btn sm" data-act="makeReel" data-a="${p.id}" ${p.status === "rejected" && !reelsOf(p.id).length ? "disabled" : ""}>🎬 ${reelsOf(p.id).length ? T("Open its reel") : T("Turn into a reel")}</button>`}
         ${canWrite ? `<button class="btn sm" data-act="renameTitle" data-a="${p.id}">${T("Working title")}</button>` : ""}
       </div>
       ${owner ? `<h3>${T("Jay only")}</h3><div class="meta-row"><label>${T("Move to")} <select data-change="moveTo" data-a="${p.id}">${COLS.map((c) => `<option value="${c}" ${p.stage === c ? "selected" : ""}>${T(COL_ONE[c])}</option>`).join("")}</select></label>
@@ -2187,7 +2223,8 @@ function drawerNew() {
       <div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
       <div class="field"><label>${T("The idea")}</label><textarea name="idea" dir="auto" placeholder="${T("What it is, why now, what readers get. Two to five lines.")}"></textarea></div>
       <div class="row2"><div class="field"><label>${T("Category")}</label>${catSel("tip")}</div>
-      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label><label class="check"><input type="checkbox" name="reel"> 🎬 ${T("It's a reel")}</label></div></div>
+      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label><label class="check"><input type="checkbox" name="reel" ${S.kind === "reel" ? "checked" : ""}> 🎬 ${T("It's a reel")}</label></div></div>
+      <div class="field"><label>⏳ ${T("Expires after (only if it ages badly, like a Black Friday post)")}</label><input type="date" name="expires_on"></div>
       <details><summary class="linkbtn">${T("More details (optional)")}</summary>
         <div class="row2"><div class="field"><label>${T("When the news came out (if news)")}</label><input type="date" name="news_date"></div>
         <div class="field"><label>${T("Your score, 1 to 10")}</label><input type="number" name="score" min="1" max="10"></div></div>
