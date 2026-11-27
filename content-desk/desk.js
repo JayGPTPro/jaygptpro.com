@@ -1,8 +1,8 @@
 // Content Desk: one shared board where a post idea becomes a published WhatsApp post.
 // Columns: idea -> first draft -> final version -> ready (gets a date) -> published.
 // Each post in the first three columns carries Jay's answer: waiting, approved, changes or rejected.
-import { createStore } from "./store.js?v=10";
-import { HE } from "./i18n.js?v=10";
+import { createStore } from "./store.js?v=12";
+import { HE } from "./i18n.js?v=12";
 
 const PARAMS = new URLSearchParams(location.search);
 const DEMO = PARAMS.has("demo");
@@ -16,7 +16,33 @@ const COL_KEYS = { idea: "Ideas", draft: "First draft", final: "Final version", 
 const COL_ONE = { idea: "Idea", draft: "First draft", final: "Final version", ready: "Ready", published: "Published" };
 const STATUS_KEYS = { waiting: "Waiting for Jay", approved: "Approved", changes: "Needs changes", rejected: "Rejected" };
 const STATUS_ORDER = { waiting: 0, changes: 1, approved: 2, rejected: 3 };
-const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"]];
+const CHANNELS = [["whatsapp", "WhatsApp"], ["email", "Email"], ["linkedin", "LinkedIn"], ["x", "X"], ["facebook", "Facebook"], ["threads", "Threads"], ["instagram", "Instagram"], ["tiktok", "TikTok"], ["youtube", "YouTube Shorts"], ["whatsapp_he", "WhatsApp (Hebrew)"]];
+const chLabel = (ch) => t((CHANNELS.find((c) => c[0] === ch) || [ch, ch])[1]);
+// Where a channel cuts or hides a longer text. WhatsApp only when the post has a picture or video.
+const CH_LIMITS = { x: 280, threads: 500, linkedin: 3000, instagram: 2200, tiktok: 4000, youtube: 5000 };
+// A reel (posts.kind = "reel") carries its own fields (posts.reel) and gets a caption per channel.
+// Same names as desk-agent and Chandler's reel-texts (post-texts.md).
+const REEL_CHANNELS = ["instagram", "tiktok", "youtube", "linkedin"];
+const REEL_KEYS = ["hook_a", "hook_b", "cta", "code_word", "video_url", "video_b_url", "cover_url"];
+const CTA_KEYS = { code_word: "Code word", follow: "Follow", whatsapp: "WhatsApp group", none: "No CTA" };
+// What a caption carries beside its text, per channel (versions.extra).
+const EXTRA_KEYS = {
+  instagram: ["comment", "alt_text", "dm_1", "dm_2", "switches"],
+  tiktok: ["comment", "switches"],
+  youtube: ["title", "comment", "switches"],
+  linkedin: ["comment"],
+  facebook: ["switches"],
+  threads: ["comment", "switches"],
+};
+const EXTRA_LABELS = { title: "Title", comment: "Pinned comment", alt_text: "Alt text", dm_1: "DM 1 (with the button)", dm_2: "DM 2 (the asset)", switches: "Switches to turn on" };
+const extraLabel = (ch, k) => t(k === "comment" && ch === "linkedin" ? "First comment" : k === "comment" && ch === "threads" ? "Reply" : EXTRA_LABELS[k]);
+const isReel = (p) => p && p.kind === "reel";
+const reelOf = (p) => (p && p.reel && typeof p.reel === "object" ? p.reel : {});
+// a link that is a video or picture file plays or shows on the card; anything else opens in a tab
+const isVideoLink = (u) => isHttp(u) && /\.(mp4|mov|m4v|webm)(\?|#|$)/i.test(u);
+const isImageLink = (u) => isHttp(u) && /\.(jpe?g|png|webp|gif)(\?|#|$)/i.test(u);
+const IDEA_CAP = 7; // open ideas; desk-agent refuses Chandler's next idea at this number
+const isAgent = (email) => /@agent\.jaygptpro\.com$/i.test(email || "");
 const DAY = 86400000;
 const CAPTION_LIMIT = 1024;
 const MAX_UPLOAD = 50 * 1024 * 1024; // Supabase global limit while the spend cap is on
@@ -26,6 +52,7 @@ const S = {
   d: { team_members: [], posts: [], versions: [], notes: [], assets: [], rules: [], settings: [] },
   busy: 0, toast: null, modal: null, urls: {},
   edit: null, // { postId, channel, mode } while a text is open for editing
+  reelEdit: null, // the post id while its reel fields are open for editing
   channel: {}, vsel: {}, diff: {}, view: {}, more: {},
   cat: "all", only: "", col: "", q: "", showRejected: {},
   newMode: "idea", split: null, draftText: "",
@@ -111,6 +138,10 @@ function avatar(email, size = "") {
   return `<span class="av ${size}" style="background:${color}" title="${esc(m.name)}">${esc(ini)}</span>`;
 }
 const isOwner = () => !!(S.member && S.member.role === "owner");
+// desk_expire_ideas() rejects an idea nobody touched for 7 days with the reason "expired".
+const whyRejected = (p) => (p.skip_reason === "expired" ? t("Expired after 7 days with no activity") : p.skip_reason);
+// Cards an AI writer (Chandler) wrote carry his name, so the team sees who wrote what.
+const agentBadge = (email) => (isAgent(email) ? `<span class="pill agent" title="${T("Written by {name}, the AI writer", { name: nameOf(email) })}">${esc(nameOf(email))}</span>` : "");
 const tag = (c) => `<span class="tag ${esc(c)}">${esc(catLabel(c))}</span>`;
 function waHtml(text) {
   return esc(text).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_(?=\s|$)/g, "$1<i>$2</i>");
@@ -309,25 +340,38 @@ function splitEmoji(h) {
   const m = String(h || "").trim().match(/^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})[️‍⃣\p{Extended_Pictographic}\p{Emoji_Modifier}]*)\s*(.*)$/u);
   return m ? [m[1], m[2]] : ["", String(h || "").trim()];
 }
-function composeWhatsApp(p, v = latest(p.id, "whatsapp")) {
+// signed: the English group's signature goes under the post (the Hebrew group signs in its own text)
+function composeWhatsApp(p, v = latest(p.id, "whatsapp"), signed = true) {
   if (!v) return "";
   const [emoji, text] = splitEmoji(headlineOf(p, v).en);
   const clean = text.replace(/^\*+|\*+$/g, "").trim();
   const head = clean ? `${emoji ? emoji + " " : ""}*${clean}*` : "";
   const body = (v.body || "").trim();
-  const sig = String((setting("signature", {}) || {}).text || "").trim();
+  const sig = signed ? String((setting("signature", {}) || {}).text || "").trim() : "";
   let out = head ? `${head}\n\n${body}` : body;
   if (sig && !/chat\.whatsapp\.com/.test(body)) out += `\n\n${sig}`;
   return out;
 }
-function composeChannel(p, ch) {
-  if (ch === "whatsapp") return composeWhatsApp(p);
-  const v = latest(p.id, ch);
+function composeChannel(p, ch, v = latest(p.id, ch)) {
+  if (ch === "whatsapp") return composeWhatsApp(p, v);
   if (!v) return "";
   const h = headlineOf(p, v).en;
   // an HTML email has its own copy buttons; here only the subject line makes sense
   if (ch === "email") return looksHtml(v.body) ? h : `${h ? `Subject: ${h}\n\n` : ""}${v.body || ""}`.trim();
+  // the other channels: a headline only if the version has one, never the working title
+  if (!subjectsOf(v).length) return (v.body || "").trim();
+  if (ch === "whatsapp_he") return composeWhatsApp(p, v, false); // a WhatsApp post: *bold* headline, no English signature
   return [h, v.body].filter(Boolean).join("\n\n").trim();
+}
+// Characters as the text will be pasted, and the channel's limit when it has one.
+// X counts every link as 23 characters, whatever its length.
+function charCount(p, ch, v) {
+  let text = composeChannel(p, ch, v);
+  if (ch === "x") text = text.replace(/https?:\/\/\S+/g, "x".repeat(23));
+  const n = [...text].length;
+  const media = assetsOf(p.id).some((a) => isMedia(a) && a.status !== "replaced");
+  const max = CH_LIMITS[ch] || (ch.startsWith("whatsapp") && media ? CAPTION_LIMIT : 0);
+  return { n, max, over: !!max && n > max };
 }
 
 // Warnings for the writer, never blockers.
@@ -444,9 +488,10 @@ async function translateMissing() {
         if (p.idea && !p.idea_he) add("posts", p.id, "idea_he", p.idea, p.author);
       }
       for (const v of S.d.versions) {
-        if (v.body && !v.body_he && v.channel !== "email") add("versions", v.id, "body_he", v.body, v.author);
+        const hebrew = v.channel === "whatsapp_he"; // the Hebrew group's text is written in Hebrew; its note may not be
+        if (v.body && !v.body_he && v.channel !== "email" && !hebrew) add("versions", v.id, "body_he", v.body, v.author);
         if (v.writer_note && !v.writer_note_he) add("versions", v.id, "writer_note_he", v.writer_note, v.author);
-        (v.headlines || []).forEach((h, i) => {
+        if (!hebrew) (v.headlines || []).forEach((h, i) => {
           if (h.en && !h.he) add("versions", v.id, `headline:${h.en}`, h.en, v.author);
         });
       }
@@ -527,7 +572,7 @@ function isTyping() {
 }
 let renderLater = false;
 function softRender() {
-  if (S.modal || S.edit || isTyping()) {
+  if (S.modal || S.edit || S.reelEdit || isTyping()) {
     renderLater = true;
     return;
   }
@@ -535,7 +580,7 @@ function softRender() {
 }
 document.addEventListener("focusout", () => {
   setTimeout(() => {
-    if (renderLater && !isTyping() && !S.modal && !S.edit) {
+    if (renderLater && !isTyping() && !S.modal && !S.edit && !S.reelEdit) {
       renderLater = false;
       render();
     }
@@ -667,9 +712,17 @@ function go(hash) {
 }
 // True while a text someone typed has not been saved.
 function isDirty() {
-  const f = app.querySelector("form[data-form=saveEdit], form[data-form=createIdea], form[data-form=createDraft], form[data-form=splitDraft]");
-  if (!f) return false;
-  return [...f.querySelectorAll("textarea, input[type=text], input:not([type])")].some((el) => el.value !== el.defaultValue);
+  // every open form: the reel form and a caption can be open at the same time
+  const forms = app.querySelectorAll("form[data-form=saveEdit], form[data-form=saveReel], form[data-form=createIdea], form[data-form=createDraft], form[data-form=splitDraft]");
+  return [...forms].some((f) => [...f.querySelectorAll("textarea, input[type=text], input:not([type]), select")].some((el) =>
+    el.tagName === "SELECT" ? [...el.options].some((o) => o.selected !== o.defaultSelected) : el.value !== el.defaultValue));
+}
+// Same keys and values in any order (Postgres keeps jsonb keys in its own order).
+function sameFields(a, b) {
+  const x = a || {};
+  const y = b || {};
+  const ka = Object.keys(x).filter((k) => x[k]);
+  return ka.length === Object.keys(y).filter((k) => y[k]).length && ka.every((k) => x[k] === y[k]);
 }
 // A note or an answer that was typed and not sent.
 const halfNote = () => [...app.querySelectorAll("form[data-form=addNote] textarea, .modal textarea:not([readonly]), .modal input[name=v]")].some((el) => el.value.trim() && el.value !== el.defaultValue);
@@ -1042,6 +1095,57 @@ const A = {
     const p = post(id);
     run(() => savePost(p, { email_too: !p.email_too }));
   },
+  // a reel keeps its fields when it goes back to a text post, so a wrong click loses nothing
+  toggleReel(id) {
+    const p = post(id);
+    run(() => savePost(p, { kind: isReel(p) ? "text" : "reel" }), isReel(p) ? "Now a text post" : "Now a reel");
+  },
+  editReel(id) {
+    S.reelEdit = id;
+    S.reelBase = { ...reelOf(post(id)) }; // what the form opened with: only fields changed from it are saved
+    render();
+  },
+  cancelReel() {
+    if (!leaveOk()) return;
+    S.reelEdit = null;
+    render();
+  },
+  async saveReel(form) {
+    const p = post(form.dataset.post);
+    const f = Object.fromEntries(new FormData(form));
+    const reel = {};
+    for (const k of REEL_KEYS) {
+      const val = String(f[k] || "").trim();
+      if (val) reel[k] = val;
+    }
+    for (const k of ["video_url", "video_b_url", "cover_url"]) {
+      if (reel[k] && !isHttp(reel[k])) return toast("A link starts with https://", true);
+    }
+    if (reel.code_word && /\s/.test(reel.code_word)) return toast("The code word is one word, as said in the reel.", true);
+    const base = S.reelBase || {};
+    await run(async () => {
+      // Chandler may have set other fields while the form was open: start from the row as it is
+      // now and change only the fields edited here, as desk-agent's set_reel does
+      await freshRow("posts", p);
+      const next = { ...reelOf(p) };
+      for (const k of REEL_KEYS) {
+        if ((reel[k] || "") === (base[k] || "")) continue;
+        if (reel[k]) next[k] = reel[k];
+        else delete next[k];
+      }
+      if (next.cta === "code_word" && !next.code_word) throw new Error(t("A code word CTA needs the code word."));
+      await savePost(p, { kind: "reel", reel: next });
+      S.reelEdit = null;
+    }, "Saved");
+  },
+  copyReel(id, k) {
+    const v = reelOf(post(id))[k];
+    if (v) copyText(v);
+  },
+  copyExtra(vid, k) {
+    const v = S.d.versions.find((x) => x.id === vid);
+    if (v && v.extra && v.extra[k]) copyText(v.extra[k]);
+  },
   meta(id, field, value) {
     const p = post(id);
     const patch = {};
@@ -1124,6 +1228,11 @@ const A = {
     const headlines = form.headlines.value.split("\n").map((s) => s.trim()).filter(Boolean);
     const sources = form.sources.value.split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
     const note = form.writer_note ? form.writer_note.value.trim() : "";
+    const extra = {};
+    for (const k of EXTRA_KEYS[channel] || []) {
+      const val = form[`x_${k}`] ? form[`x_${k}`].value.replace(/\s+$/, "") : "";
+      if (val.trim()) extra[k] = val;
+    }
     if (!body.trim() && !(channel === "email" && headlines.length)) return toast("The text is empty.", true);
     const prevH = prev ? prev.headlines || [] : [];
     const hl = headlines.map((en) => {
@@ -1169,9 +1278,10 @@ const A = {
       for (const r of live) if (!S.d.versions.some((x) => x.id === r.id)) S.d.versions.push(r);
       const top = latest(postId, channel);
       // a retry after the second step failed reuses the version that was already saved
-      const again = S.edit.saved && S.edit.saved.body === body ? S.edit.saved : null;
+      const again = S.edit.saved && S.edit.saved.body === body && sameFields(S.edit.saved.extra, extra) ? S.edit.saved : null;
       const v = again || (await insertRow("versions", {
         post_id: postId, channel, n: top ? top.n + 1 : 1, body, headlines: hl, chosen, sources,
+        ...(Object.keys(extra).length ? { extra } : {}),
         writer_note: note || (owner && p.author !== S.me ? "Edited by Jay" : null),
       }));
       S.edit.saved = v;
@@ -1322,7 +1432,7 @@ const A = {
     const p = post(pid);
     const v = latest(pid, ch);
     // before Ready the copy is for reading and consulting, so it takes the writer's pick or the first headline
-    if (ch === "whatsapp" && p.stage === "ready" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
+    if (ch.startsWith("whatsapp") && p.stage === "ready" && v && (v.headlines || []).length > 1 && chosenIndex(v) < 0) return toast("Pick a headline first.", true);
     const text = composeChannel(p, ch);
     if (!text) return toast("Nothing to copy yet.", true);
     copyText(text, ch === "whatsapp" ? "Copied for WhatsApp" : "Copied");
@@ -1342,6 +1452,7 @@ const A = {
         title: f.title.trim(), category: f.category, idea: (f.idea || "").trim() || null, stage: "idea", status: "waiting",
         hot: f.hot === "on", score: f.score ? Number(f.score) : null, news_date: f.news_date || null,
         covered_before: (f.covered_before || "").trim() || null,
+        ...(f.reel === "on" ? { kind: "reel" } : {}),
       });
       const sources = (f.sources || "").split("\n").map((s) => s.trim()).filter(Boolean).map(parseSource);
       if (sources.length) await insertRow("notes", { post_id: p.id, kind: "team", body: `Sources:\n${sources.map((s) => s.url).join("\n")}` });
@@ -1559,13 +1670,13 @@ function card(p, opts = {}) {
   return `<div class="card st-${esc(p.status)} ${p.stage === "ready" && !p.pinned_date ? "needs-date" : ""} ${opts.big ? "big" : ""}" data-act="open" data-a="${p.id}" tabindex="0">
     ${coverHtml}
     <div class="c-body">
-      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
+      <div class="c-top">${isNew(p) ? `<span class="newdot" title="${T("New since you last looked")}"></span>` : ""}${statusPill(p)}${agentBadge(p.author)}${isReel(p) ? `<span class="pill reel">🎬 ${T("Reel")}</span>` : ""}${p.score && p.stage === "idea" ? `<span class="pill mute">${p.score}/10</span>` : ""}${p.hot ? `<span class="pill hot">🔥</span>` : ""}<span class="sp"></span>${tag(p.category)}</div>
       <div class="c-title" dir="auto">${esc(tt.main)}</div>
       ${tt.sub && opts.big ? `<div class="c-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${isNew(p) ? `<div class="c-new">${esc(newLine(p))} · ${esc(ago(lastTouch(p).at))}</div>` : ""}
       ${pitch ? `<div class="c-pitch" dir="auto">${esc(pitch)}</div>` : ""}
       ${next ? `<div class="c-next">${esc(next)}</div>` : ""}
-      ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(p.skip_reason)}</div>` : ""}
+      ${p.status === "rejected" && p.skip_reason ? `<div class="c-why" dir="auto">${esc(whyRejected(p))}</div>` : ""}
       <div class="c-foot ${footQuick ? "with-q" : ""}"><span class="c-meta">${foot}</span>${footQuick}</div>
       ${quick}
     </div>
@@ -1603,6 +1714,9 @@ function viewBoard() {
   };
   const cols = COLS.map((c) => ({ c, ...colOf(c) }));
   if (!S.col) S.col = (cols.find((x) => x.live.some((p) => p.status === "waiting")) || cols[0]).c;
+  // the whole column, whatever the filters: the same count desk-agent holds Chandler to
+  const nIdeas = S.d.posts.filter((p) => p.stage === "idea" && p.status !== "rejected").length;
+  const capLine = `<div class="capline ${nIdeas >= IDEA_CAP ? "full" : ""}" title="${T("Chandler adds ideas only while fewer than {cap} are open. Each time he checks the board, an idea that waited 7 days with no activity moves to Rejected.", { cap: IDEA_CAP })}">${T("Open ideas: {n} / {cap}", { n: nIdeas, cap: IDEA_CAP })}</div>`;
   const chip = (key, n, one, label, cls) => `<button class="chip ${cls} ${S.only === key ? "on" : ""}" data-act="only" data-a="${key}" ${n || S.only === key ? "" : "disabled"}><b>${n}</b> ${T(n === 1 ? one : label)}</button>`;
   return `<div class="boardbar">
       <div class="chips">${nNew || S.only === "new" ? `${chip("new", nNew, "new since your last visit|one", "new since your last visit", "c-new-chip")}<button class="linkbtn" data-act="seenAll" title="${T("Clears the blue marks")}">${T("Mark all as seen")}</button>` : `<span class="chip quiet">${T("Nothing new since your last visit")}</span>`}${chip("waiting", nWait, "waits for Jay", "waiting for Jay", "c-wait")}${chip("changes", nChg, "needs changes", "need changes", "c-chg")}${chip("nodate", nNoDate, "ready without a date|one", "ready without a date", "c-date")}</div>
@@ -1613,6 +1727,7 @@ function viewBoard() {
     <div class="board" style="grid-template-columns:${cols.map((x) => (x.live.length + x.gone.length ? "minmax(250px,1fr)" : "minmax(170px,.5fr)")).join(" ")}">${cols.map((x) => `<section class="col col-${x.c} ${S.col === x.c ? "on" : ""}">
       <h3><i></i>${T(COL_KEYS[x.c])}<span class="count">${x.live.length}</span>${x.c === "idea" ? `<button class="iconbtn sm" data-act="newPost" data-a="idea" title="${T("+ New idea")}">+</button>` : ""}</h3>
       <div class="col-body">
+        ${x.c === "idea" ? capLine : ""}
         ${x.live.map((p) => card(p)).join("") || `<div class="empty">${T(x.c === "published" ? "Nothing in the last 14 days." : "Nothing here.")}</div>`}
         ${x.gone.length ? `<div class="rej-head">${T("Rejected|col")} <span class="count">${x.gone.length}</span></div>${x.gone.map((p) => card(p)).join("")}` : ""}
         ${x.c === "published" ? `<a class="linkbtn" href="#/published">${T("All published →")}</a>` : ""}
@@ -1805,12 +1920,43 @@ function drawerPost(p) {
   };
   const shown = assets.filter((a) => a.status !== "replaced");
   const old = assets.filter((a) => a.status === "replaced");
-  const visuals = `<section class="sec"><h3>${T("Banner and images")} <span class="count">${shown.length}</span></h3>
+  const visuals = `<section class="sec"><h3>${isReel(p) ? T("Video and cover") : T("Banner and images")} <span class="count">${shown.length}</span></h3>
     <div class="vis">${shown.map(visCard).join("")}
       <label class="drop" data-drop="${p.id}"><b>+ ${T("Upload a banner, image or video")}</b><span>${T("Drop files here or choose. Up to 50 MB each, the original file is kept.")}</span>
         <input type="file" multiple accept="image/*,video/*,application/pdf" data-upload="${p.id}"></label>
     </div>
     ${old.length ? `<details class="more-old"><summary>${T("Replaced")} (${old.length})</summary><div class="vis">${old.map(visCard).join("")}</div></details>` : ""}</section>`;
+
+  // ---- the reel: hooks, CTA, and the files ----
+  let reelSec = "";
+  if (isReel(p)) {
+    const r = reelOf(p);
+    const canReel = owner || (live && p.stage !== "published");
+    if (S.reelEdit === p.id) {
+      const inp = (k, label, ph = "") => `<div class="field"><label>${T(label)}</label><input type="text" name="${k}" dir="${k.endsWith("_url") || k === "code_word" ? "ltr" : "auto"}" value="${esc(r[k] || "")}" placeholder="${esc(ph)}"></div>`;
+      reelSec = `<form data-form="saveReel" data-post="${p.id}" class="sec editbox"><h3>🎬 ${T("The reel")}</h3>
+        ${inp("hook_a", "Hook A")}${inp("hook_b", "Hook B (goes up 3 to 7 days after A)")}
+        <div class="row2"><div class="field"><label>${T("Call to action")}</label><select name="cta"><option value="">${T("Not set")}</option>${Object.entries(CTA_KEYS).map(([k, l]) => `<option value="${k}" ${r.cta === k ? "selected" : ""}>${T(l)}</option>`).join("")}</select></div>
+        ${inp("code_word", "Code word", "INTERVIEW")}</div>
+        ${inp("video_url", "Link to the reel (MP4)", "https://")}${inp("video_b_url", "Link to the hook B file", "https://")}${inp("cover_url", "Link to the cover", "https://")}
+        <p class="hint">${T("A link that ends in .mp4 or .jpg plays here. A Drive link opens in a new tab. A video uploaded to the card below also plays.")}</p>
+        <div class="btns"><button class="btn go">${T("Save")}</button><button type="button" class="btn ghost" data-act="cancelReel">${T("Cancel")}</button></div></form>`;
+    } else {
+      const fileRow = (k, label) => {
+        const u = r[k];
+        if (!u) return "";
+        const media = isVideoLink(u) ? `<video src="${esc(u)}" controls playsinline preload="metadata"></video>` : isImageLink(u) ? `<img alt="" src="${esc(u)}" loading="lazy">` : "";
+        return `<div class="reel-file">${media}<div class="btns"><b>${T(label)}</b>${isHttp(u) ? `<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${T("Open")} ↗</a>` : ""}<button class="btn sm" data-act="copyReel" data-a="${p.id}" data-b="${k}">${T("Copy the link")}</button></div></div>`;
+      };
+      const line = (k, label) => (r[k] ? `<div class="reel-line"><span class="muted small">${T(label)}</span><div class="pre" dir="auto">${esc(r[k])}</div><button class="btn sm" data-act="copyReel" data-a="${p.id}" data-b="${k}">${T("Copy")}</button></div>` : "");
+      const cta = r.cta ? `${T(CTA_KEYS[r.cta] || r.cta)}${r.cta === "code_word" && r.code_word ? `: <b dir="ltr">${esc(r.code_word)}</b>` : ""}` : `<span class="muted">${T("Not set")}</span>`;
+      const files = fileRow("video_url", "The reel") + fileRow("video_b_url", "Hook B file") + fileRow("cover_url", "Cover");
+      reelSec = `<section class="sec reel"><h3>🎬 ${T("The reel")}${canReel ? `<button class="linkbtn" data-act="editReel" data-a="${p.id}">${T("Edit")}</button>` : ""}</h3>
+        ${line("hook_a", "Hook A")}${line("hook_b", "Hook B")}
+        <div class="meta-row"><span>${T("Call to action")}: ${cta}</span></div>
+        ${files ? `<div class="reel-files">${files}</div>` : `<div class="muted small">${T("No link to the files yet.")}</div>`}</section>`;
+    }
+  }
 
   // ---- the idea ----
   const ib = biText(p.idea, p.idea_he);
@@ -1824,11 +1970,12 @@ function drawerPost(p) {
     const seed = editing.seed || {};
     const base = latest(p.id, ch) || {};
     const open = openNotes(p.id);
-    const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) });
+    const title = editing.mode === "draft" ? T("The first draft") : editing.mode === "final" ? T("The final version") : ch === "whatsapp" ? T("Edit the post") : T("Edit the {ch} version", { ch: chLabel(ch) });
     textSec = `<form data-form="saveEdit" class="sec editbox"><h3>${title} <span class="muted">· v${(vs.length ? vs[vs.length - 1].n : 0) + 1}</span></h3>
       <div class="field"><label>${ch === "email" ? T("Subject line options, one per line") : T("Headline options, one per line")}</label><textarea name="headlines" dir="auto" style="min-height:96px">${esc(seed.headlines ?? subjectsOf(base).map((h) => h.en).join("\n"))}</textarea></div>
       ${ch === "email" ? `<div class="field"><label>${T("Preview text options, one per line")}</label><textarea name="previews" dir="auto" style="min-height:80px">${esc(previewsOf(base).map((h) => h.en).join("\n"))}</textarea><span class="hint">${T("The grey line an inbox shows after the subject.")}</span></div>` : ""}
       <div class="field"><label>${ch === "whatsapp" ? T("Post text, WhatsApp format (*bold*). No headline, no signature.") : ch === "email" ? T("The email's HTML. Paste it as it is.") : T("Text")}</label><textarea class="big ${ch === "email" ? "code" : ""}" name="body" dir="${ch === "email" ? "ltr" : "auto"}" ${ch === "email" ? 'spellcheck="false"' : ""}>${esc(seed.body ?? base.body ?? "")}</textarea></div>
+      ${(EXTRA_KEYS[ch] || []).map((k) => `<div class="field"><label>${extraLabel(ch, k)}</label>${k === "title" ? `<input type="text" name="x_${k}" dir="auto" maxlength="100" value="${esc((base.extra || {})[k] || "")}">` : `<textarea name="x_${k}" dir="auto" style="min-height:${k === "switches" ? 48 : 80}px">${esc((base.extra || {})[k] || "")}</textarea>`}</div>`).join("")}
       <div class="field"><label>${T("Sources, one per line")}</label><textarea name="sources" dir="ltr" style="min-height:64px">${esc((base.sources || []).map((s) => `${s.url}${s.label ? " " + s.label : ""}`).join("\n"))}</textarea></div>
       ${!owner ? `<div class="field"><label>${T("What changed (for Jay)")}</label><input type="text" name="writer_note" dir="auto" placeholder="${T("e.g. new headline, added the source")}"></div>` : ""}
       ${open.length ? `<div class="field"><label>${T("Notes this version fixes")}</label>${open.map((n) => `<label class="check"><input type="checkbox" name="fixed" value="${n.id}"> <span dir="auto">${esc(biText(n.body, n.body_he).main.slice(0, 140))}</span></label>`).join("")}</div>` : ""}
@@ -1836,13 +1983,15 @@ function drawerPost(p) {
   } else if (v) {
     const ci = chosenIndex(v);
     const nH = (v.headlines || []).length;
+    const plain = ch !== "whatsapp"; // email has its own view below
     const canPick = isLatest && (owner || canWrite);
     const hl = (v.headlines || []).map((h, i) => {
       const hb = biText(h.en, h.he);
       return `<button class="hl ${ci === i ? "pick" : ""}" data-act="pickHeadline" data-a="${v.id}" data-b="${i}" ${canPick ? "" : "disabled"}>
         <span class="rad"></span><span class="hl-t"><span dir="auto">${esc(hb.main)}</span>${hb.sub ? `<small dir="auto">${esc(hb.sub)}</small>` : ""}</span>${h.pick ? `<span class="wp">${T("writer’s pick")}</span>` : ""}</button>`;
     }).join("");
-    const mode = S.view[p.id] || (S.lang === "he" ? "he" : "en");
+    // the Hebrew group's text is already Hebrew: it shows as written, without a translation tab
+    const mode = ch === "whatsapp_he" ? "en" : S.view[p.id] || (S.lang === "he" ? "he" : "en");
     const prev = vs.find((x) => x.n === v.n - 1);
     let body;
     if (mode === "wa" && ch === "whatsapp") {
@@ -1855,19 +2004,32 @@ function drawerPost(p) {
       body = S.diff[p.id] && prev ? `<div class="body-en pre diff" dir="auto">${diffHtml(prev.body, v.body)}</div>` : `<div class="body-en pre" dir="auto">${markNumbers(v.body)}</div>`;
     }
     const seg = (k, label) => `<button class="${mode === k ? "on" : ""}" data-act="view" data-a="${p.id}" data-b="${k}">${label}</button>`;
-    textSec = `<section class="sec"><h3>${ch === "email" ? T("Subject lines") : T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
+    // characters as it will be pasted; the plain-text channels get a copy button here until
+    // Ready, where the bar at the bottom already has one for the open channel
+    const cc = charCount(p, ch, v);
+    const copyHere = plain && isLatest && p.stage !== "ready" && p.stage !== "published";
+    const countLine = cc.over && ch.startsWith("whatsapp")
+      ? T("{n} characters with an image. Desktop WhatsApp can cut a caption after {max}.", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() })
+      : `${cc.max ? T("{n} of {max} characters", { n: cc.n.toLocaleString(), max: cc.max.toLocaleString() }) : T("{n} characters", { n: cc.n.toLocaleString() })}${cc.over ? ` · ${T("too long for {ch}", { ch: chLabel(ch) })}` : ""}`;
+    const countRow = `<div class="chcount ${cc.over ? "bad" : ""}"><span>${countLine}</span>${copyHere ? `<span class="sp"></span><button class="btn sm go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">⧉ ${T("Copy for {ch}", { ch: chLabel(ch) })}</button>` : ""}</div>`;
+    // X or Threads text often has no headline: then one small link instead of a section asking for three
+    const addHl = isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Headline")}</button>` : "";
+    const hlSec = plain && !nH ? (addHl ? `<div class="hl-add">${addHl}</div>` : "") : `<section class="sec"><h3>${T("Headline options")} <span class="count ${nH >= 3 ? "ok" : "warn"}">${nH >= 3 ? T("{n} options", { n: nH }) : T("{n} of 3", { n: nH })}</span>${ci >= 0 ? `<span class="pill go">${T("picked")}</span>` : owner && nH > 1 ? `<span class="pill wait">${T("pick one")}</span>` : ""}</h3>
       ${hl || `<div class="muted small">${T("No headline options.")}</div>`}
-      ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>
-      <section class="sec"><h3><span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span><span class="sp"></span>
+      ${isLatest && canText ? `<button class="linkbtn" data-act="addHeadline" data-a="${v.id}">+ ${T("Option")}</button>` : ""}</section>`;
+    textSec = `${hlSec}
+      <section class="sec"><h3>${ch === "whatsapp_he" ? `<span>${esc(chLabel(ch))}</span>` : `<span class="seg sm">${seg("he", "עברית")}${seg("en", "English")}${ch === "whatsapp" ? seg("wa", T("WhatsApp")) : ""}</span>`}<span class="sp"></span>
         <span class="vtabs">${vs.length > 1 ? vs.map((x) => `<button class="${x.n === v.n ? "on" : ""}" data-act="vsel" data-a="${p.id}" data-b="${ch}" data-c="${x.n}">v${x.n}</button>`).join("") : ""}${prev && mode === "en" ? `<button class="${S.diff[p.id] ? "on" : ""}" data-act="diff" data-a="${p.id}">${T("What changed")}</button>` : ""}</span></h3>
         ${mode === "he" ? `<p class="hint">${T("A literal translation for reading. What goes out is the English.")}</p>` : ""}
         ${body}
         ${v.writer_note ? `<div class="wnote"><b>${esc(nameOf(v.author))}:</b> <span dir="auto">${esc(biText(v.writer_note, v.writer_note_he).main)}</span></div>` : ""}
+        ${countRow}
+        ${(EXTRA_KEYS[ch] || []).filter((k) => (v.extra || {})[k]).map((k) => `<div class="extra"><div class="x-head"><b>${extraLabel(ch, k)}</b>${k === "title" ? `<span class="muted small">${T("{n} of {max} characters", { n: [...v.extra[k]].length, max: 100 })}</span>` : ""}<span class="sp"></span><button class="btn sm" data-act="copyExtra" data-a="${v.id}" data-b="${k}">⧉ ${T("Copy")}</button></div><div class="pre" dir="auto">${esc(v.extra[k])}</div></div>`).join("")}
         <div class="meta-row">${T("v{n} by {name}", { n: v.n, name: nameOf(v.author) })} · ${esc(ago(v.created_at))}${!isLatest ? ` · <b>${T("an older version")}</b>` : ""}
           ${canText && isLatest ? `<span class="sp"></span><button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="${ch}" data-c="${!owner && p.status === "changes" ? "fix" : "edit"}">✎ ${T("Edit the text")}</button>` : ""}</div>
       </section>`;
   } else if (p.stage !== "idea") {
-    textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(t(CHANNELS.find((c) => c[0] === ch)[1]))}</h3>
+    textSec = `<section class="sec"><h3>${ch === "whatsapp" ? T("The post") : esc(chLabel(ch))}</h3>
       <div class="empty">${ch === "whatsapp" ? T("No text yet.") : T("No version for this channel yet.")}</div>
       ${canText ? `<div class="btns" style="margin-top:10px"><button class="btn" data-act="startEdit" data-a="${p.id}" data-b="${ch}">${T("Write it")}</button>${ch !== "whatsapp" && latest(p.id, "whatsapp") ? `<button class="btn" data-act="fromWhatsApp" data-a="${p.id}" data-b="${ch}">${T("Start from the WhatsApp text")}</button>` : ""}</div>` : ""}</section>`;
   }
@@ -1897,9 +2059,12 @@ function drawerPost(p) {
           ${canText && isLatest ? `<button class="btn sm" data-act="startEdit" data-a="${p.id}" data-b="email">✎ ${html ? T("Edit") : T("Add the HTML")}</button>` : ""}</div>
       </section>`;
   }
-  if (p.stage !== "idea" || latest(p.id, "email")) {
+  // a tab for WhatsApp and Email, and one for every other channel that has a version (or is open now)
+  if (p.stage !== "idea" || CHANNELS.some(([k]) => k !== "whatsapp" && latest(p.id, k))) {
     const nE = versionsOf(p.id, "email").length;
-    textSec = `<div class="chanbar"><span class="seg"><button class="${ch === "whatsapp" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="whatsapp">${T("WhatsApp")}</button><button class="${ch === "email" ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="email">✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}</button></span></div>${textSec}`;
+    const more = CHANNELS.filter(([k]) => k !== "whatsapp" && k !== "email" && (ch === k || latest(p.id, k) || (isReel(p) && REEL_CHANNELS.includes(k))));
+    const tab = (k, label) => `<button class="${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${label}</button>`;
+    textSec = `<div class="chanbar"><span class="seg">${tab("whatsapp", T("WhatsApp"))}${tab("email", `✉ ${T("Email")}${nE ? "" : ` <small>+</small>`}`)}${more.map(([k]) => tab(k, esc(chLabel(k)))).join("")}</span></div>${textSec}`;
   }
 
   // ---- notes ----
@@ -1927,13 +2092,12 @@ function drawerPost(p) {
     <div class="mention-row"><span class="muted small">${T("Tag:")}</span>${S.d.team_members.filter((m) => m.active && m.email !== S.me).map((m) => `<button class="chip sm" data-act="mention" data-a="${esc(firstName(m))}" data-b="${p.id}">@${esc(firstName(m))}</button>`).join("")}</div></section>`;
 
   // ---- more details ----
-  const otherCh = CHANNELS.filter(([k]) => k !== "whatsapp");
   const checks = latest(p.id) ? checksFor(p, latest(p.id)) : [];
   const srcs = (latest(p.id) || {}).sources || [];
   const moreSec = `<section class="sec more"><button class="linkbtn morebtn" data-act="more" data-a="${p.id}">${S.more[p.id] ? "▾" : "▸"} ${T("More: other channels, sources, rule checks, details")}</button>
     ${S.more[p.id] ? `
       <h3>${T("Channels")}</h3><div class="chips">${CHANNELS.map(([k, label]) => `<button class="chip ${ch === k ? "on" : ""}" data-act="channel" data-a="${p.id}" data-b="${k}">${T(label)}${versionsOf(p.id, k).length ? ` · v${versionsOf(p.id, k).length}` : ""}</button>`).join("")}</div>
-      <p class="hint">${T("Email and LinkedIn versions live here. The text above shows the channel you pick.")}${otherCh.some(([k]) => latest(p.id, k)) ? "" : ""}</p>
+      <p class="hint">${T("Versions for the other channels live here. The text above shows the channel you pick.")}</p>
       ${srcs.length ? `<h3>${T("Sources")}</h3>${srcs.map((s) => `<div class="src">${s.official ? `<span class="pill go">${T("official")}</span>` : `<span class="pill mute">${T("other")}</span>`}${isHttp(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${esc(s.label || s.url)}</a>` : esc(s.url)}</div>`).join("")}` : ""}
       ${checks.length ? `<h3>${T("House rules check")}</h3>${checks.map((c) => `<div class="lint ${c.ok ? "" : "bad"}"><i></i><span dir="auto">${esc(c.t)}</span></div>`).join("")}` : ""}
       <h3>${T("Details")}</h3>
@@ -1944,6 +2108,7 @@ function drawerPost(p) {
         ${p.stage !== "ready" && p.stage !== "published" ? `<label>📅 ${T("Planned date")} <input type="date" value="${esc(p.pinned_date || "")}" data-change="date" data-a="${p.id}"></label>` : ""}
         <button class="btn sm ${p.hot ? "hot" : ""}" data-act="hot" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🔥 ${p.hot ? T("Hot") : T("Mark hot")}</button>
         <button class="btn sm ${p.email_too ? "dark" : ""}" data-act="emailToo" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>✉ ${p.email_too ? T("Also an email: yes") : T("Also an email: no")}</button>
+        <button class="btn sm ${isReel(p) ? "dark" : ""}" data-act="toggleReel" data-a="${p.id}" ${p.stage === "published" && !isOwner() ? "disabled" : ""}>🎬 ${isReel(p) ? T("A reel: yes") : T("A reel: no")}</button>
         ${canWrite ? `<button class="btn sm" data-act="renameTitle" data-a="${p.id}">${T("Working title")}</button>` : ""}
       </div>
       ${owner ? `<h3>${T("Jay only")}</h3><div class="meta-row"><label>${T("Move to")} <select data-change="moveTo" data-a="${p.id}">${COLS.map((c) => `<option value="${c}" ${p.stage === c ? "selected" : ""}>${T(COL_ONE[c])}</option>`).join("")}</select></label>
@@ -1954,11 +2119,11 @@ function drawerPost(p) {
   const acts = [];
   let say = "";
   if (!live) {
-    say = p.skip_reason ? `${T("Rejected")}: <span dir="auto">${esc(p.skip_reason)}</span>` : T("Rejected");
+    say = p.skip_reason ? `${T("Rejected")}: <span dir="auto">${esc(whyRejected(p))}</span>` : T("Rejected");
     if (owner) acts.push(`<button class="btn" data-act="revive" data-a="${p.id}">${T("Bring it back")}</button>`);
   } else if (p.stage === "ready") {
     say = p.pinned_date ? T("Goes out {d}", { d: fmtDay(p.pinned_date) }) : T("Pick a date above.");
-    if (!(ch === "email" && looksHtml((latest(p.id, "email") || {}).body))) acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: t(CHANNELS.find((c) => c[0] === ch)[1]) })}</button>`);
+    if (!(ch === "email" && looksHtml((latest(p.id, "email") || {}).body))) acts.push(`<button class="btn go" data-act="copyPost" data-a="${p.id}" data-b="${ch}">${T("Copy for {ch}", { ch: chLabel(ch) })}</button>`);
     if (coverOf(p.id)) acts.push(`<button class="btn" data-act="downloadCover" data-a="${p.id}">↓ ${T("Banner")}</button>`);
     if (owner) acts.push(`<button class="btn" data-act="publish" data-a="${p.id}">✓ ${T("Mark published")}</button>`);
   } else if (p.stage === "published") {
@@ -1993,15 +2158,15 @@ function drawerPost(p) {
   const si = sib.findIndex((x) => x.id === p.id);
   const nav = sib.length > 1 ? `<span class="d-nav"><button class="iconbtn" data-act="nav" data-a="${p.id}" data-b="-1" ${si <= 0 ? "disabled" : ""} title="${T("Previous (K)")}">↑</button><span>${si + 1}/${sib.length}</span><button class="iconbtn" data-act="nav" data-a="${p.id}" data-b="1" ${si >= sib.length - 1 ? "disabled" : ""} title="${T("Next (J)")}">↓</button></span>` : "";
   const order = p.stage === "idea"
-    ? [ideaSec, textSec, notesSec, assets.length ? visuals : ""]
+    ? [ideaSec, reelSec, textSec, notesSec, assets.length ? visuals : ""]
     : p.stage === "ready" || p.stage === "published"
-      ? [dateBox, visuals, textSec, notesSec, ideaSec]
-      : [textSec, visuals, notesSec, ideaSec];
+      ? [dateBox, reelSec, visuals, textSec, notesSec, ideaSec]
+      : [reelSec, textSec, visuals, notesSec, ideaSec];
   return `<div class="scrim" data-act="close"></div>
   <aside class="drawer" role="dialog" aria-modal="true">
     <header class="d-head"><button class="iconbtn" data-act="close" aria-label="${T("Close")}">✕</button>${steps(p)}${nav}</header>
     <div class="d-body">
-      <div class="d-meta">${statusPill(p)}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
+      <div class="d-meta">${statusPill(p)}${agentBadge(p.author)}${isReel(p) ? `<span class="pill reel">🎬 ${T("Reel")}</span>` : ""}${p.hot ? `<span class="pill hot">🔥 ${T("Hot")}</span>` : ""}${tag(p.category)}<span class="sp"></span>${avatar(p.author, "sm")}<span class="muted small">${esc(nameOf(p.author))} · ${esc(ago(p.created_at))}</span></div>
       <h1 class="d-title" dir="auto">${esc(tt.main)}</h1>${tt.sub ? `<div class="d-sub" dir="auto">${esc(tt.sub)}</div>` : ""}
       ${next ? `<div class="nextbox">${esc(next)}</div>` : ""}
       <div class="btns d-copy">${latest(p.id) ? `<button class="btn sm" data-act="copyPost" data-a="${p.id}">⧉ ${T("Copy for WhatsApp")}</button>` : ""}<button class="btn sm" data-act="copyConsult" data-a="${p.id}">💬 ${T("Copy to consult Claude")}</button></div>
@@ -2022,7 +2187,7 @@ function drawerNew() {
       <div class="field"><label>${T("Working title")}</label><input type="text" name="title" dir="auto" required placeholder="${T("What the post is about, in one line")}"></div>
       <div class="field"><label>${T("The idea")}</label><textarea name="idea" dir="auto" placeholder="${T("What it is, why now, what readers get. Two to five lines.")}"></textarea></div>
       <div class="row2"><div class="field"><label>${T("Category")}</label>${catSel("tip")}</div>
-      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label></div></div>
+      <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="hot"> 🔥 ${T("Hot: it goes stale fast")}</label><label class="check"><input type="checkbox" name="reel"> 🎬 ${T("It's a reel")}</label></div></div>
       <details><summary class="linkbtn">${T("More details (optional)")}</summary>
         <div class="row2"><div class="field"><label>${T("When the news came out (if news)")}</label><input type="date" name="news_date"></div>
         <div class="field"><label>${T("Your score, 1 to 10")}</label><input type="number" name="score" min="1" max="10"></div></div>
@@ -2318,6 +2483,7 @@ window.addEventListener("hashchange", () => {
     return;
   }
   S.edit = null;
+  S.reelEdit = null;
   render();
 });
 window.addEventListener("beforeunload", (e) => {
@@ -2329,7 +2495,7 @@ window.addEventListener("beforeunload", (e) => {
 
 // Refresh when the tab comes back, unless someone is typing.
 function quietRefresh() {
-  if (!S.session || S.edit || S.modal || S.busy) return;
+  if (!S.session || S.edit || S.reelEdit || S.modal || S.busy) return;
   const a = document.activeElement;
   if (a && ["TEXTAREA", "INPUT", "SELECT"].includes(a.tagName) && a.value) return;
   loadAll(true);
