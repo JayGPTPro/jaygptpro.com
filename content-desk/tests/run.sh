@@ -7,7 +7,8 @@
 #    and migrate-7, each twice.
 # 2. The rebuild path: schema.sql alone (it carries every migration).
 # On both, guards_test.sql checks the writer rules. Then the Deno tests run the real
-# desk-agent and go-clicks handlers against the first database.
+# desk-agent and go-clicks handlers against the first database, and tests/board_test.ts
+# checks the board's Posts | Reels rules (board.js).
 #
 # DESK_MIGRATION=/path/to/changed.sql runs the live path with another migration file,
 # to watch a test fail when its rule is taken out (DESK_MIGRATION_6 and DESK_MIGRATION_7 the same for migrations 6 and 7).
@@ -56,6 +57,9 @@ run_checks desk_fresh
 echo "== edge functions against the live-path database"
 DESK_TEST_DB_URL="postgres://postgres@127.0.0.1:$PORT/desk_live" \
   deno test --quiet --permit-no-files --allow-net --allow-env --allow-read "$DESK/supabase/functions"
+
+echo "== the board's Posts | Reels rules"
+deno test --quiet "$HERE/board_test.ts"
 
 [ -n "${DESK_CLIENT:-}" ] || exit 0
 echo "== Chandler's client ($(basename "$DESK_CLIENT")) against the real handler"
