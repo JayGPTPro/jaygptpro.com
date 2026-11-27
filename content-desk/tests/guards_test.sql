@@ -1,4 +1,4 @@
--- Content Desk guard tests for migrations 5 and 6, on a throwaway local database (tests/run.sh).
+-- Content Desk guard tests for migrations 5, 6 and 7, on a throwaway local database (tests/run.sh).
 -- Every check raises "FAIL: ..." when the rule does not hold, so the first broken rule stops the run.
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -121,33 +121,22 @@ select pg_temp.check('a person''s real sign-in still works as before', public.is
 select set_config('request.jwt.claims', '{"email":"jay@example.com","role":"authenticated","iss":"https://sjdcvjunibwxkwqzjitw.supabase.co/auth/v1"}', false);
 select pg_temp.check('and Jay is still the owner', public.is_owner());
 
--- ---------- 3. ideas expire after 7 untouched days ----------
+-- ---------- 3. an idea expires only when its end date (expires_on) passed in Israel ----------
 reset role;
 select set_config('request.jwt.claims', '', false);
 -- inserted with old timestamps: an update would not move updated_at back (desk_touch)
-insert into public.posts (id, title, stage, status, author, created_at, updated_at, pinned_date, skip_reason) values
-  ('00000000-0000-0000-0000-00000000e001', 'stale waiting idea',        'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '8 days', null, null),
-  ('00000000-0000-0000-0000-00000000e002', 'fresh idea',                'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '6 days', null, null),
-  ('00000000-0000-0000-0000-00000000e003', 'stale idea, recent note',   'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e004', 'stale idea, date ahead',    'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', current_date + 3, null),
-  ('00000000-0000-0000-0000-00000000e005', 'stale idea, date passed',   'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', current_date - 3, null),
-  ('00000000-0000-0000-0000-00000000e006', 'stale approved idea',       'idea', 'approved', 'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e007', 'stale rejected idea',       'idea', 'rejected', 'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, 'Not now'),
-  ('00000000-0000-0000-0000-00000000e008', 'stale draft',               'draft','waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e009', 'stale idea, recent version','idea', 'changes',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e010', 'stale idea, recent file',   'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e011', 'stale idea, old note',      'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null),
-  ('00000000-0000-0000-0000-00000000e012', 'stale idea sent back',      'idea', 'changes',  'denisa@example.com', now() - interval '20 days', now() - interval '9 days', null, null);
-insert into public.notes (post_id, body, author, created_at, updated_at) values
-  ('00000000-0000-0000-0000-00000000e003', 'still on it', 'jay@example.com', now() - interval '2 days', now() - interval '2 days'),
-  ('00000000-0000-0000-0000-00000000e011', 'old note', 'jay@example.com', now() - interval '8 days', now() - interval '8 days');
-insert into public.versions (post_id, channel, n, body, author, created_at) values
-  ('00000000-0000-0000-0000-00000000e009', 'linkedin', 1, 'a version', 'denisa@example.com', now() - interval '1 day');
-insert into public.assets (post_id, path, filename, author, created_at) values
-  ('00000000-0000-0000-0000-00000000e010', 'x/e010.png', 'e010.png', 'denisa@example.com', now() - interval '1 day');
+insert into public.posts (id, title, stage, status, author, created_at, updated_at, expires_on, skip_reason) values
+  ('00000000-0000-0000-0000-00000000e001', 'idea, date passed',         'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '1 day', (now() at time zone 'Asia/Jerusalem')::date - 1, null),
+  ('00000000-0000-0000-0000-00000000e002', 'idea, ends today',          'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '1 day', (now() at time zone 'Asia/Jerusalem')::date, null),
+  ('00000000-0000-0000-0000-00000000e003', 'idea, ends ahead',          'idea', 'waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '1 day', (now() at time zone 'Asia/Jerusalem')::date + 3, null),
+  ('00000000-0000-0000-0000-00000000e004', 'old idea, no end date',     'idea', 'waiting',  'denisa@example.com', now() - interval '400 days', now() - interval '300 days', null, null),
+  ('00000000-0000-0000-0000-00000000e005', 'approved, date passed',     'idea', 'approved', 'denisa@example.com', now() - interval '20 days', now() - interval '1 day', '2020-01-01', null),
+  ('00000000-0000-0000-0000-00000000e006', 'sent back, date passed',    'idea', 'changes',  'denisa@example.com', now() - interval '20 days', now() - interval '1 day', '2020-01-01', null),
+  ('00000000-0000-0000-0000-00000000e007', 'rejected, date passed',     'idea', 'rejected', 'denisa@example.com', now() - interval '20 days', now() - interval '1 day', '2020-01-01', 'Not now'),
+  ('00000000-0000-0000-0000-00000000e008', 'draft, date passed',        'draft','waiting',  'denisa@example.com', now() - interval '20 days', now() - interval '1 day', '2020-01-01', null);
 
 select pg_temp.check('the preview at the end of the migration lists exactly the ideas the expiry will take',
-  (select array_agg(p.title order by p.title) = array['stale idea sent back', 'stale idea, date passed', 'stale idea, old note', 'stale waiting idea']
+  (select array_agg(p.title order by p.title) = array['approved, date passed', 'idea, date passed', 'sent back, date passed']
    from public.posts p where p.id in (select public.desk_stale_ideas())));
 
 set role anon;
@@ -164,18 +153,16 @@ select pg_temp.blocked('the list of stale ideas is for the database owner only',
 
 select pg_temp.claims('chandler@agent.jaygptpro.com');
 create temp table expired as select * from public.desk_expire_ideas();
-select pg_temp.check('four stale ideas expire (waiting, date passed, old note, sent back) and come back by title',
-  (select array_agg(post_title order by post_title) = array['stale idea sent back', 'stale idea, date passed', 'stale idea, old note', 'stale waiting idea'] from expired));
+select pg_temp.check('three ideas whose date passed expire (waiting, approved, sent back) and come back by title',
+  (select array_agg(post_title order by post_title) = array['approved, date passed', 'idea, date passed', 'sent back, date passed'] from expired));
 select pg_temp.check('the expired ones are rejected with the reason "expired"',
-  (select bool_and(status = 'rejected' and skip_reason = 'expired') and count(*) = 4 from public.posts
+  (select bool_and(status = 'rejected' and skip_reason = 'expired') and count(*) = 3 from public.posts
    where id in ('00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-00000000e005',
-                '00000000-0000-0000-0000-00000000e011', '00000000-0000-0000-0000-00000000e012')));
-select pg_temp.check('the rest stay as they were, an idea Jay approved included',
-  (select bool_and(status <> 'rejected') and count(*) = 7 from public.posts
+                '00000000-0000-0000-0000-00000000e006')));
+select pg_temp.check('the rest stay: an idea that ends today or later, an old idea with no end date, a draft',
+  (select bool_and(status <> 'rejected') and count(*) = 4 from public.posts
    where id in ('00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003',
-                '00000000-0000-0000-0000-00000000e004', '00000000-0000-0000-0000-00000000e006',
-                '00000000-0000-0000-0000-00000000e008', '00000000-0000-0000-0000-00000000e009',
-                '00000000-0000-0000-0000-00000000e010')));
+                '00000000-0000-0000-0000-00000000e004', '00000000-0000-0000-0000-00000000e008')));
 select pg_temp.check('an idea Jay already rejected keeps his reason',
   (select skip_reason = 'Not now' from public.posts where id = '00000000-0000-0000-0000-00000000e007'));
 select pg_temp.check('the expiry is nobody''s edit: no name in updated_by, updated_at is now',
@@ -189,6 +176,24 @@ do $$ begin
 end $$;
 select pg_temp.check('after the expiry the same transaction is still Chandler', true);
 select pg_temp.check('a second run expires nothing', (select count(*) = 0 from public.desk_expire_ideas()));
+
+-- a writer sets the end date and makes a reel from a post, as the board does
+select pg_temp.claims('denisa@example.com');
+update public.posts set expires_on = '2099-01-01' where id = '00000000-0000-0000-0000-00000000e003';
+select pg_temp.check('a writer can set an idea''s end date',
+  (select expires_on = '2099-01-01' from public.posts where id = '00000000-0000-0000-0000-00000000e003'));
+insert into public.posts (title, stage, kind, source_post_id) values ('reel of e008', 'idea', 'reel', '00000000-0000-0000-0000-00000000e008');
+select pg_temp.check('a writer can add a reel card linked to its post',
+  (select kind = 'reel' and author = 'denisa@example.com' from public.posts where source_post_id = '00000000-0000-0000-0000-00000000e008'));
+reset role;
+select set_config('request.jwt.claims', '', false);
+select pg_temp.blocked('a post cannot be its own source',
+  $$update public.posts set source_post_id = id where id = '00000000-0000-0000-0000-00000000e003'$$, '%posts_source_not_self%');
+delete from public.posts where id = '00000000-0000-0000-0000-00000000e008';
+select pg_temp.check('deleting the post keeps its reel, without the link',
+  (select source_post_id is null from public.posts where title = 'reel of e008'));
+delete from public.posts where title = 'reel of e008';
+set role authenticated;
 
 -- ---------- 4. source clicks: written by the go-clicks function only, read by the team ----------
 reset role;
